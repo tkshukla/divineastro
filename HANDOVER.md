@@ -92,10 +92,19 @@ checked against Postgres directly.
 
 **Legal**
 
-- [ ] **Publish the source.** `stellium` is AGPL-3.0 and §13 obliges offering
-      source to users of a network service. Currently unmet.
+- [x] **Source published** — https://github.com/tkshukla/divineastro, public,
+      AGPL-3.0. `/terms` §10 links it via `ASTRO_SOURCE_URL`, which is what
+      actually discharges §13: users must be *offered* the source, not merely
+      have it exist somewhere.
 - [ ] Udyam registration *date* and Micro/Small/Medium not supplied — the footer
       renders only the number until they are.
+
+> **Before committing anything, re-run the secret scan.** `deploy/env.production.template`
+> was misnamed: despite "template" it held a live `ASTRO_SECRET_KEY`,
+> `POSTGRES_PASSWORD` and `GOOGLE_CLIENT_SECRET`, and `.gitignore` did not cover
+> it. It was caught in the pre-push scan and scrubbed, so nothing leaked — but
+> `.gitignore` alone is not a safety net. Grep staged *content* for
+> `sk-ant-api03`, `GOCSPX-`, `AIza…`, `xkeysib-`, `BEGIN … PRIVATE KEY`.
 
 **Quality**
 
