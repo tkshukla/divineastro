@@ -1,0 +1,43 @@
+# Divine Astro — runtime dependencies
+# Versions pinned to what is verified working, so a deploy cannot pick up a
+# breaking release. Review deliberately, don't drift.
+
+# ---------------------------------------------------------------- astrology
+# AGPL-3.0-or-later, and bundles Swiss Ephemeris (also AGPL). See README:
+# running this as a public service obliges us to publish our source.
+stellium==0.22.0            # charts, dignities, time-lords, Vedic rendering
+pyswisseph==2.10.3.2        # pulled in by stellium; pinned so it cannot drift
+timezonefinder==8.2.5       # offline coordinates -> IANA zone
+tzdata==2026.3              # historical zone rules; slim images have none
+
+# ---------------------------------------------------------------- web
+fastapi==0.141.1
+uvicorn[standard]==0.52.3
+itsdangerous==2.2.0         # signed session cookies
+python-dotenv==1.2.2
+
+# ---------------------------------------------------------------- database
+SQLAlchemy==2.0.52
+alembic==1.19.1             # migrations — required, not optional, in production
+psycopg[binary]==3.3.4      # Postgres driver
+
+# ---------------------------------------------------------------- auth
+Authlib==1.7.2              # Google / Microsoft / Apple OIDC
+cryptography==50.0.0        # Authlib needs it for Apple's ES256 client secret
+
+# ---------------------------------------------------------------- payments
+razorpay==2.0.1             # only used when ASTRO_GATEWAY=razorpay
+httpx==0.28.1               # Cashfree REST calls
+
+# ---------------------------------------------------------------- documents
+typst==0.15.0               # PDF rendering (ships with stellium; pinned here
+                            # because pdf_report.py depends on it directly)
+pillow==12.3.0              # logo/favicon pipeline in tools/
+
+# ---------------------------------------------------------------- optional
+# Narration only. The deterministic engine works without it; the Ollama
+# provider needs no package at all (plain HTTP).
+anthropic==0.122.0
+
+# ---------------------------------------------------------------- tests
+requests==2.34.2

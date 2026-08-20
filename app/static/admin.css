@@ -1,0 +1,238 @@
+/* Admin panel styling. Rides on styles.css for the palette and the .card,
+   .primary, .ghost, .field and .error primitives; only what is specific to
+   the operator screens lives here. */
+
+.admin-body {
+  display: block;
+  padding: 20px clamp(12px, 4vw, 40px) 60px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* The brand watermark (body::after in styles.css) is a positioned layer, so it
+   would otherwise paint over this page's static content. The stages on the main
+   site already carry z-index 1; the admin screens need the same. */
+.admin-head, .gate, #panel { position: relative; z-index: 1; }
+
+.admin-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.admin-head h1 { margin: 0; font-size: 1.5rem; letter-spacing: 0.02em; }
+.admin-head .topbar-logo { display: block; height: 44px; }
+
+.who-chip {
+  font-size: 0.8rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(240, 198, 116, 0.35);
+  color: var(--gold, #f0c674);
+  opacity: 0.85;
+}
+/* Before sign-in this holds nothing, and an empty bordered pill beside the
+   title just looks like a rendering fault. */
+.who-chip:empty { display: none; }
+.ghost-link {
+  margin-left: auto;
+  color: inherit;
+  opacity: 0.65;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+.ghost-link:hover { opacity: 1; }
+
+/* -------------------------------------------------------------- gate --- */
+
+.gate { max-width: 540px; margin: 40px auto; text-align: center; }
+.gate h2 { margin-top: 0; }
+.gate-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+/* Styled in full here rather than leaning on .primary — that rule is scoped as
+   `button.primary`, so an <a> picked up none of it and the sign-in link
+   rendered as bare blue text. */
+.as-button {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  padding: 13px 18px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(100deg, var(--gold, #f0c674), #e8a94f);
+  color: #221602;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: transform 0.15s, filter 0.15s;
+}
+.as-button:hover { transform: translateY(-1px); filter: brightness(1.06); }
+
+/* -------------------------------------------------------------- tabs --- */
+
+.admin-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.atab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: inherit;
+  opacity: 0.55;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+.atab:hover { opacity: 0.85; }
+.atab.active {
+  opacity: 1;
+  border-bottom-color: var(--gold, #f0c674);
+  color: var(--gold, #f0c674);
+}
+.count {
+  display: none;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  background: rgba(240, 112, 140, 0.9);
+  color: #1a1030;
+  font-weight: 700;
+}
+.count.has { display: inline-block; }
+
+.apane { display: none; }
+.apane.active { display: block; }
+
+.pane-help {
+  font-size: 0.86rem;
+  opacity: 0.7;
+  line-height: 1.55;
+  margin: 0 0 16px;
+}
+.inline-check {
+  margin-left: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* -------------------------------------------------------------- rows --- */
+
+.rows { display: flex; flex-direction: column; gap: 10px; }
+
+.row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.035);
+  flex-wrap: wrap;
+}
+.row-main { flex: 1 1 340px; min-width: 0; }
+.row-title { font-size: 0.98rem; margin-bottom: 5px; }
+.row-sub { font-size: 0.82rem; opacity: 0.72; line-height: 1.6; word-break: break-word; }
+.row-sub .muted { opacity: 0.65; }
+.row-sub .warn { color: #f0708c; }
+
+.row-act {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.row-act .note {
+  width: 150px;
+  padding: 7px 9px;
+  font-size: 0.82rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.25);
+  color: inherit;
+}
+.row-act select {
+  padding: 7px 9px;
+  font-size: 0.82rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.25);
+  color: inherit;
+}
+
+button.sm {
+  padding: 8px 13px;
+  font-size: 0.82rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+button.danger {
+  background: rgba(240, 112, 140, 0.14);
+  border: 1px solid rgba(240, 112, 140, 0.45);
+  color: #f0708c;
+  font: inherit;
+  font-size: 0.82rem;
+}
+button.danger:hover { background: rgba(240, 112, 140, 0.24); }
+button:disabled { opacity: 0.45; cursor: default; }
+
+code, .utr, .code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.88em;
+}
+.code { color: var(--gold, #f0c674); font-size: 1rem; letter-spacing: 0.04em; }
+
+.pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+  border: 1px solid currentColor;
+  opacity: 0.85;
+}
+.pill.pending     { color: #f0c674; }
+.pill.in_progress { color: #56d4dd; }
+.pill.delivered   { color: #7ddba0; }
+.pill.off         { color: #9b93b5; }
+
+.empty {
+  opacity: 0.5;
+  font-size: 0.88rem;
+  padding: 26px;
+  text-align: center;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+}
+
+/* ----------------------------------------------------- coupon form ----- */
+
+.coupon-form { margin-bottom: 22px; }
+.coupon-form h3 { margin: 0 0 14px; font-size: 1rem; }
+.crow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+.coupon-form .field { margin-bottom: 12px; }
+.coupon-form select[multiple] { min-height: 92px; }
+
+@media (max-width: 640px) {
+  .row { flex-direction: column; }
+  .row-act { width: 100%; }
+  .row-act .note { flex: 1 1 120px; width: auto; }
+}

@@ -1,0 +1,63 @@
+# Divine Astro — production stack.
+#
+#   caddy  : TLS termination. Gets a real certificate from Let's Encrypt on
+#            first boot and renews it. No certbot cron, no manual renewal.
+#   app    : the FastAPI service. Never exposed to the internet directly.
+#   db     : Postgres. Not published on a host port — only the app can reach it.
+#
+#   docker compose up -d --build
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: astro
+      POSTGRES_USER: astro
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U astro -d astro"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Deliberately no `ports:` — the database is reachable only on the
+    # compose network. Exposing 5432 is how databases end up in breach reports.
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASTRO_DATABASE_URL: postgresql+psycopg://astro:${POSTGRES_PASSWORD}@db:5432/astro
+      ASTRO_COOKIE_SECURE: "1"     # HTTPS only — Caddy terminates TLS
+      ASTRO_DEV_LOGIN: "0"         # never in production
+    env_file:
+      - .env
+    volumes:
+      # Chart wheel/PDF scratch space and the geo index cache.
+      - appdata:/srv/data
+    expose:
+      - "8000"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+      - caddyconfig:/config
+
+volumes:
+  pgdata:
+  appdata:
+  caddydata:
+  caddyconfig:

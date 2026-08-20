@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Divine Astro — Vedic kundali readings</title>
+<meta name="description" content="Your Vedic kundali cast to Swiss-Ephemeris precision, with dashas, North and South Indian charts, and answers to your questions in Hindi or English." />
+<meta property="og:title" content="Divine Astro — Vedic kundali readings" />
+<meta property="og:url" content="https://divineastro.org" />
+<link rel="stylesheet" href="/static/styles.css" />
+<link rel="stylesheet" href="/static/tools.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9738;</text></svg>" />
+</head>
+<body>
+<canvas id="sky"></canvas>
+<div class="glow glow-a"></div>
+<div class="glow glow-b"></div>
+
+<!-- One header for every screen, in normal document flow.
+     It used to be two position:fixed islands (account bar top-left, language
+     top-right) floating over whatever was underneath — which is where every
+     overlap and mis-placement came from: they covered the reading screen's own
+     header, so that header had to be padded out of their way, which pushed it
+     off-centre. A single header in flow cannot collide with anything. -->
+<header class="site-header">
+  <button type="button" class="brand" id="go-home" aria-label="Divine Astro — home">
+    <img class="brand-mark" src="/static/logo.png" alt=""
+         onload="this.classList.add('ok');" onerror="this.remove();" />
+    <span class="brand-word">Divine Astro</span>
+  </button>
+
+  <div class="header-right">
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button class="lang active" data-lang="en">English</button>
+      <button class="lang" data-lang="hi">हिन्दी</button>
+    </div>
+    <!-- Account, credits and store -->
+    <div id="account-bar" class="account-bar"></div>
+  </div>
+</header>
+
+<!-- ==================== STAGE 0 : HOME ====================
+     The only screen carrying the full logo. Everywhere else gets the small
+     mark in the header above, and nothing is layered over anything. -->
+<section id="stage-home" class="stage active">
+  <div class="home-inner">
+    <img id="home-logo" class="home-logo" src="/static/logo.png" alt="Divine Astro"
+         onload="this.classList.add('ok');" onerror="this.remove();" />
+    <h1 id="home-title">Divine Astro</h1>
+    <p class="home-tagline" id="home-tagline">
+      Swiss-Ephemeris precision, Vedic judgement — your chart read properly.
+    </p>
+    <p class="home-blurb" id="home-blurb">
+      Your kundali cast to the exact minute, with dashas, North and South Indian
+      charts, and straight answers to your questions in Hindi or English.
+    </p>
+
+    <button type="button" class="primary home-cta" id="home-cta">
+      Get my kundali reading
+    </button>
+
+    <!-- Free tools. Deliberately unmetered: they cost no LLM tokens and they
+         are what people search for. -->
+    <div class="tool-row">
+      <button type="button" class="tool-card" id="open-milan">
+        <span class="tool-icon">&#128141;</span>
+        <span class="tool-name" id="tool-milan-name">Kundali Milan</span>
+        <span class="tool-sub" id="tool-milan-sub">36-point marriage matching</span>
+      </button>
+      <button type="button" class="tool-card" id="open-panchang">
+        <span class="tool-icon">&#128197;</span>
+        <span class="tool-name" id="tool-panchang-name">Today's Panchang</span>
+        <span class="tool-sub" id="tool-panchang-sub">Tithi, nakshatra and Rahu Kaal</span>
+      </button>
+    </div>
+
+    <!-- Saved charts live here on the home screen: a returning customer opens
+         one with a tap instead of re-entering birth details. -->
+    <section id="saved-charts" class="card saved-charts" hidden></section>
+
+    <ul class="home-points" id="home-points">
+      <li>Swiss Ephemeris — the same data professional astrologers use</li>
+      <li>Vimshottari dashas, transits and timing windows</li>
+      <li>Answers in plain language, in Hindi or English</li>
+    </ul>
+  </div>
+
+  <!-- Public footer. Payment gateways check for reachable Terms, Privacy,
+       Refund and Contact pages during underwriting, and customers reasonably
+       expect to find them from the front page without signing up. -->
+  <footer class="site-footer" id="home-footer">
+    <nav>
+      <a href="/terms">Terms &amp; Conditions</a>
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/refund">Refund &amp; Cancellation</a>
+      <a href="/contact">Contact Us</a>
+    </nav>
+    <p class="legal-entity">
+      Yavi Info Solutions and Consultants · B1-1402 Leisure Park, Greater Noida,
+      Uttar Pradesh, India · <a href="mailto:support@divineastro.org">support@divineastro.org</a>
+      · +91 87226 23794
+    </p>
+    <p class="legal-entity registrations" id="footer-registration-home" hidden></p>
+    <p class="disclaimer">
+      Astrological readings are provided for guidance and entertainment. They are
+      not medical, legal or financial advice.
+    </p>
+  </footer>
+</section>
+
+<!-- ==================== KUNDALI MILAN ==================== -->
+<section id="stage-milan" class="stage">
+  <div class="tool-inner">
+    <h1 id="milan-title">Kundali Milan</h1>
+    <p class="tagline" id="milan-sub">
+      Ashtakoot Guna Milan — the traditional 36-point compatibility score, with
+      Mangal Dosha for both charts.
+    </p>
+
+    <div class="milan-forms">
+      <form class="card milan-card" data-side="groom" autocomplete="off">
+        <h2 id="milan-groom-h">Groom</h2>
+        <div class="field">
+          <label>Name <span class="opt">optional</span></label>
+          <input type="text" data-f="name" placeholder="Name" />
+        </div>
+        <div class="row">
+          <div class="field"><label>Date of birth</label>
+            <input type="date" data-f="date" required /></div>
+          <div class="field"><label>Time of birth</label>
+            <input type="time" data-f="time" value="12:00" /></div>
+        </div>
+        <div class="field checkbox">
+          <input type="checkbox" data-f="unknown" id="milan-groom-unknown" />
+          <label for="milan-groom-unknown">Time not known
+            <span class="hint">— the 36 points still work; Manglik does not</span></label>
+        </div>
+        <div class="field place">
+          <label>Place of birth</label>
+          <input type="text" data-f="place" placeholder="Start typing a city…" required />
+          <ul class="suggest" data-f="results" hidden></ul>
+          <p class="chosen" data-f="chosen" hidden></p>
+        </div>
+      </form>
+
+      <form class="card milan-card" data-side="bride" autocomplete="off">
+        <h2 id="milan-bride-h">Bride</h2>
+        <div class="field">
+          <label>Name <span class="opt">optional</span></label>
+          <input type="text" data-f="name" placeholder="Name" />
+        </div>
+        <div class="row">
+          <div class="field"><label>Date of birth</label>
+            <input type="date" data-f="date" required /></div>
+          <div class="field"><label>Time of birth</label>
+            <input type="time" data-f="time" value="12:00" /></div>
+        </div>
+        <div class="field checkbox">
+          <input type="checkbox" data-f="unknown" id="milan-bride-unknown" />
+          <label for="milan-bride-unknown">Time not known
+            <span class="hint">— the 36 points still work; Manglik does not</span></label>
+        </div>
+        <div class="field place">
+          <label>Place of birth</label>
+          <input type="text" data-f="place" placeholder="Start typing a city…" required />
+          <ul class="suggest" data-f="results" hidden></ul>
+          <p class="chosen" data-f="chosen" hidden></p>
+        </div>
+      </form>
+    </div>
+
+    <button type="button" class="primary" id="milan-go">
+      <span class="label">Match the kundalis</span>
+      <span class="spinner" aria-hidden="true"></span>
+    </button>
+    <p id="milan-error" class="error" hidden></p>
+
+    <div id="milan-result" hidden></div>
+  </div>
+</section>
+
+<!-- ==================== PANCHANG ==================== -->
+<section id="stage-panchang" class="stage">
+  <div class="tool-inner">
+    <h1 id="panchang-title">Panchang</h1>
+    <p class="tagline" id="panchang-sub">
+      The five limbs of the day, with Rahu Kaal and the auspicious windows.
+    </p>
+
+    <form class="card" id="panchang-form" autocomplete="off">
+      <div class="row">
+        <div class="field"><label>Date</label>
+          <input type="date" id="pa-date" /></div>
+        <div class="field place">
+          <label>Place</label>
+          <input type="text" id="pa-place" placeholder="Start typing a city…" />
+          <ul class="suggest" id="pa-results" hidden></ul>
+          <p class="chosen" id="pa-chosen" hidden></p>
+        </div>
+      </div>
+    </form>
+    <p id="panchang-error" class="error" hidden></p>
+
+    <div id="panchang-result" hidden></div>
+  </div>
+</section>
+
+<!-- ==================== STAGE 1 : BIRTH DATA ==================== -->
+<section id="stage-birth" class="stage">
+  <div class="intro">
+    <h1 id="birth-title">Your birth details</h1>
+    <p class="tagline" id="birth-sub">Exact time and place — the chart is only as good as these.</p>
+  </div>
+
+  <form id="birth-form" class="card" autocomplete="off">
+    <div class="field">
+      <label for="f-name">Name <span class="opt">optional</span></label>
+      <input id="f-name" name="name" type="text" placeholder="Who is this chart for?" />
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="f-date">Date of birth</label>
+        <input id="f-date" name="date" type="date" required />
+      </div>
+      <div class="field">
+        <label for="f-time">Time of birth</label>
+        <input id="f-time" name="time" type="time" value="12:00" required />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="f-gender" data-i18n="gender">Gender <span class="opt">optional</span></label>
+      <select id="f-gender">
+        <option value="">Prefer not to say</option>
+        <option value="female">Female</option>
+        <option value="male">Male</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+
+    <div class="field checkbox">
+      <input id="f-unknown" type="checkbox" />
+      <label for="f-unknown">I don't know the exact time
+        <span class="hint">— houses and the ascendant become unreliable; noon is used</span>
+      </label>
+    </div>
+
+    <div class="field place">
+      <label for="f-place">Place of birth</label>
+      <input id="f-place" type="text" placeholder="Start typing a city…" required />
+      <ul id="place-results" class="suggest" hidden></ul>
+      <p id="place-chosen" class="chosen" hidden></p>
+    </div>
+
+
+    <button type="submit" class="primary" id="cast">
+      <span class="label">Cast the chart</span>
+      <span class="spinner" aria-hidden="true"></span>
+    </button>
+    <p id="birth-error" class="error" hidden></p>
+  </form>
+
+  <!-- Public footer. Payment gateways check for reachable Terms, Privacy,
+       Refund and Contact pages during underwriting, and customers reasonably
+       expect to find them without signing up. -->
+  <footer class="site-footer">
+    <nav>
+      <a href="/terms">Terms &amp; Conditions</a>
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/refund">Refund &amp; Cancellation</a>
+      <a href="/contact">Contact Us</a>
+    </nav>
+    <p class="legal-entity" id="footer-entity">
+      Yavi Info Solutions and Consultants · B1-1402 Leisure Park, Greater Noida,
+      Uttar Pradesh, India · <a href="mailto:support@divineastro.org">support@divineastro.org</a>
+      · +91 87226 23794
+    </p>
+    <!-- Statutory registrations, filled from /api/site so they cannot drift
+         out of step with the Terms and Contact pages. -->
+    <p class="legal-entity registrations" id="footer-registration" hidden></p>
+    <p class="disclaimer">
+      Astrological readings are provided for guidance and entertainment. They are
+      not medical, legal or financial advice.
+    </p>
+  </footer>
+</section>
+
+<!-- ==================== STAGE 2 : READING ==================== -->
+<section id="stage-chat" class="stage">
+  <header class="topbar">
+    <div class="who">
+      <button id="back" class="ghost" title="New chart" aria-label="New chart">&#8592;</button>
+      <img class="topbar-logo" src="/static/logo.png" alt="Divine Astrology"
+           onload="this.classList.add('ok');" onerror="this.remove();" />
+      <div>
+        <h2 id="who-name">—</h2>
+        <p id="who-detail">—</p>
+      </div>
+
+      <!-- Narration engine — deliberately tucked away in the reading screen.
+           The landing page must stay free of any model picker. -->
+      <details id="engine-settings" class="engine-settings">
+        <summary title="Narration" aria-label="Narration">&#9881;</summary>
+        <div class="engine-pop">
+          <label for="f-provider" data-i18n="narration">Narration</label>
+          <select id="f-provider"></select>
+          <p id="engine-note" class="engine-note"></p>
+        </div>
+      </details>
+    </div>
+    <div id="chips" class="chips"></div>
+  </header>
+
+  <!-- Phone-only: swaps between the reading and the chart. Hidden on desktop,
+       where both panes are side by side. -->
+  <nav class="view-switch" id="view-switch" role="group" aria-label="View">
+    <button type="button" class="vview active" data-view="chat">Reading</button>
+    <button type="button" class="vview" data-view="chart">Chart &amp; Dashas</button>
+  </nav>
+
+  <div class="workspace" data-view="chat">
+    <aside class="panel">
+      <div class="chart-switch" id="chart-switch" role="group" aria-label="Chart style">
+        <button type="button" class="cstyle" data-style="north">North Indian</button>
+        <button type="button" class="cstyle" data-style="south">South Indian</button>
+        <button type="button" class="cstyle" data-style="wheel">Western wheel</button>
+      </div>
+      <div class="wheel" id="wheel"></div>
+      <p id="chart-note" class="chart-note" hidden></p>
+      <nav class="tabs">
+        <button class="tab active" data-tab="placements">Placements</button>
+        <button class="tab" data-tab="houses">Houses</button>
+        <button class="tab" data-tab="aspects">Aspects</button>
+        <button class="tab" data-tab="now">Now</button>
+      </nav>
+      <div class="tabpanes">
+        <div class="pane active" id="pane-placements"></div>
+        <div class="pane" id="pane-houses"></div>
+        <div class="pane" id="pane-aspects"></div>
+        <div class="pane" id="pane-now"></div>
+      </div>
+    </aside>
+
+    <main class="chat">
+      <div id="thread" class="thread"></div>
+      <div id="starters" class="starters"></div>
+      <form id="ask-form" class="composer">
+        <input id="q" type="text" placeholder="Ask about career, money, love, health, timing…" autocomplete="off" />
+        <button type="submit" id="send" aria-label="Send">
+          <svg viewBox="0 0 24 24"><path d="M3 20.5 21 12 3 3.5 3 10l12 2-12 2z"/></svg>
+        </button>
+      </form>
+    </main>
+  </div>
+</section>
+
+<script src="/static/app.js"></script>
+<script src="/static/account.js"></script>
+<script src="/static/tools.js"></script>
+</body>
+</html>

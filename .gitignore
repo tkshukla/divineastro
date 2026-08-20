@@ -1,0 +1,49 @@
+# ==========================================================================
+# SECRETS — never commit. This repository is published publicly to satisfy
+# the AGPL source-availability requirement, so anything listed here would be
+# world-readable the moment it was pushed.
+# ==========================================================================
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p8
+credentials*.json
+client_secret*.json
+service-account*.json
+
+# ---------------------------------------------------------------- data
+# Customer data: accounts, birth details, questions, orders.
+data/astro.db
+data/*.db
+data/*.sqlite3
+data/cities.index.pkl
+
+# Large GeoNames dumps — fetched with tools/fetch_data.py
+data/cities5000.txt
+data/admin1CodesASCII.txt
+data/countryInfo.txt
+
+# ---------------------------------------------------------------- runtime
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Server logs / scratch
+*.log
+srv.out.log
+srv.err.log
+.server.*
+
+# ---------------------------------------------------------------- assets
+# The 9 MB logo master. The optimised web versions in app/static/ are committed.
+assets/logo-master.png
+
+# ---------------------------------------------------------------- editors
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

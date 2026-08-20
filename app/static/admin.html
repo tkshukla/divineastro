@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin — Divine Astro</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="stylesheet" href="/static/styles.css" />
+<link rel="stylesheet" href="/static/admin.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9881;</text></svg>" />
+</head>
+<body class="admin-body">
+<div class="glow glow-a"></div>
+
+<header class="admin-head">
+  <img class="topbar-logo ok" src="/static/logo.png" alt="" onerror="this.remove();" />
+  <h1>Admin</h1>
+  <span id="who" class="who-chip"></span>
+  <a class="ghost-link" href="/">&#8592; Site</a>
+</header>
+
+<!-- Shown when the visitor is not signed in, or is signed in without rights. -->
+<section id="gate" class="gate card" hidden>
+  <h2 id="gate-title">Sign in required</h2>
+  <p id="gate-msg"></p>
+  <div id="gate-actions" class="gate-actions"></div>
+</section>
+
+<main id="panel" hidden>
+  <nav class="admin-tabs">
+    <button class="atab active" data-tab="upi">Payments to verify <span class="count" id="c-upi"></span></button>
+    <button class="atab" data-tab="kundali">Kundali queue <span class="count" id="c-kundali"></span></button>
+    <button class="atab" data-tab="coupons">Coupons <span class="count" id="c-coupons"></span></button>
+  </nav>
+
+  <!-- ============ UPI verification ============ -->
+  <section class="apane active" id="pane-upi">
+    <p class="pane-help">
+      A customer has told us they paid. <strong>Check your bank or UPI app for the
+      exact amount and reference before approving</strong> — approving is what
+      grants the credits, and nothing else does.
+    </p>
+    <div id="upi-list" class="rows"></div>
+  </section>
+
+  <!-- ============ Kundali fulfilment ============ -->
+  <section class="apane" id="pane-kundali">
+    <p class="pane-help">
+      Paid hand-written kundali orders. Turnaround is quoted at ~10 days.
+      Mark <em>In progress</em> when Pandit Shukla starts, and
+      <em>Delivered</em> once the scan has been sent.
+      <label class="inline-check">
+        <input type="checkbox" id="k-all" /> show delivered too
+      </label>
+    </p>
+    <div id="kundali-list" class="rows"></div>
+  </section>
+
+  <!-- ============ Coupons ============ -->
+  <section class="apane" id="pane-coupons">
+    <form id="coupon-form" class="coupon-form card">
+      <h3>New coupon</h3>
+      <div class="crow">
+        <div class="field">
+          <label for="c-code">Code</label>
+          <input id="c-code" placeholder="DIWALI50" required />
+        </div>
+        <div class="field">
+          <label for="c-kind">Type</label>
+          <select id="c-kind">
+            <option value="percent">Percent off</option>
+            <option value="flat">Flat &#8377; off</option>
+            <option value="extra_credits">Extra questions</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="c-value" id="c-value-label">Value (%)</label>
+          <input id="c-value" type="number" min="1" value="10" required />
+        </div>
+      </div>
+      <div class="crow">
+        <div class="field">
+          <label for="c-max">Total uses <span class="opt">blank = unlimited</span></label>
+          <input id="c-max" type="number" min="1" placeholder="&#8734;" />
+        </div>
+        <div class="field">
+          <label for="c-per">Uses per customer</label>
+          <input id="c-per" type="number" min="1" value="1" />
+        </div>
+        <div class="field">
+          <label for="c-until">Expires <span class="opt">optional</span></label>
+          <input id="c-until" type="date" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="c-skus">Limit to products <span class="opt">blank = all</span></label>
+        <select id="c-skus" multiple size="4"></select>
+      </div>
+      <button type="submit" class="primary"><span class="label">Create coupon</span></button>
+      <p id="coupon-error" class="error" hidden></p>
+    </form>
+    <div id="coupon-list" class="rows"></div>
+  </section>
+</main>
+
+<script src="/static/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+# Divine Astro — reverse proxy and TLS.
+#
+# Caddy obtains and renews a Let's Encrypt certificate automatically; there is
+# no certbot and no renewal cron to forget about.
+
+divineastro.org, www.divineastro.org {
+	encode zstd gzip
+
+	# Security headers. The CSP allows exactly the third parties the app can
+	# actually reach — Google's sign-in, and the checkout SDKs of gateways that
+	# may be selected — and nothing else. Anything added later must be listed
+	# here deliberately.
+	#
+	# Instamojo, the live gateway, needs no entry: it is a plain top-level
+	# redirect rather than an embedded SDK or iframe, and CSP does not govern
+	# `location.assign` to another origin. form-action does not apply either.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options    "nosniff"
+		X-Frame-Options           "SAMEORIGIN"
+		Referrer-Policy           "strict-origin-when-cross-origin"
+		Permissions-Policy        "geolocation=(), microphone=(), camera=(), payment=(self)"
+		Content-Security-Policy   "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.cashfree.com https://checkout.razorpay.com https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://sdk.cashfree.com https://api.cashfree.com; frame-src https://sdk.cashfree.com https://api.cashfree.com https://checkout.razorpay.com https://accounts.google.com; base-uri 'self'; form-action 'self' https://accounts.google.com; frame-ancestors 'self'"
+		-Server
+	}
+
+	# The payment webhook must never be cached or rate-limited away.
+	@webhook path /api/webhooks/*
+	handle @webhook {
+		reverse_proxy app:8000
+	}
+
+	# Long-lived SSE stream for narrated answers: no buffering, generous timeout.
+	@stream path /api/ask/stream
+	handle @stream {
+		reverse_proxy app:8000 {
+			flush_interval -1
+			transport http {
+				response_header_timeout 15m
+			}
+		}
+	}
+
+	# Static assets are content-hashed rarely, so a modest cache is right.
+	# Static asset filenames are NOT content-hashed, so a long max-age pins
+	# visitors to whatever CSS and JS they happened to fetch first — a deploy
+	# then takes a day to reach anyone who came back. `no-cache` does not mean
+	# "do not store": the browser keeps the file and revalidates with its ETag,
+	# so the usual response is an empty 304. Correctness for one cheap request.
+	@static path /static/*
+	handle @static {
+		header Cache-Control "public, no-cache"
+		reverse_proxy app:8000
+	}
+
+	handle {
+		reverse_proxy app:8000 {
+			transport http {
+				response_header_timeout 5m
+			}
+		}
+	}
+
+	log {
+		output file /data/access.log {
+			roll_size 20mb
+			roll_keep 5
+		}
+	}
+}
