@@ -753,7 +753,7 @@ function applyLanguage() {
   ph("#q", t("askPh"));
 
   $$(".tab").forEach((tab) => { tab.textContent = t(tab.dataset.tab); });
-  $("#back").title = t("newChart");
+  $("#back").title = state.sessionId ? "Back to Dashboard" : t("newChart");
 
   renderChartSwitch();
   if (state.chart) {
@@ -1586,16 +1586,10 @@ function providerLabel() {
 
 $("#back").addEventListener("click", () => {
   if (state.sessionId) {
-    fetch(`/api/session/${state.sessionId}`, { method: "DELETE" }).catch(() => {});
+    showStage("stage-dashboard");
+  } else {
+    showStage("stage-home");
   }
-  state.sessionId = null;
-  state.chart = null;
-  state.now = null;
-  state.wheelSvg = "";
-  state.dasha = null;
-  state.dashaCheck = null;
-  $("#wheel").innerHTML = "";
-  showStage("stage-birth");
 });
 
 /* ------------------------------------------------------------

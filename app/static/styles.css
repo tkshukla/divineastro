@@ -165,7 +165,7 @@ body { display: flex; flex-direction: column; }
   content: "\269C"; position: absolute; left: 0; color: var(--gold); opacity: 0.75;
 }
 
-#stage-home { flex-direction: column; overflow-y: auto; }
+#stage-home, #stage-dashboard, #stage-milan, #stage-panchang { flex-direction: column; overflow-y: auto; }
 #stage-home .saved-charts { text-align: left; margin: 0 auto 8px; }
 
 /* Shown above the birth form once the visitor has saved charts, so the form
