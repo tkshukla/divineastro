@@ -1,4 +1,4 @@
-﻿# Divine Astro — create the production VM on GCP and deploy.
+# Divine Astro — create the production VM on GCP and deploy.
 #
 #   .\deploy\provision.ps1              create the VM and deploy
 #   .\deploy\provision.ps1 -Redeploy    push code changes to an existing VM
@@ -98,7 +98,7 @@ sudo usermod -aG docker $USER
 sudo mkdir -p /opt/divineastro && sudo chown $USER /opt/divineastro
 echo "docker ready"
 '@
-    $install | gcloud compute ssh $Name --zone $Zone --project $Project --command "bash -s"
+    ($install -replace "`r", "") | gcloud compute ssh $Name --zone $Zone --project $Project --command "bash -s"
 }
 
 Step "Uploading the application"
@@ -133,7 +133,7 @@ Retry-Remote -What "Uploading the application" -Action {
 
 # Transfer succeeded, so it is now safe to replace the tree.
 Retry-Remote -What "Swapping the release into place" -Action {
-    gcloud compute ssh $Name --zone $Zone --project $Project --command @"
+    $cmd = @"
 set -e
 cd /opt/divineastro
 if [ -d .incoming ]; then
@@ -142,7 +142,8 @@ if [ -d .incoming ]; then
   sudo rm -rf .incoming
 fi
 test -d app && test -d migrations
-"@
+"@ -replace "`r", ""
+    gcloud compute ssh $Name --zone $Zone --project $Project --command $cmd
 }
 
 # Production values, never the development .env — that one carries a throwaway
@@ -166,13 +167,14 @@ Step "Building and starting"
 # `set -e` matters: without it a failed image build still exits 0 and the script
 # cheerfully reports success while the old container keeps serving.
 Retry-Remote -What "Build and start" -Action {
-    gcloud compute ssh $Name --zone $Zone --project $Project --command @"
+    $cmd = @"
 set -e
 cd /opt/divineastro
 docker compose up -d --build
 sleep 20
 docker compose ps
-"@
+"@ -replace "`r", ""
+    gcloud compute ssh $Name --zone $Zone --project $Project --command $cmd
 }
 
 Step "Verifying the site answers"
