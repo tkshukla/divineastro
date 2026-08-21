@@ -425,17 +425,106 @@ def _vedic_context(session) -> dict:
 
 @app.get("/api/doshas/{sid}")
 def chart_doshas(sid: str, request: Request) -> dict:
-    """Sade Sati and Kaal Sarp for a chart already on screen.
-
-    Both are sign-level rules read off the natal Moon and the nodes, so they
-    cost nothing beyond the chart that has already been cast.
-    """
+    """Sade Sati, Kaal Sarp and Manglik Dosha analysis for a chart already on screen."""
     from .astro import panchang as panchang_engine
+    from .astro.doshas import analyze_manglik
 
     session = _session(sid, request)
     return {
         "sade_sati": panchang_engine.sade_sati(session),
         "kaal_sarp": panchang_engine.kaal_sarp(session),
+        "manglik": analyze_manglik(session)
+    }
+
+
+@app.get("/api/remedies/{sid}")
+def chart_remedies(sid: str, request: Request) -> dict:
+    """Get gemstone recommendations and dasha-specific remedies."""
+    from .astro.remedies import recommend_remedies
+    session = _session(sid, request)
+    return recommend_remedies(session)
+
+
+@app.get("/api/dashboard/{sid}")
+def get_dashboard(sid: str, request: Request) -> dict:
+    """Get daily personalized cosmic dashboard for the native."""
+    from .astro import panchang as panchang_engine
+    from .chart_service import vimshottari
+    import swisseph as swe
+    from zoneinfo import ZoneInfo
+
+    session = _session(sid, request)
+    birth = session.birth
+    now = dt.datetime.now(ZoneInfo(birth.timezone))
+    
+    # Calculate daily panchang at the birth place/timezone
+    p_data = panchang_engine.daily_panchang(
+        date=now.date(),
+        latitude=birth.latitude,
+        longitude=birth.longitude,
+        timezone=birth.timezone,
+        ayanamsa=birth.ayanamsa
+    )
+
+    # Calculate current transit Moon sign
+    swe.set_ephe_path(None)
+    julian_day = swe.jul_day(now.year, now.month, now.day, now.hour + now.minute/60.0 + now.second/3600.0)
+    from stellium.core.ayanamsa import get_ayanamsa_value
+    ayan_val = get_ayanamsa_value(birth.ayanamsa, julian_day)
+    
+    res, err = swe.calc_ut(julian_day, swe.MOON)
+    moon_lon = (res[0] - ayan_val) % 360.0
+    from .chart_service import sign_of
+    moon_sign_now = sign_of(moon_lon)
+
+    natal_moon_sign = session.bundle["objects"]["Moon"]["sign"]
+    natal_lagna_sign = session.bundle["objects"]["ASC"]["sign"]
+
+    from .astro.vargas import _sign_distance
+    dist_moon = _sign_distance(natal_moon_sign, moon_sign_now)
+    dist_lagna = _sign_distance(natal_lagna_sign, moon_sign_now)
+
+    transit_score = "Neutral"
+    transit_advice = "The Moon brings an ordinary day. Good for routine tasks and reflection."
+    if dist_moon in (3, 6, 10, 11):
+        transit_score = "Excellent"
+        transit_advice = "A highly productive and auspicious day. Great for initiating new tasks, social gains, and actions."
+    elif dist_moon in (4, 8, 12):
+        transit_score = "Caution"
+        transit_advice = "Moon is transiting a dusthana house from your natal Moon. Avoid starting major conflicts, drive carefully, and rest."
+
+    dasha_info = vimshottari(session, now)
+
+    return {
+        "panchang": {
+            "tithi": p_data.get("tithi", {}).get("name"),
+            "nakshatra": p_data.get("nakshatra", {}).get("name"),
+            "yoga": p_data.get("yoga", {}).get("name"),
+            "karana": p_data.get("karana", {}).get("name"),
+            "sunrise": p_data.get("sun", {}).get("rise"),
+            "sunset": p_data.get("sun", {}).get("set"),
+            "muhurtha": {
+                "abhijit": {
+                    "start": p_data.get("muhurta", {}).get("abhijit", {}).get("start") if p_data.get("muhurta", {}).get("abhijit") else None,
+                    "end": p_data.get("muhurta", {}).get("abhijit", {}).get("end") if p_data.get("muhurta", {}).get("abhijit") else None,
+                },
+                "rahu_kaal": {
+                    "start": p_data.get("muhurta", {}).get("rahu_kaal", {}).get("start") if p_data.get("muhurta", {}).get("rahu_kaal") else None,
+                    "end": p_data.get("muhurta", {}).get("rahu_kaal", {}).get("end") if p_data.get("muhurta", {}).get("rahu_kaal") else None,
+                }
+            }
+        },
+        "daily_transit": {
+            "moon_sign_now": moon_sign_now,
+            "house_from_moon": dist_moon,
+            "house_from_lagna": dist_lagna,
+            "score": transit_score,
+            "advice": transit_advice
+        },
+        "dasha": {
+            "mahadasha": dasha_info.get("mahadasha"),
+            "antardasha": dasha_info.get("antardasha")
+        }
     }
 
 

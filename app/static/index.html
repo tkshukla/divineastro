@@ -108,6 +108,119 @@
   </footer>
 </section>
 
+<!-- ==================== STAGE: PERSONALIZED COSMIC DASHBOARD ==================== -->
+<section id="stage-dashboard" class="stage">
+  <div class="tool-inner">
+    <div class="dashboard-header card">
+      <div class="dash-who">
+        <h1 id="dash-name">—</h1>
+        <p id="dash-birth-details">—</p>
+      </div>
+      <button type="button" class="ghost-btn" id="dash-change-profile">Switch Profile</button>
+    </div>
+
+    <!-- Daily Forecast & Transit Score -->
+    <div class="card forecast-card">
+      <div class="forecast-header">
+        <h2>Your Personal Daily Forecast</h2>
+        <span id="transit-badge" class="badge neutral">Neutral</span>
+      </div>
+      <p id="transit-advice">Loading your daily transit guidance...</p>
+    </div>
+
+    <div class="dash-grid">
+      <!-- Panchang Card -->
+      <div class="card dash-card">
+        <h3>Today's Panchang</h3>
+        <ul class="dash-list">
+          <li><b>Tithi:</b> <span id="dash-tithi">—</span></li>
+          <li><b>Nakshatra:</b> <span id="dash-nakshatra">—</span></li>
+          <li><b>Yoga:</b> <span id="dash-yoga">—</span></li>
+          <li><b>Karana:</b> <span id="dash-karana">—</span></li>
+        </ul>
+      </div>
+
+      <!-- Muhurtha Card -->
+      <div class="card dash-card">
+        <h3>Muhurtha &amp; Timings</h3>
+        <ul class="dash-list">
+          <li><b>Abhijit (Auspicious):</b> <span id="dash-abhijit">—</span></li>
+          <li class="warning-item"><b>Rahu Kalam (Avoid):</b> <span id="dash-rahu-kalam">—</span></li>
+          <li><b>Sunrise:</b> <span id="dash-sunrise">—</span></li>
+          <li><b>Sunset:</b> <span id="dash-sunset">—</span></li>
+        </ul>
+      </div>
+
+      <!-- Dasha Card -->
+      <div class="card dash-card">
+        <h3>Current Dasha Timeline</h3>
+        <ul class="dash-list">
+          <li><b>Mahadasha Lord:</b> <span id="dash-mahadasha-lord">—</span></li>
+          <li><b>Duration:</b> <span id="dash-mahadasha-dates">—</span></li>
+          <li><b>Antardasha Lord:</b> <span id="dash-antardasha-lord">—</span></li>
+          <li><b>Duration:</b> <span id="dash-antardasha-dates">—</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Quick Navigation Hub -->
+    <h2 class="section-title">Explore Your Chart</h2>
+    <div class="action-grid">
+      <button type="button" class="action-card" id="dash-nav-chat">
+        <span class="action-icon">💬</span>
+        <span class="action-title">Ask AI Guru</span>
+        <span class="action-desc">Get detailed answers about your career, marriage, and life</span>
+      </button>
+
+      <button type="button" class="action-card" id="dash-nav-remedies">
+        <span class="action-icon">💎</span>
+        <span class="action-title">Remedies &amp; Gemstones</span>
+        <span class="action-desc">Auspicious stones, mantras, and remedies for your active dasha</span>
+      </button>
+
+      <button type="button" class="action-card" id="dash-nav-doshas">
+        <span class="action-icon">⚖️</span>
+        <span class="action-title">Dosha &amp; Afflictions</span>
+        <span class="action-desc">Detailed check for Manglik, Sade Sati, and Kaal Sarp</span>
+      </button>
+
+      <button type="button" class="action-card" id="dash-nav-milan">
+        <span class="action-icon">💑</span>
+        <span class="action-title">Kundali Milan</span>
+        <span class="action-desc">Compare compatibility with another profile</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Modals for Dashboard Details -->
+<div id="remedies-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content card">
+    <div class="modal-header">
+      <h2>Remedies &amp; Gemstones</h2>
+      <button type="button" class="close-modal-btn" id="close-remedies-modal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <h3>Recommended Gemstones</h3>
+      <div class="gemstones-container" id="gems-list"></div>
+      
+      <h3 style="margin-top: 24px;">Active Dasha Remedies</h3>
+      <div class="dasha-remedy-card" id="dasha-remedies-content"></div>
+    </div>
+  </div>
+</div>
+
+<div id="doshas-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content card">
+    <div class="modal-header">
+      <h2>Dosha &amp; Afflictions Report</h2>
+      <button type="button" class="close-modal-btn" id="close-doshas-modal">&times;</button>
+    </div>
+    <div class="modal-body" id="doshas-content"></div>
+  </div>
+</div>
+
+
 <!-- ==================== KUNDALI MILAN ==================== -->
 <section id="stage-milan" class="stage">
   <div class="tool-inner">

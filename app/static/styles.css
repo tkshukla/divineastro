@@ -1128,3 +1128,303 @@ details.reasoning summary:hover { color: var(--gold); }
   background: rgba(240, 198, 116, 0.1) !important;
 }
 
+/* ============================================================
+   Personalized Dashboard Styles
+   ============================================================ */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 16px 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+}
+.dash-who h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  background: linear-gradient(135deg, var(--ink) 30%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.dash-who p {
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+
+.forecast-card {
+  background: linear-gradient(135deg, rgba(139, 123, 240, 0.08) 0%, rgba(240, 198, 116, 0.05) 100%);
+  border: 1px solid rgba(139, 123, 240, 0.2);
+  margin-bottom: 24px;
+  padding: 20px;
+}
+.forecast-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.forecast-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+.badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge.excellent {
+  background: rgba(74, 222, 128, 0.16);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+.badge.neutral {
+  background: rgba(251, 191, 36, 0.16);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+.badge.caution {
+  background: rgba(248, 113, 113, 0.16);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.dash-card h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gold);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+.dash-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.dash-list li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13.5px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+.dash-list li:last-child {
+  border-bottom: none;
+}
+.dash-list li b {
+  color: var(--ink-dim);
+  font-weight: 500;
+}
+.dash-list li span {
+  font-weight: 500;
+  color: var(--ink);
+}
+.dash-list li.warning-item span {
+  color: #f87171;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--ink);
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.action-card:hover {
+  background: rgba(139, 123, 240, 0.06);
+  border-color: rgba(139, 123, 240, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+.action-icon {
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+.action-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.action-desc {
+  font-size: 12px;
+  color: var(--ink-dim);
+  line-height: 1.4;
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(6, 8, 20, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  padding: 16px;
+}
+.modal-content {
+  width: 100%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 24px;
+  background: rgba(20, 24, 46, 0.95) !important;
+  border: 1px solid var(--line);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+.modal-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--ink) 30%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.close-modal-btn {
+  background: transparent;
+  border: none;
+  color: var(--ink-dim);
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.close-modal-btn:hover {
+  color: var(--ink);
+}
+
+.gemstones-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.gem-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.gem-left h4 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-dim);
+  margin-bottom: 2px;
+}
+.gem-left p {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gold);
+}
+.gem-right {
+  text-align: right;
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+.gem-right b {
+  color: var(--ink);
+}
+
+.dasha-remedy-card {
+  padding: 16px;
+  background: rgba(240, 198, 116, 0.03);
+  border: 1px solid rgba(240, 198, 116, 0.15);
+  border-radius: 8px;
+}
+.dasha-remedy-card p {
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.dasha-remedy-card p:last-child {
+  margin-bottom: 0;
+}
+.dasha-remedy-card b {
+  color: var(--gold);
+}
+
+.dosha-group {
+  margin-bottom: 24px;
+}
+.dosha-group:last-child {
+  margin-bottom: 0;
+}
+.dosha-group h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--gold);
+}
+.dosha-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.dosha-group p {
+  font-size: 13px;
+  color: var(--ink-dim);
+  line-height: 1.4;
+}
+.dosha-list-items {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0 0;
+}
+.dosha-list-items li {
+  padding: 6px 12px;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.dosha-list-items li:last-child {
+  margin-bottom: 0;
+}
+
+

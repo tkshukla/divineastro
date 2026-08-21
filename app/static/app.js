@@ -963,6 +963,7 @@ async function castChart(payload) {
   state.chart = data.chart;
   state.currentBirthData = payload;
   renderReading(data);
+  loadAndShowDashboard();
 }
 
 /* ------------------------------------------------------------
@@ -1033,7 +1034,7 @@ async function loadSavedCharts() {
 /* Screens are plain siblings; exactly one carries .active. Everything routes
    through here so there is one place that decides what is on screen. */
 const STAGES = ["stage-home", "stage-birth", "stage-chat",
-                "stage-milan", "stage-panchang"];
+                "stage-milan", "stage-panchang", "stage-dashboard"];
 
 function showStage(id) {
   STAGES.forEach((s) => {
@@ -1047,7 +1048,13 @@ function showStage(id) {
 }
 
 // Home is reachable from the brand mark in the header, on every screen.
-$("#go-home")?.addEventListener("click", () => showStage("stage-home"));
+$("#go-home")?.addEventListener("click", () => {
+  if (state.sessionId) {
+    showStage("stage-dashboard");
+  } else {
+    showStage("stage-home");
+  }
+});
 $("#home-cta")?.addEventListener("click", () => showStage("stage-birth"));
 
 function renderSavedCharts() {
@@ -1633,3 +1640,184 @@ $("#f-date").max = new Date().toISOString().slice(0, 10);
 
 applyLanguage();
 loadProviders();
+
+/* ============================================================
+   Cosmic Dashboard & Details Modals Logic
+   ============================================================ */
+async function loadAndShowDashboard() {
+  if (!state.sessionId) return;
+  
+  // Update name and details in header
+  const meta = state.chart.meta;
+  $("#dash-name").textContent = meta.name || "Native";
+  $("#dash-birth-details").textContent = 
+    `${meta.local_time} · ${meta.place} · ${meta.timezone}`;
+    
+  showStage("stage-dashboard");
+  
+  try {
+    const dash = await (await fetch(`/api/dashboard/${state.sessionId}`)).json();
+    
+    // Populate Panchang
+    $("#dash-tithi").textContent = dash.panchang.tithi || "—";
+    $("#dash-nakshatra").textContent = dash.panchang.nakshatra || "—";
+    $("#dash-yoga").textContent = dash.panchang.yoga || "—";
+    $("#dash-karana").textContent = dash.panchang.karana || "—";
+    
+    // Populate Muhurtha
+    $("#dash-abhijit").textContent = dash.panchang.muhurtha.abhijit.start ? 
+      `${dash.panchang.muhurtha.abhijit.start.slice(11, 16)} - ${dash.panchang.muhurtha.abhijit.end.slice(11, 16)}` : "None today";
+    $("#dash-rahu-kalam").textContent = dash.panchang.muhurtha.rahu_kaal.start ? 
+      `${dash.panchang.muhurtha.rahu_kaal.start.slice(11, 16)} - ${dash.panchang.muhurtha.rahu_kaal.end.slice(11, 16)}` : "—";
+    $("#dash-sunrise").textContent = dash.panchang.sunrise ? dash.panchang.sunrise.slice(11, 16) : "—";
+    $("#dash-sunset").textContent = dash.panchang.sunset ? dash.panchang.sunset.slice(11, 16) : "—";
+    
+    // Populate Dasha
+    $("#dash-mahadasha-lord").textContent = dash.dasha.mahadasha.lord;
+    $("#dash-mahadasha-dates").textContent = `${dash.dasha.mahadasha.start} - ${dash.dasha.mahadasha.end}`;
+    $("#dash-antardasha-lord").textContent = dash.dasha.antardasha.lord;
+    $("#dash-antardasha-dates").textContent = `${dash.dasha.antardasha.start} - ${dash.dasha.antardasha.end}`;
+    
+    // Populate Daily Forecast
+    const badge = $("#transit-badge");
+    badge.className = `badge ${dash.daily_transit.score.toLowerCase()}`;
+    badge.textContent = dash.daily_transit.score;
+    $("#transit-advice").textContent = dash.daily_transit.advice;
+    
+  } catch (ex) {
+    console.error("Failed to load dashboard:", ex);
+  }
+}
+
+// Remedies Modal
+$("#dash-nav-remedies")?.addEventListener("click", async () => {
+  const modal = $("#remedies-modal");
+  if (!modal) return;
+  modal.style.display = "flex";
+  
+  try {
+    const data = await (await fetch(`/api/remedies/${state.sessionId}`)).json();
+    
+    // Gemstones
+    const gemsList = $("#gems-list");
+    gemsList.innerHTML = Object.values(data.gemstones).map(g => `
+      <div class="gem-card">
+        <div class="gem-left">
+          <h4>${escapeHtml(g.role)}</h4>
+          <p>${escapeHtml(g.name)}</p>
+        </div>
+        <div class="gem-right">
+          Metal: <b>${escapeHtml(g.metal)}</b><br/>
+          Wear on: <b>${escapeHtml(g.finger)}</b>
+        </div>
+      </div>
+    `).join("");
+    
+    // Remedies
+    $("#dasha-remedies-content").innerHTML = `
+      <p>Your current Mahadasha is ruled by <b>${escapeHtml(data.dasha_remedies.mahadasha_lord)}</b>.</p>
+      <p><b>Recommended Mantra:</b><br/>
+         <span style="font-size: 14px; color: var(--gold); display: block; margin-top: 6px; font-family: monospace;">${escapeHtml(data.dasha_remedies.mantra)}</span>
+      </p>
+      <p><b>Charity &amp; Fasting:</b><br/>
+         ${escapeHtml(data.dasha_remedies.charity)}
+      </p>
+    `;
+  } catch (ex) {
+    console.error(ex);
+  }
+});
+
+$("#close-remedies-modal")?.addEventListener("click", () => {
+  $("#remedies-modal").style.display = "none";
+});
+
+// Doshas Modal
+$("#dash-nav-doshas")?.addEventListener("click", async () => {
+  const modal = $("#doshas-modal");
+  if (!modal) return;
+  modal.style.display = "flex";
+  
+  try {
+    const data = await (await fetch(`/api/doshas/${state.sessionId}`)).json();
+    
+    const content = $("#doshas-content");
+    
+    // Manglik
+    const m = data.manglik;
+    const manglikBadge = m.is_manglik ? '<span class="badge caution">Manglik</span>' : 
+      (m.is_cancelled ? '<span class="badge neutral">Manglik (Cancelled)</span>' : '<span class="badge excellent">Non-Manglik</span>');
+      
+    let cancellationsHtml = "";
+    if (m.cancellations && m.cancellations.length > 0) {
+      cancellationsHtml = `
+        <ul class="dosha-list-items">
+          ${m.cancellations.map(c => `<li>✓ ${escapeHtml(c)}</li>`).join("")}
+        </ul>
+      `;
+    }
+    
+    // Sade Sati
+    const ss = data.sade_sati;
+    const ssBadge = ss.is_running ? '<span class="badge caution">Sade Sati Active</span>' : '<span class="badge excellent">Sade Sati Inactive</span>';
+    
+    // Kaal Sarp
+    const ks = data.kaal_sarp;
+    const ksBadge = ks.is_formed ? `<span class="badge caution">Kaal Sarp formed (${ks.type})</span>` : '<span class="badge excellent">No Kaal Sarp</span>';
+
+    content.innerHTML = `
+      <div class="dosha-group">
+        <h3>Manglik Dosha Report</h3>
+        <div class="dosha-badge-row">
+          ${manglikBadge}
+          <span style="font-size:12px; color:var(--ink-dim);">Score: <b>${m.score}</b></span>
+        </div>
+        <p>${escapeHtml(m.description)}</p>
+        <p style="margin-top: 6px;">Mars is placed in House <b>${m.houses.from_lagna}</b> from Lagna, House <b>${m.houses.from_moon}</b> from Moon, and House <b>${m.houses.from_venus}</b> from Venus.</p>
+        ${cancellationsHtml}
+      </div>
+      
+      <hr style="border: none; border-top: 1px solid var(--line); margin: 20px 0;"/>
+      
+      <div class="dosha-group">
+        <h3>Sade Sati Report</h3>
+        <div class="dosha-badge-row">
+          ${ssBadge}
+        </div>
+        <p>Saturn transiting the 12th, 1st, or 2nd houses from your natal Moon creates Sade Sati. Currently, Saturn is ${ss.is_running ? "transiting your Moon's transit zone." : "outside the Sade Sati zone."}</p>
+        ${ss.current_period ? `<p style="margin-top:6px; color:var(--gold);">Active phase: <b>${escapeHtml(ss.current_period.phase)}</b> (${ss.current_period.starts.slice(0, 10)} to ${ss.current_period.ends.slice(0, 10)})</p>` : ""}
+      </div>
+
+      <hr style="border: none; border-top: 1px solid var(--line); margin: 20px 0;"/>
+
+      <div class="dosha-group">
+        <h3>Kaal Sarp Dosha Report</h3>
+        <div class="dosha-badge-row">
+          ${ksBadge}
+        </div>
+        <p>Forms when all seven classical planets are hemmed between Rahu and Ketu. ${ks.is_formed ? `Your chart forms the <b>${escapeHtml(ks.type)}</b> type of Kaal Sarp.` : "Your planets are distributed freely, forming no Kaal Sarp alignment."}</p>
+      </div>
+    `;
+  } catch (ex) {
+    console.error(ex);
+  }
+});
+
+$("#close-doshas-modal")?.addEventListener("click", () => {
+  $("#doshas-modal").style.display = "none";
+});
+
+// Switch profile CTA
+$("#dash-change-profile")?.addEventListener("click", () => {
+  showStage("stage-birth");
+});
+
+// Navigate to Chat
+$("#dash-nav-chat")?.addEventListener("click", () => {
+  showStage("stage-chat");
+});
+
+// Navigate to Milan
+$("#dash-nav-milan")?.addEventListener("click", () => {
+  showStage("stage-milan");
+});
