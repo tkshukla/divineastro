@@ -255,6 +255,15 @@ def ask(req: AskRequest, request: Request) -> dict:
         if credits <= 0:
             raise InsufficientCredits(credits)
 
+        # Retrieve last 5 questions for context
+        hist_stmt = select(QuestionLog).where(QuestionLog.user_id == user.id)
+        if req.birth_id:
+            hist_stmt = hist_stmt.where(QuestionLog.birth_id == req.birth_id)
+        history_rows = db.execute(
+            hist_stmt.order_by(QuestionLog.created_at.desc()).limit(5)
+        ).scalars().all()
+        history = [{"question": r.question, "answer": r.answer} for r in reversed(history_rows)]
+
         session = _session(req.session_id, request)
         result = analyse(session, question, when).to_dict()
         result["vedic"] = _vedic_context(session)
@@ -263,7 +272,7 @@ def ask(req: AskRequest, request: Request) -> dict:
         # the user can see exactly what the model changed.
         result["answer_engine"] = result["answer"]
         provider = req.provider if req.provider is not None else llm.default_provider()
-        polished, error = llm.polish(result, req.language, provider, question)
+        polished, error = llm.polish(result, req.language, provider, question, history=history)
         result["answer"] = polished
         result["polished_by"] = provider if not error and provider != "off" else None
         result["llm_error"] = error
@@ -314,6 +323,15 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
             raise InsufficientCredits(credits)
         user_id = user.id
 
+        # Retrieve last 5 questions for context
+        hist_stmt = select(QuestionLog).where(QuestionLog.user_id == user.id)
+        if req.birth_id:
+            hist_stmt = hist_stmt.where(QuestionLog.birth_id == req.birth_id)
+        history_rows = db.execute(
+            hist_stmt.order_by(QuestionLog.created_at.desc()).limit(5)
+        ).scalars().all()
+        history = [{"question": r.question, "answer": r.answer} for r in reversed(history_rows)]
+
     session = _session(req.session_id, request)
     result = analyse(session, question, when).to_dict()
     result["answer_engine"] = result["answer"]
@@ -332,7 +350,7 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
             return
         try:
             produced = 0
-            for chunk in llm.stream_polish(result, req.language, provider, question):
+            for chunk in llm.stream_polish(result, req.language, provider, question, history=history):
                 produced += len(chunk)
                 yield f"event: delta\ndata: {json.dumps({'text': chunk})}\n\n"
             if produced < 120:

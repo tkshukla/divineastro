@@ -961,6 +961,7 @@ async function castChart(payload) {
   const data = await res.json();
   state.sessionId = data.session_id;
   state.chart = data.chart;
+  state.currentBirthData = payload;
   renderReading(data);
 }
 
@@ -1022,6 +1023,7 @@ async function loadSavedCharts() {
     state.birthMax = data.max || state.birthMax;
   } catch { state.births = []; }
   renderSavedCharts();
+  updateSaveButton();
 }
 
 /* Someone who already has charts saved should not be met by a blank birth form
@@ -1051,6 +1053,19 @@ $("#home-cta")?.addEventListener("click", () => showStage("stage-birth"));
 function renderSavedCharts() {
   if (!savedBox) return;
   const rows = state.births;
+
+  const quickSelect = $("#f-quick-saved");
+  const quickContainer = $("#quick-saved-container");
+  if (quickSelect && quickContainer) {
+    if (rows.length > 0) {
+      quickSelect.innerHTML = `<option value="">-- Choose a saved chart --</option>` +
+        rows.map(b => `<option value="${b.id}">${escapeHtml(b.label || b.name || b.place)} (${b.date})</option>`).join("");
+      quickContainer.style.display = "block";
+    } else {
+      quickContainer.style.display = "none";
+    }
+  }
+
   if (!rows.length) { savedBox.hidden = true; savedBox.innerHTML = ""; return; }
 
   const full = rows.length >= state.birthMax;
@@ -1119,6 +1134,63 @@ async function deleteSavedChart(b) {
   loadSavedCharts();
 }
 
+function updateSaveButton() {
+  const btn = $("#save-chart-btn");
+  if (!btn) return;
+  if (!acct.user || !state.currentBirthData) {
+    btn.style.display = "none";
+    return;
+  }
+  const isSaved = state.births.some(b =>
+    b.date === state.currentBirthData.date &&
+    b.time === state.currentBirthData.time &&
+    Math.abs(b.latitude - state.currentBirthData.latitude) < 1e-4 &&
+    Math.abs(b.longitude - state.currentBirthData.longitude) < 1e-4
+  );
+  btn.style.display = "inline-flex";
+  if (isSaved) {
+    btn.classList.add("saved");
+    btn.innerHTML = "&#9733;"; // Filled star
+    btn.title = t("chartSaved") || "Chart Saved";
+  } else {
+    btn.classList.remove("saved");
+    btn.innerHTML = "&#9734;"; // Empty star
+    btn.title = t("saveChart") || "Save Chart";
+  }
+}
+
+$("#save-chart-btn")?.addEventListener("click", async () => {
+  const btn = $("#save-chart-btn");
+  if (btn.classList.contains("saved") || !state.currentBirthData) return;
+  btn.disabled = true;
+  await saveBirth(state.currentBirthData);
+  btn.disabled = false;
+  updateSaveButton();
+});
+
+$("#f-quick-saved")?.addEventListener("change", (e) => {
+  const val = e.target.value;
+  if (!val) return;
+  const b = state.births.find(x => x.id === Number(val));
+  if (!b) return;
+
+  $("#f-name").value = b.name || "";
+  $("#f-date").value = b.date || "";
+  if (b.time) {
+    $("#f-time").value = b.time;
+  }
+  $("#f-gender").value = b.gender || "";
+  $("#f-unknown").checked = !b.time_known;
+  $("#f-time").disabled = !b.time_known;
+
+  choosePlace({
+    label: b.place,
+    latitude: b.latitude,
+    longitude: b.longitude,
+    timezone: b.timezone
+  });
+});
+
 /* ------------------------------------------------------------
    Stage 2 — reading
    ------------------------------------------------------------ */
@@ -1153,6 +1225,7 @@ function renderReading(data) {
   // shell, so a plain focus() scrolls the body to reveal it and drags the site
   // header up off the top of the screen.
   $("#q").focus({ preventScroll: true });
+  updateSaveButton();
 }
 
 function renderChips(c) {

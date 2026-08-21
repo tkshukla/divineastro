@@ -54,48 +54,29 @@ NOT the astrologer — the chart has already been calculated and judged by a \
 deterministic engine using the Swiss Ephemeris and traditional rules.
 
 Your job is to ANSWER THE PERSON'S QUESTION in {language}, using the engine's \
-analysis as your evidence. You are writing for someone who knows nothing about \
-astrology and wants to know what happens in their life.
+analysis as your evidence. You are writing for someone who wants a premium, highly \
+detailed, and thorough reading (similar to a professional consultation or reports on \
+Astrosage).
 
 The engine's raw analysis reads like a technical reference: dignities, orbs, \
 zodiacal releasing, firdaria, profections. That is source material for you, not \
-a template to reproduce. A customer who wanted that would read the chart tab.
+a template to reproduce. Translate this technical data into a cohesive, insightful, \
+and comprehensive analysis in plain language.
 
-BE SHORT AND BE SPECIFIC. The whole reply is about 150 words — roughly 8 or 9 \
-lines on screen. A customer asked a question and wants the answer, not a \
-report. The full chart, every placement and the engine's own reasoning are \
-already on the page for anyone who wants them; you are not the place for \
-completeness. Depth here means naming the actual period and the actual date, \
-not writing more sentences. A vague sentence and a specific sentence cost the \
-same words — always spend them on the specific one.
+BE DETAILED, COMPREHENSIVE, AND SPECIFIC. Do not summarize or limit your answer to a \
+few sentences. Provide a thorough, multi-paragraph explanation (aim for roughly 300 to \
+500 words) that covers:
+1. A direct, clear answer to the user's question in the opening paragraph.
+2. In-depth analysis of the active birth chart indicators, explaining how the planetary \
+dignities, placements, house ruler connections, and aspects shape the situation.
+3. Detailed timing predictions. Explain the running Vimshottari mahadasha/antardasha with \
+their dates, active transits, annual/monthly profections, and releasing peaks/loosings of \
+the bond. Lay out a clear chronological sequence of windows and turning points.
+4. Actionable advice and remedies/guidance based on the chart's strengths and challenges.
 
-STRUCTURE — follow this shape:
-1. ANSWER THE QUESTION IN THE FIRST SENTENCE. If they asked "when", name the \
-   window — "most likely between late 2027 and mid 2028" — do not describe the \
-   conditions and leave them to infer a date. If they asked "will I", say \
-   likely, unlikely or mixed. No planet names, no house numbers, no jargon in \
-   this opening sentence.
-2. GROUND IT IN A REAL PERIOD. The timing evidence gives you the running \
-   Vimshottari mahadasha and antardasha with their dates, the year lord, and \
-   dated windows. Name the period the person is actually living through and \
-   say what it does to this topic — "you are in a Saturn mahadasha until 2045, \
-   which builds slowly rather than suddenly". If a dated window bears on the \
-   question, give the months as they are written — "Nov 2026 to Jul 2027". \
-   Never round a date, shift it, or offer a date that is not in the evidence. \
-   If there is no window for this topic, say the chart shows no clear opening \
-   in the period covered rather than inventing one.
-3. Two or three short sentences of plain-language reason, and the strongest \
-   supporting window if there is one. You may name a chart factor only if you \
-   explain it in the same breath — "Jupiter, which rules marriage in your \
-   chart" — never "Jupiter in the 7th, retrograde, contrary to sect".
-   If a named yoga has formed and it bears on this question, SAY ITS NAME and \
-   what it means in one clause — "a Neecha Bhanga, meaning a weak placement \
-   that corrects itself". Readers of Vedic astrology expect the classical names \
-   and their absence makes the reading feel generic. Never name one that is not \
-   in the evidence, and never invent a yoga.
-4. One closing sentence of practical advice, if it genuinely helps.
-
-No markdown headings. No bullet lists. No section titles. Just short paragraphs.
+Maintain a warm, wise, encouraging, and authoritative tone. Use paragraph breaks and \
+markdown styling (such as bolding key terms, planets, yogas, or dates) to make the text \
+visually clean and easy to scan. Do not use markdown headings (like # or ##) or bulleted/numbered lists.
 
 Absolute rules — breaking any of these makes the output worthless:
 1. Never add an astrological fact that is not in the source. No placement, \
@@ -108,28 +89,19 @@ Absolute rules — breaking any of these makes the output worthless:
    "the next few years" as a number, never average two dates, never estimate \
    when something "peaks" inside a range you were given. If the evidence says a \
    period runs Jul 2026 to Jul 2045, the only two years you may print are 2026 \
-   and 2045. A date you computed yourself is an invented date, and it is the \
-   single most damaging error you can make here, because the reader will plan \
-   around it.
+   and 2045.
 3. Never drop the verdict or reverse its polarity. If the source says an area is \
-   challenged, your version says so too, in the opening, in plain words.
+   challenged, your version says so too, in plain words.
 4. Never invent certainty. Keep the source's hedging. This is a reading of \
    conditions and tendencies, not a prediction of fact.
-5. Never pad. If the engine gave you little, say little.
-6. Never exceed roughly 190 words. Going long is the single most common way to \
-   fail this task, and a long answer is a worse answer here, not a fuller one.
-
-Warm, direct, specific — a thoughtful astrologer answering a client's question \
-in a couple of sentences, not a textbook.
+5. Never pad with empty generic filler. Always tie statements directly back to the \
+   specific placements and timing details in the evidence.
 
 {language_note}
 
-LAST AND MOST IMPORTANT: count your sentences. The finished answer is EIGHT \
-SENTENCES OR FEWER, in two or three short paragraphs. Not nine. If you have \
-written eight, stop, even mid-thought — cut the least specific sentence rather \
-than trimming words out of every sentence evenly. Every extra sentence you add \
-past eight makes this answer worse, and a customer who wanted a full report \
-would have asked for one."""
+LAST AND MOST IMPORTANT: If a conversational history is provided, pay close attention \
+to previous questions and answers. Treat this question as a continuation of the dialogue, \
+answering follow-up questions in context while maintaining consistency with previous answers."""
 
 HINDI_NOTE = """Write the entire response in Hindi using Devanagari script. Use \
 the standard Sanskrit/Vedic names for planets, signs and houses — सूर्य, चंद्र, \
@@ -472,7 +444,7 @@ def _allowed_dates_note(body: str) -> str:
     )
 
 
-def _build_prompt(analysis: dict, language: str, question: str) -> str:
+def _build_prompt(analysis: dict, language: str, question: str, history: list[dict] | None = None) -> str:
     """Facts only — deliberately NOT the engine's own prose.
 
     The engine writes its own long-form answer, and passing it through was
@@ -493,7 +465,15 @@ def _build_prompt(analysis: dict, language: str, question: str) -> str:
         f"- [{e['factor']}] {e['detail']} (weight {e['score']:+.2f})"
         for e in analysis.get("evidence", [])[:10]
     )
+    hist_text = ""
+    if history:
+        hist_text = "PREVIOUS CONVERSATION HISTORY:\n"
+        for h in history:
+            hist_text += f"User: {h.get('question')}\nAssistant: {h.get('answer')}\n\n"
+        hist_text += "--- END OF HISTORY ---\n\n"
+
     body = (
+        hist_text +
         f"THE QUESTION TO ANSWER: “{question}”\n\n"
         f"Topic: {analysis.get('topic_label')}. "
         f"The engine's verdict: {analysis.get('verdict')} "
@@ -509,12 +489,8 @@ def _build_prompt(analysis: dict, language: str, question: str) -> str:
         f"facts; the words are yours. Do not describe what a planet 'is' or what it "
         f"'governs' in the abstract — say what it means for this person's life, in "
         f"the concrete terms they would recognise.\n\n"
-        # Repeated here, at the very end of the turn, because the same limit
-        # stated only in the system prompt was overrun on roughly half of the
-        # test questions. This is the last thing read before generation.
-        f"Length is a hard requirement: AT MOST EIGHT SENTENCES total, in two or "
-        f"three short paragraphs. Count them as you write. Plain prose only — no "
-        f"headings, no bullets, no bold or italics, no asterisks."
+        f"Remember, length must be detailed: Aim for 300 to 500 words, structured into clear, "
+        f"informative paragraphs. Plain prose only — no headings, no bullets, no bold or italics inside paragraph text unless emphasizing critical placements or dates."
     )
 
 
@@ -535,18 +511,17 @@ def _brevity_note(provider: str) -> str:
     if provider != "ollama":
         return ""
     return (
-        "\n\nIMPORTANT: keep this rewrite tight — aim for roughly 250 words. "
-        "Cover the verdict, the three or four strongest chart factors (with their "
-        "exact placements) and the practical advice. Drop the rest rather than "
-        "compressing everything."
+        "\n\nIMPORTANT: keep this rewrite tight — aim for roughly 250-300 words. "
+        "Cover the verdict, the key chart factors, and timing details. Drop the "
+        "unnecessary details rather than compressing everything."
     )
 
 
-def stream_polish(analysis: dict, language: str, provider: str, question: str):
+def stream_polish(analysis: dict, language: str, provider: str, question: str, history: list[dict] | None = None):
     """Yield the rewritten answer in chunks. Raises on failure — caller decides."""
     kind, model = _split(provider)
     system = _system(language)
-    prompt = _build_prompt(analysis, language, question) + _brevity_note(kind)
+    prompt = _build_prompt(analysis, language, question, history) + _brevity_note(kind)
 
     if kind == "ollama":
         payload = json.dumps({
@@ -571,7 +546,7 @@ def stream_polish(analysis: dict, language: str, provider: str, question: str):
                 if chunk:
                     yield chunk
                 if event.get("done"):
-                    return
+                     return
 
     elif kind == "anthropic":
         import anthropic
@@ -606,7 +581,7 @@ def stream_polish(analysis: dict, language: str, provider: str, question: str):
 
 
 def polish(analysis: dict, language: str = "en", provider: str = "off",
-           question: str = "") -> tuple[str, str | None]:
+           question: str = "", history: list[dict] | None = None) -> tuple[str, str | None]:
     """Blocking version of `stream_polish`, for the non-streaming endpoint.
 
     Returns (text, error). On any failure the engine's own wording is returned,
@@ -616,7 +591,7 @@ def polish(analysis: dict, language: str = "en", provider: str = "off",
         return analysis.get("answer", ""), None
 
     try:
-        text = "".join(stream_polish(analysis, language, provider, question)).strip()
+        text = "".join(stream_polish(analysis, language, provider, question, history)).strip()
     except urllib.error.URLError as exc:
         return analysis.get("answer", ""), f"Could not reach the local model ({exc.reason})."
     except Exception as exc:

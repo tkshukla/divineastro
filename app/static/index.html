@@ -213,6 +213,13 @@
   </div>
 
   <form id="birth-form" class="card" autocomplete="off">
+    <div id="quick-saved-container" class="field" style="display: none; margin-bottom: 16px;">
+      <label for="f-quick-saved">Load Saved Chart</label>
+      <select id="f-quick-saved" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: var(--ink); border: 1px solid var(--line);">
+        <option value="">-- Choose a saved chart --</option>
+      </select>
+    </div>
+
     <div class="field">
       <label for="f-name">Name <span class="opt">optional</span></label>
       <input id="f-name" name="name" type="text" placeholder="Who is this chart for?" />
@@ -297,6 +304,7 @@
         <h2 id="who-name">—</h2>
         <p id="who-detail">—</p>
       </div>
+      <button id="save-chart-btn" class="ghost" title="Save Chart" aria-label="Save Chart" style="display: none;">&#9734;</button>
 
       <!-- Narration engine — deliberately tucked away in the reading screen.
            The landing page must stay free of any model picker. -->

@@ -1101,3 +1101,30 @@ details.reasoning summary:hover { color: var(--gold); }
   .intro h1 { font-size: 44px; }
   .hero svg { width: clamp(180px, 62vw, 260px); }
 }
+
+#save-chart-btn {
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-dim);
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: transparent;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  margin-left: 8px;
+}
+#save-chart-btn:hover {
+  background: rgba(139, 123, 240, 0.16);
+  color: var(--ink);
+}
+#save-chart-btn.saved {
+  color: var(--gold) !important;
+  border-color: rgba(240, 198, 116, 0.5) !important;
+  background: rgba(240, 198, 116, 0.1) !important;
+}
+
