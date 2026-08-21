@@ -1,4 +1,4 @@
-# Divine Astro — create the production VM on GCP and deploy.
+﻿# Divine Astro — create the production VM on GCP and deploy.
 #
 #   .\deploy\provision.ps1              create the VM and deploy
 #   .\deploy\provision.ps1 -Redeploy    push code changes to an existing VM

@@ -387,9 +387,6 @@ def _vedic_context(session) -> dict:
             for y in analysis["yogas"]["yogas"]
         ]
         d9 = analysis["vargas"]["D9"]
-        # Only the Moon and the Lagna: the Navamsa Moon is what marriage is
-        # judged from, and dumping all nine planets twice would crowd out the
-        # rashi evidence in a 120-word answer.
         moon = (d9.get("positions") or {}).get("Moon", {})
         out["navamsa"] = {
             "lagna": (d9.get("lagna") or {}).get("sign"),
@@ -397,6 +394,22 @@ def _vedic_context(session) -> dict:
             "moon_vargottama": moon.get("same_as_rashi"),
         }
         out["vargottama"] = analysis["vargottama"]["planets"]
+
+        divs = {}
+        for dk in ["D3", "D7", "D9", "D10", "D12"]:
+            d_meta = analysis["vargas"].get(dk)
+            if d_meta:
+                positions = d_meta.get("positions") or {}
+                pls = {}
+                for pl, info in positions.items():
+                    if pl != "Lagna":
+                        pls[pl] = f"{info['sign']} (H{info['house']})"
+                divs[dk] = {
+                    "name": d_meta["name"],
+                    "lagna": (d_meta.get("lagna") or {}).get("sign"),
+                    "placements": pls
+                }
+        out["divisional_charts"] = divs
     except Exception as exc:                     # noqa: BLE001 — never fatal
         logging.getLogger(__name__).warning("vedic context unavailable: %s", exc)
 

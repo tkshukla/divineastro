@@ -219,6 +219,15 @@ def _split(provider: str) -> tuple[str, str]:
     return provider, OLLAMA_MODEL
 
 
+_DIV_SIGNIFIES = {
+    "D3": "siblings, initiative and courage",
+    "D7": "children and progeny",
+    "D9": "marriage, relationships and core planetary strength",
+    "D10": "career, standing, reputation and public role",
+    "D12": "parents and ancestry"
+}
+
+
 def _vedic_block(vedic: dict) -> str:
     """The classical apparatus, when the engine could compute it.
 
@@ -231,13 +240,18 @@ def _vedic_block(vedic: dict) -> str:
         return ""
 
     lines = []
-    nav = vedic.get("navamsa") or {}
-    if nav.get("moon"):
-        lines.append(
-            f"- Navamsa (D9): Lagna in {nav.get('lagna')}, Moon in {nav['moon']}"
-            + (" — vargottama, a notable strength" if nav.get("moon_vargottama") else "")
-            + ". Marriage is classically judged from the D9."
-        )
+    
+    divs = vedic.get("divisional_charts") or {}
+    for dk in ["D9", "D10", "D3", "D7", "D12"]:
+        d_info = divs.get(dk)
+        if d_info:
+            pls_str = ", ".join(f"{p}: {val}" for p, val in d_info.get("placements", {}).items())
+            sig = _DIV_SIGNIFIES.get(dk, "")
+            lines.append(
+                f"- Divisional {d_info['name']} ({dk}) [signifies {sig}]: "
+                f"Lagna in {d_info['lagna']}. Placements: {pls_str}"
+            )
+
     for y in vedic.get("yogas") or []:
         lines.append(f"- Yoga formed — {y['name']}: {y.get('note', '')}")
     if vedic.get("vargottama"):
