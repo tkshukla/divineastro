@@ -50,6 +50,7 @@ COPY alembic.ini ./
 COPY migrations ./migrations
 COPY app ./app
 COPY tools ./tools
+COPY tests ./tests
 COPY data/cities5000.txt data/admin1CodesASCII.txt data/countryInfo.txt ./data/
 
 # Build the city index at image-build time so the first request is not slow.
