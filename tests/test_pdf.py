@@ -132,16 +132,24 @@ def main() -> int:
 
     print("\n5. Chart PDF")
     chart = alice.get(f"{BASE}/api/pdf/chart/{sid}")
-    check("HTTP 200", chart.status_code == 200,
+    check("HTTP 200 (en)", chart.status_code == 200,
           chart.text[:160] if chart.status_code != 200 else "")
-    check("content-type is application/pdf",
+    check("content-type is application/pdf (en)",
           chart.headers.get("content-type", "").startswith("application/pdf"),
           chart.headers.get("content-type", ""))
-    check("body starts with %PDF", chart.content[:5] == b"%PDF-", repr(chart.content[:8]))
-    # The wheel and the two Vedic squares are vector art; a chart report that
-    # came out under ~40 KB did not draw them.
-    check("chart PDF carries its drawings", len(chart.content) > 40_000, kb(chart.content))
-    print(f"     chart PDF: {kb(chart.content)}")
+    check("body starts with %PDF (en)", chart.content[:5] == b"%PDF-", repr(chart.content[:8]))
+    check("chart PDF (en) carries its drawings", len(chart.content) > 40_000, kb(chart.content))
+    print(f"     chart PDF (en): {kb(chart.content)}")
+
+    chart_hi = alice.get(f"{BASE}/api/pdf/chart/{sid}?lang=hi")
+    check("HTTP 200 (hi)", chart_hi.status_code == 200,
+          chart_hi.text[:160] if chart_hi.status_code != 200 else "")
+    check("content-type is application/pdf (hi)",
+          chart_hi.headers.get("content-type", "").startswith("application/pdf"),
+          chart_hi.headers.get("content-type", ""))
+    check("body starts with %PDF (hi)", chart_hi.content[:5] == b"%PDF-", repr(chart_hi.content[:8]))
+    check("chart PDF (hi) carries its drawings", len(chart_hi.content) > 40_000, kb(chart_hi.content))
+    print(f"     chart PDF (hi): {kb(chart_hi.content)}")
 
     missing = alice.get(f"{BASE}/api/pdf/chart/does-not-exist")
     check("an unknown chart session 404s", missing.status_code == 404, str(missing.status_code))

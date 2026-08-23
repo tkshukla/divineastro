@@ -681,3 +681,106 @@ def generate_spiritual_guidance(analysis: dict, language: str = "en") -> str:
         pass
     return "Continue with your daily prayers and wear the recommended gemstones to support your astrological alignment."
 
+
+def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
+    """Generate Yearly Varshphal, Upcoming Key Periods, and House-wise summaries."""
+    provider = os.environ.get("ASTRO_PROVIDER", "anthropic")
+    if not provider or provider == "off":
+        if os.environ.get("ANTHROPIC_API_KEY"):
+            provider = "anthropic"
+        else:
+            provider = "off"
+
+    # Pre-translated fallbacks
+    fallbacks = {
+        "en": {
+            "varshphal": "The year ahead brings a transition of energies, particularly governed by your active dasha lord. Major transits through your angular houses suggest a focus on professional consolidation and financial discipline. Personal relations demand patience, while health remains stable with standard routine care.",
+            "key_periods": "Key opportunities arise in the second half of the year when planetary transits align with your natal solar placements. Avoid starting major ventures during Rahu Kalam hours, and utilize the auspicious Abhijit Muhurtha for important initiations.",
+            "house_summary": "Your ascendant lord indicates a focus on self-expression and personal development. The planetary placements in the second and eleventh houses indicate steady source of income and support from social networks, while the tenth house energy drives ambition and leadership."
+        },
+        "hi": {
+            "varshphal": "आने वाला वर्ष ऊर्जा के सकारात्मक बदलाव का संकेत दे रहा है, जो मुख्य रूप से आपके सक्रिय दशा स्वामी द्वारा संचालित है। आपके केंद्र भावों के गोचर बताते हैं कि आपको पेशेवर रूप से स्थिरता मिलेगी और आर्थिक रूप से अनुशासन बनाए रखने की आवश्यकता होगी। पारिवारिक संबंधों में धैर्य रखें और दैनिक दिनचर्या का पालन करें।",
+            "key_periods": "वर्ष के दूसरे भाग में महत्वपूर्ण अवसर आने की संभावना है जब प्रमुख ग्रहों का गोचर आपकी कुंडली के अनुकूल रहेगा। राहूकाल के दौरान महत्वपूर्ण कार्यों को टालें और अभिजीत मुहूर्त का उपयोग करें।",
+            "house_summary": "आपका लग्न स्वामी आपके व्यक्तित्व और आत्म-विकास के लिए उत्तम है। द्वितीय और एकादश भाव में ग्रहों की स्थिति आय के नए स्रोतों और सामाजिक संबंधों से लाभ की ओर संकेत करती है। दशम भाव की ऊर्जा आपके कार्यक्षेत्र में उन्नति प्रदान करेगी।"
+        }
+    }
+
+    lang_key = "hi" if language == "hi" else "en"
+    default_res = fallbacks[lang_key]
+
+    if provider == "off":
+        return default_res
+
+    meta = analysis.get("meta", {})
+    lagna = analysis.get("lagna", "") or "Ascendant"
+    moon_sign = analysis.get("moon_sign", "") or "Moon Sign"
+    dasha_lord = analysis.get("dasha", {}).get("mahadasha", {}).get("lord", "")
+
+    prompt = (
+        f"You are Pandit Shukla, an elite Vedic astrologer with decades of experience.\n"
+        f"Generate a personalized, premium Vedic Astrology analysis for a native named {meta.get('name', 'Native')} "
+        f"born on {meta.get('local_time', '')} at {meta.get('place', '')}.\n"
+        f"Lagna: {lagna}, Moon Sign: {moon_sign}.\n"
+        f"Current Period: {dasha_lord} Mahadasha.\n\n"
+        f"Please provide three distinct sections:\n"
+        f"1. A yearly forecast (Varshphal) for the next 12 months, detailing key transit influences on their life.\n"
+        f"2. Upcoming key periods, indicating when major developments in career, finance, or relationships are likely to occur.\n"
+        f"3. A house-wise summary explaining the planetary influences active across the primary houses of their chart.\n\n"
+        f"You MUST format the output as a valid JSON object with the following three keys:\n"
+        f"- 'varshphal': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'} (around 150 words)\n"
+        f"- 'key_periods': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'} (around 120 words)\n"
+        f"- 'house_summary': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'} (around 150 words)\n\n"
+        f"Respond ONLY with the raw JSON block. Do not include any markdown fences, introduction, or notes."
+    )
+
+    system = "You are a warm, wise, and highly experienced Vedic astrologer providing guidance in JSON format."
+
+    try:
+        kind, model = _split(provider)
+        if kind == "anthropic":
+            import anthropic
+            client = anthropic.Anthropic()
+            msg = client.messages.create(
+                model=CLAUDE_MODEL,
+                max_tokens=800,
+                system=system,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            raw = msg.content[0].text.strip()
+        elif kind == "ollama":
+            payload = json.dumps({
+                "model": model,
+                "messages": [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
+                "stream": False,
+                "format": "json"
+            }).encode("utf-8")
+            request = urllib.request.Request(
+                f"{OLLAMA_URL}/api/chat", data=payload,
+                headers={"Content-Type": "application/json"},
+            )
+            with urllib.request.urlopen(request, timeout=30) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                raw = data["message"]["content"].strip()
+        else:
+            return default_res
+
+        # Clean JSON codeblock wrappers if present
+        if raw.startswith("```"):
+            lines = raw.splitlines()
+            if lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines[-1].startswith("```"):
+                lines = lines[:-1]
+            raw = "\n".join(lines).strip()
+
+        parsed = json.loads(raw)
+        return {
+            "varshphal": parsed.get("varshphal", default_res["varshphal"]),
+            "key_periods": parsed.get("key_periods", default_res["key_periods"]),
+            "house_summary": parsed.get("house_summary", default_res["house_summary"]),
+        }
+    except Exception:
+        pass
+    return default_res
+
+

@@ -116,7 +116,12 @@
         <h1 id="dash-name">—</h1>
         <p id="dash-birth-details">—</p>
       </div>
-      <button type="button" class="ghost-btn" id="dash-change-profile">Switch Profile</button>
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <button type="button" class="btn" id="dash-download-pdf" style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 13px;">
+          📥 Download Kundali PDF
+        </button>
+        <button type="button" class="ghost-btn" id="dash-change-profile">Switch Profile</button>
+      </div>
     </div>
 
     <!-- Daily Forecast & Transit Score -->
@@ -222,6 +227,24 @@
       <button type="button" class="btn" id="download-remedies-pdf" style="margin-top: 20px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
         <span>📥</span> Download AI-Driven Remedy PDF Report
       </button>
+    </div>
+  </div>
+</div>
+
+<div id="kundali-pdf-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content card" style="max-width: 400px;">
+    <div class="modal-header">
+      <h2>Select PDF Language</h2>
+      <button type="button" class="close-modal-btn" id="close-kundali-pdf-modal">&times;</button>
+    </div>
+    <div class="modal-body" style="text-align: center; padding-top: 10px;">
+      <p style="margin-bottom: 20px; font-size: 14px; color: var(--ink-dim);">
+        Choose the language script for your Kundali PDF report:
+      </p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button type="button" class="btn" id="generate-pdf-en" style="min-width: 120px;">English</button>
+        <button type="button" class="btn" id="generate-pdf-hi" style="min-width: 120px; background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%);">हिन्दी (Hindi)</button>
+      </div>
     </div>
   </div>
 </div>

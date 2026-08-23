@@ -509,7 +509,7 @@ _CHART_BODY = """
   line(length: 100%, stroke: 0.6pt + RULE)
 })
 
-#section("Birth details")
+#section(d.texts.birth_details)
 #kvtable(d.birth)
 
 #if d.note != "" [
@@ -518,41 +518,59 @@ _CHART_BODY = """
     text(size: 8.8pt, fill: MUTED, style: "italic", d.note))
 ]
 
-#if d.wheel != "" [
-  #section("Chart wheel")
-  #align(center, image(d.wheel, width: 92%))
-]
-
 #let vedic(path, label) = align(center)[
   #image(path, width: 100%)
   #v(3pt)
   #text(size: 8.2pt, fill: MUTED, label)
 ]
 
-#if d.north != "" or d.south != "" {
-  section("Vedic charts")
+#if d.d1_north != "" or d.d1_south != "" {
+  section(d.texts.d1_title)
   let cells = ()
-  if d.north != "" { cells.push(vedic(d.north, "North Indian")) }
-  if d.south != "" { cells.push(vedic(d.south, "South Indian")) }
+  if d.d1_north != "" { cells.push(vedic(d.d1_north, d.texts.north_indian)) }
+  if d.d1_south != "" { cells.push(vedic(d.d1_south, d.texts.south_indian)) }
   grid(columns: cells.map(c => 1fr), gutter: 14pt, ..cells)
 }
 
-#section("Planetary positions")
+#if d.d9_north != "" or d.d9_south != "" {
+  section(d.texts.d9_title)
+  let cells = ()
+  if d.d9_north != "" { cells.push(vedic(d.d9_north, d.texts.north_indian)) }
+  if d.d9_south != "" { cells.push(vedic(d.d9_south, d.texts.south_indian)) }
+  grid(columns: cells.map(c => 1fr), gutter: 14pt, ..cells)
+}
+
+#section(d.texts.planetary_positions)
 #datatable(d.positions)
 
-#section("Houses")
+#section(d.texts.houses)
 #datatable(d.houses)
 
 #if d.aspects.rows.len() > 0 [
-  #section("Major aspects")
+  #section(d.texts.aspects)
   #datatable(d.aspects)
 ]
 
 #if d.dasha != none [
-  #section("Vimshottari dasha")
+  #section(d.texts.dasha)
   #kvtable(d.dasha.summary)
   #v(8pt)
   #datatable(d.dasha.table)
+]
+
+#if d.varshphal.len() > 0 [
+  #section(d.texts.varshphal_title)
+  #blocks(d.varshphal)
+]
+
+#if d.upcoming.len() > 0 [
+  #section(d.texts.upcoming_title)
+  #blocks(d.upcoming)
+]
+
+#if d.house_summary.len() > 0 [
+  #section(d.texts.house_summary_title)
+  #blocks(d.house_summary)
 ]
 """
 
@@ -673,18 +691,85 @@ def _read_svg(path: str) -> str:
     return raw.decode("utf-8", errors="replace")
 
 
+class VargaChartWrapper:
+    def __init__(self, original_chart, division: str):
+        self.metadata = getattr(original_chart.chart, "metadata", {})
+        self.datetime = getattr(original_chart.chart, "datetime", None)
+        self.location = getattr(original_chart.chart, "location", None)
+        
+        # Compute the varga signs
+        from .astro.vargas import divisional_chart
+        v_data = divisional_chart(original_chart, division)
+        lagna_sign = v_data["lagna"]["sign"] if isinstance(v_data["lagna"], dict) else v_data["lagna"]
+        
+        from .astro.panchang import SIGNS
+        lagna_idx = SIGNS.index(lagna_sign)
+        
+        class HouseMock:
+            cusps = [lagna_idx * 30.0] * 12
+        self._houses = HouseMock()
+        
+        self._planets = []
+        class PlanetMock:
+            def __init__(self, name, longitude, speed_longitude):
+                self.name = name
+                self.longitude = longitude
+                self.speed_longitude = speed_longitude
+                
+        for pl_name, pl_info in v_data["positions"].items():
+            if pl_name == "Lagna":
+                continue
+            pl_sign = pl_info["sign"]
+            pl_idx = SIGNS.index(pl_sign)
+            
+            orig_pl = original_chart.chart.get_object(pl_name)
+            speed = -1.0 if (orig_pl and orig_pl.speed_longitude and orig_pl.speed_longitude < 0) else 1.0
+            
+            self._planets.append(PlanetMock(pl_name, pl_idx * 30.0 + 15.0, speed))
+            
+    def get_houses(self):
+        return self._houses
+        
+    def get_planets(self):
+        return self._planets
+        
+    def get_object(self, name):
+        for p in self._planets:
+            if p.name == name:
+                return p
+        return None
+
+
 def _vedic_svgs(session) -> dict[str, str]:
-    """North and South Indian squares, as UTF-8 SVG source."""
+    """Rashi (D1) and Navamsa (D9) squares for North and South Indian, as SVG source."""
     out: dict[str, str] = {}
     scratch = tempfile.mkdtemp(prefix="astro_vedic_")
     try:
-        for style, name in (("north_indian", "north"), ("south_indian", "south")):
+        from stellium.visualization.vedic.north_indian import NorthIndianRenderer
+        from stellium.visualization.vedic.south_indian import SouthIndianRenderer
+        
+        # 1. Rashi D1
+        for style, name in (("north_indian", "d1_north"), ("south_indian", "d1_south")):
             target = os.path.join(scratch, f"{name}.svg")
             try:
                 session.chart.draw_vedic(target, style=style, theme="classic", size=520)
                 out[name] = _read_svg(target)
-            except Exception:           # a chart style that will not draw must
-                continue                # not sink the whole report
+            except Exception:
+                pass
+                
+        # 2. Navamsa D9
+        try:
+            d9_wrapper = VargaChartWrapper(session, "D9")
+            for name, renderer_cls in (("d9_north", NorthIndianRenderer), ("d9_south", SouthIndianRenderer)):
+                target = os.path.join(scratch, f"{name}.svg")
+                try:
+                    renderer = renderer_cls(size=520, theme="classic")
+                    renderer.render_to_file(d9_wrapper, target)
+                    out[name] = _read_svg(target)
+                except Exception:
+                    pass
+        except Exception:
+            pass
     finally:
         shutil.rmtree(scratch, ignore_errors=True)
     return out
@@ -792,12 +877,58 @@ def _aspects_table(bundle: dict, limit: int = 26) -> dict:
             "cols": [0, 0, 0, 0, 1], "rows": rows}
 
 
-def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None) -> bytes:
-    """A full chart report for an active chart session."""
+_LOCALIZED_TEXTS = {
+    "en": {
+        "title": "Birth Chart & Kundali Report",
+        "born": "Born",
+        "at": "At",
+        "system": "System",
+        "generated": "Generated",
+        "birth_details": "Birth Details (जन्म विवरण)",
+        "d1_title": "Rashi Chart (D1) - लग्न कुंडली",
+        "d9_title": "Navamsa Chart (D9) - नवमांश कुंडली",
+        "north_indian": "North Indian Style (उत्तर भारतीय पद्धति)",
+        "south_indian": "South Indian Style (दक्षिण भारतीय पद्धति)",
+        "planetary_positions": "Planetary Positions (ग्रह स्थिति)",
+        "houses": "House Placements (भाव विवरण)",
+        "aspects": "Major Aspects (प्रमुख दृष्टि)",
+        "dasha": "Vimshottari Dasha (विम्शोत्तरी दशा)",
+        "varshphal_title": "Yearly Varshphal Forecast (वार्षिक राशिफल)",
+        "upcoming_title": "Upcoming Key Periods (आगामी समय)",
+        "house_summary_title": "House-wise Summary (भाव विवेचन)",
+    },
+    "hi": {
+        "title": "जन्म कुंडली विवरण (Kundali Report)",
+        "born": "जन्म समय",
+        "at": "जन्म स्थान",
+        "system": "पद्धति",
+        "generated": "दिनांक",
+        "birth_details": "जन्म विवरण (Birth Details)",
+        "d1_title": "लग्न कुंडली / लग्न चक्र (Rashi D1)",
+        "d9_title": "नवमांश कुंडली / नवमांश चक्र (Navamsa D9)",
+        "north_indian": "उत्तर भारतीय शैली (North Indian)",
+        "south_indian": "दक्षिण भारतीय शैली (South Indian)",
+        "planetary_positions": "ग्रह स्थिति (Planetary Positions)",
+        "houses": "भाव विवरण (Houses)",
+        "aspects": "प्रमुख दृष्टि (Major Aspects)",
+        "dasha": "विम्शोत्तरी दशा (Vimshottari Dasha)",
+        "varshphal_title": "वार्षिक वर्षफल (Yearly Varshphal)",
+        "upcoming_title": "आगामी महत्वपूर्ण समय (Upcoming Key Periods)",
+        "house_summary_title": "भाव विवेचन / भाव फल (House-wise Summary)",
+    }
+}
+
+
+def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None, language: str = "en") -> bytes:
+    """A full chart report for an active chart session supporting English and Hindi."""
+    from .llm import generate_kundali_narratives
+    
     when = when or dt.datetime.now()
     bundle = session.bundle
     birth = session.birth
     meta = bundle["meta"]
+    
+    texts = _LOCALIZED_TEXTS.get(language, _LOCALIZED_TEXTS["en"])
 
     files: dict[str, str] = {}
     try:
@@ -807,19 +938,29 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
     for name, svg in _vedic_svgs(session).items():
         files[f"{name}.svg"] = svg
 
-    birth_rows = [
-        ["Name", meta["name"]],
-        ["Date & time", meta["local_time"] if birth.time_known
-         else f"{meta['local_time']} (birth time unknown)"],
-        ["Place", f"{meta['place']}  ({meta['latitude']:.4f}, {meta['longitude']:.4f})"],
-        ["Time zone", f"{meta['timezone']} (UTC{meta['utc_offset'][:3]}:{meta['utc_offset'][3:]})"],
-        ["Universal time", str(meta["utc_time"])],
-        ["Zodiac", meta["zodiac"].title() +
-         (f" \u00b7 {str(meta['ayanamsa']).title()} ayanamsa "
-          f"{meta['ayanamsa_value']}\u00b0" if meta.get("ayanamsa_value") else "")],
-        ["House system", meta["house_system"]],
-        ["Sect", f"{meta['sect']} chart"],
-    ]
+    birth_rows = []
+    if language == "hi":
+        birth_rows = [
+            ["नाम", meta["name"]],
+            ["जन्म तिथि व समय", meta["local_time"] if birth.time_known else f"{meta['local_time']} (समय अज्ञात)"],
+            ["जन्म स्थान", f"{meta['place']}  ({meta['latitude']:.4f}, {meta['longitude']:.4f})"],
+            ["समय क्षेत्र", f"{meta['timezone']} (UTC{meta['utc_offset'][:3]}:{meta['utc_offset'][3:]})"],
+            ["यूनीवर्सल समय (UT)", str(meta["utc_time"])],
+            ["अयन चक्र / अयन", "निरयण (Sidereal) \u00b7 " + (f"{str(meta['ayanamsa']).title()} अयन " f"{meta['ayanamsa_value']}\u00b0" if meta.get("ayanamsa_value") else "")],
+            ["भाव पद्धति", meta["house_system"]],
+            ["वर्ग", "दिन की कुंडली" if meta["sect"] == "diurnal" else "रात्रि की कुंडली"],
+        ]
+    else:
+        birth_rows = [
+            ["Name", meta["name"]],
+            ["Date & time", meta["local_time"] if birth.time_known else f"{meta['local_time']} (birth time unknown)"],
+            ["Place", f"{meta['place']}  ({meta['latitude']:.4f}, {meta['longitude']:.4f})"],
+            ["Time zone", f"{meta['timezone']} (UTC{meta['utc_offset'][:3]}:{meta['utc_offset'][3:]})"],
+            ["Universal time", str(meta["utc_time"])],
+            ["Zodiac", meta["zodiac"].title() + (f" \u00b7 {str(meta['ayanamsa']).title()} ayanamsa " f"{meta['ayanamsa_value']}\u00b0" if meta.get("ayanamsa_value") else "")],
+            ["House system", meta["house_system"]],
+            ["Sect", f"{meta['sect']} chart"],
+        ]
 
     dasha = None
     if birth.zodiac == "sidereal":
@@ -842,30 +983,80 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
                     "rows": _dasha_ladder(session, when),
                 },
             }
+            if language == "hi":
+                dasha["table"]["headers"] = ["महादशा", "वर्ष", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"]
+                status_map = {"past": "गत काल", "current": "सक्रिय", "ahead": "आगामी"}
+                for row in dasha["table"]["rows"]:
+                    row[4] = status_map.get(row[4], row[4])
+                
+                sum_map = {
+                    "Moon": "चंद्रमा",
+                    "Nakshatra": "नक्षत्र",
+                    "Mahadasha": "वर्तमान महादशा",
+                    "Antardasha": "वर्तमान अंतर्दशा",
+                    "As of": "तिथि के अनुसार"
+                }
+                for row in dasha["summary"]:
+                    if row[0] in sum_map:
+                        row[0] = sum_map[row[0]]
         except Exception:               # pragma: no cover - defensive
             dasha = None
 
+    # Call LLM to generate narrative sections
+    analysis_input = {
+        "meta": meta,
+        "lagna": bundle["objects"]["ASC"]["sign"],
+        "dasha": {
+            "mahadasha": {"lord": dasha["summary"][2][1].split()[0] if (dasha and len(dasha["summary"]) > 2) else "Rahu"}
+        }
+    }
+    if "Moon" in bundle["objects"]:
+        analysis_input["moon_sign"] = bundle["objects"]["Moon"]["sign"]
+
+    narratives = generate_kundali_narratives(analysis_input, language=language)
+
+    pos_table = _positions_table(bundle)
+    if language == "hi":
+        pos_table["headers"] = ["ग्रह", "राशि", "स्थिति", "भाव", "गति", "वक्री"]
+        for row in pos_table["rows"]:
+            row[5] = "हाँ" if row[5] == "yes" else "नहीं"
+
+    houses_table = _houses_table(bundle)
+    if language == "hi":
+        houses_table["headers"] = ["भाव", "राशि", "विस्तार", "दूरी", "स्वामी", "स्थित ग्रह"]
+
+    aspects_table = _aspects_table(bundle)
+    if language == "hi":
+        aspects_table["headers"] = ["कारक", "दृष्टि", "लक्ष्य", "अंतर", "सटीक"]
+        for row in aspects_table["rows"]:
+            row[4] = "हाँ" if row[4] == "yes" else "नहीं"
+
     data = {
         "brand": brand,
-        "title": "Birth Chart Report",
+        "title": texts["title"],
         "subject": meta["name"],
-        "lang": "en",
+        "lang": language,
+        "texts": texts,
         "cover": [
-            ["Born", meta["local_time"]],
-            ["At", meta["place"]],
-            ["System", f"{meta['zodiac'].title()} \u00b7 {meta['house_system']}"],
-            ["Generated", when.strftime("%d %B %Y")],
+            [texts["born"], meta["local_time"]],
+            [texts["at"], meta["place"]],
+            [texts["system"], f"{meta['zodiac'].title()} \u00b7 {meta['house_system']}"],
+            [texts["generated"], when.strftime("%d %B %Y")],
         ],
         "footer": f"{brand} \u00b7 {site}",
         "birth": birth_rows,
         "note": bundle.get("house_note") or "",
-        "wheel": "wheel.svg" if "wheel.svg" in files else "",
-        "north": "north.svg" if "north.svg" in files else "",
-        "south": "south.svg" if "south.svg" in files else "",
-        "positions": _positions_table(bundle),
-        "houses": _houses_table(bundle),
-        "aspects": _aspects_table(bundle),
+        "d1_north": "d1_north.svg" if "d1_north.svg" in files else "",
+        "d1_south": "d1_south.svg" if "d1_south.svg" in files else "",
+        "d9_north": "d9_north.svg" if "d9_north.svg" in files else "",
+        "d9_south": "d9_south.svg" if "d9_south.svg" in files else "",
+        "positions": pos_table,
+        "houses": houses_table,
+        "aspects": aspects_table,
         "dasha": dasha,
+        "varshphal": markdown_blocks(narratives["varshphal"]),
+        "upcoming": markdown_blocks(narratives["key_periods"]),
+        "house_summary": markdown_blocks(narratives["house_summary"]),
     }
     return _compile(_CHART_BODY, data, files)
 

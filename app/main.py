@@ -647,7 +647,7 @@ def pdf_questions(request: Request, limit: int = 200, ids: str = "") -> Response
 
 
 @app.get("/api/pdf/chart/{sid}")
-def pdf_chart(sid: str, request: Request, date: str | None = None) -> Response:
+def pdf_chart(sid: str, request: Request, date: str | None = None, lang: str = "en") -> Response:
     """A full chart report PDF for an active chart session."""
     with db_session() as db:
         auth.require_user(request, db)
@@ -661,7 +661,7 @@ def pdf_chart(sid: str, request: Request, date: str | None = None) -> Response:
             pass
 
     try:
-        data = pdf_report.chart_pdf(session, brand=BRAND, site=SITE_URL, when=when)
+        data = pdf_report.chart_pdf(session, brand=BRAND, site=SITE_URL, when=when, language=lang)
     except Exception as exc:
         raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
     return _pdf_response(

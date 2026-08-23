@@ -1903,3 +1903,33 @@ $("#dash-nav-chat")?.addEventListener("click", () => {
 $("#dash-nav-milan")?.addEventListener("click", () => {
   showStage("stage-milan");
 });
+
+// PDF Downloads and Modals
+$("#download-remedies-pdf")?.addEventListener("click", () => {
+  if (state.sessionId) {
+    window.location.href = `/api/pdf/remedies/${state.sessionId}`;
+  }
+});
+
+$("#dash-download-pdf")?.addEventListener("click", () => {
+  const modal = $("#kundali-pdf-modal");
+  if (modal) modal.style.display = "flex";
+});
+
+$("#close-kundali-pdf-modal")?.addEventListener("click", () => {
+  $("#kundali-pdf-modal").style.display = "none";
+});
+
+$("#generate-pdf-en")?.addEventListener("click", () => {
+  if (state.sessionId) {
+    window.location.href = `/api/pdf/chart/${state.sessionId}?lang=en`;
+    $("#kundali-pdf-modal").style.display = "none";
+  }
+});
+
+$("#generate-pdf-hi")?.addEventListener("click", () => {
+  if (state.sessionId) {
+    window.location.href = `/api/pdf/chart/${state.sessionId}?lang=hi`;
+    $("#kundali-pdf-modal").style.display = "none";
+  }
+});
