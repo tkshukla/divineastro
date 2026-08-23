@@ -470,7 +470,7 @@ def get_dashboard(sid: str, request: Request) -> dict:
     swe.set_ephe_path(None)
     julian_day = swe.julday(now.year, now.month, now.day, now.hour + now.minute/60.0 + now.second/3600.0)
     from stellium.core.ayanamsa import get_ayanamsa_value
-    ayan_val = get_ayanamsa_value(birth.ayanamsa, julian_day)
+    ayan_val = get_ayanamsa_value(julian_day, birth.ayanamsa)
     
     res, err = swe.calc_ut(julian_day, swe.MOON)
     moon_lon = (res[0] - ayan_val) % 360.0
