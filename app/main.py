@@ -502,12 +502,24 @@ def get_dashboard(sid: str, request: Request) -> dict:
     except Exception:
         pass
 
+    tithis = p_data.get("tithi", [])
+    tithi_name = tithis[0].get("name") if (isinstance(tithis, list) and len(tithis) > 0) else "—"
+    
+    nakshatras = p_data.get("nakshatra", [])
+    nakshatra_name = nakshatras[0].get("name") if (isinstance(nakshatras, list) and len(nakshatras) > 0) else "—"
+    
+    yogas = p_data.get("yoga", [])
+    yoga_name = yogas[0].get("name") if (isinstance(yogas, list) and len(yogas) > 0) else "—"
+    
+    karanas = p_data.get("karana", [])
+    karana_name = karanas[0].get("name") if (isinstance(karanas, list) and len(karanas) > 0) else "—"
+
     return {
         "panchang": {
-            "tithi": p_data.get("tithi", {}).get("name"),
-            "nakshatra": p_data.get("nakshatra", {}).get("name"),
-            "yoga": p_data.get("yoga", {}).get("name"),
-            "karana": p_data.get("karana", {}).get("name"),
+            "tithi": tithi_name,
+            "nakshatra": nakshatra_name,
+            "yoga": yoga_name,
+            "karana": karana_name,
             "sunrise": p_data.get("sun", {}).get("rise"),
             "sunset": p_data.get("sun", {}).get("set"),
             "muhurtha": {
