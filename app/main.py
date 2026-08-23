@@ -468,7 +468,7 @@ def get_dashboard(sid: str, request: Request) -> dict:
 
     # Calculate current transit Moon sign
     swe.set_ephe_path(None)
-    julian_day = swe.jul_day(now.year, now.month, now.day, now.hour + now.minute/60.0 + now.second/3600.0)
+    julian_day = swe.julday(now.year, now.month, now.day, now.hour + now.minute/60.0 + now.second/3600.0)
     from stellium.core.ayanamsa import get_ayanamsa_value
     ayan_val = get_ayanamsa_value(birth.ayanamsa, julian_day)
     
