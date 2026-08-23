@@ -41,7 +41,14 @@ def test_remedies_and_doshas():
     assert mang["is_manglik"] is True
     assert mang["score"] == 1.0
 
+    # 3. Test PDF Remedies Report
+    from app.pdf_report import remedies_pdf
+    pdf_bytes = remedies_pdf(session, brand="Divine Astro", site="https://divineastro.org", language="en")
+    assert isinstance(pdf_bytes, bytes)
+    assert len(pdf_bytes) > 0
+
 
 if __name__ == "__main__":
     test_remedies_and_doshas()
     print("ALL REMEDIES AND DOSHA TESTS PASSED!")
+

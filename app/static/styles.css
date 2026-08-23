@@ -1427,4 +1427,98 @@ details.reasoning summary:hover { color: var(--gold); }
   margin-bottom: 0;
 }
 
+/* ============================================================
+   Visual Dasha Timeline & Premium Components
+   ============================================================ */
+.timeline-visual-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.timeline-row {
+  display: flex;
+  width: 100%;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--line);
+}
+
+.timeline-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-dim);
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 4px;
+}
+
+.timeline-block:last-child {
+  border-right: none;
+}
+
+.timeline-block .block-lord {
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.timeline-block .block-years {
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+/* Color Coding based on State */
+.timeline-block.current {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.1) 100%);
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+  transform: scale(1.02);
+  z-index: 2;
+}
+.timeline-block.current .block-lord {
+  color: var(--gold);
+  font-weight: bold;
+}
+
+.timeline-block.past {
+  background: rgba(255, 255, 255, 0.01);
+  opacity: 0.45;
+}
+
+.timeline-block.ahead {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.timeline-block:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.timeline-detail-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 12.5px;
+  color: var(--ink-dim);
+  line-height: 1.5;
+  transition: opacity 0.2s ease;
+}
+
+.timeline-detail-box b {
+  color: var(--gold);
+}
+
+
 

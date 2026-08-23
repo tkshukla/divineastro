@@ -1678,6 +1678,58 @@ async function loadAndShowDashboard() {
     badge.textContent = dash.daily_transit.score;
     $("#transit-advice").textContent = dash.daily_transit.advice;
     
+    // Render visual timeline
+    const timelineContainer = $("#timeline-visual");
+    if (timelineContainer && dash.dasha.ladder && dash.dasha.ladder.length > 0) {
+      const totalYears = dash.dasha.ladder.reduce((sum, item) => sum + parseFloat(item[1]), 0);
+      
+      let blocksHtml = '<div class="timeline-row">';
+      dash.dasha.ladder.forEach((item) => {
+        const lord = item[0];
+        const years = parseFloat(item[1]);
+        const start = item[2];
+        const end = item[3];
+        const status = item[4]; // 'past', 'current', or 'ahead'
+        const pct = (years / totalYears) * 100;
+        
+        blocksHtml += `
+          <div class="timeline-block ${status}" style="width: ${pct}%;" 
+               data-lord="${escapeHtml(lord)}" data-years="${years}" 
+               data-start="${escapeHtml(start)}" data-end="${escapeHtml(end)}" data-status="${status}">
+            <span class="block-lord">${escapeHtml(lord.slice(0, 3))}</span>
+            <span class="block-years">${years}y</span>
+          </div>
+        `;
+      });
+      blocksHtml += '</div>';
+      
+      const currentDasha = dash.dasha.ladder.find(item => item[4] === "current") || dash.dasha.ladder[0];
+      blocksHtml += `
+        <div class="timeline-detail-box" id="timeline-detail-box" style="margin-top: 10px;">
+          Selected period: <b>${escapeHtml(currentDasha[0])} Mahadasha</b> (${currentDasha[1]} years)<br/>
+          Duration: <b>${escapeHtml(currentDasha[2])}</b> to <b>${escapeHtml(currentDasha[3])}</b> (${currentDasha[4].toUpperCase()})
+        </div>
+      `;
+      timelineContainer.innerHTML = blocksHtml;
+      
+      $$(".timeline-block", timelineContainer).forEach(block => {
+        const updateBox = () => {
+          const dBox = $("#timeline-detail-box");
+          if (!dBox) return;
+          const lord = block.dataset.lord;
+          const years = block.dataset.years;
+          const start = block.dataset.start;
+          const end = block.dataset.end;
+          const status = block.dataset.status;
+          dBox.innerHTML = `
+            Selected period: <b>${escapeHtml(lord)} Mahadasha</b> (${years} years)<br/>
+            Duration: <b>${escapeHtml(start)}</b> to <b>${escapeHtml(end)}</b> (${status.toUpperCase()})
+          `;
+        };
+        block.addEventListener("mouseenter", updateBox);
+        block.addEventListener("click", updateBox);
+      });
+    }
   } catch (ex) {
     console.error("Failed to load dashboard:", ex);
   }
@@ -1753,8 +1805,43 @@ $("#dash-nav-doshas")?.addEventListener("click", async () => {
     
     // Sade Sati
     const ss = data.sade_sati;
-    const ssBadge = ss.is_running ? '<span class="badge caution">Sade Sati Active</span>' : '<span class="badge excellent">Sade Sati Inactive</span>';
+    const ssBadge = ss.running ? '<span class="badge caution">Sade Sati Active</span>' : '<span class="badge excellent">Sade Sati Inactive</span>';
     
+    let ssPhasesHtml = "";
+    if (ss.periods && ss.periods.length > 0) {
+      ssPhasesHtml = `
+        <h4 style="margin-top: 16px; color: var(--gold); font-size: 13.5px; margin-bottom: 8px;">Sade Sati Phase Breakdown</h4>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--line); color: var(--ink-dim);">
+                <th style="padding: 6px 4px;">Phase</th>
+                <th style="padding: 6px 4px;">Sign</th>
+                <th style="padding: 6px 4px;">Start Date</th>
+                <th style="padding: 6px 4px;">End Date</th>
+                <th style="padding: 6px 4px;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${ss.periods.flatMap(p => p.phases || []).map(ph => `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03); color: ${ph.status === 'current' ? 'var(--gold)' : 'var(--ink)'}">
+                  <td style="padding: 8px 4px;"><b>${escapeHtml(ph.name)}</b></td>
+                  <td style="padding: 8px 4px;">${escapeHtml(ph.sign)}</td>
+                  <td style="padding: 8px 4px;">${ph.start ? ph.start.slice(0, 10) : '—'}</td>
+                  <td style="padding: 8px 4px;">${ph.end ? ph.end.slice(0, 10) : '—'}</td>
+                  <td style="padding: 8px 4px;">
+                    <span class="badge ${ph.status === 'current' ? 'caution' : (ph.status === 'past' ? 'excellent' : 'neutral')}" style="padding: 2px 6px; font-size: 9px;">
+                      ${ph.status}
+                    </span>
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
     // Kaal Sarp
     const ks = data.kaal_sarp;
     const ksBadge = ks.is_formed ? `<span class="badge caution">Kaal Sarp formed (${ks.type})</span>` : '<span class="badge excellent">No Kaal Sarp</span>';
@@ -1778,8 +1865,9 @@ $("#dash-nav-doshas")?.addEventListener("click", async () => {
         <div class="dosha-badge-row">
           ${ssBadge}
         </div>
-        <p>Saturn transiting the 12th, 1st, or 2nd houses from your natal Moon creates Sade Sati. Currently, Saturn is ${ss.is_running ? "transiting your Moon's transit zone." : "outside the Sade Sati zone."}</p>
-        ${ss.current_period ? `<p style="margin-top:6px; color:var(--gold);">Active phase: <b>${escapeHtml(ss.current_period.phase)}</b> (${ss.current_period.starts.slice(0, 10)} to ${ss.current_period.ends.slice(0, 10)})</p>` : ""}
+        <p>Saturn transiting the 12th, 1st, or 2nd houses from your natal Moon creates Sade Sati. Currently, Saturn is ${ss.running ? "transiting your Moon's transit zone." : "outside the Sade Sati zone."}</p>
+        ${ss.current_period ? `<p style="margin-top:6px; color:var(--gold);">Active phase: <b>${escapeHtml(ss.phase ? ss.phase.name : "Active")}</b> (${ss.current_period.start.slice(0, 10)} to ${ss.current_period.end.slice(0, 10)})</p>` : ""}
+        ${ssPhasesHtml}
       </div>
 
       <hr style="border: none; border-top: 1px solid var(--line); margin: 20px 0;"/>

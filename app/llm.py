@@ -615,3 +615,69 @@ def polish(analysis: dict, language: str = "en", provider: str = "off",
     if len(text) < 120:
         return analysis.get("answer", ""), "The model returned too little text to trust."
     return text, None
+
+
+def generate_spiritual_guidance(analysis: dict, language: str = "en") -> str:
+    """Generate a custom paragraph of spiritual/remedy guidance from Claude or Ollama."""
+    provider = os.environ.get("ASTRO_PROVIDER", "anthropic")
+    if not provider or provider == "off":
+        if os.environ.get("ANTHROPIC_API_KEY"):
+            provider = "anthropic"
+        else:
+            provider = "off"
+            
+    if provider == "off":
+        return (
+            "Continue with your daily meditation, focus on balancing your mind, and wear "
+            "your prescribed gemstones with care. Maintain clarity, integrity, and follow "
+            "the dasha specific mantras to navigate the current transit windows smoothly."
+        )
+
+    # Let's build a prompt
+    meta = analysis.get("meta", {})
+    lagna = analysis.get("lagna", "") or "Ascendant"
+    moon_sign = analysis.get("moon_sign", "") or "Moon Sign"
+    dasha_lord = analysis.get("dasha", {}).get("mahadasha", {}).get("lord", "")
+    
+    prompt = (
+        f"You are Pandit Shukla, an elite Vedic astrologer with decades of experience. "
+        f"Generate a personalized, warm, and highly authoritative spiritual guidance and remedy guidance "
+        f"report for a native with Lagna in {lagna} and Moon in {moon_sign}. "
+        f"They are currently running their {dasha_lord} Mahadasha. "
+        f"Write 2 to 3 paragraphs of deep, practical, and highly premium spiritual counseling, "
+        f"mindset shifts, and direct advice to make the most of this period. "
+        f"Write {'in Hindi (Devanagari script)' if language == 'hi' else 'in English'}. "
+        f"Do not output markdown headings or titles. Go straight into the text."
+    )
+    
+    system = "You are a warm, wise, and highly experienced Vedic astrologer providing guidance."
+    
+    try:
+        kind, model = _split(provider)
+        if kind == "anthropic":
+            import anthropic
+            client = anthropic.Anthropic()
+            msg = client.messages.create(
+                model=CLAUDE_MODEL,
+                max_tokens=600,
+                system=system,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return msg.content[0].text
+        elif kind == "ollama":
+            payload = json.dumps({
+                "model": model,
+                "messages": [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
+                "stream": False
+            }).encode("utf-8")
+            request = urllib.request.Request(
+                f"{OLLAMA_URL}/api/chat", data=payload,
+                headers={"Content-Type": "application/json"},
+            )
+            with urllib.request.urlopen(request, timeout=30) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["message"]["content"]
+    except Exception:
+        pass
+    return "Continue with your daily prayers and wear the recommended gemstones to support your astrological alignment."
+

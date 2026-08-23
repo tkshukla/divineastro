@@ -440,6 +440,36 @@ _PRELUDE = r"""
 }
 """
 
+_REMEDIES_BODY = """
+#cover(d.subject)
+#counter(page).update(1)
+#set page(paper: "a4", margin: (x: 54pt, top: 64pt, bottom: 58pt), header: running)
+
+#let section(title) = block(above: 16pt, below: 8pt, {
+  text(font: DISP, size: 12.5pt, fill: ACC, title)
+  v(3pt)
+  line(length: 100%, stroke: 0.6pt + RULE)
+})
+
+#section("Birth details")
+#kvtable(d.birth)
+
+#section("Recommended gemstones")
+#datatable(d.gemstones)
+
+#section("Active dasha remedies (" + d.mahadasha + " Mahadasha)")
+#block(width: 100%, fill: WASH, inset: 12pt, radius: 4pt, stroke: 0.5pt + RULE)[
+  #text(weight: "bold", fill: ACC, "Recommended Mantra:") \
+  #text(font: BODY, size: 10.5pt, d.mantra) \
+  #v(8pt)
+  #text(weight: "bold", fill: ACC, "Charity & Actions:") \
+  #text(d.charity)
+]
+
+#section("Personalized spiritual guidance")
+#blocks(d.guidance)
+"""
+
 _QUESTIONS_BODY = """
 #cover(d.subject)
 #counter(page).update(1)
@@ -840,6 +870,80 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
     return _compile(_CHART_BODY, data, files)
 
 
+def remedies_pdf(session, *, brand: str, site: str, language: str = "en") -> bytes:
+    """A full remedies and gemstones PDF report for an active chart session."""
+    from .astro.remedies import recommend_remedies
+    from .llm import generate_spiritual_guidance
+
+    bundle = session.bundle
+    meta = bundle["meta"]
+    
+    # Calculate remedies and gemstones
+    rem = recommend_remedies(session)
+    
+    # Generate guidance
+    analysis = {
+        "meta": meta,
+        "lagna": bundle["objects"]["ASC"]["sign"],
+        "moon_sign": rem["gemstones"]["life_stone"]["planet"],
+        "dasha": {
+            "mahadasha": {
+                "lord": rem["dasha_remedies"]["mahadasha_lord"]
+            }
+        }
+    }
+    if "Moon" in bundle["objects"]:
+        analysis["moon_sign"] = bundle["objects"]["Moon"]["sign"]
+        
+    guidance_text = generate_spiritual_guidance(analysis, language=language)
+    
+    # Format gemstones table
+    gems_rows = []
+    for gkey in ["life_stone", "lucky_stone", "fortune_stone"]:
+        g = rem["gemstones"][gkey]
+        gems_rows.append([
+            g["role"],
+            g["name"],
+            g["metal"],
+            g["finger"]
+        ])
+    
+    gemstones_table = {
+        "headers": ["Role", "Gemstone", "Metal", "Finger"],
+        "cols": [1, 1, 1, 1],
+        "rows": gems_rows
+    }
+    
+    birth_rows = [
+        ["Name", meta["name"]],
+        ["Date & time", meta["local_time"]],
+        ["Place", meta["place"]],
+        ["Lagna (Ascendant)", bundle["objects"]["ASC"]["sign"]],
+    ]
+    if "Moon" in bundle["objects"]:
+        birth_rows.append(["Moon Sign", bundle["objects"]["Moon"]["sign"]])
+        
+    data = {
+        "brand": brand,
+        "title": "Remedies & Gemstones Report",
+        "subject": meta["name"],
+        "lang": language,
+        "cover": [
+            ["Born", meta["local_time"]],
+            ["At", meta["place"]],
+            ["Generated", dt.datetime.now().strftime("%d %B %Y")],
+        ],
+        "footer": f"{brand} \u00b7 {site}",
+        "birth": birth_rows,
+        "gemstones": gemstones_table,
+        "mahadasha": rem["dasha_remedies"]["mahadasha_lord"],
+        "mantra": rem["dasha_remedies"]["mantra"],
+        "charity": rem["dasha_remedies"]["charity"],
+        "guidance": markdown_blocks(guidance_text),
+    }
+    return _compile(_REMEDIES_BODY, data)
+
+
 # --------------------------------------------------------------------------
 # Filenames
 # --------------------------------------------------------------------------
@@ -856,5 +960,6 @@ def safe_filename(*parts: str, suffix: str = ".pdf") -> str:
 
 __all__ = [
     "chart_pdf", "devanagari_font", "font_paths", "inline_spans",
-    "markdown_blocks", "pdf_font_report", "questions_pdf", "safe_filename",
+    "markdown_blocks", "pdf_font_report", "questions_pdf", "remedies_pdf", "safe_filename",
 ]
+

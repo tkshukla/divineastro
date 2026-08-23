@@ -494,6 +494,13 @@ def get_dashboard(sid: str, request: Request) -> dict:
         transit_advice = "Moon is transiting a dusthana house from your natal Moon. Avoid starting major conflicts, drive carefully, and rest."
 
     dasha_info = vimshottari(session, now)
+    
+    from .pdf_report import _dasha_ladder
+    ladder = []
+    try:
+        ladder = _dasha_ladder(session, now)
+    except Exception:
+        pass
 
     return {
         "panchang": {
@@ -523,9 +530,11 @@ def get_dashboard(sid: str, request: Request) -> dict:
         },
         "dasha": {
             "mahadasha": dasha_info.get("mahadasha"),
-            "antardasha": dasha_info.get("antardasha")
+            "antardasha": dasha_info.get("antardasha"),
+            "ladder": ladder
         }
     }
+
 
 
 @app.get("/api/transits/{sid}")
@@ -645,6 +654,22 @@ def pdf_chart(sid: str, request: Request, date: str | None = None) -> Response:
         raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
     return _pdf_response(
         data, pdf_report.safe_filename(BRAND, "chart", session.birth.name or "chart"))
+
+
+@app.get("/api/pdf/remedies/{sid}")
+def pdf_remedies(sid: str, request: Request, lang: str = "en") -> Response:
+    """A full remedies and gemstones PDF report for an active chart session."""
+    with db_session() as db:
+        auth.require_user(request, db)
+    session = _session(sid, request)      # and it must be this user's chart
+
+    try:
+        data = pdf_report.remedies_pdf(session, brand=BRAND, site=SITE_URL, language=lang)
+    except Exception as exc:
+        raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
+    return _pdf_response(
+        data, pdf_report.safe_filename(BRAND, "remedies", session.birth.name or "remedies"))
+
 
 
 @app.get("/api/pdf/fonts")
