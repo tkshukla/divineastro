@@ -347,9 +347,9 @@ _PRELUDE = r"""
 #let MONO = @@MONO@@
 
 #set document(title: d.title, author: d.brand)
-#set text(font: BODY, size: 10.2pt, fill: INK, lang: d.at("lang", default: "en"))
-#set par(leading: 0.74em, spacing: 0.9em)
-#set block(spacing: 0.9em)
+#set text(font: BODY, size: if d.at("lang", default: "en") == "hi" { 11.2pt } else { 10.2pt }, fill: INK, lang: d.at("lang", default: "en"))
+#set par(leading: if d.at("lang", default: "en") == "hi" { 0.85em } else { 0.74em }, spacing: 1em)
+#set block(spacing: 1em)
 
 #let spans(ss) = {
   for s in ss {
@@ -775,7 +775,33 @@ class VargaChartWrapper:
         return None
 
 
-def _vedic_svgs(session) -> dict[str, str]:
+def _translate_svg(svg_code: str, language: str) -> str:
+    if language != "hi":
+        return svg_code
+
+    replacements = {
+        ">Ari<": ">मेष<", ">Tau<": ">वृषभ<", ">Gem<": ">मिथुन<", ">Can<": ">कर्क<",
+        ">Leo<": ">सिंह<", ">Vir<": ">कन्या<", ">Lib<": ">तुला<", ">Sco<": ">वृश्चिक<",
+        ">Sag<": ">धनु<", ">Cap<": ">मकर<", ">Aqu<": ">कुंभ<", ">Pis<": ">मीन<",
+        ">Su ": ">सूर्य ", ">Mo ": ">चंद्र ", ">Ma ": ">मंगल ", ">Me ": ">बुध ",
+        ">Ju ": ">गुरु ", ">Ve ": ">शुक्र ", ">Sa ": ">शनि ", ">Ra ": ">राहु ", ">Ke ": ">केतु ",
+        ">Su<": ">सूर्य<", ">Mo<": ">चंद्र<", ">Ma<": ">मंगल<", ">Me<": ">बुध<",
+        ">Ju<": ">गुरु<", ">Ve<": ">शुक्र<", ">Sa<": ">शनि<", ">Ra<": ">राहु<", ">Ke<": ">केतु<",
+        ">ASC<": ">लग्न<", ">As<": ">लग्न<", ">ASC ": ">लग्न ", ">As ": ">लग्न ",
+        ">Pl ": ">यम ", ">Ur ": ">अरुण ", ">Ne ": ">वरुण ",
+        ">North Indian<": ">उत्तर भारतीय<", ">South Indian<": ">दक्षिण भारतीय<",
+        "Jan ": "जनवरी ", "Feb ": "फरवरी ", "Mar ": "मार्च ", "Apr ": "अप्रैल ",
+        "May ": "मई ", "Jun ": "जून ", "Jul ": "जुलाई ", "Aug ": "अगस्त ",
+        "Sep ": "सितंबर ", "Oct ": "अक्टूबर ", "Nov ": "नवंबर ", "Dec ": "दिसंबर ",
+    }
+    
+    for k, v in replacements.items():
+        svg_code = svg_code.replace(k, v)
+        
+    return svg_code
+
+
+def _vedic_svgs(session, language: str = "en") -> dict[str, str]:
     """Rashi (D1) and Navamsa (D9) squares for North and South Indian, as SVG source."""
     out: dict[str, str] = {}
     scratch = tempfile.mkdtemp(prefix="astro_vedic_")
@@ -788,7 +814,7 @@ def _vedic_svgs(session) -> dict[str, str]:
             target = os.path.join(scratch, f"{name}.svg")
             try:
                 session.chart.draw_vedic(target, style=style, theme="classic", size=520)
-                out[name] = _read_svg(target)
+                out[name] = _translate_svg(_read_svg(target), language)
             except Exception:
                 pass
                 
@@ -800,7 +826,7 @@ def _vedic_svgs(session) -> dict[str, str]:
                 try:
                     renderer = renderer_cls(size=520, theme="classic")
                     renderer.render_to_file(d9_wrapper, target)
-                    out[name] = _read_svg(target)
+                    out[name] = _translate_svg(_read_svg(target), language)
                 except Exception:
                     pass
         except Exception:
@@ -942,7 +968,43 @@ def _varga_grid(session) -> dict:
     }
 
 
-def _yogas_pdf_table(session) -> dict:
+_YOGA_TRANSLATIONS = {
+    "Neecha Bhanga": {
+        "name": "नीचभंग योग", "group": "नीचभंग",
+        "note": "नीच राशि में स्थित ग्रह का नीचत्व भंग हो गया है, जिससे यह ग्रह अशुभ फल नहीं देगा बल्कि संघर्ष के बाद अपार सफलता और पद-प्रतिष्ठा प्रदान करेगा।"
+    },
+    "Dhana Yoga": {
+        "name": "धन योग", "group": "धन योग",
+        "note": "त्रिकोण (नवम) और लाभ (एकादश) भाव के स्वामियों के मध्य संबंध से शुभ धन योग बनता है, जो जीवन में निरंतर आय, संपत्ति और समृद्धि की वृद्धि कराता है।"
+    },
+    "Raja Yoga": {
+        "name": "राजयोग", "group": "राजयोग",
+        "note": "केंद्र और त्रिकोण के स्वामियों का शुभ युति या दृष्टि संबंध राजयोग का निर्माण करता है, जो उच्च अधिकार, करियर में उन्नति और समाज में प्रतिष्ठा दिलाता है।"
+    },
+    "Budha-Aditya Yoga": {
+        "name": "बुधादित्य योग", "group": "शुभ योग",
+        "note": "सूर्य और बुध की एक ही राशि में युति से बुधादित्य योग बनता है, जो तीव्र कुशाग्र बुद्धि, विश्लेषणात्मक क्षमता और बौद्धिक सफलता प्रदान करता है।"
+    },
+    "Chandra-Mangala Yoga": {
+        "name": "चंद्र-मंगल योग", "group": "धन योग",
+        "note": "चंद्रमा और मंगल का शुभ संबंध व्यापारिक सूझबूझ, आर्थिक मजबूती और निरंतर धन प्रवाह का निर्माण करता है।"
+    },
+    "Gaja-Kesari Yoga": {
+        "name": "गजकेसरी योग", "group": "राजयोग",
+        "note": "गुरु और चंद्रमा का परस्पर केंद्र संबंध गजकेसरी योग बनाता है, जो जातक को ज्ञान, प्रसिद्धि, दीर्घायु और समाज में सर्वोच्च सम्मान प्रदान करता है।"
+    },
+    "Pancha Mahapurusha": {
+        "name": "पंच महापुरुष योग", "group": "महापुरुष योग",
+        "note": "बलवान ग्रह का स्वराशि या उच्च राशि में होकर केंद्र में विराजमान होना पंच महापुरुष योग बनाता है, जो जीवन में असाधारण नेतृत्व और वैभव देता है।"
+    },
+    "Kemadruma": {
+        "name": "केमद्रुम योग (भंग)", "group": "अरिष्ट भंग",
+        "note": "चंद्रमा के दोनों ओर कोई ग्रह न होने पर भी अन्य शुभ ग्रहों की दृष्टि से केमद्रुम दोष समाप्त होकर जीवन में स्थिरता आती है।"
+    }
+}
+
+
+def _yogas_pdf_table(session, language: str = "en") -> dict:
     """Returns a table of formed yogas."""
     from .astro.vargas import yogas
     try:
@@ -953,14 +1015,34 @@ def _yogas_pdf_table(session) -> dict:
         
     rows = []
     for y in formed:
-        planets_str = ", ".join(y.get("planets", [])) if y.get("planets") else "\u2014"
-        rows.append([y.get("name", ""), y.get("group", ""), planets_str, y.get("note", "")])
+        name_eng = y.get("name", "")
+        group_eng = y.get("group", "")
+        note_eng = y.get("note", "")
+        planets_eng = y.get("planets", [])
+        
+        if language == "hi":
+            trans = _YOGA_TRANSLATIONS.get(name_eng, {})
+            name = trans.get("name", name_eng)
+            group = trans.get("group", group_eng)
+            note = trans.get("note", note_eng)
+            planets_str = ", ".join([_PLANETS_HI.get(p, p) for p in planets_eng]) if planets_eng else "\u2014"
+        else:
+            name = name_eng
+            group = group_eng
+            note = note_eng
+            planets_str = ", ".join(planets_eng) if planets_eng else "\u2014"
+            
+        rows.append([name, group, planets_str, note])
         
     if not rows:
-        rows = [["No major yogas formed", "\u2014", "\u2014", "Continue daily prayers for planetary strength"]]
-        
+        if language == "hi":
+            rows = [["कोई मुख्य योग नहीं", "\u2014", "\u2014", "ग्रहों की शांति हेतु नित्य प्रार्थना एवं मंत्र जाप करें।"]]
+        else:
+            rows = [["No major yogas formed", "\u2014", "\u2014", "Continue daily prayers for planetary strength"]]
+            
+    headers = ["योग का नाम", "श्रेणी", "संबद्ध ग्रह", "प्रभाव / शास्त्रीय फल"] if language == "hi" else ["Yoga Name", "Category", "Planets", "Effect / Description"]
     return {
-        "headers": ["Yoga Name", "Category", "Planets", "Effect / Description"],
+        "headers": headers,
         "cols": [1, 1, 1, 2],
         "rows": rows
     }
@@ -1159,49 +1241,49 @@ _LOCALIZED_TEXTS = {
         "at": "At",
         "system": "System",
         "generated": "Generated",
-        "birth_details": "Birth Details (जन्म विवरण)",
-        "d1_title": "Rashi Chart (D1) - लग्न कुंडली",
-        "d9_title": "Navamsa Chart (D9) - नवमांश कुंडली",
-        "north_indian": "North Indian Style (उत्तर भारतीय पद्धति)",
-        "south_indian": "South Indian Style (दक्षिण भारतीय पद्धति)",
-        "planetary_positions": "Planetary Positions (ग्रह स्थिति)",
-        "houses": "House Placements (भाव विवरण)",
-        "aspects": "Major Aspects (प्रमुख दृष्टि)",
-        "dasha": "Vimshottari Dasha (विम्शोत्तरी दशा)",
-        "varshphal_title": "Yearly Varshphal Forecast (वार्षिक राशिफल)",
-        "upcoming_title": "Upcoming Key Periods (आगामी समय)",
-        "house_summary_title": "House-wise Summary (भाव विवेचन)",
-        "vargas_title": "Divisional Placements Table (वर्ग कुंडली सारणी)",
-        "yogas_title": "Formed Yogas Analysis (योग विवेचन)",
-        "antardasha_title": "Antardashas of Active Mahadasha (सूक्ष्म अंतर्दशा काल)",
-        "houses_detailed_title": "Detailed House Analysis (भाव फल विवेचन)",
-        "planets_detailed_title": "Planetary Placement Interpretations (ग्रह फल विवेचन)",
-        "remedies_detailed_title": "Spiritual Guidelines & Remedies (उपाय एवं मंत्र)",
+        "birth_details": "Birth Details",
+        "d1_title": "Rashi Chart (D1)",
+        "d9_title": "Navamsa Chart (D9)",
+        "north_indian": "North Indian Style",
+        "south_indian": "South Indian Style",
+        "planetary_positions": "Planetary Positions",
+        "houses": "House Placements",
+        "aspects": "Major Aspects",
+        "dasha": "Vimshottari Dasha",
+        "varshphal_title": "Yearly Varshphal Forecast",
+        "upcoming_title": "Upcoming Key Periods",
+        "house_summary_title": "House-wise Summary",
+        "vargas_title": "Divisional Placements Table",
+        "yogas_title": "Formed Yogas Analysis",
+        "antardasha_title": "Antardashas of Active Mahadasha",
+        "houses_detailed_title": "Detailed House Analysis",
+        "planets_detailed_title": "Planetary Placement Interpretations",
+        "remedies_detailed_title": "Spiritual Guidelines & Remedies",
     },
     "hi": {
-        "title": "जन्म कुंडली विवरण (Kundali Report)",
+        "title": "जन्म कुंडली विवरण",
         "born": "जन्म समय",
         "at": "जन्म स्थान",
         "system": "पद्धति",
         "generated": "दिनांक",
-        "birth_details": "जन्म विवरण (Birth Details)",
-        "d1_title": "लग्न कुंडली / लग्न चक्र (Rashi D1)",
-        "d9_title": "नवमांश कुंडली / नवमांश चक्र (Navamsa D9)",
-        "north_indian": "उत्तर भारतीय शैली (North Indian)",
-        "south_indian": "दक्षिण भारतीय शैली (South Indian)",
-        "planetary_positions": "ग्रह स्थिति (Planetary Positions)",
-        "houses": "भाव विवरण (Houses)",
-        "aspects": "प्रमुख दृष्टि (Major Aspects)",
-        "dasha": "विम्शोत्तरी दशा (Vimshottari Dasha)",
-        "varshphal_title": "वार्षिक वर्षफल (Yearly Varshphal)",
-        "upcoming_title": "आगामी महत्वपूर्ण समय (Upcoming Key Periods)",
-        "house_summary_title": "भाव विवेचन / भाव फल (House-wise Summary)",
-        "vargas_title": "वर्ग कुंडली स्थिति विवरण (Divisional Table)",
-        "yogas_title": "कुंडली में स्थित महत्वपूर्ण योग (Yogas)",
-        "antardasha_title": "सक्रिय महादशा की अंतर्दशाएं (Antardashas)",
-        "houses_detailed_title": "द्वादश भाव फल विवेचन (Detailed House Analysis)",
-        "planets_detailed_title": "ग्रह फल विवेचन (Detailed Planets Analysis)",
-        "remedies_detailed_title": "ज्योतिषीय उपाय एवं वैदिक मंत्र (Remedies & Mantras)",
+        "birth_details": "जन्म विवरण",
+        "d1_title": "लग्न कुंडली (D1)",
+        "d9_title": "नवमांश कुंडली (D9)",
+        "north_indian": "उत्तर भारतीय शैली",
+        "south_indian": "दक्षिण भारतीय शैली",
+        "planetary_positions": "ग्रह स्थिति विवरण",
+        "houses": "भाव स्थिति विवरण",
+        "aspects": "प्रमुख दृष्टि योग",
+        "dasha": "विम्शोत्तरी महादशा",
+        "varshphal_title": "मासिक वर्षफल",
+        "upcoming_title": "आगामी महत्वपूर्ण समय",
+        "house_summary_title": "भाव फल सारांश",
+        "vargas_title": "वर्ग कुंडली स्थिति चक्र",
+        "yogas_title": "कुंडली में स्थित महत्वपूर्ण योग",
+        "antardasha_title": "सक्रिय महादशा की अंतर्दशाएं",
+        "houses_detailed_title": "द्वादश भाव फल विवेचन",
+        "planets_detailed_title": "ग्रह फल विवेचन",
+        "remedies_detailed_title": "ज्योतिषीय उपाय एवं वैदिक मंत्र",
     }
 }
 
@@ -1222,7 +1304,7 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
         files["wheel.svg"] = wheel_svg(session, theme="classic")
     except Exception:                   # a wheel that will not draw is not fatal
         pass
-    for name, svg in _vedic_svgs(session).items():
+    for name, svg in _vedic_svgs(session, language=language).items():
         files[f"{name}.svg"] = svg
 
     birth_rows = []
@@ -1290,7 +1372,7 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
             dasha = None
 
     vargas_table = _varga_grid(session)
-    yogas_table = _yogas_pdf_table(session)
+    yogas_table = _yogas_pdf_table(session, language=language)
     
     antardasha_table = None
     if dasha:
