@@ -397,8 +397,11 @@ _PRELUDE = r"""
 
 #let kvtable(rows) = table(
   columns: (auto, 1fr), stroke: none, align: left,
-  inset: (x: 0pt, y: 3.4pt), column-gutter: 16pt,
-  ..rows.map(r => (text(fill: MUTED, size: 9pt, r.at(0)), text(r.at(1)))).flatten())
+  inset: (x: 0pt, y: 4.5pt), column-gutter: 18pt,
+  ..rows.map(r => (
+    text(fill: MUTED, size: if d.lang == "hi" { 11.2pt } else { 9.2pt }, r.at(0)),
+    text(size: if d.lang == "hi" { 11.2pt } else { 10pt }, r.at(1))
+  )).flatten())
 
 // `cols` is one number per column: 0 means auto, n means n*1fr. Giving at least
 // one column a fraction is what makes the table fill the measure instead of
@@ -406,12 +409,12 @@ _PRELUDE = r"""
 #let datatable(t) = table(
   columns: t.cols.map(c => if c == 0 { auto } else { c * 1fr }),
   stroke: (bottom: 0.4pt + RULE),
-  inset: (x: 5pt, y: 4.2pt),
+  inset: (x: 6pt, y: 5.5pt),
   align: left,
   fill: (x, y) => if y == 0 { WASH } else { none },
   table.header(..t.headers.map(h =>
-    text(size: 8.4pt, weight: "semibold", fill: MUTED, upper(h)))),
-  ..t.rows.flatten().map(c => text(size: 8.8pt, c)))
+    text(size: if d.lang == "hi" { 10.5pt } else { 8.8pt }, weight: "semibold", fill: MUTED, upper(h)))),
+  ..t.rows.flatten().map(c => text(size: if d.lang == "hi" { 10.5pt } else { 9.2pt }, c)))
 
 #let cover(subtitle) = page(margin: (x: 62pt, y: 96pt), header: none, footer: none)[
   #align(center)[
@@ -540,6 +543,12 @@ _CHART_BODY = """
   grid(columns: cells.map(c => 1fr), gutter: 14pt, ..cells)
 }
 
+#section(d.texts.vargas_title)
+#datatable(d.vargas)
+
+#section(d.texts.yogas_title)
+#datatable(d.yogas)
+
 #section(d.texts.planetary_positions)
 #datatable(d.positions)
 
@@ -556,11 +565,37 @@ _CHART_BODY = """
   #kvtable(d.dasha.summary)
   #v(8pt)
   #datatable(d.dasha.table)
+  
+  #v(8pt)
+  #section(d.texts.antardasha_title)
+  #datatable(d.dasha.antardasha)
+]
+
+#if d.houses_detailed.len() > 0 [
+  #section(d.texts.houses_detailed_title)
+  #blocks(d.houses_detailed)
+]
+
+#if d.planets_detailed.len() > 0 [
+  #section(d.texts.planets_detailed_title)
+  #blocks(d.planets_detailed)
+]
+
+#if d.remedies_detailed.len() > 0 [
+  #section(d.texts.remedies_detailed_title)
+  #blocks(d.remedies_detailed)
 ]
 
 #if d.varshphal.len() > 0 [
   #section(d.texts.varshphal_title)
-  #blocks(d.varshphal)
+  #grid(
+    columns: (auto, 1fr),
+    gutter: 12pt,
+    ..d.varshphal.map(m => (
+      text(weight: "bold", fill: ACC, m.at(0)),
+      blocks(m.at(1))
+    )).flatten()
+  )
 ]
 
 #if d.upcoming.len() > 0 [
@@ -810,6 +845,127 @@ def _dasha_ladder(session, when: dt.datetime) -> list[list[str]]:
     return rows
 
 
+def _antardasha_ladder(session, when: dt.datetime) -> list[list[str]]:
+    """Antardashas of the current Mahadasha."""
+    mladder = _dasha_ladder(session, when)
+    active_m = None
+    for m in mladder:
+        if m[4] == "current":
+            active_m = m
+            break
+    if not active_m:
+        active_m = mladder[0]
+        
+    m_lord_name = active_m[0]
+    m_start_str = active_m[2]
+    
+    # Parse date
+    m_start = dt.datetime.strptime(m_start_str, "%d %b %Y")
+    if when.tzinfo:
+        m_start = m_start.replace(tzinfo=when.tzinfo)
+    else:
+        m_start = m_start.replace(tzinfo=None)
+        when = when.replace(tzinfo=None)
+    
+    # Vimshottari order & years
+    ORDER = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"]
+    v_years = {
+        "Ketu": 7, "Venus": 20, "Sun": 6, "Moon": 10, "Mars": 7,
+        "Rahu": 18, "Jupiter": 16, "Saturn": 19, "Mercury": 17
+    }
+    
+    m_idx = ORDER.index(m_lord_name)
+    m_years_total = v_years[m_lord_name]
+    
+    cursor = m_start
+    rows: list[list[str]] = []
+    
+    for step in range(9):
+        a_lord = ORDER[(m_idx + step) % 9]
+        a_years = v_years[a_lord]
+        # (m_years * a_years / 120) * SIDEREAL_YEAR
+        days = (m_years_total * a_years / 120.0) * SIDEREAL_YEAR
+        end = cursor + dt.timedelta(days=days)
+        
+        if cursor <= when < end:
+            state = "current"
+        elif end <= when:
+            state = "past"
+        else:
+            state = "ahead"
+            
+        rows.append([a_lord, cursor.strftime("%d %b %Y"), end.strftime("%d %b %Y"), state])
+        cursor = end
+        
+    return rows
+
+
+def _varga_grid(session) -> dict:
+    """Returns a table of planet signs across D1, D3, D7, D9, D10, D12."""
+    from .astro.vargas import divisional_chart
+    divisions = ["D1", "D3", "D7", "D9", "D10", "D12"]
+    planets = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu", "Lagna"]
+    
+    v_charts = {}
+    for div in divisions:
+        if div == "D1":
+            v_charts[div] = {
+                "Lagna": session.bundle["objects"]["ASC"]["sign"],
+                "positions": {p: session.bundle["objects"][p]["sign"] for p in planets if p in session.bundle["objects"]}
+            }
+        else:
+            try:
+                v_data = divisional_chart(session, div)
+                lag_sign = v_data["lagna"]["sign"] if isinstance(v_data["lagna"], dict) else v_data["lagna"]
+                v_charts[div] = {
+                    "Lagna": lag_sign,
+                    "positions": {p: v_data["positions"][p]["sign"] for p in planets if p in v_data["positions"]}
+                }
+            except Exception:
+                v_charts[div] = {"Lagna": "\u2014", "positions": {}}
+                
+    rows = []
+    for p in planets:
+        row = [p]
+        for div in divisions:
+            if p == "Lagna":
+                sign = v_charts[div]["Lagna"]
+            else:
+                sign = v_charts[div]["positions"].get(p, "\u2014")
+            row.append(sign)
+        rows.append(row)
+        
+    return {
+        "headers": ["Object", "D1 (Rashi)", "D3", "D7", "D9 (Nav)", "D10 (Das)", "D12 (Dvad)"],
+        "cols": [0, 1, 1, 1, 1, 1, 1],
+        "rows": rows
+    }
+
+
+def _yogas_pdf_table(session) -> dict:
+    """Returns a table of formed yogas."""
+    from .astro.vargas import yogas
+    try:
+        y_data = yogas(session)
+        formed = y_data.get("yogas", [])
+    except Exception:
+        formed = []
+        
+    rows = []
+    for y in formed:
+        planets_str = ", ".join(y.get("planets", [])) if y.get("planets") else "\u2014"
+        rows.append([y.get("name", ""), y.get("group", ""), planets_str, y.get("note", "")])
+        
+    if not rows:
+        rows = [["No major yogas formed", "\u2014", "\u2014", "Continue daily prayers for planetary strength"]]
+        
+    return {
+        "headers": ["Yoga Name", "Category", "Planets", "Effect / Description"],
+        "cols": [1, 1, 1, 2],
+        "rows": rows
+    }
+
+
 def _positions_table(bundle: dict) -> dict:
     order = {"planet": 0, "node": 1, "angle": 2, "point": 3, "part": 4}
     objects = sorted(
@@ -877,6 +1033,125 @@ def _aspects_table(bundle: dict, limit: int = 26) -> dict:
             "cols": [0, 0, 0, 0, 1], "rows": rows}
 
 
+_PLANETS_HI = {
+    "Sun": "सूर्य", "Moon": "चंद्रमा", "Mars": "मंगल", "Mercury": "बुध", "Jupiter": "बृहस्पति", 
+    "Venus": "शुक्र", "Saturn": "शनि", "Rahu": "राहु", "Ketu": "केतु", "Lagna": "लग्न", 
+    "ASC": "लग्न", "MC": "दशम भाव", "DSC": "सप्तम भाव", "IC": "चतुर्थ भाव", 
+    "True Node": "राहु", "South Node": "केतु", "Mean Node": "राहु",
+    "Uranus": "अरुण", "Neptune": "वरुण", "Pluto": "यम", "Chiron": "चिरोन"
+}
+
+_SIGNS_HI = {
+    "Aries": "मेष", "Taurus": "वृषभ", "Gemini": "मिथुन", "Cancer": "कर्क", "Leo": "सिंह", 
+    "Virgo": "कन्या", "Libra": "तुला", "Scorpio": "वृश्चिक", "Sagittarius": "धनु", 
+    "Capricorn": "मकर", "Aquarius": "कुंभ", "Pisces": "मीन"
+}
+
+_ZODIAC_HI = {
+    "sidereal": "निरयण (Sidereal)", "sidereal".title(): "निरयण (Sidereal)",
+    "tropical": "सायन (Tropical)", "tropical".title(): "सायन (Tropical)"
+}
+
+_HOUSE_SYSTEM_HI = {
+    "Whole Sign": "भाव चलित (Whole Sign)", "Equal House": "सम भाव (Equal House)"
+}
+
+_DIGNITIES_HI = {
+    "exalted": "उच्च", "debilitated": "नीच", "own": "स्वराशि", "friendly": "मित्र", 
+    "neutral": "सम", "inimical": "शत्रु", "moolatrikona": "मूलत्रिकोण",
+    "exalted".title(): "उच्च", "debilitated".title(): "नीच", "own".title(): "स्वराशि", 
+    "friendly".title(): "मित्र", "neutral".title(): "सम", "inimical".title(): "शत्रु",
+    "moolatrikona".title(): "मूलत्रिकोण"
+}
+
+_MOTION_HI = {
+    "retrograde": "वक्री", "direct": "मार्गी", "combust": "अस्त", 
+    "yes": "हाँ", "no": "नहीं", "Yes": "हाँ", "No": "नहीं"
+}
+
+_POSITION_HI = {
+    "angular": "केंद्र", "succedent": "पणफर", "cadent": "आपोक्लिम",
+    "angular".title(): "केंद्र", "succedent".title(): "पणफर", "cadent".title(): "आपोक्लिम"
+}
+
+_ASPECTS_HI = {
+    "conjunction": "युति", "opposition": "प्रतियुति", "square": "केन्द्र", 
+    "trine": "त्रिकोण", "sextile": "षडाष्टक"
+}
+
+
+def _format_date_hi(date_str: str) -> str:
+    import re
+    months_map = {
+        "jan": "01", "feb": "02", "mar": "03", "apr": "04", "may": "05", "jun": "06",
+        "jul": "07", "aug": "08", "sep": "09", "oct": "10", "nov": "11", "dec": "12",
+        "january": "01", "february": "02", "march": "03", "april": "04", "may": "05", "june": "06",
+        "july": "07", "august": "08", "september": "09", "october": "10", "november": "11", "december": "12"
+    }
+    
+    # Try parsing format DD Month YYYY
+    m = re.match(r"(\d+)\s+([A-Za-z]+)\s+(\d+)(?:,\s+(\d+:\d+))?", date_str)
+    if m:
+        day = m.group(1).zfill(2)
+        mon_name = m.group(2).lower()
+        year = m.group(3)
+        time = m.group(4)
+        mon = months_map.get(mon_name, "01")
+        if time:
+            return f"{day}-{mon}-{year}, {time}"
+        return f"{day}-{mon}-{year}"
+        
+    # Check if Month DD, YYYY
+    m2 = re.match(r"([A-Za-z]+)\s+(\d+),\s+(\d+)(?:\s+(\d+:\d+\s*[A-Za-z]+))?", date_str)
+    if m2:
+        mon_name = m2.group(1).lower()
+        day = m2.group(2).zfill(2)
+        year = m2.group(3)
+        time = m2.group(4)
+        mon = months_map.get(mon_name, "01")
+        if time:
+            return f"{day}-{mon}-{year}, {time}"
+        return f"{day}-{mon}-{year}"
+        
+    return date_str
+
+
+def _translate_val(val: str, language: str) -> str:
+    if language != "hi":
+        return val
+    if not isinstance(val, str):
+        return str(val)
+    val_stripped = val.strip()
+    if not val_stripped:
+        return val
+        
+    for m in [_PLANETS_HI, _SIGNS_HI, _ZODIAC_HI, _HOUSE_SYSTEM_HI, _DIGNITIES_HI, _MOTION_HI, _POSITION_HI, _ASPECTS_HI]:
+        if val_stripped in m:
+            return m[val_stripped]
+            
+    # Check suffix " R" for retrograde
+    if val_stripped.endswith(" R") and val_stripped[:-2] in _PLANETS_HI:
+        return _PLANETS_HI[val_stripped[:-2]] + " (वक्री)"
+        
+    # Check comma separated list
+    if "," in val_stripped:
+        parts = [p.strip() for p in val_stripped.split(",")]
+        mapped = [_translate_val(p, language) for p in parts]
+        return ", ".join(mapped)
+        
+    # Handle numbers or degrees: e.g. "23°07'" or "10°57'"
+    if "°" in val_stripped:
+        # Check if it has a trailing sign name like "23°07' Aries"
+        # E.g. split and translate the sign name part
+        for sign_eng, sign_hi in _SIGNS_HI.items():
+            if sign_eng in val_stripped:
+                return val_stripped.replace(sign_eng, sign_hi)
+        return val_stripped
+        
+    # Try translating date
+    return _format_date_hi(val_stripped)
+
+
 _LOCALIZED_TEXTS = {
     "en": {
         "title": "Birth Chart & Kundali Report",
@@ -896,6 +1171,12 @@ _LOCALIZED_TEXTS = {
         "varshphal_title": "Yearly Varshphal Forecast (वार्षिक राशिफल)",
         "upcoming_title": "Upcoming Key Periods (आगामी समय)",
         "house_summary_title": "House-wise Summary (भाव विवेचन)",
+        "vargas_title": "Divisional Placements Table (वर्ग कुंडली सारणी)",
+        "yogas_title": "Formed Yogas Analysis (योग विवेचन)",
+        "antardasha_title": "Antardashas of Active Mahadasha (सूक्ष्म अंतर्दशा काल)",
+        "houses_detailed_title": "Detailed House Analysis (भाव फल विवेचन)",
+        "planets_detailed_title": "Planetary Placement Interpretations (ग्रह फल विवेचन)",
+        "remedies_detailed_title": "Spiritual Guidelines & Remedies (उपाय एवं मंत्र)",
     },
     "hi": {
         "title": "जन्म कुंडली विवरण (Kundali Report)",
@@ -915,6 +1196,12 @@ _LOCALIZED_TEXTS = {
         "varshphal_title": "वार्षिक वर्षफल (Yearly Varshphal)",
         "upcoming_title": "आगामी महत्वपूर्ण समय (Upcoming Key Periods)",
         "house_summary_title": "भाव विवेचन / भाव फल (House-wise Summary)",
+        "vargas_title": "वर्ग कुंडली स्थिति विवरण (Divisional Table)",
+        "yogas_title": "कुंडली में स्थित महत्वपूर्ण योग (Yogas)",
+        "antardasha_title": "सक्रिय महादशा की अंतर्दशाएं (Antardashas)",
+        "houses_detailed_title": "द्वादश भाव फल विवेचन (Detailed House Analysis)",
+        "planets_detailed_title": "ग्रह फल विवेचन (Detailed Planets Analysis)",
+        "remedies_detailed_title": "ज्योतिषीय उपाय एवं वैदिक मंत्र (Remedies & Mantras)",
     }
 }
 
@@ -1002,6 +1289,52 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
         except Exception:               # pragma: no cover - defensive
             dasha = None
 
+    vargas_table = _varga_grid(session)
+    yogas_table = _yogas_pdf_table(session)
+    
+    antardasha_table = None
+    if dasha:
+        antardasha_table = {
+            "headers": ["Antardasha", "From", "To", "Status"],
+            "cols": [0, 0, 0, 1],
+            "rows": _antardasha_ladder(session, when)
+        }
+        dasha["antardasha"] = antardasha_table
+
+    if language == "hi":
+        for row in birth_rows:
+            row[1] = _translate_val(row[1], language)
+
+        vargas_table["headers"] = ["ग्रह/लग्न", "D1 (लग्न)", "D3 (द्रेष्काण)", "D7 (सप्तांश)", "D9 (नवमांश)", "D10 (दशांश)", "D12 (द्वादशांश)"]
+        for row in vargas_table["rows"]:
+            for i in range(len(row)):
+                row[i] = _translate_val(row[i], language)
+                
+        yogas_table["headers"] = ["योग का नाम", "श्रेणी", "संबद्ध ग्रह", "प्रभाव / शास्त्रीय फल"]
+        for row in yogas_table["rows"]:
+            row[0] = _translate_val(row[0], language)
+            row[1] = _translate_val(row[1], language)
+            row[2] = _translate_val(row[2], language)
+        
+        if dasha:
+            dasha["table"]["headers"] = ["महादशा", "वर्ष", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"]
+            for row in dasha["table"]["rows"]:
+                row[0] = _translate_val(row[0], language)
+                row[2] = _translate_val(row[2], language)
+                row[3] = _translate_val(row[3], language)
+                row[4] = _translate_val(row[4], language)
+                
+            for row in dasha["summary"]:
+                row[1] = _translate_val(row[1], language)
+
+            if antardasha_table:
+                antardasha_table["headers"] = ["अंतर्दशा स्वामी", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"]
+                for row in antardasha_table["rows"]:
+                    row[0] = _translate_val(row[0], language)
+                    row[1] = _translate_val(row[1], language)
+                    row[2] = _translate_val(row[2], language)
+                    row[3] = _translate_val(row[3], language)
+
     # Call LLM to generate narrative sections
     analysis_input = {
         "meta": meta,
@@ -1014,22 +1347,37 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
         analysis_input["moon_sign"] = bundle["objects"]["Moon"]["sign"]
 
     narratives = generate_kundali_narratives(analysis_input, language=language)
+    from .llm import generate_kundali_interpretations
+    interpretations = generate_kundali_interpretations(analysis_input, language=language)
 
     pos_table = _positions_table(bundle)
     if language == "hi":
         pos_table["headers"] = ["ग्रह", "राशि", "स्थिति", "भाव", "गति", "वक्री"]
         for row in pos_table["rows"]:
-            row[5] = "हाँ" if row[5] == "yes" else "नहीं"
+            row[0] = _translate_val(row[0], language)
+            row[1] = _translate_val(row[1], language)
+            row[2] = _translate_val(row[2], language)
+            row[3] = _translate_val(row[3], language)
+            row[4] = _translate_val(row[4], language)
+            row[5] = _translate_val(row[5], language)
 
     houses_table = _houses_table(bundle)
     if language == "hi":
         houses_table["headers"] = ["भाव", "राशि", "विस्तार", "दूरी", "स्वामी", "स्थित ग्रह"]
+        for row in houses_table["rows"]:
+            row[1] = _translate_val(row[1], language)
+            row[3] = _translate_val(row[3], language)
+            if len(row) > 4:
+                row[4] = _translate_val(row[4], language)
 
     aspects_table = _aspects_table(bundle)
     if language == "hi":
         aspects_table["headers"] = ["कारक", "दृष्टि", "लक्ष्य", "अंतर", "सटीक"]
         for row in aspects_table["rows"]:
-            row[4] = "हाँ" if row[4] == "yes" else "नहीं"
+            row[0] = _translate_val(row[0], language)
+            row[1] = _translate_val(row[1], language)
+            row[2] = _translate_val(row[2], language)
+            row[4] = _translate_val(row[4], language)
 
     data = {
         "brand": brand,
@@ -1038,10 +1386,10 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
         "lang": language,
         "texts": texts,
         "cover": [
-            [texts["born"], meta["local_time"]],
-            [texts["at"], meta["place"]],
-            [texts["system"], f"{meta['zodiac'].title()} \u00b7 {meta['house_system']}"],
-            [texts["generated"], when.strftime("%d %B %Y")],
+            [texts["born"], _translate_val(meta["local_time"], language)],
+            [texts["at"], _translate_val(meta["place"], language)],
+            [texts["system"], f"{_translate_val(meta['zodiac'], language)} \u00b7 {_translate_val(meta['house_system'], language)}"],
+            [texts["generated"], _translate_val(when.strftime("%d %B %Y"), language)],
         ],
         "footer": f"{brand} \u00b7 {site}",
         "birth": birth_rows,
@@ -1050,13 +1398,18 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
         "d1_south": "d1_south.svg" if "d1_south.svg" in files else "",
         "d9_north": "d9_north.svg" if "d9_north.svg" in files else "",
         "d9_south": "d9_south.svg" if "d9_south.svg" in files else "",
+        "vargas": vargas_table,
+        "yogas": yogas_table,
         "positions": pos_table,
         "houses": houses_table,
         "aspects": aspects_table,
         "dasha": dasha,
-        "varshphal": markdown_blocks(narratives["varshphal"]),
+        "varshphal": [[m, markdown_blocks(p)] for m, p in narratives["varshphal"]],
         "upcoming": markdown_blocks(narratives["key_periods"]),
         "house_summary": markdown_blocks(narratives["house_summary"]),
+        "houses_detailed": markdown_blocks(interpretations["houses_detailed"]),
+        "planets_detailed": markdown_blocks(interpretations["planets_detailed"]),
+        "remedies_detailed": markdown_blocks(interpretations["yogas_remedies_detailed"]),
     }
     return _compile(_CHART_BODY, data, files)
 

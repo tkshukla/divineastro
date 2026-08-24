@@ -683,23 +683,84 @@ def generate_spiritual_guidance(analysis: dict, language: str = "en") -> str:
 
 
 def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
-    """Generate Yearly Varshphal, Upcoming Key Periods, and House-wise summaries."""
-    provider = os.environ.get("ASTRO_PROVIDER", "anthropic")
-    if not provider or provider == "off":
-        if os.environ.get("ANTHROPIC_API_KEY"):
-            provider = "anthropic"
+    """Generate Yearly Varshphal (month-by-month), Upcoming Key Periods, and House-wise summaries."""
+    provider = default_provider()
+
+    meta = analysis.get("meta", {})
+    lagna = analysis.get("lagna", "") or "Ascendant"
+    moon_sign = analysis.get("moon_sign", "") or "Moon Sign"
+    dasha_lord = analysis.get("dasha", {}).get("mahadasha", {}).get("lord", "")
+
+    # Calculate 12 monthly intervals starting from the solar return of current year
+    import datetime as dt
+    birth_date_str = meta.get("local_time", "").split()[0] if meta.get("local_time") else "1999-08-14"
+    try:
+        b_dt = dt.datetime.strptime(birth_date_str, "%Y-%m-%d")
+    except Exception:
+        b_dt = dt.datetime(1999, 8, 14)
+        
+    now = dt.datetime.now()
+    varsh_year = now.year if (now.month > b_dt.month or (now.month == b_dt.month and now.day >= b_dt.day)) else now.year - 1
+    
+    start_date = dt.datetime(varsh_year, b_dt.month, b_dt.day)
+    
+    monthly_intervals = []
+    month_names_en = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    month_names_hi = ["जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"]
+    
+    for i in range(12):
+        m_start = start_date
+        try:
+            if m_start.month == 12:
+                m_end = dt.datetime(m_start.year + 1, 1, m_start.day)
+            else:
+                m_end = dt.datetime(m_start.year, m_start.month + 1, m_start.day)
+        except ValueError:
+            m_end = m_start + dt.timedelta(days=30)
+            
+        if language == "hi":
+            lbl = f"{m_start.day} {month_names_hi[m_start.month - 1]} से {m_end.day} {month_names_hi[m_end.month - 1]}"
         else:
-            provider = "off"
+            lbl = f"{m_start.day} {month_names_en[m_start.month - 1]} to {m_end.day} {month_names_en[m_end.month - 1]}"
+            
+        monthly_intervals.append(lbl)
+        start_date = m_end
 
     # Pre-translated fallbacks
     fallbacks = {
         "en": {
-            "varshphal": "The year ahead brings a transition of energies, particularly governed by your active dasha lord. Major transits through your angular houses suggest a focus on professional consolidation and financial discipline. Personal relations demand patience, while health remains stable with standard routine care.",
+            "varshphal": [
+                [monthly_intervals[0], "Transit of Ascendant lord brings new opportunities and fresh energy. Focus on self-development."],
+                [monthly_intervals[1], "Financial planning is highlighted. Good time to invest in long-term stable assets."],
+                [monthly_intervals[2], "Short travels and intellectual pursuits are favored. Communication with siblings is productive."],
+                [monthly_intervals[3], "Domestic happiness increases. Focus on home decoration and spending quality time with family."],
+                [monthly_intervals[4], "Creativity and learning are at their peak. Academic and speculative interests bring joy."],
+                [monthly_intervals[5], "Pay attention to health and routine. Avoid disputes and manage your work-life balance carefully."],
+                [monthly_intervals[6], "Partnerships and relationships are favored. Good period for collaborative projects."],
+                [monthly_intervals[7], "Sudden transformations or interest in research and occult sciences may arise. Stay patient."],
+                [monthly_intervals[8], "Fortunate period. Spiritual inclination rises and long-distance travel is indicated."],
+                [monthly_intervals[9], "Career advancement and professional consolidation. Recognition from authority figures."],
+                [monthly_intervals[10], "Social networking brings financial gains. Fulfillment of desires and happiness through friends."],
+                [monthly_intervals[11], "Spiritual reflection and higher expenditures. Good time for introspection and charity."]
+            ],
             "key_periods": "Key opportunities arise in the second half of the year when planetary transits align with your natal solar placements. Avoid starting major ventures during Rahu Kalam hours, and utilize the auspicious Abhijit Muhurtha for important initiations.",
             "house_summary": "Your ascendant lord indicates a focus on self-expression and personal development. The planetary placements in the second and eleventh houses indicate steady source of income and support from social networks, while the tenth house energy drives ambition and leadership."
         },
         "hi": {
-            "varshphal": "आने वाला वर्ष ऊर्जा के सकारात्मक बदलाव का संकेत दे रहा है, जो मुख्य रूप से आपके सक्रिय दशा स्वामी द्वारा संचालित है। आपके केंद्र भावों के गोचर बताते हैं कि आपको पेशेवर रूप से स्थिरता मिलेगी और आर्थिक रूप से अनुशासन बनाए रखने की आवश्यकता होगी। पारिवारिक संबंधों में धैर्य रखें और दैनिक दिनचर्या का पालन करें।",
+            "varshphal": [
+                [monthly_intervals[0], "लग्न स्वामी का गोचर आपके स्वास्थ्य में सुधार और नई ऊर्जा लाएगा। व्यक्तिगत विकास पर ध्यान दें।"],
+                [monthly_intervals[1], "आर्थिक योजना के लिए समय अनुकूल है। दीर्घावधि के निवेश से लाभ होने की संभावना है।"],
+                [monthly_intervals[2], "लघु यात्राएं और बौद्धिक कार्य सफल रहेंगे। भाई-बहनों के साथ संवाद सुखद रहेगा।"],
+                [monthly_intervals[3], "पारिवारिक सुख-शांति में वृद्धि होगी। घर की सजावट और माता के स्वास्थ्य पर ध्यान दें।"],
+                [monthly_intervals[4], "रचनात्मकता और विद्या के क्षेत्र में उन्नति होगी। शिक्षा और नवीन कार्यों में रुचि बढ़ेगी।"],
+                [monthly_intervals[5], "स्वास्थ्य और दैनिक दिनचर्या के प्रति सतर्क रहें। व्यर्थ के विवादों से दूर रहना ही श्रेयस्कर है।"],
+                [monthly_intervals[6], "साझेदारी और दांपत्य जीवन के लिए समय अनुकूल है। आपसी तालमेल से काम बनेंगे।"],
+                [monthly_intervals[7], "जीवन में अचानक कुछ बड़े बदलाव या शोध कार्यों में रुचि जागृत हो सकती है। धैर्य रखें।"],
+                [monthly_intervals[8], "भाग्य का पूर्ण सहयोग मिलेगा। धार्मिक यात्राओं और आध्यात्मिक कार्यों में मन लगेगा।"],
+                [monthly_intervals[9], "करियर में उन्नति और मान-सम्मान की प्राप्ति होगी। अधिकारियों से सहयोग मिलेगा।"],
+                [monthly_intervals[10], "सामाजिक संपर्कों से लाभ होगा। मित्रों के सहयोग से अधूरी इच्छाएं पूरी होंगी।"],
+                [monthly_intervals[11], "खर्चों में वृद्धि होगी और आध्यात्मिक चिंतन बढ़ेगा। दान-पुण्य के कार्यों में रुचि लें।"]
+            ],
             "key_periods": "वर्ष के दूसरे भाग में महत्वपूर्ण अवसर आने की संभावना है जब प्रमुख ग्रहों का गोचर आपकी कुंडली के अनुकूल रहेगा। राहूकाल के दौरान महत्वपूर्ण कार्यों को टालें और अभिजीत मुहूर्त का उपयोग करें।",
             "house_summary": "आपका लग्न स्वामी आपके व्यक्तित्व और आत्म-विकास के लिए उत्तम है। द्वितीय और एकादश भाव में ग्रहों की स्थिति आय के नए स्रोतों और सामाजिक संबंधों से लाभ की ओर संकेत करती है। दशम भाव की ऊर्जा आपके कार्यक्षेत्र में उन्नति प्रदान करेगी।"
         }
@@ -711,25 +772,23 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
     if provider == "off":
         return default_res
 
-    meta = analysis.get("meta", {})
-    lagna = analysis.get("lagna", "") or "Ascendant"
-    moon_sign = analysis.get("moon_sign", "") or "Moon Sign"
-    dasha_lord = analysis.get("dasha", {}).get("mahadasha", {}).get("lord", "")
-
     prompt = (
         f"You are Pandit Shukla, an elite Vedic astrologer with decades of experience.\n"
-        f"Generate a personalized, premium Vedic Astrology analysis for a native named {meta.get('name', 'Native')} "
+        f"Generate a personalized, premium month-by-month Varshphal analysis for a native named {meta.get('name', 'Native')} "
         f"born on {meta.get('local_time', '')} at {meta.get('place', '')}.\n"
         f"Lagna: {lagna}, Moon Sign: {moon_sign}.\n"
         f"Current Period: {dasha_lord} Mahadasha.\n\n"
         f"Please provide three distinct sections:\n"
-        f"1. A yearly forecast (Varshphal) for the next 12 months, detailing key transit influences on their life.\n"
-        f"2. Upcoming key periods, indicating when major developments in career, finance, or relationships are likely to occur.\n"
-        f"3. A house-wise summary explaining the planetary influences active across the primary houses of their chart.\n\n"
+        f"1. A month-by-month forecast (varshphal) for the next 12 months. You must use these exact month labels:\n"
+        f"   {', '.join(monthly_intervals)}\n"
+        f"2. Upcoming key periods, indicating when major developments in career, finance, or relationships are likely to occur (around 120 words).\n"
+        f"3. A house-wise summary explaining the planetary influences active across the primary houses of their chart (around 150 words).\n\n"
         f"You MUST format the output as a valid JSON object with the following three keys:\n"
-        f"- 'varshphal': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'} (around 150 words)\n"
-        f"- 'key_periods': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'} (around 120 words)\n"
-        f"- 'house_summary': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'} (around 150 words)\n\n"
+        f"- 'varshphal': a JSON array of 12 objects, each having:\n"
+        f"  - 'month': the exact month label string from the list above\n"
+        f"  - 'prediction': a monthly forecast written in {'Hindi (Devanagari script)' if language == 'hi' else 'English'} (around 30-40 words)\n"
+        f"- 'key_periods': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n"
+        f"- 'house_summary': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n\n"
         f"Respond ONLY with the raw JSON block. Do not include any markdown fences, introduction, or notes."
     )
 
@@ -742,7 +801,7 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
             client = anthropic.Anthropic()
             msg = client.messages.create(
                 model=CLAUDE_MODEL,
-                max_tokens=800,
+                max_tokens=4000 if language == "hi" else 2000,
                 system=system,
                 messages=[{"role": "user", "content": prompt}]
             )
@@ -758,13 +817,177 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
                 f"{OLLAMA_URL}/api/chat", data=payload,
                 headers={"Content-Type": "application/json"},
             )
-            with urllib.request.urlopen(request, timeout=30) as resp:
+            with urllib.request.urlopen(request, timeout=40) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 raw = data["message"]["content"].strip()
         else:
             return default_res
 
-        # Clean JSON codeblock wrappers if present
+        if raw.startswith("```"):
+            lines = raw.splitlines()
+            if lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines[-1].startswith("```"):
+                lines = lines[:-1]
+            raw = "\n".join(lines).strip()
+
+        parsed = json.loads(raw)
+        
+        # Format monthly predictions list
+        parsed_varshphal = parsed.get("varshphal", [])
+        formatted_varsh = []
+        for i, lbl in enumerate(monthly_intervals):
+            # Try to match by index or label
+            pred = "Transit influence brings standard opportunities. Focus on routine prayers."
+            if i < len(parsed_varshphal):
+                item = parsed_varshphal[i]
+                if isinstance(item, dict):
+                    pred = item.get("prediction", pred)
+                elif isinstance(item, list) and len(item) > 1:
+                    pred = item[1]
+            formatted_varsh.append([lbl, pred])
+
+        return {
+            "varshphal": formatted_varsh,
+            "key_periods": parsed.get("key_periods", default_res["key_periods"]),
+            "house_summary": parsed.get("house_summary", default_res["house_summary"]),
+        }
+    except Exception:
+        pass
+    return default_res
+
+
+def generate_kundali_interpretations(analysis: dict, language: str = "en") -> dict:
+    """Generate detailed 12-house, 9-planet, and yoga/remedies interpretations."""
+    provider = default_provider()
+    
+    fallbacks = {
+        "en": {
+            "houses_detailed": (
+                "* **First House (Lagna / Ascendant)**: Represents physical body, appearance, and life path. Your Lagna lord is well-placed, giving strong resilience, physical strength, and determination.\n"
+                "* **Second House (Dhana Bhava)**: Governs wealth, speech, and family. The placement of planets here suggests steady accumulation of assets, refined speech, and strong family ties.\n"
+                "* **Third House (Sahaja Bhava)**: Represents siblings, courage, and short travels. A strong third house indicates courage, sibling support, and success in communication-related ventures.\n"
+                "* **Fourth House (Sukha Bhava)**: Represents mother, home, and happiness. Influences on this house point to a comfortable home environment and a strong emotional bond with the mother.\n"
+                "* **Fifth House (Putra Bhava)**: Governs intellect, education, and children. You possess a sharp, analytical mind with a penchant for learning and creative pursuits.\n"
+                "* **Sixth House (Shatru Bhava)**: Represents enemies, debts, and health. A well-aspected sixth house helps you overcome obstacles, defeat adversaries, and maintain robust health.\n"
+                "* **Seventh House (Yuvati Bhava)**: Represents spouse, partnerships, and business. Signifies harmonious relationships and successful business partnerships built on trust.\n"
+                "* **Eighth House (Randhra Bhava)**: Represents longevity, mysteries, and transformation. Suggests an interest in occult sciences, research, and deep life transformations.\n"
+                "* **Ninth House (Dharma Bhava)**: Governs religion, fortune, and father. Indicates strong moral values, support from father figures, and fortunate long journeys.\n"
+                "* **Tenth House (Karma Bhava)**: Represents career, status, and actions. Suggests a position of authority, professional growth, and high ambition.\n"
+                "* **Eleventh House (Labha Bhava)**: Represents gains, desires, and friends. Points to multiple streams of income and fulfillment of desires through a supportive social network.\n"
+                "* **Twelfth House (Vyaya Bhava)**: Governs expenses, isolation, and spiritual liberation. Indicates spiritual inclination and foreign travels or associations."
+            ),
+            "planets_detailed": (
+                "* **Sun (Surya)**: The king of planets represents soul, authority, and father. Its placement drives your sense of self and ambition to lead.\n"
+                "* **Moon (Chandra)**: Controls mind, emotions, and mother. The placement of the Moon determines your emotional response patterns and mental peace.\n"
+                "* **Mars (Mangal)**: Governs energy, courage, and action. Its position dictates how you channel passion, resolve conflicts, and drive initiatives.\n"
+                "* **Mercury (Budha)**: The planet of communication, intellect, and trade. Indicates logical thinking, business acumen, and learning capacity.\n"
+                "* **Jupiter (Guru)**: Symbolizes wisdom, spirituality, expansion, and luck. Its influence brings spiritual inclination, growth, and benevolence.\n"
+                "* **Venus (Shukra)**: Represents love, luxury, relationships, and arts. Governs your approach to aesthetics, partner harmony, and comfort.\n"
+                "* **Saturn (Shani)**: The taskmaster represents discipline, hard work, and delay. Its placement highlights areas where focus and persistence are demanded."
+            ),
+            "yogas_remedies_detailed": (
+                "Your chart displays powerful planetary configurations (yogas) that shape your destiny. The active Vimshottari Mahadasha indicates that this is a period of transition and manifestation.\n\n"
+                "**Recommended Remedies:**\n"
+                "1. Recite the mantras for your active dasha lord daily to harmonize planetary energies.\n"
+                "2. Practice charity on Saturdays (helping the needy) and fast on Thursdays to invoke auspicious results.\n"
+                "3. Consider wearing the recommended gemstones (e.g., life stone) mounted in the appropriate metal."
+            )
+        },
+        "hi": {
+            "houses_detailed": (
+                "* **प्रथम भाव (लग्न - शरीर और व्यक्तित्व)**: यह आपके शरीर, स्वास्थ्य और व्यक्तित्व को दर्शाता है। आपका लग्न स्वामी मजबूत स्थिति में है, जो आपको उत्तम स्वास्थ्य, तेजस्विता और स्वतंत्र विचार प्रदान करता है।\n"
+                "* **द्वितीय भाव (धन और वाणी)**: यह संचित धन, कुटुंब और वाणी का प्रतिनिधित्व करता है। इस भाव पर ग्रहों की शुभ दृष्टि धन संचय और मधुर वाणी की ओर संकेत करती है।\n"
+                "* **तृतीय भाव (पराक्रम और सहोदर)**: यह पराक्रम, भाई-बहन और लघु यात्राओं को दर्शाता है। यह स्थिति आपको साहसी बनाती है और भाई-बहनों से सहयोग दिलाती है।\n"
+                "* **चतुर्थ भाव (सुख और माता)**: यह गृह सुख, वाहन, माता और मानसिक शांति का भाव है। चतुर्थ भाव में शुभता जीवन में सुख-सुविधाओं और माता से घनिष्ठ संबंध दर्शाती है।\n"
+                "* **पंचम भाव (बुद्धि, संतान और विद्या)**: यह उच्च शिक्षा, रचनात्मकता और संतान सुख का भाव है। आपकी बुद्धि कुशाग्र है और रचनात्मक कार्यों में आपकी गहरी रुचि है।\n"
+                "* **षष्ठ भाव (रोग, ऋण और शत्रु)**: यह भाव स्वास्थ्य संबंधी समस्याओं, कर्ज और शत्रुओं को दर्शाता है। ग्रहों की स्थिति आपको शत्रुओं पर विजय और बाधाओं को पार करने की शक्ति देती है।\n"
+                "* **सप्तम भाव (दांपत्य जीवन और साझेदारी)**: यह जीवनसाथी और व्यापार में साझेदारी का भाव है। यह एक सामंजस्यपूर्ण वैवाहिक जीवन और सफल व्यावसायिक संबंधों की ओर संकेत करता है।\n"
+                "* **अष्टम भाव (आयु और गुप्त ज्ञान)**: यह आयु, रहस्यमयी विद्याओं और जीवन में आने वाले बड़े बदलावों का भाव है। यह शोध कार्यों और गुप्त विज्ञान में रुचि को दर्शाता है।\n"
+                "* **नवम भाव (भाग्य और धर्म)**: यह भाग्य, पिता और आध्यात्मिक उन्नति का भाव है। आपकी रुचि धार्मिक कार्यों में होगी और आपको पिता का पूर्ण सहयोग प्राप्त होगा।\n"
+                "* **दशम भाव (कर्म और व्यवसाय)**: यह आपके करियर, सामाजिक प्रतिष्ठा और कार्यों का भाव है। यह करियर में निरंतर उन्नति, नेतृत्व क्षमता और उच्च पद की प्राप्ति दर्शाता है।\n"
+                "* **एकादश भाव (आय और लाभ)**: यह आय के साधन, इच्छाओं की पूर्ति और बड़े भाई-बहनों का भाव है। यह आय के स्थिर स्रोत और मित्रों के सहयोग को दर्शाता है।\n"
+                "* **द्वादश भाव (व्यय और मोक्ष)**: यह व्यय, विदेश यात्रा और आध्यात्मिक मोक्ष का प्रतिनिधित्व करता है। आपकी रुचि ध्यान और एकांत साधना में हो सकती है।"
+            ),
+            "planets_detailed": (
+                "* **सूर्य (Surya)**: सूर्य आत्मा, शक्ति, मान-सम्मान और पिता का कारक है। इसकी स्थिति आपके नेतृत्व गुणों और महत्वाकांक्षा को निर्धारित करती है।\n"
+                "* **चंद्रमा (Chandra)**: चंद्रमा मन, भावनाओं और माता का कारक है। यह आपकी मानसिक शांति, संवेदनशीलता और विचारों को प्रभावित करता है।\n"
+                "* **मंगल (Mangal)**: मंगल ऊर्जा, साहस और पराक्रम का कारक है। इसकी स्थिति आपके साहसिक कार्यों और निर्णय लेने की क्षमता को दर्शाती है।\n"
+                "* **बुध (Budha)**: बुध बुद्धि, वाणी और व्यापार का कारक है। यह आपके तार्किक विश्लेषण, लेखन और व्यापारिक सूझबूझ को प्रकट करता है।\n"
+                "* **बृहस्पति (Guru)**: बृहस्पति ज्ञान, धर्म, भाग्य और संतान का कारक है। इसकी शुभ स्थिति आपके जीवन में सुख, भाग्य और उच्च सोच को विकसित करती है।\n"
+                "* **शुक्र (Shukra)**: शुक्र प्रेम, कला, विलासिता और दांपत्य का कारक है। यह आपकी रचनात्मकता और भौतिक सुखों के प्रति आकर्षण को दर्शाता है।\n"
+                "* **शनि (Shani)**: शनि कर्म, अनुशासन और न्याय का कारक है। इसकी स्थिति बताती है कि जीवन के किस क्षेत्र में आपको अत्यधिक परिश्रम और धैर्य की आवश्यकता है।"
+            ),
+            "yogas_remedies_detailed": (
+                "आपकी कुंडली में विभिन्न ग्रहों के योग बन रहे हैं जो आपके जीवन की दिशा तय करते हैं। वर्तमान महादशा की अवधि में इन योगों का प्रभाव विशेष रूप से परिलक्षित होगा।\n\n"
+                "**अनुशंसित ज्योतिषीय उपाय:**\n"
+                "1. नकारात्मक प्रभावों को शांत करने के लिए अपने सक्रिय दशा स्वामी के मंत्र का प्रतिदिन १०८ बार जाप करें।\n"
+                "2. प्रत्येक शनिवार को जरूरतमंदों को तिल या तेल का दान करें और गुरुवार को नमक रहित व्रत रखें।\n"
+                "3. अपने जीवन चक्र को संतुलित करने के लिए शुभ मुहूर्त में अनुशंसित रत्न धारण करें।"
+            )
+        }
+    }
+
+    lang_key = "hi" if language == "hi" else "en"
+    default_res = fallbacks[lang_key]
+
+    if provider == "off":
+        return default_res
+
+    meta = analysis.get("meta", {})
+    lagna = analysis.get("lagna", "")
+    moon_sign = analysis.get("moon_sign", "")
+    dasha_lord = analysis.get("dasha", {}).get("mahadasha", {}).get("lord", "")
+
+    # We will query Claude/Ollama to generate the three detailed sections
+    prompt = (
+        f"You are Pandit Shukla, a premium Vedic astrologer with decades of experience.\n"
+        f"Generate a detailed, comprehensive Kundali Vishleshan analysis for a native named {meta.get('name', 'Native')} "
+        f"born on {meta.get('local_time', '')} at {meta.get('place', '')}.\n"
+        f"Lagna: {lagna}, Moon Sign: {moon_sign}.\n"
+        f"Current Period: {dasha_lord} Mahadasha.\n\n"
+        f"Please provide three distinct sections:\n"
+        f"1. A detailed house-by-house analysis (houses_detailed) covering all 12 houses in Vedic astrology (around 400 words).\n"
+        f"2. A detailed planet-by-planet interpretation (planets_detailed) covering the placement and dignity of all 7 classical planets (around 300 words).\n"
+        f"3. An in-depth analysis of their chart yogas and highly personalized remedies (yogas_remedies_detailed) with mantras and donations (around 200 words).\n\n"
+        f"You MUST format the output as a valid JSON object with the following three keys:\n"
+        f"- 'houses_detailed': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n"
+        f"- 'planets_detailed': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n"
+        f"- 'yogas_remedies_detailed': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n\n"
+        f"Respond ONLY with the raw JSON block. Do not include markdown fences, preambles, or notes."
+    )
+
+    system = "You are a warm, wise, and highly experienced Vedic astrologer providing guidance in JSON format."
+
+    try:
+        kind, model = _split(provider)
+        if kind == "anthropic":
+            import anthropic
+            client = anthropic.Anthropic()
+            msg = client.messages.create(
+                model=CLAUDE_MODEL,
+                max_tokens=4000 if language == "hi" else 2000,
+                system=system,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            raw = msg.content[0].text.strip()
+        elif kind == "ollama":
+            payload = json.dumps({
+                "model": model,
+                "messages": [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
+                "stream": False,
+                "format": "json"
+            }).encode("utf-8")
+            request = urllib.request.Request(
+                f"{OLLAMA_URL}/api/chat", data=payload,
+                headers={"Content-Type": "application/json"},
+            )
+            with urllib.request.urlopen(request, timeout=40) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                raw = data["message"]["content"].strip()
+        else:
+            return default_res
+
         if raw.startswith("```"):
             lines = raw.splitlines()
             if lines[0].startswith("```"):
@@ -775,12 +998,13 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
 
         parsed = json.loads(raw)
         return {
-            "varshphal": parsed.get("varshphal", default_res["varshphal"]),
-            "key_periods": parsed.get("key_periods", default_res["key_periods"]),
-            "house_summary": parsed.get("house_summary", default_res["house_summary"]),
+            "houses_detailed": parsed.get("houses_detailed", default_res["houses_detailed"]),
+            "planets_detailed": parsed.get("planets_detailed", default_res["planets_detailed"]),
+            "yogas_remedies_detailed": parsed.get("yogas_remedies_detailed", default_res["yogas_remedies_detailed"]),
         }
     except Exception:
         pass
     return default_res
+
 
 

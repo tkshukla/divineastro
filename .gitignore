@@ -47,3 +47,4 @@ assets/logo-master.png
 .idea/
 .DS_Store
 Thumbs.db
+*.metadata.json

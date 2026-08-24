@@ -39,16 +39,7 @@ def trace():
             ayanamsa=profile.ayanamsa,
             house_system=profile.house_system
         )
-        chart = build(birth_data)
-        
-        class FakeSession:
-            def __init__(self, chart, birth):
-                self.chart = chart
-                self.birth = birth
-                self.bundle = chart.bundle
-
-        session = FakeSession(chart, profile)
-        
+        session = build(birth_data)
         birth = session.birth
         now = dt.datetime.now(ZoneInfo(birth.timezone))
         
@@ -84,6 +75,20 @@ def trace():
 
 if __name__ == "__main__":
     try:
+        # Import session build to inspect CalculatedChart members
+        from app.chart_service import BirthData, build
+        bd = BirthData(
+            name="Test", date="1999-08-14", time="14:07",
+            latitude=18.5204, longitude=73.8567, timezone="Asia/Kolkata",
+            place="Pune", zodiac="sidereal", ayanamsa="lahiri", house_system="Whole Sign"
+        )
+        s = build(bd)
+        import inspect
+        from stellium.visualization.vedic.north_indian import NorthIndianRenderer
+        print("ASC sign index helper source:")
+        print(inspect.getsource(NorthIndianRenderer._get_asc_sign_index))
+        print("Planets by sign helper source:")
+        print(inspect.getsource(NorthIndianRenderer._get_planets_by_sign))
         trace()
         print("ALL TRACING STEPS COMPLETED SUCCESSFULLY!")
     except Exception as e:
