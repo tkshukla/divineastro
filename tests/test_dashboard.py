@@ -11,11 +11,10 @@ from app.pdf_report import _dasha_ladder
 from app.chart_service import sign_of
 import swisseph as swe
 
-class FakeSession:
-    def __init__(self, chart, birth):
-        self.chart = chart
-        self.birth = birth
-        self.bundle = chart.bundle
+# build() already returns a ChartSession with .chart, .birth and .bundle. The
+# wrapper that used to sit here re-wrapped that session as its own `.chart`,
+# so _dasha_ladder's `session.chart.get_object("Moon")` reached a ChartSession
+# instead of the stellium chart and raised AttributeError.
 
 def test():
     birth_data = BirthData(
@@ -24,8 +23,7 @@ def test():
         place="Pune, Maharashtra, India", zodiac="sidereal",
         ayanamsa="lahiri", house_system="Whole Sign"
     )
-    chart = build(birth_data)
-    session = FakeSession(chart, birth_data)
+    session = build(birth_data)
     
     birth = session.birth
     now = dt.datetime.now(ZoneInfo(birth.timezone))
@@ -44,7 +42,10 @@ def test():
     swe.set_ephe_path(None)
     julian_day = swe.julday(now.year, now.month, now.day, now.hour + now.minute/60.0 + now.second/3600.0)
     from stellium.core.ayanamsa import get_ayanamsa_value
-    ayan_val = get_ayanamsa_value(birth.ayanamsa, julian_day)
+    # Julian day first, then the ayanamsa name — the same argument order that
+    # 3ce5852 fixed in app/main.py. This copy kept the swapped call and so the
+    # script has been failing with AttributeError instead of exercising step 3.
+    ayan_val = get_ayanamsa_value(julian_day, birth.ayanamsa)
     res, err = swe.calc_ut(julian_day, swe.MOON)
     moon_lon = (res[0] - ayan_val) % 360.0
     moon_sign_now = sign_of(moon_lon)

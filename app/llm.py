@@ -23,11 +23,14 @@ Two providers, both optional:
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
+
+log = logging.getLogger("astro.llm")
 
 OLLAMA_URL = os.environ.get("ASTRO_OLLAMA_URL", "http://127.0.0.1:11434")
 OLLAMA_MODEL = os.environ.get("ASTRO_OLLAMA_MODEL", "llama3:latest")
@@ -43,6 +46,20 @@ CLAUDE_MODEL = os.environ.get("ASTRO_CLAUDE_MODEL", "claude-haiku-4-5-20251001")
 # per word than Latin script, so Hindi needs the headroom; 8000 was far past any
 # answer this app produces and only served to make a runaway response expensive.
 CLAUDE_MAX_TOKENS = int(os.environ.get("ASTRO_CLAUDE_MAX_TOKENS", "2000"))
+
+# The report generators ask for roughly 950 words of JSON across three sections.
+# That does not fit in 2000 tokens: the response is cut off mid-object, the
+# json.loads below raises, and the caller quietly prints the canned fallback
+# instead — the failure looks exactly like a working PDF. Devanagari runs about
+# two and a half times the tokens of the same text in Latin script, so Hindi
+# needs proportionally more. Haiku's ceiling is far above both.
+REPORT_MAX_TOKENS_EN = int(os.environ.get("ASTRO_REPORT_MAX_TOKENS_EN", "4000"))
+REPORT_MAX_TOKENS_HI = int(os.environ.get("ASTRO_REPORT_MAX_TOKENS_HI", "12000"))
+
+
+def _report_max_tokens(language: str) -> int:
+    return REPORT_MAX_TOKENS_HI if language == "hi" else REPORT_MAX_TOKENS_EN
+
 
 LANGUAGES = {
     "en": "English",
@@ -682,9 +699,150 @@ def generate_spiritual_guidance(analysis: dict, language: str = "en") -> str:
     return "Continue with your daily prayers and wear the recommended gemstones to support your astrological alignment."
 
 
+def _parse_json_object(raw: str) -> dict:
+    """The first JSON object in a model response.
+
+    `json.loads` on the whole string is brittle in both directions: a ```json
+    fence or a "Here is your analysis:" preamble puts characters before the
+    object, and a response that keeps going after it raises "Extra data". Find
+    the first `{` and let the decoder consume exactly one value from there.
+    """
+    start = raw.find("{")
+    if start < 0:
+        raise ValueError("no JSON object in the response")
+    obj, _end = json.JSONDecoder().raw_decode(raw[start:])
+    if not isinstance(obj, dict):
+        raise ValueError(f"expected a JSON object, got {type(obj).__name__}")
+    return obj
+
+
+def _chart_facts(analysis: dict) -> str:
+    """The computed chart, rendered for a prompt.
+
+    The PDF generators used to send the Lagna, the Moon sign and the running
+    dasha lord, and then ask for a house-by-house and planet-by-planet reading.
+    Nothing in that request could be answered from what was sent, so the model
+    filled in placements — and the invented ones were printed a page away from
+    the engine's own tables, which is the worst place to be wrong. Everything
+    here is already computed by `chart_service` and `vargas`; the model's job
+    is to read it, not to reconstruct it.
+    """
+    parts: list[str] = []
+
+    header = []
+    if analysis.get("lagna"):
+        header.append(f"Lagna (Ascendant): {analysis['lagna']}")
+    if analysis.get("moon_sign"):
+        header.append(f"Moon sign (Rashi): {analysis['moon_sign']}")
+    maha = analysis.get("dasha", {}).get("mahadasha", {}) or {}
+    if maha.get("lord"):
+        if maha.get("start") and maha.get("end"):
+            header.append(
+                f"Running Mahadasha: {maha['lord']}, "
+                f"{maha['start']} to {maha['end']} ({maha.get('years', '')} years)")
+        else:
+            header.append(f"Running Mahadasha lord: {maha['lord']}")
+    if header:
+        parts.append("\n".join(header))
+
+    # The chart bundle calls the lunar nodes "True Node" and "South Node". Asked
+    # for a reading of the nine grahas against a table naming them that way, the
+    # model simply left Rahu and Ketu out — it had no row it recognised as
+    # either. The varga grid already uses the Vedic names; match it.
+    def _vedic(text: str) -> str:
+        for western, vedic in (("True Node", "Rahu"), ("Mean Node", "Rahu"),
+                               ("North Node", "Rahu"), ("South Node", "Ketu")):
+            text = text.replace(western, vedic)
+        return text
+
+    def _table(rows: list) -> str:
+        return "\n".join(_vedic(" | ".join(str(c) for c in r)) for r in rows)
+
+    rows = analysis.get("placements") or []
+    if rows:
+        parts.append(
+            "PLANETARY POSITIONS (body | sign | degree | house | placement | dignity)\n"
+            + _table(rows))
+
+    rows = analysis.get("houses") or []
+    if rows:
+        parts.append(
+            "HOUSES (house | sign on cusp | cusp degree | ruler | occupants)\n"
+            + _table(rows))
+
+    vargas = analysis.get("vargas") or {}
+    if vargas.get("rows"):
+        parts.append(
+            "DIVISIONAL CHARTS (" + " | ".join(vargas.get("headers", [])) + ")\n"
+            + "\n".join(" | ".join(str(c) for c in r) for r in vargas["rows"]))
+
+    rows = analysis.get("yogas") or []
+    if rows:
+        parts.append(
+            "YOGAS FOUND BY THE ENGINE (name | category | planets | classical note)\n"
+            + "\n".join(" | ".join(str(c) for c in r) for r in rows))
+
+    rows = analysis.get("antardasha") or []
+    if rows:
+        parts.append(
+            "ANTARDASHAS OF THE RUNNING MAHADASHA (lord | from | to | status)\n"
+            + "\n".join(" | ".join(str(c) for c in r) for r in rows))
+
+    if not parts:
+        return ""
+    return (
+        "COMPUTED CHART — this is the native's actual chart, calculated with the "
+        "Swiss Ephemeris (sidereal, Lahiri ayanamsa, whole-sign houses). Every "
+        "claim you make about a placement must come from the data below. Do not "
+        "state a position, house, dignity or yoga that does not appear here.\n\n"
+        + "\n\n".join(parts))
+
+
+# These report generators do not use SYSTEM_PROMPT, so none of its guardrails
+# reach them. Without this rule the model did arithmetic on the dasha dates and
+# printed a mahadasha ending in 2039 that the engine ends in 2037 — a wrong year
+# in a paid report, sitting a page away from the correct dasha table.
+REPORT_DATE_RULE = (
+    "EVERY YEAR AND DATE YOU WRITE MUST APPEAR VERBATIM IN THE CHART DATA ABOVE. "
+    "Do no arithmetic on dates: do not add a period's length to its start, do not "
+    "estimate a midpoint, do not say when something 'peaks' inside a range. If a "
+    "date you want is not printed above, describe the period without naming a year."
+)
+
+# The chart data is handed over in the engine's English vocabulary, so a Hindi
+# report transliterates it — "कादिर भाव" for Cadent, "यूरेनस" for Uranus — while
+# the tables on the facing page use आपोक्लिम and अरुण. Same document, two
+# vocabularies. HINDI_NOTE does this job for the chat path; these generators
+# need the terms the PDF tables actually print.
+REPORT_HINDI_GLOSSARY = """Use exactly these Hindi terms so the prose matches the \
+tables printed beside it. Never transliterate an English term into Devanagari \
+letters when it appears here:
+
+    Angular=केंद्र  Succedent=पणफर  Cadent=आपोक्लिम
+    Uranus=अरुण  Neptune=वरुण  Pluto=यम  Rahu=राहु  Ketu=केतु
+    ruler=स्वराशि  exalted=उच्च  fall=नीच  detriment=शत्रुक्षेत्र
+    peregrine=बलहीन  term=सीमा बल  triplicity=त्रिकोण बल
+    house=भाव  sign=राशि  lord=स्वामी  dasha=दशा  antardasha=अंतर्दशा
+
+Signs: Aries=मेष Taurus=वृषभ Gemini=मिथुन Cancer=कर्क Leo=सिंह Virgo=कन्या \
+Libra=तुला Scorpio=वृश्चिक Sagittarius=धनु Capricorn=मकर Aquarius=कुंभ Pisces=मीन
+
+Planets: Sun=सूर्य Moon=चंद्रमा Mars=मंगल Mercury=बुध Jupiter=बृहस्पति \
+Venus=शुक्र Saturn=शनि"""
+
+
+REPORT_SYSTEM = (
+    "You are a warm, wise, and highly experienced Vedic astrologer providing "
+    "guidance in JSON format. The chart has already been calculated by a "
+    "deterministic engine; you interpret what you are given and never restate a "
+    "placement or a date differently from how it appears in the data."
+)
+
+
 def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
     """Generate Yearly Varshphal (month-by-month), Upcoming Key Periods, and House-wise summaries."""
     provider = default_provider()
+    _who = "generate_kundali_narratives"
 
     meta = analysis.get("meta", {})
     lagna = analysis.get("lagna", "") or "Ascendant"
@@ -775,9 +933,10 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
     prompt = (
         f"You are Pandit Shukla, an elite Vedic astrologer with decades of experience.\n"
         f"Generate a personalized, premium month-by-month Varshphal analysis for a native named {meta.get('name', 'Native')} "
-        f"born on {meta.get('local_time', '')} at {meta.get('place', '')}.\n"
-        f"Lagna: {lagna}, Moon Sign: {moon_sign}.\n"
-        f"Current Period: {dasha_lord} Mahadasha.\n\n"
+        f"born on {meta.get('local_time', '')} at {meta.get('place', '')}.\n\n"
+        f"{_chart_facts(analysis)}\n\n"
+        f"Ground every month's forecast in the placements above — name the planet, "
+        f"its house and the dasha or antardasha you are reading from.\n\n"
         f"Please provide three distinct sections:\n"
         f"1. A month-by-month forecast (varshphal) for the next 12 months. You must use these exact month labels:\n"
         f"   {', '.join(monthly_intervals)}\n"
@@ -789,10 +948,12 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
         f"  - 'prediction': a monthly forecast written in {'Hindi (Devanagari script)' if language == 'hi' else 'English'} (around 30-40 words)\n"
         f"- 'key_periods': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n"
         f"- 'house_summary': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n\n"
+        f"{REPORT_DATE_RULE}\n\n"
         f"Respond ONLY with the raw JSON block. Do not include any markdown fences, introduction, or notes."
+        + (f"\n\n{REPORT_HINDI_GLOSSARY}" if language == "hi" else "")
     )
 
-    system = "You are a warm, wise, and highly experienced Vedic astrologer providing guidance in JSON format."
+    system = REPORT_SYSTEM
 
     try:
         kind, model = _split(provider)
@@ -801,10 +962,17 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
             client = anthropic.Anthropic()
             msg = client.messages.create(
                 model=CLAUDE_MODEL,
-                max_tokens=4000 if language == "hi" else 2000,
+                max_tokens=_report_max_tokens(language),
                 system=system,
                 messages=[{"role": "user", "content": prompt}]
             )
+            if msg.stop_reason == "max_tokens":
+                # Truncated JSON parses as an error further down and the
+                # report silently falls back to canned text. Say so.
+                log.warning(
+                    "%s: response hit the %s-token ceiling and was cut off; "
+                    "using the fallback text. Raise ASTRO_REPORT_MAX_TOKENS_%s.",
+                    _who, _report_max_tokens(language), "HI" if language == "hi" else "EN")
             raw = msg.content[0].text.strip()
         elif kind == "ollama":
             payload = json.dumps({
@@ -823,15 +991,7 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
         else:
             return default_res
 
-        if raw.startswith("```"):
-            lines = raw.splitlines()
-            if lines[0].startswith("```"):
-                lines = lines[1:]
-            if lines[-1].startswith("```"):
-                lines = lines[:-1]
-            raw = "\n".join(lines).strip()
-
-        parsed = json.loads(raw)
+        parsed = _parse_json_object(raw)
         
         # Format monthly predictions list
         parsed_varshphal = parsed.get("varshphal", [])
@@ -852,14 +1012,23 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
             "key_periods": parsed.get("key_periods", default_res["key_periods"]),
             "house_summary": parsed.get("house_summary", default_res["house_summary"]),
         }
-    except Exception:
-        pass
+    except Exception as exc:
+        # Never let a narration failure break the PDF, but never let it
+        # pass unrecorded either: the fallback is indistinguishable from
+        # a real reading on the page.
+        log.warning("%s failed (%s: %s); using the fallback text.",
+                    _who, type(exc).__name__, exc)
     return default_res
 
 
 def generate_kundali_interpretations(analysis: dict, language: str = "en") -> dict:
-    """Generate detailed 12-house, 9-planet, and yoga/remedies interpretations."""
+    """Detailed 12-house, 9-graha, and yoga/remedies interpretations of a chart.
+
+    The chart itself is rendered into the prompt by `_chart_facts`; without it
+    these three sections have nothing to interpret.
+    """
     provider = default_provider()
+    _who = "generate_kundali_interpretations"
     
     fallbacks = {
         "en": {
@@ -884,7 +1053,9 @@ def generate_kundali_interpretations(analysis: dict, language: str = "en") -> di
                 "* **Mercury (Budha)**: The planet of communication, intellect, and trade. Indicates logical thinking, business acumen, and learning capacity.\n"
                 "* **Jupiter (Guru)**: Symbolizes wisdom, spirituality, expansion, and luck. Its influence brings spiritual inclination, growth, and benevolence.\n"
                 "* **Venus (Shukra)**: Represents love, luxury, relationships, and arts. Governs your approach to aesthetics, partner harmony, and comfort.\n"
-                "* **Saturn (Shani)**: The taskmaster represents discipline, hard work, and delay. Its placement highlights areas where focus and persistence are demanded."
+                "* **Saturn (Shani)**: The taskmaster represents discipline, hard work, and delay. Its placement highlights areas where focus and persistence are demanded.\n"
+                "* **Rahu**: The north node represents worldly desire, ambition and sudden change. Its house shows where you reach hardest and where illusion must be watched for.\n"
+                "* **Ketu**: The south node represents detachment, past merit and liberation. Its house shows what comes to you easily and what you are asked to let go of."
             ),
             "yogas_remedies_detailed": (
                 "Your chart displays powerful planetary configurations (yogas) that shape your destiny. The active Vimshottari Mahadasha indicates that this is a period of transition and manifestation.\n\n"
@@ -916,7 +1087,9 @@ def generate_kundali_interpretations(analysis: dict, language: str = "en") -> di
                 "* **बुध (Budha)**: बुध बुद्धि, वाणी और व्यापार का कारक है। यह आपके तार्किक विश्लेषण, लेखन और व्यापारिक सूझबूझ को प्रकट करता है।\n"
                 "* **बृहस्पति (Guru)**: बृहस्पति ज्ञान, धर्म, भाग्य और संतान का कारक है। इसकी शुभ स्थिति आपके जीवन में सुख, भाग्य और उच्च सोच को विकसित करती है।\n"
                 "* **शुक्र (Shukra)**: शुक्र प्रेम, कला, विलासिता और दांपत्य का कारक है। यह आपकी रचनात्मकता और भौतिक सुखों के प्रति आकर्षण को दर्शाता है।\n"
-                "* **शनि (Shani)**: शनि कर्म, अनुशासन और न्याय का कारक है। इसकी स्थिति बताती है कि जीवन के किस क्षेत्र में आपको अत्यधिक परिश्रम और धैर्य की आवश्यकता है।"
+                "* **शनि (Shani)**: शनि कर्म, अनुशासन और न्याय का कारक है। इसकी स्थिति बताती है कि जीवन के किस क्षेत्र में आपको अत्यधिक परिश्रम और धैर्य की आवश्यकता है।\n"
+                "* **राहु (Rahu)**: राहु सांसारिक इच्छा, महत्वाकांक्षा और आकस्मिक परिवर्तन का कारक है। यह बताता है कि जीवन के किस क्षेत्र में आप सर्वाधिक प्रयासरत रहेंगे।\n"
+                "* **केतु (Ketu)**: केतु वैराग्य, पूर्वजन्म के संचित कर्म और मोक्ष का कारक है। यह दर्शाता है कि कौन सी उपलब्धि सहज मिलेगी और किससे विरक्ति आवश्यक है।"
             ),
             "yogas_remedies_detailed": (
                 "आपकी कुंडली में विभिन्न ग्रहों के योग बन रहे हैं जो आपके जीवन की दिशा तय करते हैं। वर्तमान महादशा की अवधि में इन योगों का प्रभाव विशेष रूप से परिलक्षित होगा।\n\n"
@@ -943,21 +1116,28 @@ def generate_kundali_interpretations(analysis: dict, language: str = "en") -> di
     prompt = (
         f"You are Pandit Shukla, a premium Vedic astrologer with decades of experience.\n"
         f"Generate a detailed, comprehensive Kundali Vishleshan analysis for a native named {meta.get('name', 'Native')} "
-        f"born on {meta.get('local_time', '')} at {meta.get('place', '')}.\n"
-        f"Lagna: {lagna}, Moon Sign: {moon_sign}.\n"
-        f"Current Period: {dasha_lord} Mahadasha.\n\n"
+        f"born on {meta.get('local_time', '')} at {meta.get('place', '')}.\n\n"
+        f"{_chart_facts(analysis)}\n\n"
+        f"This report is printed alongside the tables above, so a placement you "
+        f"state incorrectly will sit next to the correct one. Read what is given; "
+        f"do not supply anything that is missing.\n\n"
         f"Please provide three distinct sections:\n"
-        f"1. A detailed house-by-house analysis (houses_detailed) covering all 12 houses in Vedic astrology (around 400 words).\n"
-        f"2. A detailed planet-by-planet interpretation (planets_detailed) covering the placement and dignity of all 7 classical planets (around 300 words).\n"
-        f"3. An in-depth analysis of their chart yogas and highly personalized remedies (yogas_remedies_detailed) with mantras and donations (around 200 words).\n\n"
+        f"1. A house-by-house analysis (houses_detailed) covering all 12 houses. For each house give the sign on it, "
+        f"its lord and where that lord sits, and any occupying planets — taken from the tables above (around 400 words).\n"
+        f"2. A planet-by-planet interpretation (planets_detailed) covering all nine grahas, Rahu and Ketu included. "
+        f"For each, name its actual sign, house and dignity from the table above before interpreting it (around 350 words).\n"
+        f"3. An analysis of the yogas listed above — only those — and remedies for the running dasha lord, "
+        f"with mantras and donations (yogas_remedies_detailed, around 200 words).\n\n"
         f"You MUST format the output as a valid JSON object with the following three keys:\n"
         f"- 'houses_detailed': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n"
         f"- 'planets_detailed': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n"
         f"- 'yogas_remedies_detailed': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n\n"
+        f"{REPORT_DATE_RULE}\n\n"
         f"Respond ONLY with the raw JSON block. Do not include markdown fences, preambles, or notes."
+        + (f"\n\n{REPORT_HINDI_GLOSSARY}" if language == "hi" else "")
     )
 
-    system = "You are a warm, wise, and highly experienced Vedic astrologer providing guidance in JSON format."
+    system = REPORT_SYSTEM
 
     try:
         kind, model = _split(provider)
@@ -966,10 +1146,17 @@ def generate_kundali_interpretations(analysis: dict, language: str = "en") -> di
             client = anthropic.Anthropic()
             msg = client.messages.create(
                 model=CLAUDE_MODEL,
-                max_tokens=4000 if language == "hi" else 2000,
+                max_tokens=_report_max_tokens(language),
                 system=system,
                 messages=[{"role": "user", "content": prompt}]
             )
+            if msg.stop_reason == "max_tokens":
+                # Truncated JSON parses as an error further down and the
+                # report silently falls back to canned text. Say so.
+                log.warning(
+                    "%s: response hit the %s-token ceiling and was cut off; "
+                    "using the fallback text. Raise ASTRO_REPORT_MAX_TOKENS_%s.",
+                    _who, _report_max_tokens(language), "HI" if language == "hi" else "EN")
             raw = msg.content[0].text.strip()
         elif kind == "ollama":
             payload = json.dumps({
@@ -988,22 +1175,18 @@ def generate_kundali_interpretations(analysis: dict, language: str = "en") -> di
         else:
             return default_res
 
-        if raw.startswith("```"):
-            lines = raw.splitlines()
-            if lines[0].startswith("```"):
-                lines = lines[1:]
-            if lines[-1].startswith("```"):
-                lines = lines[:-1]
-            raw = "\n".join(lines).strip()
-
-        parsed = json.loads(raw)
+        parsed = _parse_json_object(raw)
         return {
             "houses_detailed": parsed.get("houses_detailed", default_res["houses_detailed"]),
             "planets_detailed": parsed.get("planets_detailed", default_res["planets_detailed"]),
             "yogas_remedies_detailed": parsed.get("yogas_remedies_detailed", default_res["yogas_remedies_detailed"]),
         }
-    except Exception:
-        pass
+    except Exception as exc:
+        # Never let a narration failure break the PDF, but never let it
+        # pass unrecorded either: the fallback is indistinguishable from
+        # a real reading on the page.
+        log.warning("%s failed (%s: %s); using the fallback text.",
+                    _who, type(exc).__name__, exc)
     return default_res
 
 

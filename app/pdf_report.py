@@ -836,13 +836,27 @@ def _vedic_svgs(session, language: str = "en") -> dict[str, str]:
     return out
 
 
-def _dasha_ladder(session, when: dt.datetime) -> list[list[str]]:
-    """The full 120-year mahadasha sequence from the sidereal Moon.
+def _state(start: dt.datetime, end: dt.datetime, when: dt.datetime) -> str:
+    if start <= when < end:
+        return "current"
+    return "past" if end <= when else "ahead"
+
+
+def _mahadasha_periods(
+    session, when: dt.datetime,
+) -> tuple[list[tuple[str, int, dt.datetime, dt.datetime]], dt.datetime]:
+    """The 120-year mahadasha cycle as datetimes, plus `when` made comparable.
 
     `chart_service.vimshottari()` computes this ladder internally but only
     returns the current period plus the next three, which is not a dasha table.
     The arithmetic below is the same cycle over the same imported constants; if
     `chart_service` ever exposes the ladder, delete this and call it.
+
+    Kept separate from `_dasha_ladder` so the antardasha table can start from a
+    real timestamp. It used to re-parse the mahadasha's already-formatted
+    "%d %b %Y" string, which threw away the time of day and let all nine
+    sub-period boundaries drift up to a day away from the same figures shown
+    on the dashboard.
     """
     moon = session.chart.get_object("Moon")
     span = 360.0 / 27.0
@@ -855,75 +869,60 @@ def _dasha_ladder(session, when: dt.datetime) -> list[list[str]]:
     if when.tzinfo is None:
         when = when.replace(tzinfo=birth.tzinfo)
 
-    rows: list[list[str]] = []
+    periods: list[tuple[str, int, dt.datetime, dt.datetime]] = []
     for step in range(9):
         lord, years = VIMSHOTTARI[(start_lord + step) % 9]
         end = cursor + dt.timedelta(days=years * SIDEREAL_YEAR)
-        if cursor <= when < end:
-            state = "current"
-        elif end <= when:
-            state = "past"
-        else:
-            state = "ahead"
-        rows.append([lord, f"{years}", cursor.strftime("%d %b %Y"),
-                     end.strftime("%d %b %Y"), state])
+        periods.append((lord, years, cursor, end))
         cursor = end
-    return rows
+    return periods, when
+
+
+def _dasha_ladder(session, when: dt.datetime) -> list[list[str]]:
+    """The full 120-year mahadasha sequence from the sidereal Moon."""
+    periods, when = _mahadasha_periods(session, when)
+    return [
+        [lord, f"{years}", start.strftime("%d %b %Y"),
+         end.strftime("%d %b %Y"), _state(start, end, when)]
+        for lord, years, start, end in periods
+    ]
 
 
 def _antardasha_ladder(session, when: dt.datetime) -> list[list[str]]:
-    """Antardashas of the current Mahadasha."""
-    mladder = _dasha_ladder(session, when)
-    active_m = None
-    for m in mladder:
-        if m[4] == "current":
-            active_m = m
-            break
-    if not active_m:
-        active_m = mladder[0]
-        
-    m_lord_name = active_m[0]
-    m_start_str = active_m[2]
-    
-    # Parse date
-    m_start = dt.datetime.strptime(m_start_str, "%d %b %Y")
-    if when.tzinfo:
-        m_start = m_start.replace(tzinfo=when.tzinfo)
-    else:
-        m_start = m_start.replace(tzinfo=None)
-        when = when.replace(tzinfo=None)
-    
-    # Vimshottari order & years
-    ORDER = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"]
-    v_years = {
-        "Ketu": 7, "Venus": 20, "Sun": 6, "Moon": 10, "Mars": 7,
-        "Rahu": 18, "Jupiter": 16, "Saturn": 19, "Mercury": 17
-    }
-    
-    m_idx = ORDER.index(m_lord_name)
-    m_years_total = v_years[m_lord_name]
-    
-    cursor = m_start
+    """The nine antardashas of the running mahadasha."""
+    periods, when = _mahadasha_periods(session, when)
+    active = next(
+        ((lord, years, start) for lord, years, start, end in periods
+         if start <= when < end),
+        None,
+    )
+    if active is None:                  # `when` outside the 120-year cycle
+        lord, years, start, _ = periods[0]
+        active = (lord, years, start)
+    m_lord, m_years, cursor = active
+
+    order = [lord for lord, _ in VIMSHOTTARI]
+    m_idx = order.index(m_lord)
+
     rows: list[list[str]] = []
-    
     for step in range(9):
-        a_lord = ORDER[(m_idx + step) % 9]
-        a_years = v_years[a_lord]
-        # (m_years * a_years / 120) * SIDEREAL_YEAR
-        days = (m_years_total * a_years / 120.0) * SIDEREAL_YEAR
-        end = cursor + dt.timedelta(days=days)
-        
-        if cursor <= when < end:
-            state = "current"
-        elif end <= when:
-            state = "past"
-        else:
-            state = "ahead"
-            
-        rows.append([a_lord, cursor.strftime("%d %b %Y"), end.strftime("%d %b %Y"), state])
+        a_lord, a_years = VIMSHOTTARI[(m_idx + step) % 9]
+        end = cursor + dt.timedelta(
+            days=(m_years * a_years / 120.0) * SIDEREAL_YEAR)
+        rows.append([a_lord, cursor.strftime("%d %b %Y"),
+                     end.strftime("%d %b %Y"), _state(cursor, end, when)])
         cursor = end
-        
     return rows
+
+
+def _current_mahadasha(dasha: dict | None) -> dict:
+    """Lord and dates of the running mahadasha, always in English."""
+    if not dasha:
+        return {}
+    for lord, years, start, end, state in dasha["table"]["rows"]:
+        if state == "current":
+            return {"lord": lord, "years": years, "start": start, "end": end}
+    return {}
 
 
 def _varga_grid(session) -> dict:
@@ -935,10 +934,20 @@ def _varga_grid(session) -> dict:
     v_charts = {}
     for div in divisions:
         if div == "D1":
-            v_charts[div] = {
-                "Lagna": session.bundle["objects"]["ASC"]["sign"],
-                "positions": {p: session.bundle["objects"][p]["sign"] for p in planets if p in session.bundle["objects"]}
-            }
+            # The bundle calls the nodes "True Node"/"South Node"; the vargas
+            # module calls them Rahu/Ketu. Looking them up under the Vedic name
+            # found nothing, so both nodes printed "—" in the D1 column while
+            # every other division had them.
+            objects = session.bundle["objects"]
+            aliases = {"Rahu": ("Rahu", "True Node", "Mean Node"),
+                       "Ketu": ("Ketu", "South Node")}
+            d1: dict[str, str] = {}
+            for p in planets:
+                for candidate in aliases.get(p, (p,)):
+                    if candidate in objects:
+                        d1[p] = objects[candidate]["sign"]
+                        break
+            v_charts[div] = {"Lagna": objects["ASC"]["sign"], "positions": d1}
         else:
             try:
                 v_data = divisional_chart(session, div)
@@ -968,39 +977,85 @@ def _varga_grid(session) -> dict:
     }
 
 
+# Keyed on the yoga's `key`, not its display `name`. The engine varies the name
+# with the finding — "Neecha Bhanga" becomes "Neecha Bhanga Raja Yoga" when the
+# cancellation also builds a raja yoga, and the Mahapurusha yogas are named for
+# the planet (Ruchaka, Bhadra, ...) rather than for the family. Matching on the
+# name meant those rows fell through and printed an English classical paragraph
+# in the middle of the Hindi report. `key` is the stable identifier.
 _YOGA_TRANSLATIONS = {
-    "Neecha Bhanga": {
-        "name": "नीचभंग योग", "group": "नीचभंग",
+    "neecha_bhanga": {
+        "name": "नीचभंग योग",
         "note": "नीच राशि में स्थित ग्रह का नीचत्व भंग हो गया है, जिससे यह ग्रह अशुभ फल नहीं देगा बल्कि संघर्ष के बाद अपार सफलता और पद-प्रतिष्ठा प्रदान करेगा।"
     },
-    "Dhana Yoga": {
-        "name": "धन योग", "group": "धन योग",
+    "neecha_bhanga_raja": {
+        "name": "नीचभंग राजयोग",
+        "note": "नीच ग्रह का भंग होकर राजयोग में परिवर्तित होना अत्यंत शुभ है। प्रारंभिक संघर्ष के पश्चात जातक को असाधारण उन्नति, अधिकार और प्रतिष्ठा प्राप्त होती है।"
+    },
+    "neecha": {
+        "name": "अभंग नीच स्थिति",
+        "note": "ग्रह नीच राशि में स्थित है और शास्त्रोक्त भंग की कोई शर्त पूरी नहीं हो रही। इस ग्रह से संबंधित क्षेत्रों में अतिरिक्त परिश्रम और धैर्य अपेक्षित है।"
+    },
+    "dhana": {
+        "name": "धन योग",
         "note": "त्रिकोण (नवम) और लाभ (एकादश) भाव के स्वामियों के मध्य संबंध से शुभ धन योग बनता है, जो जीवन में निरंतर आय, संपत्ति और समृद्धि की वृद्धि कराता है।"
     },
-    "Raja Yoga": {
-        "name": "राजयोग", "group": "राजयोग",
+    "raja": {
+        "name": "राजयोग",
         "note": "केंद्र और त्रिकोण के स्वामियों का शुभ युति या दृष्टि संबंध राजयोग का निर्माण करता है, जो उच्च अधिकार, करियर में उन्नति और समाज में प्रतिष्ठा दिलाता है।"
     },
-    "Budha-Aditya Yoga": {
-        "name": "बुधादित्य योग", "group": "शुभ योग",
+    "budha_aditya": {
+        "name": "बुधादित्य योग",
         "note": "सूर्य और बुध की एक ही राशि में युति से बुधादित्य योग बनता है, जो तीव्र कुशाग्र बुद्धि, विश्लेषणात्मक क्षमता और बौद्धिक सफलता प्रदान करता है।"
     },
-    "Chandra-Mangala Yoga": {
-        "name": "चंद्र-मंगल योग", "group": "धन योग",
+    "chandra_mangala": {
+        "name": "चंद्र-मंगल योग",
         "note": "चंद्रमा और मंगल का शुभ संबंध व्यापारिक सूझबूझ, आर्थिक मजबूती और निरंतर धन प्रवाह का निर्माण करता है।"
     },
-    "Gaja-Kesari Yoga": {
-        "name": "गजकेसरी योग", "group": "राजयोग",
+    "gaja_kesari": {
+        "name": "गजकेसरी योग",
         "note": "गुरु और चंद्रमा का परस्पर केंद्र संबंध गजकेसरी योग बनाता है, जो जातक को ज्ञान, प्रसिद्धि, दीर्घायु और समाज में सर्वोच्च सम्मान प्रदान करता है।"
     },
-    "Pancha Mahapurusha": {
-        "name": "पंच महापुरुष योग", "group": "महापुरुष योग",
-        "note": "बलवान ग्रह का स्वराशि या उच्च राशि में होकर केंद्र में विराजमान होना पंच महापुरुष योग बनाता है, जो जीवन में असाधारण नेतृत्व और वैभव देता है।"
+    "ruchaka": {
+        "name": "रुचक योग (पंच महापुरुष)",
+        "note": "मंगल का स्वराशि या उच्च राशि में केंद्र में स्थित होना रुचक योग बनाता है, जो अद्भुत साहस, नेतृत्व क्षमता और शारीरिक बल प्रदान करता है।"
     },
-    "Kemadruma": {
-        "name": "केमद्रुम योग (भंग)", "group": "अरिष्ट भंग",
-        "note": "चंद्रमा के दोनों ओर कोई ग्रह न होने पर भी अन्य शुभ ग्रहों की दृष्टि से केमद्रुम दोष समाप्त होकर जीवन में स्थिरता आती है।"
-    }
+    "bhadra": {
+        "name": "भद्र योग (पंच महापुरुष)",
+        "note": "बुध का स्वराशि या उच्च राशि में केंद्र में स्थित होना भद्र योग बनाता है, जो तीव्र बुद्धि, वाक्पटुता और व्यापारिक कौशल प्रदान करता है।"
+    },
+    "hamsa": {
+        "name": "हंस योग (पंच महापुरुष)",
+        "note": "बृहस्पति का स्वराशि या उच्च राशि में केंद्र में स्थित होना हंस योग बनाता है, जो ज्ञान, धर्मपरायणता, सम्मान और शुभ आचरण प्रदान करता है।"
+    },
+    "malavya": {
+        "name": "मालव्य योग (पंच महापुरुष)",
+        "note": "शुक्र का स्वराशि या उच्च राशि में केंद्र में स्थित होना मालव्य योग बनाता है, जो सौंदर्य, कलात्मक रुचि, वैभव और सुखमय दांपत्य प्रदान करता है।"
+    },
+    "sasa": {
+        "name": "शश योग (पंच महापुरुष)",
+        "note": "शनि का स्वराशि या उच्च राशि में केंद्र में स्थित होना शश योग बनाता है, जो अनुशासन, दीर्घकालिक सफलता और जनसमूह पर अधिकार प्रदान करता है।"
+    },
+    # Both the formed dosha and its absence carry key "kemadruma"; the engine
+    # separates them with the `formed` flag, and they mean opposite things.
+    "kemadruma": {
+        "name": "केमद्रुम योग",
+        "note": "चंद्रमा के दोनों ओर तथा साथ कोई ग्रह न होने से केमद्रुम योग बनता है। शास्त्र इसे मानसिक अस्थिरता और संघर्ष का सूचक मानते हैं, किंतु इसका फल संपूर्ण कुंडली के बल पर ही आंका जाता है।"
+    },
+    "kemadruma__absent": {
+        "name": "केमद्रुम योग (भंग)",
+        "note": "चंद्रमा के साथ या उसके निकट ग्रहों की उपस्थिति से केमद्रुम दोष का निर्माण नहीं हो रहा, जो सामान्य एवं शुभ स्थिति है।"
+    },
+}
+
+# The `group` column is a separate vocabulary from the yoga names.
+_YOGA_GROUPS_HI = {
+    "Pancha Mahapurusha": "पंच महापुरुष योग",
+    "Chandra yoga": "चंद्र योग",
+    "Neecha Bhanga": "नीचभंग",
+    "Dhana": "धन योग",
+    "Raja": "राजयोग",
+    "Combination": "ग्रह युति योग",
 }
 
 
@@ -1021,9 +1076,14 @@ def _yogas_pdf_table(session, language: str = "en") -> dict:
         planets_eng = y.get("planets", [])
         
         if language == "hi":
-            trans = _YOGA_TRANSLATIONS.get(name_eng, {})
+            key = y.get("key", "")
+            # Kemadruma reports under one key whether it formed or not, and the
+            # two readings are opposites \u2014 take the flag, not just the key.
+            if key == "kemadruma" and y.get("formed") is False:
+                key = "kemadruma__absent"
+            trans = _YOGA_TRANSLATIONS.get(key, {})
             name = trans.get("name", name_eng)
-            group = trans.get("group", group_eng)
+            group = _YOGA_GROUPS_HI.get(group_eng, group_eng)
             note = trans.get("note", note_eng)
             planets_str = ", ".join([_PLANETS_HI.get(p, p) for p in planets_eng]) if planets_eng else "\u2014"
         else:
@@ -1138,27 +1198,75 @@ _HOUSE_SYSTEM_HI = {
     "Whole Sign": "भाव चलित (Whole Sign)", "Equal House": "सम भाव (Equal House)"
 }
 
+# The dignity column carries stellium's essential-dignity vocabulary, which is
+# Western — the engine reports `ruler`/`detriment`/`fall`/`term`, not the Vedic
+# `swarashi`/`neecha`. Translating those Vedic words instead left the whole
+# column in English, because the keys never matched anything the engine emits.
+# `dignities()` in stellium can return any of these fourteen strings; the Vedic
+# words are kept below them so a chart that does report them still resolves.
 _DIGNITIES_HI = {
-    "exalted": "उच्च", "debilitated": "नीच", "own": "स्वराशि", "friendly": "मित्र", 
+    "ruler": "स्वराशि (स्वामी)", "domicile": "स्वराशि",
+    "exalted": "उच्च", "exaltation": "उच्च",
+    "exaltation_degree": "उच्चांश", "exaltation_exact": "परमोच्च",
+    "detriment": "शत्रुक्षेत्र (नीच सम)", "fall": "नीच",
+    "triplicity": "त्रिकोण बल", "term": "सीमा बल", "face": "द्रेष्काण बल",
+    "decan": "द्रेष्काण", "peregrine": "बलहीन (अनाश्रित)",
+    "participating_ruler": "सहभागी स्वामी",
+    "debilitated": "नीच", "own": "स्वराशि", "friendly": "मित्र",
     "neutral": "सम", "inimical": "शत्रु", "moolatrikona": "मूलत्रिकोण",
-    "exalted".title(): "उच्च", "debilitated".title(): "नीच", "own".title(): "स्वराशि", 
-    "friendly".title(): "मित्र", "neutral".title(): "सम", "inimical".title(): "शत्रु",
-    "moolatrikona".title(): "मूलत्रिकोण"
 }
 
 _MOTION_HI = {
-    "retrograde": "वक्री", "direct": "मार्गी", "combust": "अस्त", 
-    "yes": "हाँ", "no": "नहीं", "Yes": "हाँ", "No": "नहीं"
+    "retrograde": "वक्री", "direct": "मार्गी", "combust": "अस्त",
+    "yes": "हाँ", "no": "नहीं",
 }
 
 _POSITION_HI = {
     "angular": "केंद्र", "succedent": "पणफर", "cadent": "आपोक्लिम",
-    "angular".title(): "केंद्र", "succedent".title(): "पणफर", "cadent".title(): "आपोक्लिम"
 }
 
+# The degree is carried in the Hindi label because the plain words collide:
+# `kendra` is both the 90° aspect and the angular houses, and `shadashtak`
+# names the 6/8 axis rather than the 60° sextile it had been used for here.
 _ASPECTS_HI = {
-    "conjunction": "युति", "opposition": "प्रतियुति", "square": "केन्द्र", 
-    "trine": "त्रिकोण", "sextile": "षडाष्टक"
+    "conjunction": "युति", "opposition": "प्रतियुति (180°)",
+    "square": "केंद्र दृष्टि (90°)", "trine": "त्रिकोण दृष्टि (120°)",
+    "sextile": "षष्ठक दृष्टि (60°)",
+}
+
+# Row-state words that appear in the dasha ladders and the aspect table. These
+# had no map at all, so `current`/`past`/`ahead` and `applying`/`separating`
+# printed in English on the Hindi pages. The three dasha words match what the
+# mahadasha table was already using inline, so the mahadasha and antardasha
+# tables on the same page do not use two different words for one state.
+_STATUS_HI = {
+    "past": "गत काल", "current": "सक्रिय", "ahead": "आगामी",
+    "applying": "प्रवेशी (बनती हुई)", "separating": "निर्गामी (टूटती हुई)",
+}
+
+_NAKSHATRAS_HI = {
+    "Ashwini": "अश्विनी", "Bharani": "भरणी", "Krittika": "कृत्तिका",
+    "Rohini": "रोहिणी", "Mrigashira": "मृगशिरा", "Ardra": "आर्द्रा",
+    "Punarvasu": "पुनर्वसु", "Pushya": "पुष्य", "Ashlesha": "आश्लेषा",
+    "Magha": "मघा", "Purva Phalguni": "पूर्वा फाल्गुनी",
+    "Uttara Phalguni": "उत्तरा फाल्गुनी", "Hasta": "हस्त", "Chitra": "चित्रा",
+    "Swati": "स्वाति", "Vishakha": "विशाखा", "Anuradha": "अनुराधा",
+    "Jyeshtha": "ज्येष्ठा", "Mula": "मूल", "Purva Ashadha": "पूर्वाषाढ़ा",
+    "Uttara Ashadha": "उत्तराषाढ़ा", "Shravana": "श्रवण",
+    "Dhanishta": "धनिष्ठा", "Shatabhisha": "शतभिषा",
+    "Purva Bhadrapada": "पूर्व भाद्रपद", "Uttara Bhadrapada": "उत्तर भाद्रपद",
+    "Revati": "रेवती",
+}
+
+_MONTHS_ABBR_HI = {
+    "jan": "जनवरी", "feb": "फरवरी", "mar": "मार्च", "apr": "अप्रैल",
+    "may": "मई", "jun": "जून", "jul": "जुलाई", "aug": "अगस्त",
+    "sep": "सितंबर", "oct": "अक्टूबर", "nov": "नवंबर", "dec": "दिसंबर",
+}
+
+_AYANAMSA_HI = {
+    "lahiri": "लाहिरी (चित्रपक्ष)", "raman": "रमन", "krishnamurti": "कृष्णमूर्ति",
+    "yukteshwar": "युक्तेश्वर", "fagan_bradley": "फेगन-ब्रैडली",
 }
 
 
@@ -1178,11 +1286,15 @@ def _format_date_hi(date_str: str) -> str:
         mon_name = m.group(2).lower()
         year = m.group(3)
         time = m.group(4)
-        mon = months_map.get(mon_name, "01")
+        # An unrecognised month used to default to "01", which silently printed
+        # a wrong date rather than leaving the string alone.
+        if mon_name not in months_map:
+            return date_str
+        mon = months_map[mon_name]
         if time:
             return f"{day}-{mon}-{year}, {time}"
         return f"{day}-{mon}-{year}"
-        
+
     # Check if Month DD, YYYY
     m2 = re.match(r"([A-Za-z]+)\s+(\d+),\s+(\d+)(?:\s+(\d+:\d+\s*[A-Za-z]+))?", date_str)
     if m2:
@@ -1190,12 +1302,24 @@ def _format_date_hi(date_str: str) -> str:
         day = m2.group(2).zfill(2)
         year = m2.group(3)
         time = m2.group(4)
-        mon = months_map.get(mon_name, "01")
+        if mon_name not in months_map:
+            return date_str
+        mon = months_map[mon_name]
         if time:
             return f"{day}-{mon}-{year}, {time}"
         return f"{day}-{mon}-{year}"
-        
+
     return date_str
+
+
+def _month_year_hi(text: str) -> str:
+    """"Jul 2019" -> "जुलाई 2019". Dasha summaries are month precision."""
+    import re
+    m = re.fullmatch(r"([A-Za-z]{3,9})\.?\s+(\d{4})", text.strip())
+    if not m:
+        return text
+    month = _MONTHS_ABBR_HI.get(m.group(1)[:3].lower())
+    return f"{month} {m.group(2)}" if month else text
 
 
 def _translate_val(val: str, language: str) -> str:
@@ -1207,10 +1331,24 @@ def _translate_val(val: str, language: str) -> str:
     if not val_stripped:
         return val
         
-    for m in [_PLANETS_HI, _SIGNS_HI, _ZODIAC_HI, _HOUSE_SYSTEM_HI, _DIGNITIES_HI, _MOTION_HI, _POSITION_HI, _ASPECTS_HI]:
+    # Proper nouns (planets, signs) are matched case-sensitively; the vocabulary
+    # maps are matched case-insensitively, because the engine is not consistent
+    # about it — `dignities()` yields lowercase `term`, the aspect table yields
+    # Title-case `Conjunction`, and `placement` is `.title()`-cased on the way
+    # into the row. Keying only on one casing silently left columns in English.
+    for m in (_PLANETS_HI, _SIGNS_HI):
         if val_stripped in m:
             return m[val_stripped]
-            
+
+    lowered = val_stripped.lower()
+    for m in (_ZODIAC_HI, _HOUSE_SYSTEM_HI, _AYANAMSA_HI, _DIGNITIES_HI,
+              _MOTION_HI, _POSITION_HI, _ASPECTS_HI, _STATUS_HI):
+        if val_stripped in m:
+            return m[val_stripped]
+        if lowered in m:
+            return m[lowered]
+
+
     # Check suffix " R" for retrograde
     if val_stripped.endswith(" R") and val_stripped[:-2] in _PLANETS_HI:
         return _PLANETS_HI[val_stripped[:-2]] + " (वक्री)"
@@ -1315,7 +1453,11 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
             ["जन्म स्थान", f"{meta['place']}  ({meta['latitude']:.4f}, {meta['longitude']:.4f})"],
             ["समय क्षेत्र", f"{meta['timezone']} (UTC{meta['utc_offset'][:3]}:{meta['utc_offset'][3:]})"],
             ["यूनीवर्सल समय (UT)", str(meta["utc_time"])],
-            ["अयन चक्र / अयन", "निरयण (Sidereal) \u00b7 " + (f"{str(meta['ayanamsa']).title()} अयन " f"{meta['ayanamsa_value']}\u00b0" if meta.get("ayanamsa_value") else "")],
+            # Was hardcoded to sidereal regardless of the chart, and left the
+            # ayanamsa's own name in English inside the composite string.
+            ["अयन चक्र / अयन", _translate_val(meta["zodiac"], language) + (
+                f" · {_translate_val(str(meta['ayanamsa']), language)} अयनांश "
+                f"{meta['ayanamsa_value']}°" if meta.get("ayanamsa_value") else "")],
             ["भाव पद्धति", meta["house_system"]],
             ["वर्ग", "दिन की कुंडली" if meta["sect"] == "diurnal" else "रात्रि की कुंडली"],
         ]
@@ -1336,14 +1478,33 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
         try:
             summary = vimshottari(session, when)
             maha, antar = summary.get("mahadasha"), summary.get("antardasha")
+
+            # These three values are composite strings \u2014 "Rahu  Jul 2019 \u2013 Jul
+            # 2037", "Uttara Phalguni (pada 3)". _translate_val matches whole
+            # cells, so it never touched them and they stayed English on the
+            # Hindi page. Build them from translated parts instead.
+            hi = language == "hi"
+
+            def _period(p: dict) -> str:
+                if not p:
+                    return "\u2014"
+                lord = _PLANETS_HI.get(p["lord"], p["lord"]) if hi else p["lord"]
+                start, end = p["start"], p["end"]
+                if hi:
+                    start, end = _month_year_hi(start), _month_year_hi(end)
+                return f"{lord}  {start} \u2013 {end}"
+
+            nak = summary["nakshatra"]
+            nak_label = (
+                f"{_NAKSHATRAS_HI.get(nak, nak)} (\u092a\u093e\u0926 {summary['pada']})" if hi
+                else f"{nak} (pada {summary['pada']})")
+
             dasha = {
                 "summary": [
                     ["Moon", summary["moon_position"]],
-                    ["Nakshatra", f"{summary['nakshatra']} (pada {summary['pada']})"],
-                    ["Mahadasha", f"{maha['lord']}  {maha['start']} \u2013 {maha['end']}"
-                     if maha else "\u2014"],
-                    ["Antardasha", f"{antar['lord']}  {antar['start']} \u2013 {antar['end']}"
-                     if antar else "\u2014"],
+                    ["Nakshatra", nak_label],
+                    ["Mahadasha", _period(maha)],
+                    ["Antardasha", _period(antar)],
                     ["As of", when.strftime("%d %B %Y")],
                 ],
                 "table": {
@@ -1354,10 +1515,6 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
             }
             if language == "hi":
                 dasha["table"]["headers"] = ["महादशा", "वर्ष", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"]
-                status_map = {"past": "गत काल", "current": "सक्रिय", "ahead": "आगामी"}
-                for row in dasha["table"]["rows"]:
-                    row[4] = status_map.get(row[4], row[4])
-                
                 sum_map = {
                     "Moon": "चंद्रमा",
                     "Nakshatra": "नक्षत्र",
@@ -1383,21 +1540,80 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
         }
         dasha["antardasha"] = antardasha_table
 
+    # Built here, before any Hindi translation, because the narrative prompts
+    # below are fed from these same tables and the model must see the English
+    # engine vocabulary it was trained on.
+    pos_table = _positions_table(bundle)
+    houses_table = _houses_table(bundle)
+    aspects_table = _aspects_table(bundle)
+
+    # Call LLM to generate narrative sections. The chart itself goes with the
+    # request: asking for a house-by-house reading while sending only the Lagna
+    # and Moon sign leaves the model nothing to reason from, and what comes back
+    # then contradicts the computed tables printed on the facing pages.
+    analysis_input = {
+        "meta": meta,
+        "lagna": bundle["objects"]["ASC"]["sign"],
+        # Read off the ladder, not off the summary line. The summary is built in
+        # the report's own language, so splitting its first word yielded "राहु"
+        # for a Hindi report; and the mahadasha's own start and end were never
+        # passed at all, which left the model to work out when the period ends —
+        # it answered 2039 for a period the engine ends in 2037.
+        "dasha": {"mahadasha": _current_mahadasha(dasha)},
+        "placements": pos_table["rows"],
+        "houses": houses_table["rows"],
+        "vargas": vargas_table,
+        # The model reads English; only recompute when the table is Hindi.
+        "yogas": (yogas_table if language != "hi"
+                  else _yogas_pdf_table(session, language="en"))["rows"],
+    }
+    if antardasha_table:
+        analysis_input["antardasha"] = antardasha_table["rows"]
+    if "Moon" in bundle["objects"]:
+        analysis_input["moon_sign"] = bundle["objects"]["Moon"]["sign"]
+
+    narratives = generate_kundali_narratives(analysis_input, language=language)
+    from .llm import generate_kundali_interpretations
+    interpretations = generate_kundali_interpretations(analysis_input, language=language)
+
     if language == "hi":
         for row in birth_rows:
             row[1] = _translate_val(row[1], language)
+
+        # Must stay column-for-column with _positions_table's English headers
+        # (Body, Sign, Degree, House, Placement, Dignity). The previous labels
+        # were Motion and Retrograde over the Placement and Dignity columns.
+        pos_table["headers"] = ["ग्रह", "राशि", "अंश", "भाव", "भाव-स्थिति", "बल / गरिमा"]
+        for row in pos_table["rows"]:
+            for i in range(len(row)):
+                row[i] = _translate_val(row[i], language)
+
+        # Five columns (House, Sign on cusp, Cusp, Ruler, Occupants), so five
+        # headers — the sixth used to wrap onto a second header row and pushed
+        # every label one column to the left of what it described.
+        houses_table["headers"] = ["भाव", "राशि", "आरंभ अंश", "भावेश", "स्थित ग्रह"]
+        for row in houses_table["rows"]:
+            row[1] = _translate_val(row[1], language)
+            row[3] = _translate_val(row[3], language)
+            row[4] = _translate_val(row[4], language)
+
+        # Last column is applying/separating, not an exactness flag.
+        aspects_table["headers"] = ["कारक ग्रह", "दृष्टि", "लक्ष्य ग्रह", "अंतर (orb)", "गति"]
+        for row in aspects_table["rows"]:
+            row[0] = _translate_val(row[0], language)
+            row[1] = _translate_val(row[1], language)
+            row[2] = _translate_val(row[2], language)
+            row[4] = _translate_val(row[4], language)
 
         vargas_table["headers"] = ["ग्रह/लग्न", "D1 (लग्न)", "D3 (द्रेष्काण)", "D7 (सप्तांश)", "D9 (नवमांश)", "D10 (दशांश)", "D12 (द्वादशांश)"]
         for row in vargas_table["rows"]:
             for i in range(len(row)):
                 row[i] = _translate_val(row[i], language)
                 
-        yogas_table["headers"] = ["योग का नाम", "श्रेणी", "संबद्ध ग्रह", "प्रभाव / शास्त्रीय फल"]
-        for row in yogas_table["rows"]:
-            row[0] = _translate_val(row[0], language)
-            row[1] = _translate_val(row[1], language)
-            row[2] = _translate_val(row[2], language)
-        
+        # _yogas_pdf_table already returns Hindi headers and fully translated
+        # rows when language == "hi"; running _translate_val over Devanagari
+        # again only risks the comma-splitting branch mangling a planet list.
+
         if dasha:
             dasha["table"]["headers"] = ["महादशा", "वर्ष", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"]
             for row in dasha["table"]["rows"]:
@@ -1416,50 +1632,6 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
                     row[1] = _translate_val(row[1], language)
                     row[2] = _translate_val(row[2], language)
                     row[3] = _translate_val(row[3], language)
-
-    # Call LLM to generate narrative sections
-    analysis_input = {
-        "meta": meta,
-        "lagna": bundle["objects"]["ASC"]["sign"],
-        "dasha": {
-            "mahadasha": {"lord": dasha["summary"][2][1].split()[0] if (dasha and len(dasha["summary"]) > 2) else "Rahu"}
-        }
-    }
-    if "Moon" in bundle["objects"]:
-        analysis_input["moon_sign"] = bundle["objects"]["Moon"]["sign"]
-
-    narratives = generate_kundali_narratives(analysis_input, language=language)
-    from .llm import generate_kundali_interpretations
-    interpretations = generate_kundali_interpretations(analysis_input, language=language)
-
-    pos_table = _positions_table(bundle)
-    if language == "hi":
-        pos_table["headers"] = ["ग्रह", "राशि", "स्थिति", "भाव", "गति", "वक्री"]
-        for row in pos_table["rows"]:
-            row[0] = _translate_val(row[0], language)
-            row[1] = _translate_val(row[1], language)
-            row[2] = _translate_val(row[2], language)
-            row[3] = _translate_val(row[3], language)
-            row[4] = _translate_val(row[4], language)
-            row[5] = _translate_val(row[5], language)
-
-    houses_table = _houses_table(bundle)
-    if language == "hi":
-        houses_table["headers"] = ["भाव", "राशि", "विस्तार", "दूरी", "स्वामी", "स्थित ग्रह"]
-        for row in houses_table["rows"]:
-            row[1] = _translate_val(row[1], language)
-            row[3] = _translate_val(row[3], language)
-            if len(row) > 4:
-                row[4] = _translate_val(row[4], language)
-
-    aspects_table = _aspects_table(bundle)
-    if language == "hi":
-        aspects_table["headers"] = ["कारक", "दृष्टि", "लक्ष्य", "अंतर", "सटीक"]
-        for row in aspects_table["rows"]:
-            row[0] = _translate_val(row[0], language)
-            row[1] = _translate_val(row[1], language)
-            row[2] = _translate_val(row[2], language)
-            row[4] = _translate_val(row[4], language)
 
     data = {
         "brand": brand,
