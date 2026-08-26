@@ -97,8 +97,14 @@ class PlaceIndex:
         if len(q) < 2:
             return []
         # Split "delhi, india" -> match on the first token, filter on the rest.
-        head, _, tail = q.partition(",")
-        head, tail = head.strip(), tail.strip()
+        #
+        # Every comma, not just the first. `partition` left the whole remainder
+        # as one string, so "sultanpur, uttar pradesh, india" asked for a place
+        # whose admin1 or country contained the literal "uttar pradesh, india"
+        # and matched nothing — the exact "Town, State, Country" form a user
+        # pastes, and the form the app's own tests use for `place`.
+        head, *tails = (t.strip() for t in q.split(","))
+        tails = [t for t in tails if t]
 
         hits: dict[int, int] = {}  # index -> match rank (lower is better)
         for key, idx in self._keys:
@@ -114,11 +120,16 @@ class PlaceIndex:
                 hits[idx] = rank
 
         results = [(rank, self._places[i]) for i, rank in hits.items()]
-        if tail:
+        if tails:
+            # Every qualifier has to land somewhere — "sultanpur, uttar pradesh"
+            # must not return the Punjab one.
             results = [
                 (r, p) for r, p in results
-                if tail in _fold(p.country) or tail in _fold(p.admin1)
-                or tail == _fold(p.country_code)
+                if all(
+                    t in _fold(p.country) or t in _fold(p.admin1)
+                    or t == _fold(p.country_code)
+                    for t in tails
+                )
             ]
         # A closer name match wins, but a far larger city can outrank a looser
         # one — otherwise "new york" surfaces a 10k-person village in Ukraine

@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import logging
 import os
 import re
 import shutil
@@ -1130,6 +1131,21 @@ _YOGA_GROUPS_HI = {
 }
 
 
+def _yogas_for_prompt(session) -> list[list[str]]:
+    """Formed yogas as the engine states them, condition included."""
+    from .astro.vargas import yogas
+    try:
+        formed = yogas(session).get("yogas", [])
+    except Exception:                       # pragma: no cover - defensive
+        return []
+    return [
+        [y.get("name", ""), y.get("group", ""),
+         ", ".join(y.get("planets") or []) or "—",
+         y.get("condition", ""), y.get("note", "")]
+        for y in formed
+    ]
+
+
 def _yogas_pdf_table(session, language: str = "en") -> dict:
     """Returns a table of formed yogas."""
     from .astro.vargas import yogas
@@ -1179,6 +1195,19 @@ def _yogas_pdf_table(session, language: str = "en") -> dict:
     }
 
 
+# The chart bundle names the lunar nodes after the Western convention. This is
+# a Vedic kundali, the Hindi edition already prints राहु and केतु through
+# _PLANETS_HI, and the varga grid uses the Vedic names too — English was the
+# only place still saying "True Node", and it made the nodes hard to match
+# across two tables of the same report.
+_VEDIC_NAMES = {"True Node": "Rahu", "Mean Node": "Rahu",
+                "North Node": "Rahu", "South Node": "Ketu"}
+
+
+def _body_name(name: str) -> str:
+    return _VEDIC_NAMES.get(name, name)
+
+
 def _positions_table(bundle: dict) -> dict:
     order = {"planet": 0, "node": 1, "angle": 2, "point": 3, "part": 4}
     objects = sorted(
@@ -1190,7 +1219,7 @@ def _positions_table(bundle: dict) -> dict:
         if obj["kind"] not in ("planet", "node", "angle"):
             continue
         rows.append([
-            obj["name"] + (" R" if obj.get("retrograde") else ""),
+            _body_name(obj["name"]) + (" R" if obj.get("retrograde") else ""),
             obj["sign"],
             obj["dms"],
             str(obj["house"]),
@@ -1205,9 +1234,15 @@ def _houses_table(bundle: dict) -> dict:
     houses = bundle["houses"]
     rows = []
     for number in range(1, 13):
+        # Nodes as well as planets. Filtering on kind == "planet" excluded Rahu
+        # and Ketu, so a house holding a node read as empty — the positions
+        # table on the facing page put Rahu in the 6th while this one showed
+        # the 6th with no occupants. Nodal occupancy is among the first things
+        # a Vedic reader looks for, and it was missing from every report.
         occupants = [
-            o["name"] for o in bundle["objects"].values()
-            if o["kind"] == "planet" and o["house"] == number
+            _body_name(o["name"]) for o in sorted(
+                bundle["objects"].values(), key=lambda o: o["longitude"])
+            if o["kind"] in ("planet", "node") and o["house"] == number
         ]
         rows.append([
             str(number),
@@ -1634,12 +1669,25 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
         "placements": pos_table["rows"],
         "houses": houses_table["rows"],
         "vargas": vargas_table,
-        # The model reads English; only recompute when the table is Hindi.
-        "yogas": (yogas_table if language != "hi"
-                  else _yogas_pdf_table(session, language="en"))["rows"],
+        # Straight from the engine, not from the printed table. The table row
+        # drops `condition`, which is the field carrying why the yoga forms —
+        # "a lord of the 10th (kendra) with a lord of the 9th (trikona)".
+        # Without it the model explained Raja Yoga by where the planets sit
+        # rather than what they rule, which is a different claim.
+        "yogas": _yogas_for_prompt(session),
     }
     if antardasha_table:
         analysis_input["antardasha"] = antardasha_table["rows"]
+
+    # The remedies section used to be written from the model's own knowledge,
+    # so this PDF and /api/pdf/remedies could hand the same customer different
+    # mantras for the same dasha lord, and the three computed gemstones never
+    # appeared at all. recommend_remedies() is deterministic; send it.
+    try:
+        from .astro.remedies import recommend_remedies
+        analysis_input["remedies"] = recommend_remedies(session)
+    except Exception as exc:                # pragma: no cover - defensive
+        logging.getLogger(__name__).warning("remedies unavailable: %s", exc)
     if "Moon" in bundle["objects"]:
         analysis_input["moon_sign"] = bundle["objects"]["Moon"]["sign"]
 

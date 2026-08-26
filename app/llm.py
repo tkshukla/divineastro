@@ -794,14 +794,38 @@ def _chart_facts(analysis: dict) -> str:
     rows = analysis.get("yogas") or []
     if rows:
         parts.append(
-            "YOGAS FOUND BY THE ENGINE (name | category | planets | classical note)\n"
-            + "\n".join(" | ".join(str(c) for c in r) for r in rows))
+            "YOGAS FOUND BY THE ENGINE "
+            "(name | category | planets | why it forms | classical note)\n"
+            + _table(rows))
 
     rows = analysis.get("antardasha") or []
     if rows:
         parts.append(
             "ANTARDASHAS OF THE RUNNING MAHADASHA (lord | from | to | status)\n"
             + "\n".join(" | ".join(str(c) for c in r) for r in rows))
+
+    # Remedies are computed, not a matter of opinion: the stones follow from the
+    # 1st, 5th and 9th lords and the mantra from the running dasha lord. Left to
+    # itself the model wrote a different Shani mantra than the engine's, so the
+    # chart PDF and the remedies PDF disagreed for the same person.
+    rem = analysis.get("remedies") or {}
+    if rem:
+        lines = []
+        for stone in (rem.get("gemstones") or {}).values():
+            lines.append(
+                f"{stone.get('role', 'Stone')}: {stone.get('name')} "
+                f"(for {stone.get('planet')}) — {stone.get('finger')}, "
+                f"set in {stone.get('metal')}")
+        dr = rem.get("dasha_remedies") or {}
+        if dr.get("mantra"):
+            lines.append(f"Mantra for the running {dr.get('mahadasha_lord')} "
+                         f"mahadasha: {dr['mantra']}")
+        if dr.get("charity"):
+            lines.append(f"Charity: {dr['charity']}")
+        if lines:
+            parts.append(
+                "PRESCRIBED REMEDIES — use these exactly. Do not substitute a "
+                "different mantra, stone, finger or metal.\n" + "\n".join(lines))
 
     reading = (analysis.get("dasha") or {}).get("mahadasha", {}).get("classical_reading")
     if reading:
@@ -1172,8 +1196,10 @@ def generate_kundali_interpretations(analysis: dict, language: str = "en") -> di
         f"its lord and where that lord sits, and any occupying planets — taken from the tables above (around 400 words).\n"
         f"2. A planet-by-planet interpretation (planets_detailed) covering all nine grahas, Rahu and Ketu included. "
         f"For each, name its actual sign, house and dignity from the table above before interpreting it (around 350 words).\n"
-        f"3. An analysis of the yogas listed above — only those — and remedies for the running dasha lord, "
-        f"with mantras and donations (yogas_remedies_detailed, around 200 words).\n\n"
+        f"3. An analysis of the yogas listed above — only those, and give the reason each one forms "
+        f"as the data states it (which houses the planets rule, not merely where they sit) — followed "
+        f"by the prescribed remedies above, reproducing the mantra, stones, fingers and metals exactly "
+        f"as given (yogas_remedies_detailed, around 250 words).\n\n"
         f"You MUST format the output as a valid JSON object with the following three keys:\n"
         f"- 'houses_detailed': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n"
         f"- 'planets_detailed': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n"

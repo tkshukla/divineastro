@@ -1092,6 +1092,27 @@ def _shared_lords(view: dict, houses: tuple[int, ...]) -> list[dict]:
     return [{"planet": p, "houses": hs} for p, hs in by_planet.items() if len(hs) > 1]
 
 
+def _lordship(view: dict, planet: str, houses: list[int],
+              labels: dict[int, str] | None = None) -> str:
+    """"Mercury (lord of the 9th)" — which houses *this* planet actually owns.
+
+    `_lord_pairs` sorts the planet pair alphabetically, which breaks any
+    positional correspondence with the house pair that produced it. A condition
+    reading "Mercury and Moon — a lord of the 10th with a lord of the 9th"
+    therefore invited exactly the wrong pairing: here Moon owns the 10th and
+    Mercury the 9th, but the sentence implies the reverse. Bind each planet to
+    its own houses instead of relying on the order of two lists.
+    """
+    owned = sorted({h for h in houses if view["house_lords"][h] == planet})
+    if not owned:
+        return planet
+    parts = []
+    for h in owned:
+        label = (labels or {}).get(h)
+        parts.append(f"{_ordinal(h)}{f' (a {label})' if label else ''}")
+    return f"{planet}, lord of the {' and the '.join(parts)}"
+
+
 def dhana_yogas(chart: object) -> list[dict]:
     """Lords of the 2nd, 5th, 9th and 11th in mutual association.
 
@@ -1112,7 +1133,8 @@ def dhana_yogas(chart: object) -> list[dict]:
         listed = " and ".join(_ordinal(h) for h in houses)
         out.append(_yoga(
             "dhana", "Dhana Yoga", "Dhana", [a, b],
-            condition=(f"{a} and {b}, lords of the {listed}, joined by "
+            condition=(f"{_lordship(view, a, houses)}, and "
+                       f"{_lordship(view, b, houses)}, joined by "
                        f"{pair['how']}."),
             note=(f"A wealth yoga: the lords of the {listed} are linked by "
                   f"{pair['how']}. The tradition reads the houses of earning and "
@@ -1150,12 +1172,16 @@ def raja_yogas(chart: object) -> list[dict]:
         a, b = pair["planets"]
         kendra_h = sorted({hp[0] for hp in pair["house_pairs"]})
         trikona_h = sorted({hp[1] for hp in pair["house_pairs"]})
+        # The 1st is both, so label it that way rather than picking a side.
+        _roles = {h: ("kendra and trikona" if h in KENDRAS and h in TRIKONAS
+                      else "kendra" if h in KENDRAS else "trikona")
+                  for h in set(kendra_h) | set(trikona_h)}
         out.append(_yoga(
             "raja", "Raja Yoga", "Raja", [a, b],
-            condition=(f"{a} and {b} — a lord of the "
-                       f"{', '.join(_ordinal(h) for h in kendra_h)} (kendra) with a "
-                       f"lord of the {', '.join(_ordinal(h) for h in trikona_h)} "
-                       f"(trikona) — joined by {pair['how']}."),
+            condition=(
+                f"{_lordship(view, a, kendra_h + trikona_h, labels=_roles)} "
+                f"with {_lordship(view, b, kendra_h + trikona_h, labels=_roles)}"
+                f" — joined by {pair['how']}."),
             note=(f"The classical Raja Yoga: the houses of action and the houses "
                   f"of fortune are tied together through {a} and {b} by "
                   f"{pair['how']}. Read as capacity meeting opportunity, and "
