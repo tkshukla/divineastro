@@ -31,8 +31,9 @@ means by a house; the chart's Placidus cusps, if it has any, are a Western
 layer and are deliberately not consulted here.
 
 **On what is deliberately missing.** This module implements five divisions
-(D1, D3, D7, D9, D10, D12) out of the classical sixteen, and nine yoga families
-out of the several hundred the literature names. Nothing here is a guess: a
+(D1, D3, D7, D9, D10, D12) out of the classical sixteen, and ten yoga families
+(nine plus the 32-yoga Nabhasa group) out of the several hundred the
+literature names. Nothing here is a guess: a
 rule the sources did not agree on was left out, and the omissions are listed in
 :data:`NOT_IMPLEMENTED` so a reader can see the edge of the map. In particular
 there is no Vimsopaka Bala and no Ashtakavarga — both need divisions this
@@ -587,6 +588,18 @@ def _is_debilitated(view: dict, planet: str) -> bool:
 
 def _position(view: dict, name: str) -> str:
     return f"{view['signs'][name]} {dms(view['degrees'][name])}"
+
+
+def chart_view(chart: object) -> dict:
+    """Public access to the resolved chart view other astro/ modules can reuse.
+
+    Whole-sign houses, house lords, signs and degrees for the Lagna and every
+    graha — the same dict every rule in this module reads from. Exposed so a
+    sibling module (delineation.py) does not have to re-derive whole-sign
+    houses from a bundle a second time; it is the canonical reading of a
+    sidereal chart and there should only be one copy of that logic.
+    """
+    return _view(chart)
 
 
 # --------------------------------------------------------------------------
@@ -1341,6 +1354,269 @@ def budha_aditya(chart: object) -> list[dict]:
     )]
 
 
+# -- Nabhasa Yogas -----------------------------------------------------------
+#
+# A structural family: 32 yogas formed purely from which houses (or how many
+# distinct signs) the seven classical grahas occupy, independent of dignity or
+# aspect. Four groups:
+#
+#   * Asraya  (3)  — by the MODALITY of the signs all seven occupy.
+#   * Dala    (2)  — by benefics or malefics gathering in the four kendras.
+#   * Akriti  (20) — by the HOUSES all seven occupy forming a named shape.
+#   * Sankhya (7)  — by how many distinct SIGNS the seven occupy, 1 through 7.
+#
+# Source: Brihat Jataka ch. 12 (Varaha Mihira, tr. N. Chidambaram Iyer, 1885 —
+# public domain; Harvard Widener Library / Google Books scan). The same
+# chapter names BPHS as carrying an equivalent list.
+#
+# Rahu and Ketu take no part, for the reason given throughout this module:
+# they own no sign, and the source states this family in terms of the seven
+# classical grahas.
+#
+# Priority, simplified. The source spends several verses adjudicating what
+# happens when a chart matches more than one Nabhasa yoga at once — chiefly,
+# a Sankhya yoga can coincide with an Akriti or Asraya yoga of the same size.
+# Rather than reproduce that adjudication case by case, this module applies
+# one rule: Asraya, Dala and Akriti are tested first and are independent of
+# each other (they test different things — sign modality, benefic/malefic
+# placement, house pattern — so more than one can legitimately form
+# together); Sankhya is tested last and reported only if none of the other
+# three formed. The one exception the source insists on by name is kept:
+# Gola (all seven in a single sign) is always reported even alongside an
+# Asraya yoga, because the source specifically says Gola is not to be
+# folded into Asraya the way Kedara/Sula/Yuga are.
+#
+# House-set yogas are matched by EXACT equality: the set of houses the seven
+# grahas occupy must equal the named set, not merely be contained in it. A
+# subset test would make Gada indistinguishable from Kamala, and Yupa from
+# Nau, which the source treats as different yogas precisely because the
+# occupied houses differ.
+#
+# Naming collision, flagged rather than hidden: this module's Sakata (Nabhasa/
+# Akriti — all seven confined to the Lagna and 7th) is a different yoga from
+# the Chandra-yoga-family Sakata (Moon-Jupiter based) named in NOT_IMPLEMENTED.
+# The tradition reuses the name across two unrelated yoga families; this is
+# the source's own overlap, not an error here.
+
+NABHASA_BENEFICS = ("Mercury", "Jupiter", "Venus")
+NABHASA_MALEFICS = ("Sun", "Mars", "Saturn")
+# Distinct from NATURAL_BENEFICS above, which serves Kemadruma and deliberately
+# excludes Mercury for a different reason (its benefic status there is
+# conditional on the company it keeps). This grouping is the Dala yoga's own,
+# attributed by the source to Parasara. Neither grouping opines on the Moon;
+# Vajra/Yava below need only place it among the four kendras with the rest,
+# not on a particular side of the split — the source does not say where it goes.
+
+PANAPHARA = (2, 5, 8, 11)
+APOKLIMA = (3, 6, 9, 12)
+
+
+def _occupied_houses(view: dict) -> frozenset[int]:
+    return frozenset(view["houses"][g] for g in GRAHAS)
+
+
+def _occupied_signs_count(view: dict) -> int:
+    return len({view["signs"][g] for g in GRAHAS})
+
+
+def _consecutive(start: int, span: int) -> frozenset[int]:
+    """`span` houses counted inclusively from `start`, wrapping past the 12th."""
+    return frozenset(((start - 1 + k) % 12) + 1 for k in range(span))
+
+
+_ASRAYA = {
+    "Cardinal": ("rajju", "Rajju Yoga",
+                 "restless and acquisitive — jealous of others' wealth and "
+                 "drawn to foreign travel"),
+    "Fixed": ("musala", "Musala Yoga",
+              "respectable and prosperous, engaged in many undertakings at once"),
+    "Mutable": ("nala", "Nala Yoga",
+                "unusual in body but settled in outlook — rich and skilled at "
+                "the work chosen"),
+}
+
+
+def _asraya_yoga(view: dict) -> list[dict]:
+    modalities = {MODALITY[view["signs"][g]] for g in GRAHAS}
+    if len(modalities) != 1:
+        return []
+    modality = next(iter(modalities))
+    key, name, meaning = _ASRAYA[modality]
+    return [_yoga(
+        key, name, "Nabhasa — Asraya", list(GRAHAS),
+        condition=f"All seven grahas stand in {modality.lower()} signs.",
+        note=f"{name}: {meaning}.",
+        source="Brihat Jataka ch. 12 (Varaha Mihira).",
+        strength=None,
+        modality=modality,
+    )]
+
+
+def _dala_yoga(view: dict) -> list[dict]:
+    formed = []
+    for group, key, name, meaning in (
+        (NABHASA_BENEFICS, "srik", "Srik Yoga (Mala Yoga)",
+         "ease and material comfort — a life lived without much friction"),
+        (NABHASA_MALEFICS, "sarpa", "Sarpa Yoga",
+         "hardship on several fronts at once, the difficult mirror of Srik"),
+    ):
+        if all(view["houses"][g] in KENDRAS for g in group):
+            formed.append(_yoga(
+                key, name, "Nabhasa — Dala", list(group),
+                condition=f"{', '.join(group)} all stand in the four kendras.",
+                note=f"{name}: {meaning}.",
+                source="Brihat Jataka ch. 12, attributed there to Parasara.",
+                strength=None,
+            ))
+    return formed
+
+
+# name_key, display name, the exact house-set(s) that form it, and the effect.
+_AKRITI_GROUPS: tuple[tuple[str, str, tuple[frozenset[int], ...], str], ...] = (
+    ("gada", "Gada Yoga",
+     (frozenset({1, 4}), frozenset({4, 7}), frozenset({7, 10}), frozenset({10, 1})),
+     "performs sacrificial rites, is wealthy, and is forever occupied in "
+     "acquiring more"),
+    ("sakata", "Sakata Yoga", (frozenset({1, 7}),),
+     "makes a living by vehicles or transport, is prone to illness, and has "
+     "an unhappy marriage"),
+    ("vihaga", "Vihaga Yoga", (frozenset({4, 10}),),
+     "lives by carrying messages or communication, is fond of travel, and "
+     "tends to stir up quarrels"),
+    ("sringataka", "Sringataka Yoga", (frozenset({1, 5, 9}),),
+     "finds happiness late in life rather than early"),
+    ("hala", "Hala Yoga",
+     (frozenset({2, 6, 10}), frozenset({3, 7, 11}), frozenset({4, 8, 12})),
+     "works the land — a life built on steady, direct labour"),
+    ("vapi", "Vapi Yoga", (frozenset(PANAPHARA), frozenset(APOKLIMA)),
+     "lives modestly for a long stretch of life, and hoards rather than spends"),
+    ("yupa", "Yupa Yoga", (_consecutive(1, 4),),
+     "liberal in giving, and drawn to formal or ceremonial acts of merit"),
+    ("ishu", "Ishu Yoga (Bana Yoga)", (_consecutive(4, 4),),
+     "severe by temperament — drawn to confinement, punishment, or the making "
+     "of weapons"),
+    ("sakti", "Sakti Yoga", (_consecutive(7, 4),),
+     "takes on work beneath their station, unskilled and without much comfort"),
+    ("danda", "Danda Yoga", (_consecutive(10, 4),),
+     "separated from those they love, earning a living by the humblest means"),
+    ("nau", "Nau Yoga", (_consecutive(1, 7),),
+     "widely known, but happy only intermittently, and inclined to be a miser"),
+    ("kuta", "Kuta Yoga", (_consecutive(4, 7),),
+     "inclined to deception, drawn to work as a guard or gaoler"),
+    ("chhatra", "Chhatra Yoga", (_consecutive(7, 7),),
+     "brings comfort to their own people, with ease arriving in later life"),
+    ("chapa", "Chapa Yoga", (_consecutive(10, 7),),
+     "delights in conflict, and is comfortable at both the start and the end "
+     "of life"),
+    ("ardha_chandra", "Ardha-Chandra Yoga",
+     tuple(_consecutive(s, 7) for s in (2, 3, 5, 6, 8, 9, 11, 12)),
+     "a general favourite — agreeable, and well regarded by nearly everyone"),
+    ("samudra", "Samudra Yoga", (frozenset({2, 4, 6, 8, 10, 12}),),
+     "prosperous and comfortable, on a scale the tradition compares to a king"),
+    ("chakra", "Chakra Yoga", (frozenset({1, 3, 5, 7, 9, 11}),),
+     "commands real deference from others — the tradition's image is of kings "
+     "paying respect"),
+)
+
+_SANKHYA: dict[int, tuple[str, str, str]] = {
+    7: ("vallaki", "Vallaki Yoga", "skilled at work, and delights in music and dance"),
+    6: ("damini", "Damini Yoga", "liberal in giving, and delights in helping others"),
+    5: ("pasa", "Pasa Yoga",
+        "earns wealth by honest means, with the help of family and servants"),
+    4: ("kedara", "Kedara Yoga",
+        "works the land, and is useful to others through steady good deeds"),
+    3: ("sula", "Sula Yoga", "bold in a fight and fond of money, but stays poor"),
+    2: ("yuga", "Yuga Yoga", "poor, and inclined to act against convention"),
+    1: ("gola", "Gola Yoga", "poor, unclean, unskilled, and forever on the move"),
+}
+
+
+def _sankhya_yoga(view: dict) -> dict:
+    count = _occupied_signs_count(view)
+    key, name, meaning = _SANKHYA[count]
+    return _yoga(
+        key, name, "Nabhasa — Sankhya", list(GRAHAS),
+        condition=(f"The seven grahas occupy exactly {count} distinct "
+                   f"sign{'s' if count != 1 else ''}."),
+        note=f"{name}: {meaning}.",
+        source="Brihat Jataka ch. 12 (Varaha Mihira).",
+        strength=None,
+        sign_count=count,
+    )
+
+
+def nabhasa_yogas(chart: object) -> list[dict]:
+    """All 32 Nabhasa yogas this module tests, judged against one chart.
+
+    Formed from house and sign PATTERN alone — no dignity, no aspect. See the
+    comment block above this function for the priority rule applied when a
+    chart could match more than one Nabhasa yoga, and for why the exact house
+    SET is required rather than a subset.
+
+    Source: Brihat Jataka ch. 12 (Varaha Mihira, tr. N. Chidambaram Iyer, 1885).
+    """
+    view = _view(chart)
+    occupied = _occupied_houses(view)
+    formed: list[dict] = []
+    formed += _asraya_yoga(view)
+    formed += _dala_yoga(view)
+
+    for key, name, sets, meaning in _AKRITI_GROUPS:
+        if occupied in sets:
+            formed.append(_yoga(
+                key, name, "Nabhasa — Akriti", list(GRAHAS),
+                condition=(f"All seven grahas confined to house"
+                           f"{'s' if len(occupied) != 1 else ''} "
+                           f"{', '.join(_ordinal(h) for h in sorted(occupied))}."),
+                note=f"{name}: {meaning}.",
+                source="Brihat Jataka ch. 12 (Varaha Mihira).",
+                strength=None,
+                houses=sorted(occupied),
+            ))
+
+    # Kamala, and its two named exceptions Vajra and Yava: same house-set
+    # (all four kendras), distinguished by which houses hold the benefics and
+    # which hold the malefics.
+    if occupied == frozenset(KENDRAS):
+        benefic_houses = {view["houses"][g] for g in NABHASA_BENEFICS}
+        malefic_houses = {view["houses"][g] for g in NABHASA_MALEFICS}
+        if benefic_houses <= {1, 7} and malefic_houses <= {4, 10}:
+            formed.append(_yoga(
+                "vajra", "Vajra Yoga", "Nabhasa — Akriti", list(GRAHAS),
+                condition="Benefics confined to the Lagna and 7th, malefics to "
+                          "the 4th and 10th.",
+                note="Vajra Yoga: happy at both the start and the end of life, "
+                     "a general favourite, and bold in confrontation.",
+                source="Brihat Jataka ch. 12 (Varaha Mihira).",
+                strength=None, houses=sorted(occupied),
+            ))
+        elif malefic_houses <= {1, 7} and benefic_houses <= {4, 10}:
+            formed.append(_yoga(
+                "yava", "Yava Yoga", "Nabhasa — Akriti", list(GRAHAS),
+                condition="Malefics confined to the Lagna and 7th, benefics to "
+                          "the 4th and 10th.",
+                note="Yava Yoga: powerful, with happiness concentrated in the "
+                     "middle years of life.",
+                source="Brihat Jataka ch. 12 (Varaha Mihira).",
+                strength=None, houses=sorted(occupied),
+            ))
+        else:
+            formed.append(_yoga(
+                "kamala", "Kamala Yoga", "Nabhasa — Akriti", list(GRAHAS),
+                condition="All seven grahas confined to the four kendras.",
+                note="Kamala Yoga: widely renowned, deeply content, and "
+                     "accomplished across several fields.",
+                source="Brihat Jataka ch. 12 (Varaha Mihira).",
+                strength=None, houses=sorted(occupied),
+            ))
+
+    sankhya = _sankhya_yoga(view)
+    if not formed or sankhya["sign_count"] == 1:
+        formed.append(sankhya)
+
+    return formed
+
+
 # --------------------------------------------------------------------------
 # Public entry points
 # --------------------------------------------------------------------------
@@ -1348,6 +1624,7 @@ def budha_aditya(chart: object) -> list[dict]:
 YOGA_FUNCTIONS = (
     pancha_mahapurusha, gaja_kesari, neecha_bhanga,
     dhana_yogas, raja_yogas, kemadruma, chandra_mangala, budha_aditya,
+    nabhasa_yogas,
 )
 
 

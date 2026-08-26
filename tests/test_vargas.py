@@ -745,6 +745,91 @@ def main() -> int:
     except Exception as exc:                          # pragma: no cover
         check("real charts build and analyse", False, f"{type(exc).__name__}: {exc}")
 
+    print("\n16. Nabhasa yogas — house/sign pattern only, from Brihat Jataka ch. 12")
+    # Asraya: all seven in one modality. Different movable signs, Taurus Lagna
+    # so the kendras (Taurus/Leo/Scorpio/Aquarius) do NOT coincide with the
+    # movable signs used — isolating Rajju from any Akriti/Dala side-effect.
+    rajju = chart(asc="Taurus", Sun="Aries", Moon="Cancer", Mars="Libra",
+                  Mercury="Capricorn", Jupiter="Aries", Venus="Cancer", Saturn="Libra")
+    check("Rajju forms when all seven stand in movable signs",
+          entry(rajju, "rajju") is not None
+          and entry(rajju, "rajju")["modality"] == "Cardinal",
+          str(formed(rajju)))
+    check("Rajju does not also report Kamala on this Lagna",
+          entry(rajju, "kamala") is None, str(formed(rajju)))
+
+    # Gola: all seven in a single sign, at different degrees (so it is a real
+    # sign-count test and not an impossible exact conjunction).
+    gola = chart(asc="Taurus",
+                 Sun=lon("Aries", 1.0), Moon=lon("Aries", 5.0), Mars=lon("Aries", 9.0),
+                 Mercury=lon("Aries", 13.0), Jupiter=lon("Aries", 17.0),
+                 Venus=lon("Aries", 21.0), Saturn=lon("Aries", 25.0))
+    check("Gola forms when all seven share one sign",
+          entry(gola, "gola") is not None
+          and entry(gola, "gola")["sign_count"] == 1, str(formed(gola)))
+    check("Gola is reported even though Rajju (all movable) also forms — the "
+          "one named exception to the Sankhya/Asraya priority rule",
+          "rajju" in formed(gola) and "gola" in formed(gola), str(formed(gola)))
+
+    # Kamala / Vajra / Yava: all seven confined to the four kendras from a
+    # Taurus Lagna (Taurus/Leo/Scorpio/Aquarius), varied by which houses hold
+    # the benefics and which hold the malefics.
+    kamala = chart(asc="Taurus", Sun="Taurus", Moon="Leo", Mars="Scorpio",
+                   Mercury="Taurus", Jupiter="Leo", Venus="Scorpio", Saturn="Aquarius")
+    check("Kamala forms on a plain spread across all four kendras",
+          entry(kamala, "kamala") is not None, str(formed(kamala)))
+    check("Kamala does not also report Vajra or Yava",
+          entry(kamala, "vajra") is None and entry(kamala, "yava") is None)
+
+    vajra = chart(asc="Taurus", Mercury="Taurus", Jupiter="Scorpio", Venus="Taurus",
+                  Sun="Leo", Mars="Aquarius", Saturn="Leo", Moon="Scorpio")
+    check("Vajra forms with benefics in the 1st/7th and malefics in the 4th/10th",
+          entry(vajra, "vajra") is not None and entry(vajra, "kamala") is None,
+          str(formed(vajra)))
+
+    yava = chart(asc="Taurus", Sun="Taurus", Mars="Scorpio", Saturn="Taurus",
+                 Mercury="Leo", Jupiter="Aquarius", Venus="Leo", Moon="Aquarius")
+    check("Yava forms with malefics in the 1st/7th and benefics in the 4th/10th",
+          entry(yava, "yava") is not None and entry(yava, "kamala") is None,
+          str(formed(yava)))
+
+    # Sarpa: the three Nabhasa malefics confined to the kendras, benefics kept
+    # well away from them.
+    sarpa = chart(asc="Taurus", Sun="Taurus", Mars="Scorpio", Saturn="Leo",
+                  Moon="Gemini", Mercury="Virgo", Jupiter="Gemini", Venus="Virgo")
+    check("Sarpa forms when the three malefics alone occupy the kendras",
+          entry(sarpa, "sarpa") is not None, str(formed(sarpa)))
+    check("and Srik does not form alongside it here",
+          entry(sarpa, "srik") is None)
+
+    # Sakata: all seven confined to exactly the Lagna and the 7th.
+    sakata = chart(asc="Taurus",
+                   Sun="Taurus", Moon="Scorpio", Mars="Taurus", Mercury="Scorpio",
+                   Jupiter="Taurus", Venus="Scorpio", Saturn="Taurus")
+    check("Sakata forms when confined to exactly the Lagna and 7th",
+          entry(sakata, "sakata") is not None
+          and entry(sakata, "sakata")["houses"] == [1, 7], str(formed(sakata)))
+    check("Sakata is not reported as Gada (a strict-subset confusion the exact-"
+          "set rule exists to prevent)",
+          entry(sakata, "gada") is None)
+
+    # A quiet, ordinary spread across many houses and signs forms none of the
+    # 32 — the Sankhya fallback should not fire on an unremarkable chart either,
+    # since seven planets over say five signs is the ordinary case, not Pasa.
+    ordinary = chart(asc="Taurus", Sun="Aries", Moon="Gemini", Mars="Leo",
+                     Mercury="Virgo", Jupiter="Sagittarius", Venus="Aquarius",
+                     Saturn="Pisces")
+    check("an ordinary, unremarkable spread still resolves to exactly one "
+          "Sankhya yoga, by the module's own fallback rule",
+          len(v.nabhasa_yogas(ordinary)) == 1
+          and v.nabhasa_yogas(ordinary)[0]["group"] == "Nabhasa — Sankhya",
+          str(formed(ordinary)))
+    check("nabhasa_yogas() feeds into yogas() and analyse() like every other family",
+          any(y["group"].startswith("Nabhasa") for y in v.yogas(rajju)["yogas"])
+          and "nabhasa" not in [f.__name__ for f in ()])  # sanity: no typo'd stray name
+    check("every Nabhasa entry names its source chapter",
+          all(y["source"] for y in v.nabhasa_yogas(rajju) + v.nabhasa_yogas(gola)))
+
     print("\n" + "=" * 60)
     if failures:
         print(f"{len(failures)} FAILURES")

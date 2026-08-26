@@ -420,6 +420,20 @@ def _vedic_context(session) -> dict:
     except Exception as exc:                     # noqa: BLE001
         logging.getLogger(__name__).warning("sade sati unavailable: %s", exc)
 
+    try:
+        from .astro import delineation
+
+        classical = delineation.delineate(session)
+        out["dignities"] = {
+            name: {"state": p["dignity"]["state"], "note": p["dignity"]["note"],
+                   "house": p["house"], "house_note": p["house_text"]}
+            for name, p in classical["planets"].items()
+        }
+        out["career_significators"] = classical["career"]
+        out["conjunctions"] = classical["conjunctions"]
+    except Exception as exc:                     # noqa: BLE001 — never fatal
+        logging.getLogger(__name__).warning("classical delineation unavailable: %s", exc)
+
     return out
 
 

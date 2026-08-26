@@ -278,6 +278,21 @@ def _vedic_block(vedic: dict) -> str:
         lines.append(f"- Sade Sati: {ss.get('phase', 'running')} "
                      f"({ss.get('starts', '')[:10]} to {ss.get('ends', '')[:10]})")
 
+    dignities = vedic.get("dignities") or {}
+    for name, d in dignities.items():
+        lines.append(
+            f"- {name} — dignity: {d['state'].replace('_', ' ')} ({d['note']}); "
+            f"in the {_ord(d['house'])} house: {d['house_note']}"
+        )
+    for c in vedic.get("career_significators") or []:
+        lines.append(
+            f"- Career/wealth signal (10th from the {c['from']}, {c['planet']} "
+            f"as {c['role']}): {c['theme']}"
+        )
+    for c in vedic.get("conjunctions") or []:
+        lines.append(
+            f"- {' + '.join(c['planets'])} conjunct in {c['sign']}: {c['note']}")
+
     if not lines:
         return ""
     return ("\nClassical Vedic factors (cite these when they bear on the "
@@ -787,6 +802,37 @@ def _chart_facts(analysis: dict) -> str:
         parts.append(
             "ANTARDASHAS OF THE RUNNING MAHADASHA (lord | from | to | status)\n"
             + "\n".join(" | ".join(str(c) for c in r) for r in rows))
+
+    reading = (analysis.get("dasha") or {}).get("mahadasha", {}).get("classical_reading")
+    if reading:
+        parts.append(
+            "CLASSICAL READING OF THE RUNNING MAHADASHA (Brihat Jataka ch. 8): "
+            + reading)
+
+    rows = analysis.get("dignities") or []
+    if rows:
+        parts.append(
+            "CLASSICAL DIGNITY OF EACH PLANET (planet | state | what it means "
+            "here)\n" + _table(rows))
+
+    rows = analysis.get("house_placements") or []
+    if rows:
+        parts.append(
+            "CLASSICAL READING OF EACH PLANET'S HOUSE (planet | house | what "
+            "it brings, Brihat Jataka ch. 20)\n" + _table(rows))
+
+    rows = analysis.get("career_significators") or []
+    if rows:
+        parts.append(
+            "CAREER / WEALTH-SOURCE SIGNIFICATORS (planet | read from Lagna or "
+            "Moon | as occupant or lord of the 10th | classical theme, Brihat "
+            "Jataka ch. 10)\n" + _table(rows))
+
+    rows = analysis.get("conjunctions") or []
+    if rows:
+        parts.append(
+            "PLANETARY CONJUNCTIONS AND THEIR CLASSICAL MEANING (planets | "
+            "sign | note)\n" + _table(rows))
 
     if not parts:
         return ""
