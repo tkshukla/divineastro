@@ -28,6 +28,15 @@ Sources, and how each is handled:
     generically below as "the Bhrigu-school dignity tradition" rather than by
     naming the edition. See ``docs/sources/`` for the full reading notes and
     the reasoning behind that line.
+  * **A modern compilation presented as "Ravana Samhita"** — likely still
+    under copyright, same handling as the Bhrigu source above. Its
+    "kalapurusha"/graha-basics chapter states the classical Baladi Avastha
+    rule (:func:`baladi_avastha`) plainly enough, and in terms standard
+    enough across the tradition, that it is reproduced here as a rule rather
+    than as this compilation's own words. Its Vimshottari Antardasha-phala
+    chapter also gives :data:`ANTARDASHA_EFFECTS`, condensed and
+    independently phrased the same way :data:`MAHADASHA_EFFECTS` is. See
+    ``docs/sources/ravana_samhita_notes.md``.
 
 What is deliberately not attempted, matching this module's neighbours:
 
@@ -178,6 +187,49 @@ def mahadasha_reading(planet: str, favourable: bool) -> str | None:
     if entry is None:
         return None
     return entry["benefic" if favourable else "malefic"]
+
+
+# --------------------------------------------------------------------------
+# Antardasha (sub-period) effects, by planet — a modern compilation
+# presented as "Ravana Samhita" (see docs/sources/ravana_samhita_notes.md).
+# Unlike MAHADASHA_EFFECTS above, the source gives one fixed result per
+# planet rather than a benefic/malefic split, and it covers all nine grahas
+# including Rahu/Ketu — that asymmetry with the Mahadasha table is the
+# source's own, not something this module is smoothing over.
+# --------------------------------------------------------------------------
+
+ANTARDASHA_EFFECTS: dict[str, str] = {
+    "Sun": "separation from family or a spell away from home, mental strain "
+           "and worry, health trouble, and a risk of loss through theft or "
+           "squandering of savings",
+    "Moon": "material gains and comfort — fine possessions, victory over "
+            "rivals, growing strength, and a generally comfortable, "
+            "well-provided life",
+    "Mars": "conflict with authority or the threat of theft, fire-related "
+            "harm, illness, and a run of worry and hardship",
+    "Mercury": "comfort and enjoyment, gains in wealth and valuables, and — "
+               "alongside the material ease — a turn toward spiritual reflection",
+    "Jupiter": "advancement to authority or a position of standing, a "
+               "virtuous and settled mind, good health, and steady growth "
+               "in wealth and provisions",
+    "Venus": "gains in property or land, good health and vigour, marks of "
+             "honour and status, growing wealth and family, and increased longevity",
+    "Saturn": "false blame or reputational trouble, a harsher temperament, "
+              "financial loss, friction with friends and family, and "
+              "setbacks in one's work",
+    "Rahu": "confusion and poor judgement, anxiety, physical discomfort, "
+            "restriction or entanglement, and hardship tied to want",
+    "Ketu": "exhaustion tied to separation from a partner, financial loss, "
+            "illness, friction with family, and travel or dislocation",
+}
+
+
+def antardasha_reading(planet: str) -> str | None:
+    """The classical antardasha-effect text for one graha, unconditional on
+    its dignity (the source gives a single fixed reading per planet, not a
+    benefic/malefic split — see the module note above `ANTARDASHA_EFFECTS`).
+    """
+    return ANTARDASHA_EFFECTS.get(planet)
 
 
 # --------------------------------------------------------------------------
@@ -386,6 +438,48 @@ def dignity_delineation(planet: str, sign: str, degree: float | None = None) -> 
 
 
 # --------------------------------------------------------------------------
+# Baladi Avastha — a planet's five-fold "life stage" within its sign's 30°,
+# by 6° step, read in reverse for even signs. Source: a modern compilation
+# presented as "Ravana Samhita" (see docs/sources/ravana_samhita_notes.md);
+# the rule itself is standard across the tradition, not this compilation's
+# own wording.
+# --------------------------------------------------------------------------
+
+_AVASTHA_ORDER = ("Bala", "Kumara", "Yuva", "Vriddha", "Mrita")
+
+_AVASTHA_TEXT: dict[str, str] = {
+    "Bala": "an infant state — its significations are slow to mature and "
+            "easily overshadowed by other factors in the chart",
+    "Kumara": "a growing, adolescent state — results build gradually rather "
+              "than arriving in full",
+    "Yuva": "a youthful, mature state — the planet is at its most capable "
+            "and gives its significations in full",
+    "Vriddha": "an aged state — past its peak; results are real but past "
+               "their prime, or slower to renew",
+    "Mrita": "a 'dead' (Mrita) state — significations are weak or dormant "
+             "until a stronger dasha or transit revives them",
+}
+
+
+def baladi_avastha(sign: str, degree: float) -> dict:
+    """Which of the five Baladi Avastha life-stages a placement falls in.
+
+    Each sign's 30° is read in five 6° steps, Bala > Kumara > Yuva > Vriddha
+    > Mrita in odd signs (Aries, Gemini, Leo, Libra, Sagittarius, Aquarius),
+    reversed in even signs. `degree` is the planet's degree within its own
+    sign (0-30), the same value vargas.chart_view supplies as
+    ``view["degrees"][planet]``.
+    """
+    if not 0 <= degree < 30:
+        raise ValueError(f"degree must be 0..30 within the sign, got {degree}")
+    step = min(int(degree // 6), 4)
+    odd_sign = SIGNS.index(sign) % 2 == 0
+    order = _AVASTHA_ORDER if odd_sign else tuple(reversed(_AVASTHA_ORDER))
+    state = order[step]
+    return {"state": state, "note": _AVASTHA_TEXT[state]}
+
+
+# --------------------------------------------------------------------------
 # Planets in the 12 houses — Brihat Jataka ch. 20 ("On the Planets in the Bhavas")
 # --------------------------------------------------------------------------
 #
@@ -541,6 +635,7 @@ def delineate(chart: object) -> dict:
             "house": house,
             "dignity": dignity_delineation(planet, sign, degree),
             "house_text": planet_house_text(planet, house, lagna_sign),
+            "avastha": baladi_avastha(sign, degree),
         }
 
     return {

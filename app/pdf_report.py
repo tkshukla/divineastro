@@ -465,6 +465,16 @@ _REMEDIES_BODY = """
 #block(width: 100%, fill: WASH, inset: 12pt, radius: 4pt, stroke: 0.5pt + RULE)[
   #text(weight: "bold", fill: ACC, "Recommended Mantra:") \
   #text(font: BODY, size: 10.5pt, d.mantra) \
+  #if d.gayatri_mantra.len() > 0 [
+    #v(8pt)
+    #text(weight: "bold", fill: ACC, "Alternative Gayatri Mantra:") \
+    #text(font: BODY, size: 10.5pt, d.gayatri_mantra) \
+  ]
+  #if d.japa_count.len() > 0 [
+    #v(8pt)
+    #text(weight: "bold", fill: ACC, "Recitation Count for Siddhi:") \
+    #text(d.japa_count)
+  ]
   #v(8pt)
   #text(weight: "bold", fill: ACC, "Charity & Actions:") \
   #text(d.charity)
@@ -1580,10 +1590,12 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
         ]
 
     dasha = None
+    antardasha_lord = None
     if birth.zodiac == "sidereal":
         try:
             summary = vimshottari(session, when)
             maha, antar = summary.get("mahadasha"), summary.get("antardasha")
+            antardasha_lord = antar["lord"] if antar else None
 
             # These three values are composite strings \u2014 "Rahu  Jul 2019 \u2013 Jul
             # 2037", "Uttara Phalguni (pada 3)". _translate_val matches whole
@@ -1665,7 +1677,7 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
         # for a Hindi report; and the mahadasha's own start and end were never
         # passed at all, which left the model to work out when the period ends —
         # it answered 2039 for a period the engine ends in 2037.
-        "dasha": {"mahadasha": _current_mahadasha(dasha)},
+        "dasha": {"mahadasha": _current_mahadasha(dasha), "antardasha": {"lord": antardasha_lord}},
         "placements": pos_table["rows"],
         "houses": houses_table["rows"],
         "vargas": vargas_table,
@@ -1708,6 +1720,10 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
             [name, str(p["house"]), p["house_text"]]
             for name, p in classical["planets"].items()
         ]
+        analysis_input["avastha"] = [
+            [name, p["avastha"]["state"], p["avastha"]["note"]]
+            for name, p in classical["planets"].items()
+        ]
         if classical["career"]:
             analysis_input["career_significators"] = [
                 [c["planet"], c["from"], c["role"], c["theme"]]
@@ -1727,6 +1743,10 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
             reading = delineation.mahadasha_reading(maha_lord, favourable)
             if reading:
                 analysis_input["dasha"]["mahadasha"]["classical_reading"] = reading
+        if antardasha_lord:
+            antar_reading = delineation.antardasha_reading(antardasha_lord)
+            if antar_reading:
+                analysis_input["dasha"]["antardasha"]["classical_reading"] = antar_reading
     except Exception:
         pass
 
@@ -1861,12 +1881,13 @@ def remedies_pdf(session, *, brand: str, site: str, language: str = "en") -> byt
             g["role"],
             g["name"],
             g["metal"],
-            g["finger"]
+            g["finger"],
+            g.get("alt_herb", "") or "—",
         ])
-    
+
     gemstones_table = {
-        "headers": ["Role", "Gemstone", "Metal", "Finger"],
-        "cols": [1, 1, 1, 1],
+        "headers": ["Role", "Gemstone", "Metal", "Finger", "Herb substitute"],
+        "cols": [1, 1, 1, 1, 1],
         "rows": gems_rows
     }
     
@@ -1894,6 +1915,12 @@ def remedies_pdf(session, *, brand: str, site: str, language: str = "en") -> byt
         "gemstones": gemstones_table,
         "mahadasha": rem["dasha_remedies"]["mahadasha_lord"],
         "mantra": rem["dasha_remedies"]["mantra"],
+        "gayatri_mantra": rem["dasha_remedies"].get("gayatri_mantra", ""),
+        "japa_count": (
+            f"{rem['dasha_remedies']['japa_count']['base']:,} "
+            f"(classically {rem['dasha_remedies']['japa_count']['kali_yuga']:,} in Kali Yuga)"
+            if rem["dasha_remedies"].get("japa_count") else ""
+        ),
         "charity": rem["dasha_remedies"]["charity"],
         "guidance": markdown_blocks(guidance_text),
     }

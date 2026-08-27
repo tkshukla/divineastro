@@ -42,6 +42,49 @@ CHARITIES = {
     "Ketu": "Donate multi-colored blankets, sesame seeds, or feed stray dogs on Saturday mornings.",
 }
 
+# Recitation counts for a full siddhi (mastery) of each graha's mantra, and the
+# higher count classically prescribed for Kali Yuga. Source: classical
+# navagraha yantra-mantra material (see docs/sources/ravana_samhita_notes.md).
+JAPA_COUNT = {
+    "Sun": {"base": 7_000, "kali_yuga": 28_000},
+    "Moon": {"base": 11_000, "kali_yuga": 44_000},
+    "Mars": {"base": 10_000, "kali_yuga": 40_000},
+    "Mercury": {"base": 9_000, "kali_yuga": 33_000},
+    "Jupiter": {"base": 19_000, "kali_yuga": 76_000},
+    "Venus": {"base": 16_000, "kali_yuga": 64_000},
+    "Saturn": {"base": 23_000, "kali_yuga": 92_000},
+    "Rahu": {"base": 18_000, "kali_yuga": 72_000},
+    "Ketu": {"base": 18_000, "kali_yuga": 72_000},
+}
+
+# Graha Gayatri mantras, an alternative to the bija mantras above. Saturn's is
+# omitted: the source page for it could not be read reliably.
+GRAHA_GAYATRI = {
+    "Sun": "Om Saptaturangaya Vidmahe Sahasrakiranaya Dhimahi Tanno Ravih Prachodayat",
+    "Moon": "Om Amritangaya Vidmahe Kalarupaya Dhimahi Tanno Somah Prachodayat",
+    "Mars": "Om Angarakaya Vidmahe Shaktihastaya Dhimahi Tanno Bhaumah Prachodayat",
+    "Mercury": "Om Saumyarupaya Vidmahe Vaneshaya Dhimahi Tanno Budhah Prachodayat",
+    "Jupiter": "Om Angirasaya Vidmahe Divyadehaya Dhimahi Tanno Jeevah Prachodayat",
+    "Venus": "Om Bhrigujaya Vidmahe Divyadehaya Dhimahi Tanno Shukrah Prachodayat",
+    "Rahu": "Om Shirorupaya Vidmahe Amriteshaya Dhimahi Tanno Rahuh Prachodayat",
+    "Ketu": "Om Padmapatraya Vidmahe Amriteshaya Dhimahi Tanno Ketuh Prachodayat",
+}
+
+# A herb/root substitute for those who cannot wear or afford the prescribed
+# gemstone, tied in cloth of the planet's colour and worn on the neck or
+# right arm.
+GRAHA_HERB = {
+    "Sun": "Bilva (bael) root",
+    "Moon": "Khirni root",
+    "Mars": "Anantamool or Nagajihva root",
+    "Mercury": "Vidhara root",
+    "Jupiter": "Bharangi root",
+    "Venus": "Manjith (Indian madder) root",
+    "Saturn": "Amlavetas (white bariala) root",
+    "Rahu": "White sandalwood",
+    "Ketu": "Asagandh (Ashwagandha) root",
+}
+
 
 def recommend_remedies(session) -> dict:
     """Calculate gemstones and dasha remedies for a chart session."""
@@ -78,22 +121,27 @@ def recommend_remedies(session) -> dict:
             "life_stone": {
                 "role": "Life Stone (Lagna Lord)",
                 "planet": lagna_lord,
-                **GEMSTONES.get(lagna_lord, {"name": "N/A", "finger": "", "metal": ""})
+                **GEMSTONES.get(lagna_lord, {"name": "N/A", "finger": "", "metal": ""}),
+                "alt_herb": GRAHA_HERB.get(lagna_lord, ""),
             },
             "lucky_stone": {
                 "role": "Lucky Stone (5th Lord)",
                 "planet": lord_5,
-                **GEMSTONES.get(lord_5, {"name": "N/A", "finger": "", "metal": ""})
+                **GEMSTONES.get(lord_5, {"name": "N/A", "finger": "", "metal": ""}),
+                "alt_herb": GRAHA_HERB.get(lord_5, ""),
             },
             "fortune_stone": {
                 "role": "Fortune Stone (9th Lord)",
                 "planet": lord_9,
-                **GEMSTONES.get(lord_9, {"name": "N/A", "finger": "", "metal": ""})
+                **GEMSTONES.get(lord_9, {"name": "N/A", "finger": "", "metal": ""}),
+                "alt_herb": GRAHA_HERB.get(lord_9, ""),
             }
         },
         "dasha_remedies": {
             "mahadasha_lord": mahadasha_lord,
             "mantra": MANTRAS.get(mahadasha_lord, ""),
+            "gayatri_mantra": GRAHA_GAYATRI.get(mahadasha_lord, ""),
+            "japa_count": JAPA_COUNT.get(mahadasha_lord, {}),
             "charity": CHARITIES.get(mahadasha_lord, "")
         }
     }

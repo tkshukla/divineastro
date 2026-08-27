@@ -426,11 +426,19 @@ def _vedic_context(session) -> dict:
         classical = delineation.delineate(session)
         out["dignities"] = {
             name: {"state": p["dignity"]["state"], "note": p["dignity"]["note"],
-                   "house": p["house"], "house_note": p["house_text"]}
+                   "house": p["house"], "house_note": p["house_text"],
+                   "avastha": p["avastha"]["state"], "avastha_note": p["avastha"]["note"]}
             for name, p in classical["planets"].items()
         }
         out["career_significators"] = classical["career"]
         out["conjunctions"] = classical["conjunctions"]
+
+        from .chart_service import vimshottari
+        import datetime as _dt
+        antar_lord = vimshottari(session, _dt.datetime.now(_dt.timezone.utc)).get("antardasha", {}).get("lord")
+        antar_reading = delineation.antardasha_reading(antar_lord) if antar_lord else None
+        if antar_reading:
+            out["antardasha_reading"] = {"lord": antar_lord, "note": antar_reading}
     except Exception as exc:                     # noqa: BLE001 — never fatal
         logging.getLogger(__name__).warning("classical delineation unavailable: %s", exc)
 

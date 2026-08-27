@@ -198,6 +198,31 @@ def main() -> int:
           d.mahadasha_reading("Rahu", True) is None
           and d.mahadasha_reading("Ketu", False) is None)
 
+    print("\n5b. Antardasha readings — one fixed text per graha, all nine covered")
+    check("every one of the nine grahas (including Rahu/Ketu) has a reading",
+          all(d.antardasha_reading(p) for p in list(GRAHAS) + ["Rahu", "Ketu"]))
+    check("an unknown planet returns None rather than a guess",
+          d.antardasha_reading("Pluto") is None)
+
+    print("\n6a. Baladi Avastha — five-fold life-stage within a sign's 30 degrees")
+    check("0-6 degrees of an odd sign (Aries) is Bala",
+          d.baladi_avastha("Aries", 2.0) == {"state": "Bala", "note": d._AVASTHA_TEXT["Bala"]})
+    check("24-30 degrees of an odd sign (Aries) is Mrita",
+          d.baladi_avastha("Aries", 27.0)["state"] == "Mrita")
+    check("12-18 degrees of an odd sign (Leo) is Yuva",
+          d.baladi_avastha("Leo", 15.0)["state"] == "Yuva")
+    check("the order reverses in an even sign: 0-6 degrees of Taurus is Mrita",
+          d.baladi_avastha("Taurus", 2.0)["state"] == "Mrita")
+    check("24-30 degrees of an even sign (Taurus) is Bala",
+          d.baladi_avastha("Taurus", 27.0)["state"] == "Bala")
+    check("the midpoint (12-18) of an even sign is still Yuva either way",
+          d.baladi_avastha("Taurus", 15.0)["state"] == "Yuva")
+    check("every one of the five stages has explanatory text",
+          all(d._AVASTHA_TEXT[s] for s in d._AVASTHA_ORDER))
+    check("a degree at or past 30, or negative, is refused",
+          _raises(lambda: d.baladi_avastha("Aries", 30.0), ValueError)
+          and _raises(lambda: d.baladi_avastha("Aries", -1.0), ValueError))
+
     print("\n6. delineate() — the one entry point, against a hand-built chart")
     full = d.delineate(chart(Sun="Aries", Mercury="Aries"))
     try:
@@ -207,8 +232,8 @@ def main() -> int:
         check("delineate() is JSON-serialisable", False, str(exc))
     check("it covers all seven classical grahas, no more and no less",
           set(full["planets"]) == set(GRAHAS))
-    check("every planet entry carries a sign, house, dignity and house text",
-          all({"sign", "house", "dignity", "house_text"} <= set(p)
+    check("every planet entry carries a sign, house, dignity, house text and avastha",
+          all({"sign", "house", "dignity", "house_text", "avastha"} <= set(p)
               for p in full["planets"].values()))
     check("the Sun-Mercury conjunction this chart was built with shows up",
           any(set(c["planets"]) == {"Sun", "Mercury"} for c in full["conjunctions"]))

@@ -280,9 +280,13 @@ def _vedic_block(vedic: dict) -> str:
 
     dignities = vedic.get("dignities") or {}
     for name, d in dignities.items():
+        avastha_part = (
+            f"; Baladi Avastha: {d['avastha']} ({d['avastha_note']})"
+            if d.get("avastha") else ""
+        )
         lines.append(
             f"- {name} — dignity: {d['state'].replace('_', ' ')} ({d['note']}); "
-            f"in the {_ord(d['house'])} house: {d['house_note']}"
+            f"in the {_ord(d['house'])} house: {d['house_note']}{avastha_part}"
         )
     for c in vedic.get("career_significators") or []:
         lines.append(
@@ -292,6 +296,9 @@ def _vedic_block(vedic: dict) -> str:
     for c in vedic.get("conjunctions") or []:
         lines.append(
             f"- {' + '.join(c['planets'])} conjunct in {c['sign']}: {c['note']}")
+    ar = vedic.get("antardasha_reading")
+    if ar:
+        lines.append(f"- Running {ar['lord']} Antardasha (sub-period): {ar['note']}")
 
     if not lines:
         return ""
@@ -815,11 +822,22 @@ def _chart_facts(analysis: dict) -> str:
             lines.append(
                 f"{stone.get('role', 'Stone')}: {stone.get('name')} "
                 f"(for {stone.get('planet')}) — {stone.get('finger')}, "
-                f"set in {stone.get('metal')}")
+                f"set in {stone.get('metal')}"
+                + (f". If the stone is unaffordable or unsuitable, a herb-root "
+                   f"substitute is {stone['alt_herb']}, worn on a cord of the "
+                   f"planet's colour." if stone.get("alt_herb") else ""))
         dr = rem.get("dasha_remedies") or {}
         if dr.get("mantra"):
             lines.append(f"Mantra for the running {dr.get('mahadasha_lord')} "
                          f"mahadasha: {dr['mantra']}")
+        if dr.get("gayatri_mantra"):
+            lines.append(f"Alternative Gayatri mantra for {dr.get('mahadasha_lord')}: "
+                         f"{dr['gayatri_mantra']}")
+        jc = dr.get("japa_count") or {}
+        if jc.get("base"):
+            lines.append(
+                f"Recitation count for a full siddhi of this mantra: "
+                f"{jc['base']:,} (classically {jc['kali_yuga']:,} in Kali Yuga).")
         if dr.get("charity"):
             lines.append(f"Charity: {dr['charity']}")
         if lines:
@@ -833,6 +851,12 @@ def _chart_facts(analysis: dict) -> str:
             "CLASSICAL READING OF THE RUNNING MAHADASHA (Brihat Jataka ch. 8): "
             + reading)
 
+    antar_reading = (analysis.get("dasha") or {}).get("antardasha", {}).get("classical_reading")
+    if antar_reading:
+        parts.append(
+            "CLASSICAL READING OF THE RUNNING ANTARDASHA (sub-period): "
+            + antar_reading)
+
     rows = analysis.get("dignities") or []
     if rows:
         parts.append(
@@ -844,6 +868,13 @@ def _chart_facts(analysis: dict) -> str:
         parts.append(
             "CLASSICAL READING OF EACH PLANET'S HOUSE (planet | house | what "
             "it brings, Brihat Jataka ch. 20)\n" + _table(rows))
+
+    rows = analysis.get("avastha") or []
+    if rows:
+        parts.append(
+            "BALADI AVASTHA — each planet's classical life-stage within its "
+            "sign, a secondary read on how fully it can express itself "
+            "(planet | stage | what it means)\n" + _table(rows))
 
     rows = analysis.get("career_significators") or []
     if rows:

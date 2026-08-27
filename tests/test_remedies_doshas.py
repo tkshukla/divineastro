@@ -33,7 +33,12 @@ def test_remedies_and_doshas():
     assert rem["gemstones"]["fortune_stone"]["planet"] == "Venus"  # 9th house is Taurus -> Venus
     
     assert rem["dasha_remedies"]["mahadasha_lord"] == "Jupiter" # Born in Moon, currently in Jupiter
-    
+
+    # 1b. New: herb-root substitute and Gayatri/japa-count for the classical additions
+    assert rem["gemstones"]["life_stone"]["alt_herb"] == "Vidhara root"  # Mercury
+    assert rem["dasha_remedies"]["gayatri_mantra"].startswith("Om Angirasaya")  # Jupiter
+    assert rem["dasha_remedies"]["japa_count"] == {"base": 19_000, "kali_yuga": 76_000}
+
     # 2. Test Manglik
     mang = analyze_manglik(session)
     assert mang["houses"]["from_lagna"] == 2
