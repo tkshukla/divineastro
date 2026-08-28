@@ -122,10 +122,17 @@ left absent, never guessed at, and flagged if actually noticed.
   - The Rahu/Ketu entries here, like Aries's, are written without an
     "own/friend/enemy sign" framing, consistent with `vargas.py`'s
     documented policy of not assigning sign-based dignity to the nodes.
-- **Remaining 10 Lagnas (Gemini through Pisces)** — not yet done. Each is a
-  similar-sized read (~30-40 PDF pages, ~2000 OCR lines) and paraphrase
+- **Gemini (Mithuna)** — complete, all 108 entries, no documented gap (the
+  first Lagna with none). Read from PDF pages 158-200 (chunks
+  `pages_0161-0180.txt` and `pages_0181-0200.txt`). This Lagna's index
+  preamble runs much longer than Taurus's (pages 158-180, all nine
+  grahas — vs. Taurus's roughly six pages) before full prose resumes; the
+  length of that preamble varies per Lagna and isn't itself a signal of
+  anything missing, just checked directly each time.
+- **Remaining 9 Lagnas (Cancer through Pisces)** — not yet done. Each is a
+  similar-sized read (~35-45 PDF pages, ~2000 OCR lines) and paraphrase
   pass; `planet_house_text()` falls back cleanly to the Lagna-independent
   Brihat Jataka table for any Lagna not yet in `BHRIGU_LAGNA_HOUSE_TEXT`, so
   partial coverage never breaks anything — it just means those natives get
-  the same generic text every Lagna got before this work started. Gemini
-  (Mithuna) begins at PDF page 158.
+  the same generic text every Lagna got before this work started. Cancer
+  (Karka) begins at PDF page 201.

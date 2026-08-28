@@ -18,10 +18,10 @@ sources) have a paper trail back to where a rule came from.
   translating its Hindi prose directly, and never naming this specific edition
   in a way that implies it's been redistributed. Its ~1300-entry per-Lagna
   planet-in-house corpus (`app/astro/delineation.py`'s `BHRIGU_LAGNA_HOUSE_TEXT`)
-  is being brought in one Lagna at a time — Aries (Mesha) and Taurus
-  (Vrishabha) are done; the notes file tracks which Lagna is next and two
-  documented per-Lagna gaps (a real scan gap for Aries, an internally
-  contradictory source entry for Taurus) each costing a handful of entries.
+  is being brought in one Lagna at a time — Aries (Mesha), Taurus (Vrishabha)
+  and Gemini (Mithuna) are done; the notes file tracks which Lagna is next
+  and two documented per-Lagna gaps (a real scan gap for Aries, an
+  internally contradictory source entry for Taurus — Gemini has none).
 
 - **`ravana_samhita_notes.md`** — a modern compilation presented as "Ravana
   Samhita" (5 volumes; likely still under copyright, same handling as the
