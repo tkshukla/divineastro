@@ -102,9 +102,30 @@ left absent, never guessed at, and flagged if actually noticed.
   table is the only place in the app that has planet-in-house text for the
   nodes at all). Read from PDF pages 81-114 (chunks `pages_0081-0100.txt`
   and `pages_0101-0120.txt`).
-- **Remaining 11 Lagnas (Taurus through Pisces)** — not yet done. Each is a
-  similar-sized read (~30-35 PDF pages, ~2000 OCR lines) and paraphrase
+- **Taurus (Vrishabha)** — complete except one entry: Jupiter's 3rd house.
+  107 of 108 entries. Read from PDF pages 115-157 (chunks
+  `pages_0121-0140.txt` and `pages_0141-0160.txt`; pages 115-120 are an
+  instructional preamble on the book's gochar/transit number-reuse scheme,
+  not missing prose — the full text resumes at page 121 in the same style
+  as Mesha). This Lagna's own gap is a different kind from Aries's: not a
+  missing scan page, but one entry (Jupiter, 3rd house) whose printed text
+  names Sun rather than Jupiter and describes a sign that doesn't fit the
+  3rd house from Taurus at all — an internal contradiction across the
+  heading and its own body text. Left absent rather than guessed at, the
+  same way the Aries gap was.
+  Two more things worth recording from this pass:
+  - The source's own house-lordship labels for the Moon are wrong in every
+    entry that states one (it repeatedly says "4th lord" for a Taurus
+    chart, when Moon can only rule Cancer, the 3rd house from Taurus).
+    Silently corrected to "3rd" when paraphrasing, the same way two
+    Venus-lordship errors were silently corrected for Aries.
+  - The Rahu/Ketu entries here, like Aries's, are written without an
+    "own/friend/enemy sign" framing, consistent with `vargas.py`'s
+    documented policy of not assigning sign-based dignity to the nodes.
+- **Remaining 10 Lagnas (Gemini through Pisces)** — not yet done. Each is a
+  similar-sized read (~30-40 PDF pages, ~2000 OCR lines) and paraphrase
   pass; `planet_house_text()` falls back cleanly to the Lagna-independent
   Brihat Jataka table for any Lagna not yet in `BHRIGU_LAGNA_HOUSE_TEXT`, so
   partial coverage never breaks anything — it just means those natives get
-  the same generic text every Lagna got before this work started.
+  the same generic text every Lagna got before this work started. Gemini
+  (Mithuna) begins at PDF page 158.
