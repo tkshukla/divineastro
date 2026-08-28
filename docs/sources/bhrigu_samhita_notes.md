@@ -201,17 +201,39 @@ left absent, never guessed at, and flagged if actually noticed.
   Mercury a "friend" to several grahas that the standard table calls
   neutral or even enemy (Mars, Jupiter, the Moon) — a pattern already
   noted for earlier Lagnas and reported faithfully rather than corrected.
-- **Remaining 4 Lagnas (Sagittarius through Pisces)** — not yet done. Each
-  is a similar-sized read (~35-45 PDF pages, ~2000 OCR lines) and
+- **Sagittarius (Dhanu)** — complete, all 108 entries, no documented gap.
+  Read from PDF pages 412-453 (chunks `pages_0401-0420.txt`,
+  `pages_0421-0440.txt` and `pages_0441-0460.txt`; pages 412-417 are the
+  index preamble, full prose resumes at page 417 with Sun). One small,
+  genuine scan-boundary loss: the tail end of one sentence (Saturn's 1st
+  house, its 10th-house aspect clause) is cut off mid-word across the
+  page 442/443 boundary — the substance ("some benefit through father
+  and state affairs") is inferable from the identical pattern every
+  other planet's 10th-house-aspect clause follows for this Lagna, so it
+  was written conservatively rather than left blank or invented in
+  specific detail; this is a page-scan artifact, not a contradiction, and
+  far smaller than the Aries/Taurus gaps, so it wasn't logged as a
+  separate documented gap. Otherwise this Lagna's dignity claims are
+  unusually clean — nearly every friend/enemy/own-sign call across all
+  nine grahas matches the standard table exactly, with the usual
+  exception of Mercury being called "friend" more often than the
+  standard table would, and Jupiter/Saturn calling each other "enemy"
+  (both patterns already documented for earlier Lagnas). Confirmed
+  correctly-placed dignity facts: Sun exalted in Aries, debilitated in
+  Libra; Moon exalted in Taurus, debilitated in Scorpio; Mars
+  debilitated in Cancer; Mercury debilitated in Pisces, exalted in
+  Virgo; Venus exalted in Pisces, debilitated in Virgo; Saturn
+  debilitated in Aries.
+- **Remaining 3 Lagnas (Capricorn, Aquarius, Pisces)** — not yet done.
+  Each is a similar-sized read (~35-45 PDF pages, ~2000 OCR lines) and
   paraphrase pass; `planet_house_text()` falls back cleanly to the
   Lagna-independent Brihat Jataka table for any Lagna not yet in
   `BHRIGU_LAGNA_HOUSE_TEXT`, so partial coverage never breaks anything —
   it just means those natives get the same generic text every Lagna got
-  before this work started. Sagittarius (Dhanu) begins at PDF page 412.
+  before this work started. Capricorn (Makara) begins at PDF page 454.
   Note for `tests/test_delineation.py`: all seven non-royal signs (Aries
-  through Scorpio) are now Bhrigu-covered, so the Saturn-1st-house
-  "ordinary" fallback check had to move from a named sign to
-  `planet_house_text("Saturn", 1)` with no `lagna_sign` at all — the four
-  Lagnas still to come (Sagittarius, Capricorn, Aquarius, Pisces) are all
-  in `_SATURN_LAGNA_ROYAL_SIGNS`, so no uncovered non-royal sign will
-  exist again once they're done either.
+  through Scorpio) are Bhrigu-covered, so the Saturn-1st-house "ordinary"
+  fallback check uses `planet_house_text("Saturn", 1)` with no
+  `lagna_sign` at all rather than a named sign — the three Lagnas still
+  to come are all in `_SATURN_LAGNA_ROYAL_SIGNS`, so no uncovered
+  non-royal sign will exist again once they're done either.

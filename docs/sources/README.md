@@ -20,10 +20,11 @@ sources) have a paper trail back to where a rule came from.
   planet-in-house corpus (`app/astro/delineation.py`'s `BHRIGU_LAGNA_HOUSE_TEXT`)
   is being brought in one Lagna at a time — Aries (Mesha), Taurus (Vrishabha),
   Gemini (Mithuna), Cancer (Karka), Leo (Simha), Virgo (Kanya), Libra
-  (Tula) and Scorpio (Vrishchika) are done; the notes file tracks which
-  Lagna is next and two documented per-Lagna gaps (a real scan gap for
-  Aries, an internally contradictory source entry for Taurus — Gemini,
-  Cancer, Leo, Virgo, Libra and Scorpio have none).
+  (Tula), Scorpio (Vrishchika) and Sagittarius (Dhanu) are done; the notes
+  file tracks which Lagna is next and two documented per-Lagna gaps (a
+  real scan gap for Aries, an internally contradictory source entry for
+  Taurus — Gemini, Cancer, Leo, Virgo, Libra, Scorpio and Sagittarius
+  have none).
 
 - **`ravana_samhita_notes.md`** — a modern compilation presented as "Ravana
   Samhita" (5 volumes; likely still under copyright, same handling as the
