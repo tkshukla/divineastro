@@ -224,16 +224,37 @@ left absent, never guessed at, and flagged if actually noticed.
   debilitated in Cancer; Mercury debilitated in Pisces, exalted in
   Virgo; Venus exalted in Pisces, debilitated in Virgo; Saturn
   debilitated in Aries.
-- **Remaining 3 Lagnas (Capricorn, Aquarius, Pisces)** — not yet done.
-  Each is a similar-sized read (~35-45 PDF pages, ~2000 OCR lines) and
-  paraphrase pass; `planet_house_text()` falls back cleanly to the
-  Lagna-independent Brihat Jataka table for any Lagna not yet in
-  `BHRIGU_LAGNA_HOUSE_TEXT`, so partial coverage never breaks anything —
-  it just means those natives get the same generic text every Lagna got
-  before this work started. Capricorn (Makara) begins at PDF page 454.
-  Note for `tests/test_delineation.py`: all seven non-royal signs (Aries
-  through Scorpio) are Bhrigu-covered, so the Saturn-1st-house "ordinary"
-  fallback check uses `planet_house_text("Saturn", 1)` with no
-  `lagna_sign` at all rather than a named sign — the three Lagnas still
-  to come are all in `_SATURN_LAGNA_ROYAL_SIGNS`, so no uncovered
-  non-royal sign will exist again once they're done either.
+- **Capricorn (Makara)** — complete, all 108 entries, no documented gap.
+  Read from PDF pages 454-495 (chunks `pages_0441-0460.txt`,
+  `pages_0461-0480.txt`, `pages_0481-0500.txt`; pages 454-460 are the
+  index preamble, full prose resumes at page 460 with Sun). One entry
+  had the recurring Guru/Budh body-text mixup (Mars's 6th house named
+  itself as sitting in "Jupiter's sign" where the 6th from Capricorn is
+  Gemini — Mercury's sign); resolved the same way as Libra's and
+  Scorpio's instances, via the fixed rulership fact and this source's
+  established habit of calling Mercury "friend" to Mars. One further
+  wrinkle worth recording: Venus's own section calls its relationship to
+  Jupiter "friend" at the 3rd house (Pisces, where Venus is also
+  exalted) but "enemy" at the 12th house (Sagittarius) — both are
+  Jupiter's signs, so this is a real internal inconsistency within this
+  single Lagna's own text, not a rulership error; both were transcribed
+  exactly as stated rather than reconciled, the same treatment given to
+  every other friend/enemy claim that varies from the standard table or,
+  as here, from itself. Confirmed correctly-placed dignity facts: Sun
+  exalted in Aries, debilitated in Libra; Moon exalted in Taurus,
+  debilitated in Scorpio; Mars exalted in Capricorn, debilitated in
+  Cancer; Mercury exalted in Virgo; Jupiter exalted in Cancer; Venus
+  exalted in Pisces, debilitated in Virgo; Saturn exalted in Libra,
+  debilitated in Aries — an unusually complete confirmation set for one
+  Lagna.
+- **Remaining 2 Lagnas (Aquarius, Pisces)** — not yet done. Each is a
+  similar-sized read (~35-45 PDF pages, ~2000 OCR lines) and paraphrase
+  pass; `planet_house_text()` falls back cleanly to the Lagna-independent
+  Brihat Jataka table for any Lagna not yet in `BHRIGU_LAGNA_HOUSE_TEXT`,
+  so partial coverage never breaks anything — it just means those
+  natives get the same generic text every Lagna got before this work
+  started. Aquarius (Kumbha) begins at PDF page 496. Note for
+  `tests/test_delineation.py`: all seven non-royal signs are
+  Bhrigu-covered and now so is one royal sign (Capricorn), so the
+  Saturn-1st-house "royal" example moved to Aquarius — the last
+  remaining royal sign once Aquarius itself is done will be Pisces.

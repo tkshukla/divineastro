@@ -122,7 +122,7 @@ def main() -> int:
           and d.planet_house_text("Venus", 10) == d._JUPITER_HOUSE_TEXT[10]
           and d.planet_house_text("Venus", 10) != d._BASE_HOUSE_TEXT[10])
     check("Saturn's 1st house depends on the Lagna sign",
-          d.planet_house_text("Saturn", 1, "Capricorn") == d._SATURN_HOUSE1_ROYAL
+          d.planet_house_text("Saturn", 1, "Aquarius") == d._SATURN_HOUSE1_ROYAL
           and d.planet_house_text("Saturn", 1) == d._SATURN_HOUSE1_ORDINARY)
     check("Saturn falls back to the Sun's table for every other house",
           d.planet_house_text("Saturn", 7) == d._BASE_HOUSE_TEXT[7])
@@ -132,7 +132,7 @@ def main() -> int:
           _raises(lambda: d.planet_house_text("Rahu", 1), KeyError))
 
     print("\n2b. Bhrigu per-Lagna house table — Aries, Taurus, Gemini, Cancer, Leo, "
-          "Virgo, Libra, Scorpio, Sagittarius so far")
+          "Virgo, Libra, Scorpio, Sagittarius, Capricorn so far")
     check("bhrigu_house_text() returns the Lagna-specific entry directly",
           d.bhrigu_house_text("Aries", "Sun", 1)
           == d.BHRIGU_LAGNA_HOUSE_TEXT["Aries"]["Sun"][1])
@@ -155,7 +155,8 @@ def main() -> int:
           and d.planet_house_text("Rahu", 5, "Virgo") is not None
           and d.planet_house_text("Rahu", 5, "Libra") is not None
           and d.planet_house_text("Rahu", 5, "Scorpio") is not None
-          and d.planet_house_text("Rahu", 5, "Sagittarius") is not None)
+          and d.planet_house_text("Rahu", 5, "Sagittarius") is not None
+          and d.planet_house_text("Rahu", 5, "Capricorn") is not None)
     check("Rahu/Ketu are still refused without a covering Lagna, not guessed at",
           _raises(lambda: d.planet_house_text("Rahu", 5, "Aquarius"), KeyError)
           and _raises(lambda: d.planet_house_text("Rahu", 5), KeyError))
@@ -225,6 +226,12 @@ def main() -> int:
           {"Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"}
           and all(len(d.BHRIGU_LAGNA_HOUSE_TEXT["Sagittarius"][p]) == 12
                   for p in d.BHRIGU_LAGNA_HOUSE_TEXT["Sagittarius"]))
+    check("Capricorn is the tenth Lagna transcribed, with no documented "
+          "gap — all nine grahas, all 12 houses",
+          set(d.BHRIGU_LAGNA_HOUSE_TEXT["Capricorn"]) ==
+          {"Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"}
+          and all(len(d.BHRIGU_LAGNA_HOUSE_TEXT["Capricorn"][p]) == 12
+                  for p in d.BHRIGU_LAGNA_HOUSE_TEXT["Capricorn"]))
     check("an unknown Lagna name is simply not found, not an error",
           d.bhrigu_house_text("Nonexistent", "Sun", 1) is None)
 
