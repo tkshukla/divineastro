@@ -145,10 +145,17 @@ left absent, never guessed at, and flagged if actually noticed.
   and the start of `pages_0281-0300.txt`). Same tradition-vs-standard-table
   dignity divergence pattern noted for Cancer shows up again here in a
   handful of entries; reported as the source states it.
-- **Remaining 7 Lagnas (Virgo through Pisces)** — not yet done. Each is a
+- **Virgo (Kanya)** — complete, all 108 entries, no documented gap. Read
+  from PDF pages 285-326 (chunks `pages_0281-0300.txt`, `pages_0301-0320.txt`
+  and the start of `pages_0321-0340.txt`). Caught and fixed one of my own
+  transcription slips while drafting (Jupiter's 11th house was mislabeled
+  "own sign" — the sign there is Cancer, Moon's, not Jupiter's) before
+  writing the final English, the same kind of self-check applied to every
+  Lagna so far.
+- **Remaining 6 Lagnas (Libra through Pisces)** — not yet done. Each is a
   similar-sized read (~35-45 PDF pages, ~2000 OCR lines) and paraphrase
   pass; `planet_house_text()` falls back cleanly to the Lagna-independent
   Brihat Jataka table for any Lagna not yet in `BHRIGU_LAGNA_HOUSE_TEXT`, so
   partial coverage never breaks anything — it just means those natives get
-  the same generic text every Lagna got before this work started. Virgo
-  (Kanya) begins at PDF page 285.
+  the same generic text every Lagna got before this work started. Libra
+  (Tula) begins at PDF page 327.
