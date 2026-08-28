@@ -131,6 +131,41 @@ def main() -> int:
     check("an unknown planet is refused",
           _raises(lambda: d.planet_house_text("Rahu", 1), KeyError))
 
+    print("\n2b. Bhrigu per-Lagna house table — Aries, the first Lagna transcribed")
+    check("bhrigu_house_text() returns the Lagna-specific entry directly",
+          d.bhrigu_house_text("Aries", "Sun", 1)
+          == d.BHRIGU_LAGNA_HOUSE_TEXT["Aries"]["Sun"][1])
+    check("planet_house_text() prefers it over the Brihat Jataka fallback "
+          "once a lagna_sign is given",
+          d.planet_house_text("Sun", 1, "Aries") == d.bhrigu_house_text("Aries", "Sun", 1)
+          and d.planet_house_text("Sun", 1, "Aries") != d._BASE_HOUSE_TEXT[1])
+    check("without a lagna_sign, the Brihat Jataka fallback is used as before",
+          d.planet_house_text("Sun", 1) == d._BASE_HOUSE_TEXT[1])
+    check("a Lagna not yet transcribed (e.g. Taurus) falls back cleanly, no KeyError",
+          d.planet_house_text("Sun", 1, "Taurus") == d._BASE_HOUSE_TEXT[1])
+    check("this table is the only path that can answer for Rahu/Ketu, and it "
+          "does, for the Lagna it covers",
+          d.planet_house_text("Rahu", 5, "Aries") is not None
+          and d.planet_house_text("Ketu", 9, "Aries") is not None)
+    check("Rahu/Ketu are still refused without a covering Lagna, not guessed at",
+          _raises(lambda: d.planet_house_text("Rahu", 5, "Taurus"), KeyError)
+          and _raises(lambda: d.planet_house_text("Rahu", 5), KeyError))
+    check("all seven classical grahas have all 12 houses for Aries",
+          all(len(d.BHRIGU_LAGNA_HOUSE_TEXT["Aries"][p]) == 12
+              for p in ("Sun", "Moon", "Mars", "Mercury", "Venus", "Saturn", "Rahu", "Ketu")))
+    check("Jupiter is the one documented gap — 9 of 12 houses (8th/9th/10th "
+          "missing, a scan-page loss in the source, not a guess)",
+          sorted(d.BHRIGU_LAGNA_HOUSE_TEXT["Aries"]["Jupiter"]) == [1, 2, 3, 4, 5, 6, 7, 11, 12])
+    check("bhrigu_house_text() returns None rather than guessing for that gap",
+          d.bhrigu_house_text("Aries", "Jupiter", 8) is None
+          and d.bhrigu_house_text("Aries", "Jupiter", 9) is None
+          and d.bhrigu_house_text("Aries", "Jupiter", 10) is None)
+    check("for that gap, planet_house_text() still falls back to the Brihat "
+          "Jataka table rather than raising",
+          d.planet_house_text("Jupiter", 8, "Aries") == d._JUPITER_HOUSE_TEXT[8])
+    check("an unknown Lagna name is simply not found, not an error",
+          d.bhrigu_house_text("Nonexistent", "Sun", 1) is None)
+
     print("\n3. Conjunctions — every pair sharing a sign, and only real pairs")
     conj = d.conjunctions_present(v.chart_view(chart(Sun="Aries", Mercury="Aries")))
     check("Sun conjunct Mercury is reported with its text",
@@ -239,6 +274,11 @@ def main() -> int:
           any(set(c["planets"]) == {"Sun", "Mercury"} for c in full["conjunctions"]))
     check("the career list is non-empty and every entry names a theme",
           bool(full["career"]) and all(c["theme"] for c in full["career"]))
+    check("this chart's Lagna is Aries, so the Sun's house text comes from "
+          "the Bhrigu per-Lagna table, not the Brihat Jataka fallback",
+          full["lagna"] == "Aries"
+          and full["planets"]["Sun"]["house_text"]
+          == d.BHRIGU_LAGNA_HOUSE_TEXT["Aries"]["Sun"][full["planets"]["Sun"]["house"]])
     tropical = chart()
     tropical["meta"]["zodiac"] = "tropical"
     check("it refuses a tropical chart, the same way vargas.py does",

@@ -59,3 +59,52 @@ Sampled Vrishabha (Taurus, p.115+) and Kanya (Virgo, p.301+) lagnas directly —
 - Lost-horoscope/Prashna reconstruction techniques (Brihat Jataka ch.26) — not applicable, app has exact birth data.
 
 ## Copyright note reminder: Bhrigu Samhita (this specific 1975 Hindi compilation) is likely still under copyright. Everything above must be encoded as independently-phrased facts/rules in English, never as translated/quoted Hindi prose, and cited as "a traditional Bhrigu-school compilation" rather than naming this specific edition/publisher.
+
+## Update: the ~1300-entry per-Lagna corpus is being encoded incrementally
+
+Following a decision to actually build this (previously logged above only as
+"known future asset"), work has started on `app/astro/delineation.py`'s
+`BHRIGU_LAGNA_HOUSE_TEXT`, one Lagna at a time.
+
+**Structural correction to the note above:** the earlier claim that
+"[Vrishabha and Kanya] pattern held 100% identical to Mesha" was checked
+again while doing the real extraction and is *mostly* right but was
+imprecise in one way worth recording. Vrishabha's own printed pages open
+with a numbered cross-reference table (pages ~115-120) explaining how the
+book's numbered "example horoscope" system is reused for *gochar* (transit)
+lookups by current sign — before the actual full-prose entries for
+Vrishabha resume at page 121 in the same style as Mesha. So the corpus
+really is present in full prose for every Lagna checked so far; a reader
+extracting a later Lagna should expect this kind of instructional preamble
+to appear at the *start* of a Lagna's section and not mistake it for the
+Lagna having no prose.
+
+**A real scan gap, found and confirmed:** printed page 107 is missing
+outright from the PDF scan. Confirmed by rendering the surrounding pages at
+400dpi and reading them directly — page 98 → printed "105", page 99 →
+printed "106", page 100 → printed "108", with every planet's section on
+that spread (this lands inside Jupiter's Aries-Lagna entries) jumping
+straight from house 7 to house 11, no OCR segmentation issue. This costs
+Jupiter's 8th/9th/10th-house entries for Aries Lagna specifically; left
+absent in the code rather than guessed at. An automated pass trying to
+detect *other* such gaps by cross-checking every page's printed page-number
+against PDF page order was tried and abandoned — OCR misreads isolated
+Devanagari numerals too often (single digits merge, split, or misread) to
+trust as a systematic check; the one gap above was found by direct visual
+inspection, which doesn't scale to all 638 pages. Future Lagnas should
+expect the occasional undetected gap of this kind, treated the same way:
+left absent, never guessed at, and flagged if actually noticed.
+
+### Lagnas encoded so far
+
+- **Aries (Mesha)** — complete except the 3-entry Jupiter gap above.
+  105 of 108 entries (9 grahas × 12 houses, including Rahu/Ketu — this
+  table is the only place in the app that has planet-in-house text for the
+  nodes at all). Read from PDF pages 81-114 (chunks `pages_0081-0100.txt`
+  and `pages_0101-0120.txt`).
+- **Remaining 11 Lagnas (Taurus through Pisces)** — not yet done. Each is a
+  similar-sized read (~30-35 PDF pages, ~2000 OCR lines) and paraphrase
+  pass; `planet_house_text()` falls back cleanly to the Lagna-independent
+  Brihat Jataka table for any Lagna not yet in `BHRIGU_LAGNA_HOUSE_TEXT`, so
+  partial coverage never breaks anything — it just means those natives get
+  the same generic text every Lagna got before this work started.
