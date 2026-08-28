@@ -676,6 +676,120 @@ def _zr_period(p) -> dict | None:
     }
 
 
+YOGINI_DASHA = [
+    ("Mangala", 1, "Moon"),
+    ("Pingala", 2, "Sun"),
+    ("Dhanya", 3, "Jupiter"),
+    ("Bhramari", 4, "Mars"),
+    ("Bhadrika", 5, "Mercury"),
+    ("Ulka", 6, "Saturn"),
+    ("Siddha", 7, "Venus"),
+    # Rahu rules the first half of Sankata's 8-year span and Ketu the
+    # second, per the source's own statement rather than one lord throughout
+    # — see yogini_dasha() and docs/sources/ravana_samhita_notes.md.
+    ("Sankata", 8, "Rahu"),
+]
+YOGINI_CYCLE_YEARS = sum(years for _, years, _ in YOGINI_DASHA)   # 36
+
+
+def _yogini_start_index(nakshatra_number: int) -> int:
+    """Which of the 8 Yogini Dashas is running at birth, 1-based nakshatra
+    number in.
+
+    This source's own rule: add 3 to the birth nakshatra number and divide
+    by 8; the remainder gives the starting Yogini (1=Mangala ... 8=Sankata,
+    remainder 0 read as 8). Other traditions state the starting-point rule
+    differently — this is the specific rule this source gives, not asserted
+    as the one universal method.
+    """
+    raw = (nakshatra_number + 3) % 8
+    return 7 if raw == 0 else raw - 1
+
+
+def yogini_dasha(session: ChartSession, when: dt.datetime) -> dict:
+    """Yogini Dasha: an alternate 8-fold dasha from the sidereal Moon.
+
+    A modern compilation presented as "Ravana Samhita" (see docs/sources/
+    ravana_samhita_notes.md) — a distinct tradition from the Vimshottari
+    dasha above, not a competing claim about "the" dasha. Both run off the
+    same birth Moon; a caller wanting this system asks for it by name, the
+    same way it asks for Vimshottari.
+
+    Shaped like vimshottari()'s return value on purpose (nakshatra,
+    mahadasha, antardasha, upcoming) so callers can treat the two similarly,
+    though the field names differ (`name` for the Yogini, `graha` for the
+    planet held to rule it) since a Yogini dasha is not simply "a planet's
+    dasha" the way Vimshottari's is.
+    """
+    moon = session.chart.get_object("Moon")
+    lon = moon.longitude
+    span = 360.0 / 27.0
+    idx = int(lon // span) % 27
+    frac = (lon % span) / span
+    nakshatra_number = idx + 1
+
+    start_index = _yogini_start_index(nakshatra_number)
+    birth = session.birth.local_datetime
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=ZoneInfo(session.birth.timezone))
+
+    first_years = YOGINI_DASHA[start_index][1]
+    cursor = birth - dt.timedelta(days=frac * first_years * SIDEREAL_YEAR)
+
+    # Four full 36-year turns of the wheel (~144 years) comfortably outlasts
+    # any lifetime, the same way vimshottari()'s ten majors outlast its
+    # 120-year cycle.
+    majors = []
+    for i in range(8 * 4):
+        name, years, graha = YOGINI_DASHA[(start_index + i) % 8]
+        end = cursor + dt.timedelta(days=years * SIDEREAL_YEAR)
+        majors.append({"name": name, "graha": graha, "start": cursor, "end": end, "years": years})
+        cursor = end
+
+    current = next((m for m in majors if m["start"] <= when < m["end"]), None)
+    antar = None
+    if current:
+        sub_cursor = current["start"]
+        start_idx = next(i for i, (n, _, _) in enumerate(YOGINI_DASHA) if n == current["name"])
+        for j in range(8):
+            sname, syears, sgraha = YOGINI_DASHA[(start_idx + j) % 8]
+            length = current["years"] * syears / YOGINI_CYCLE_YEARS * SIDEREAL_YEAR
+            sub_end = sub_cursor + dt.timedelta(days=length)
+            if sub_cursor <= when < sub_end:
+                antar = {"name": sname, "graha": sgraha, "start": sub_cursor, "end": sub_end}
+                break
+            sub_cursor = sub_end
+
+    def graha_of(period: dict) -> str:
+        # Sankata's own Rahu/Ketu split only applies at this, the mahadasha,
+        # timescale — the source does not describe subdividing an
+        # antardasha-length slice of Sankata the same way.
+        if period["name"] != "Sankata":
+            return period["graha"]
+        midpoint = period["start"] + (period["end"] - period["start"]) / 2
+        return "Rahu" if when < midpoint else "Ketu"
+
+    def fmt(d: dt.datetime) -> str:
+        return d.strftime("%b %Y")
+
+    return {
+        "nakshatra": NAKSHATRAS[idx],
+        "mahadasha": {
+            "name": current["name"], "graha": graha_of(current),
+            "start": fmt(current["start"]), "end": fmt(current["end"]),
+        } if current else None,
+        "antardasha": {
+            "name": antar["name"],
+            "graha": "Rahu/Ketu" if antar["name"] == "Sankata" else antar["graha"],
+            "start": fmt(antar["start"]), "end": fmt(antar["end"]),
+        } if antar else None,
+        "upcoming": [
+            {"name": m["name"], "graha": graha_of(m), "start": fmt(m["start"]), "end": fmt(m["end"])}
+            for m in majors if m["start"] > when
+        ][:3],
+    }
+
+
 def vimshottari(session: ChartSession, when: dt.datetime) -> dict:
     """Vimshottari dasha from the sidereal Moon.
 

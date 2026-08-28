@@ -435,10 +435,21 @@ def _vedic_context(session) -> dict:
 
         from .chart_service import vimshottari
         import datetime as _dt
-        antar_lord = vimshottari(session, _dt.datetime.now(_dt.timezone.utc)).get("antardasha", {}).get("lord")
+        now = _dt.datetime.now(_dt.timezone.utc)
+        antar_lord = vimshottari(session, now).get("antardasha", {}).get("lord")
         antar_reading = delineation.antardasha_reading(antar_lord) if antar_lord else None
         if antar_reading:
             out["antardasha_reading"] = {"lord": antar_lord, "note": antar_reading}
+
+        from .chart_service import yogini_dasha
+        yd = yogini_dasha(session, now)
+        maha, antar = yd.get("mahadasha"), yd.get("antardasha")
+        if maha:
+            out["yogini_dasha"] = {
+                "mahadasha": {**maha, "reading": delineation.yogini_dasha_reading(maha["name"])},
+                "antardasha": ({**antar, "reading": delineation.yogini_dasha_reading(antar["name"])}
+                                if antar else None),
+            }
     except Exception as exc:                     # noqa: BLE001 — never fatal
         logging.getLogger(__name__).warning("classical delineation unavailable: %s", exc)
 

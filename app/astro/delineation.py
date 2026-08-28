@@ -35,8 +35,10 @@ Sources, and how each is handled:
     enough across the tradition, that it is reproduced here as a rule rather
     than as this compilation's own words. Its Vimshottari Antardasha-phala
     chapter also gives :data:`ANTARDASHA_EFFECTS`, condensed and
-    independently phrased the same way :data:`MAHADASHA_EFFECTS` is. See
-    ``docs/sources/ravana_samhita_notes.md``.
+    independently phrased the same way :data:`MAHADASHA_EFFECTS` is. Its
+    Yogini Dasha chapter gives the arithmetic now in
+    ``chart_service.yogini_dasha()`` and the result texts in
+    :data:`YOGINI_EFFECTS` below. See ``docs/sources/ravana_samhita_notes.md``.
 
 What is deliberately not attempted, matching this module's neighbours:
 
@@ -230,6 +232,53 @@ def antardasha_reading(planet: str) -> str | None:
     benefic/malefic split — see the module note above `ANTARDASHA_EFFECTS`).
     """
     return ANTARDASHA_EFFECTS.get(planet)
+
+
+# --------------------------------------------------------------------------
+# Yogini Dasha effects, by Yogini name — the same modern compilation
+# presented as "Ravana Samhita" that supplies vargas.YOGINI_DASHA in
+# chart_service.py. The source gives one result text per Yogini and reuses
+# it at both the mahadasha and antardasha timescale (its own "Mangaladi
+# dasha phal, again" heading for the antardasha-level reading repeats the
+# same eight themes rather than giving a second table) — this module follows
+# that, rather than inventing a distinct antardasha-level text the source
+# doesn't have.
+# --------------------------------------------------------------------------
+
+YOGINI_EFFECTS: dict[str, str] = {
+    "Mangala": "the neutralising of a rival's or an opponent's trouble, "
+               "gains in property, vehicles, gold or fine possessions, and "
+               "family good fortune — a generally auspicious start",
+    "Pingala": "a comfortable opening that tends to give way to growing "
+               "physical strain, mental agitation, and friction within the "
+               "family as the period goes on",
+    "Dhanya": "growth in wealth and resources, recognition or favour from "
+              "those in authority, victory in disputes, patience and "
+              "resolve, and comfort from spouse and children",
+    "Bhramari": "displacement or travel away from home, setbacks in "
+                "conflict, strain on a partner, mounting debt and illness, "
+                "and friction with relatives",
+    "Bhadrika": "financial gain, rising happiness, recognition of one's own "
+                "abilities, honour from those in authority, and a "
+                "generally auspicious, comfortable stretch",
+    "Ulka": "travel, illness and distress, loss of wealth or separation "
+            "from one's homeland, and friction with friends and family",
+    "Siddha": "a real sense of accomplishment and standing, comfort from "
+              "friends and family, growing reputation, and success in "
+              "one's undertakings",
+    "Sankata": "conflict and friction with others, health affliction, "
+               "strain on close relationships, loss of resources or "
+               "livestock, restlessness, and difficulty with those in "
+               "authority",
+}
+
+
+def yogini_dasha_reading(name: str) -> str | None:
+    """The classical result text for one Yogini Dasha name (Mangala,
+    Pingala, ... Sankata) — used for both the mahadasha and antardasha
+    timescale; see the module note above `YOGINI_EFFECTS`.
+    """
+    return YOGINI_EFFECTS.get(name)
 
 
 # --------------------------------------------------------------------------

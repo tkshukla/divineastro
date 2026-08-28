@@ -24,9 +24,9 @@ sources) have a paper trail back to where a rule came from.
   content, out of scope or firmly excluded (see the notes for the full
   breakdown); Volume 4 was read in full for "anything genuinely new" and
   contributed Baladi Avastha and Vimshottari Antardasha result texts to
-  `app/astro/delineation.py`. Also flags Yogini Dasha as a real but
-  substantial not-yet-implemented candidate (a full second dasha system, not
-  a text addition).
+  `app/astro/delineation.py`, plus a full second dasha system — Yogini
+  Dasha — in `app/chart_service.py` (the arithmetic) and
+  `app/astro/delineation.py` (the result texts).
 
 Both Brihat Jataka and Bhrigu Samhita notes flag two categories that were deliberately left out of the app:
 women's-horoscopy chastity/widowhood/adultery judgments (regressive by modern

@@ -1299,6 +1299,12 @@ _PLANETS_HI = {
     "Uranus": "अरुण", "Neptune": "वरुण", "Pluto": "यम", "Chiron": "चिरोन"
 }
 
+_YOGINI_HI = {
+    "Mangala": "मंगला", "Pingala": "पिंगला", "Dhanya": "धान्या",
+    "Bhramari": "भ्रामरी", "Bhadrika": "भद्रिका", "Ulka": "उल्का",
+    "Siddha": "सिद्धा", "Sankata": "संकटा",
+}
+
 _SIGNS_HI = {
     "Aries": "मेष", "Taurus": "वृषभ", "Gemini": "मिथुन", "Cancer": "कर्क", "Leo": "सिंह", 
     "Virgo": "कन्या", "Libra": "तुला", "Scorpio": "वृश्चिक", "Sagittarius": "धनु", 
@@ -1617,12 +1623,39 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
                 f"{_NAKSHATRAS_HI.get(nak, nak)} (\u092a\u093e\u0926 {summary['pada']})" if hi
                 else f"{nak} (pada {summary['pada']})")
 
+            # Yogini Dasha \u2014 a second, distinct dasha system (see
+            # docs/sources/ravana_samhita_notes.md), shown alongside
+            # Vimshottari rather than in place of it.
+            yogini_summary_rows: list[list[str]] = []
+            try:
+                from .chart_service import yogini_dasha as _yogini_dasha
+
+                yd = _yogini_dasha(session, when)
+
+                def _yperiod(p: dict | None) -> str:
+                    if not p:
+                        return "\u2014"
+                    name = _YOGINI_HI.get(p["name"], p["name"]) if hi else p["name"]
+                    graha = _PLANETS_HI.get(p["graha"], p["graha"]) if hi else p["graha"]
+                    start, end = p["start"], p["end"]
+                    if hi:
+                        start, end = _month_year_hi(start), _month_year_hi(end)
+                    return f"{name} \u2014 {graha}  {start} \u2013 {end}"
+
+                yogini_summary_rows = [
+                    ["Yogini Dasha", _yperiod(yd.get("mahadasha"))],
+                    ["Yogini Antardasha", _yperiod(yd.get("antardasha"))],
+                ]
+            except Exception:               # pragma: no cover - defensive
+                pass
+
             dasha = {
                 "summary": [
                     ["Moon", summary["moon_position"]],
                     ["Nakshatra", nak_label],
                     ["Mahadasha", _period(maha)],
                     ["Antardasha", _period(antar)],
+                    *yogini_summary_rows,
                     ["As of", when.strftime("%d %B %Y")],
                 ],
                 "table": {
@@ -1638,6 +1671,8 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
                     "Nakshatra": "नक्षत्र",
                     "Mahadasha": "वर्तमान महादशा",
                     "Antardasha": "वर्तमान अंतर्दशा",
+                    "Yogini Dasha": "योगिनी दशा",
+                    "Yogini Antardasha": "योगिनी अंतर्दशा",
                     "As of": "तिथि के अनुसार"
                 }
                 for row in dasha["summary"]:
@@ -1747,6 +1782,19 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
             antar_reading = delineation.antardasha_reading(antardasha_lord)
             if antar_reading:
                 analysis_input["dasha"]["antardasha"]["classical_reading"] = antar_reading
+
+        from .chart_service import yogini_dasha
+        yd_facts = yogini_dasha(session, when)
+        ym_facts = yd_facts.get("mahadasha")
+        if ym_facts:
+            analysis_input["yogini_dasha"] = {
+                "mahadasha": {**ym_facts, "reading": delineation.yogini_dasha_reading(ym_facts["name"])},
+                "antardasha": (
+                    {**yd_facts["antardasha"],
+                     "reading": delineation.yogini_dasha_reading(yd_facts["antardasha"]["name"])}
+                    if yd_facts.get("antardasha") else None
+                ),
+            }
     except Exception:
         pass
 

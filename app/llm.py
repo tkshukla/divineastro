@@ -299,6 +299,16 @@ def _vedic_block(vedic: dict) -> str:
     ar = vedic.get("antardasha_reading")
     if ar:
         lines.append(f"- Running {ar['lord']} Antardasha (sub-period): {ar['note']}")
+    yd = vedic.get("yogini_dasha") or {}
+    ym = yd.get("mahadasha")
+    if ym and ym.get("reading"):
+        lines.append(
+            f"- Running {ym['name']} Yogini Dasha (a distinct dasha "
+            f"tradition from Vimshottari, ruled by {ym['graha']}): {ym['reading']}"
+        )
+    ya = yd.get("antardasha")
+    if ya and ya.get("reading"):
+        lines.append(f"- Running {ya['name']} Yogini Antardasha: {ya['reading']}")
 
     if not lines:
         return ""
@@ -856,6 +866,20 @@ def _chart_facts(analysis: dict) -> str:
         parts.append(
             "CLASSICAL READING OF THE RUNNING ANTARDASHA (sub-period): "
             + antar_reading)
+
+    yd = analysis.get("yogini_dasha") or {}
+    ym = yd.get("mahadasha")
+    if ym and ym.get("reading"):
+        parts.append(
+            f"RUNNING YOGINI DASHA (a distinct dasha tradition from "
+            f"Vimshottari above, not a competing claim about the same "
+            f"period — mention both): {ym['name']}, ruled by {ym['graha']}. "
+            f"{ym['reading']}")
+    ya = yd.get("antardasha")
+    if ya and ya.get("reading"):
+        parts.append(
+            f"RUNNING YOGINI ANTARDASHA: {ya['name']}, ruled by {ya['graha']}. "
+            f"{ya['reading']}")
 
     rows = analysis.get("dignities") or []
     if rows:

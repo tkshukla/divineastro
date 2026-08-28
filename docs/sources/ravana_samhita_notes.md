@@ -93,15 +93,29 @@ Two sections had something genuinely new and in scope:
   `app/astro/delineation.py`, surfaced in chat via `_vedic_context()` and in
   the Kundali PDF alongside the existing Mahadasha reading.
 
-Two more things were found but deliberately **not** encoded:
+One more thing was found and, after a follow-up request, built as its own
+dedicated task:
 
 - **Yogini Dasha** — a complete alternate 8-fold dasha system (nakshatra-based
   starting lord, 1–8 year periods per lord totalling a 36-year cycle, its own
-  antardasha subdivision, and per-dasha result texts). This is a full second
-  dasha engine, not a delineation-text addition — comparable in scope to
-  adding a new divisional chart, not a text lookup. Left as a documented,
-  not-yet-implemented candidate rather than built silently; worth a dedicated
-  task if wanted.
+  antardasha subdivision, and per-dasha result texts). **Encoded** as
+  `chart_service.yogini_dasha()` (the date arithmetic — mirrors
+  `vimshottari()`'s shape) and `delineation.YOGINI_EFFECTS` /
+  `yogini_dasha_reading()` (the eight result texts). Surfaced alongside
+  Vimshottari, not in place of it, in chat (`_vedic_context()`), the Kundali
+  PDF's dasha summary, and the PDF's narrative facts. The starting-Yogini
+  rule ((birth nakshatra number + 3) mod 8) is this source's own stated
+  method — other traditions state it differently, and this is not asserted
+  as the one universal rule. Sankata, the 8-year eighth dasha, is Rahu's for
+  its first half and Ketu's for its second, per the source's own note; that
+  split is applied only at the mahadasha timescale; a Sankata antardasha
+  (much shorter) is reported under the combined label "Rahu/Ketu" rather
+  than guessing a finer split the source doesn't describe. See
+  `tests/test_yogini_dasha.py` for the full test coverage, including exact
+  date arithmetic checked against stubbed sessions.
+
+One more thing was found and deliberately **not** encoded:
+
 - **Sattva/Rajas/Tamas (guna) temperament** — the source ties a native's basic
   temperament to whichever of the three gunas was "dominant" among the grahas
   at birth, but does not spell out a precise, computable rule for what makes
