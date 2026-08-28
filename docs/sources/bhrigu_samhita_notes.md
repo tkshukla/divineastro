@@ -140,10 +140,15 @@ left absent, never guessed at, and flagged if actually noticed.
   rulership-math errors (corrected) and genuine tradition-to-tradition
   variation in dignity/friendship claims (reported faithfully, not
   "fixed" against a different source's table).
-- **Remaining 8 Lagnas (Leo through Pisces)** — not yet done. Each is a
+- **Leo (Simha)** — complete, all 108 entries, no documented gap. Read from
+  PDF pages 244-284 (chunks `pages_0241-0260.txt` and `pages_0261-0280.txt`,
+  and the start of `pages_0281-0300.txt`). Same tradition-vs-standard-table
+  dignity divergence pattern noted for Cancer shows up again here in a
+  handful of entries; reported as the source states it.
+- **Remaining 7 Lagnas (Virgo through Pisces)** — not yet done. Each is a
   similar-sized read (~35-45 PDF pages, ~2000 OCR lines) and paraphrase
   pass; `planet_house_text()` falls back cleanly to the Lagna-independent
   Brihat Jataka table for any Lagna not yet in `BHRIGU_LAGNA_HOUSE_TEXT`, so
   partial coverage never breaks anything — it just means those natives get
-  the same generic text every Lagna got before this work started. Leo
-  (Simha) begins at PDF page 244.
+  the same generic text every Lagna got before this work started. Virgo
+  (Kanya) begins at PDF page 285.
