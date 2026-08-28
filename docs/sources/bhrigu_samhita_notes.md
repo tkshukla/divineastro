@@ -176,10 +176,42 @@ left absent, never guessed at, and flagged if actually noticed.
   Mercury, in Pisces for Venus; and every one of Saturn's twelve
   friend/enemy calls) line up exactly with the textbook table, a cleaner
   match than several earlier Lagnas.
-- **Remaining 5 Lagnas (Scorpio through Pisces)** — not yet done. Each is a
-  similar-sized read (~35-45 PDF pages, ~2000 OCR lines) and paraphrase
-  pass; `planet_house_text()` falls back cleanly to the Lagna-independent
-  Brihat Jataka table for any Lagna not yet in `BHRIGU_LAGNA_HOUSE_TEXT`, so
-  partial coverage never breaks anything — it just means those natives get
-  the same generic text every Lagna got before this work started. Scorpio
-  (Vrishchika) begins at PDF page 369.
+- **Scorpio (Vrishchika)** — complete, all 108 entries, no documented gap.
+  Read from PDF pages 369-411 (chunks `pages_0361-0380.txt`,
+  `pages_0381-0400.txt` and `pages_0401-0420.txt`; pages 369-375 are the
+  index preamble, full prose resumes at page 375 with Sun). This Lagna's
+  own text is unusually noisy about which graha a given entry names in
+  its body prose (distinct from the sign-lord-identity errors seen in
+  Taurus and Libra): several entries substitute a different graha's name
+  entirely — Sun's 7th house names Moon where the sign is Venus's, Saturn
+  and the Sun's own placements repeatedly render "शत्रु" (enemy) as
+  unrelated OCR noise, and two Jupiter entries render "गुरु" as "बुध"
+  outright — but every one of these was resolved with high confidence
+  from the section's own heading line (which always names the graha
+  correctly even when the body prose garbles it) or from the fixed
+  rulership of the house's sign, the same resolution path used for
+  Libra's two contradictions. No entry was ambiguous enough to leave as a
+  gap. As with Libra, every exaltation/debilitation this source flagged
+  for a placement was checked against the standard table this app
+  already uses in `vargas.py` before being carried into the English text
+  (each one — Mercury debilitated in Pisces, Mars debilitated in Cancer,
+  Venus exalted in Pisces, Mercury exalted in Virgo, Saturn exalted in
+  Libra, the Moon exalted in Taurus, and several more — landed on the
+  correct sign), with the recurring exception that this source calls
+  Mercury a "friend" to several grahas that the standard table calls
+  neutral or even enemy (Mars, Jupiter, the Moon) — a pattern already
+  noted for earlier Lagnas and reported faithfully rather than corrected.
+- **Remaining 4 Lagnas (Sagittarius through Pisces)** — not yet done. Each
+  is a similar-sized read (~35-45 PDF pages, ~2000 OCR lines) and
+  paraphrase pass; `planet_house_text()` falls back cleanly to the
+  Lagna-independent Brihat Jataka table for any Lagna not yet in
+  `BHRIGU_LAGNA_HOUSE_TEXT`, so partial coverage never breaks anything —
+  it just means those natives get the same generic text every Lagna got
+  before this work started. Sagittarius (Dhanu) begins at PDF page 412.
+  Note for `tests/test_delineation.py`: all seven non-royal signs (Aries
+  through Scorpio) are now Bhrigu-covered, so the Saturn-1st-house
+  "ordinary" fallback check had to move from a named sign to
+  `planet_house_text("Saturn", 1)` with no `lagna_sign` at all — the four
+  Lagnas still to come (Sagittarius, Capricorn, Aquarius, Pisces) are all
+  in `_SATURN_LAGNA_ROYAL_SIGNS`, so no uncovered non-royal sign will
+  exist again once they're done either.
