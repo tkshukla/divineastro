@@ -152,10 +152,34 @@ left absent, never guessed at, and flagged if actually noticed.
   "own sign" — the sign there is Cancer, Moon's, not Jupiter's) before
   writing the final English, the same kind of self-check applied to every
   Lagna so far.
-- **Remaining 6 Lagnas (Libra through Pisces)** — not yet done. Each is a
+- **Libra (Tula)** — complete, all 108 entries, no documented gap. Read
+  from PDF pages 327-369 (chunks `pages_0321-0340.txt`, `pages_0341-0360.txt`
+  and the start of `pages_0361-0380.txt`; pages 327-333 are the index
+  preamble, full prose resumes at page 333 with Sun). Two entries here had
+  an internally-contradictory graha name in the printed body text (Moon's
+  12th house named "Jupiter" where the 12th from Libra is Virgo — Mercury's
+  sign; Mercury's 6th house named "Mercury" for its own placement, where
+  the 6th from Libra is Pisces — Jupiter's sign, though the section header
+  correctly named Jupiter). Both were resolved rather than treated as
+  gaps: the 12th-from-Libra/Mercury identity is an astronomically fixed
+  rulership fact independent of any tradition, and in both cases the
+  correct planet's own friend/enemy stance for that pair was already
+  established elsewhere in this same Lagna's text (Moon reads Mercury as
+  a friend at its own 9th house entry; Mercury reads Jupiter's sign as
+  neutral, matching the standard BPHS table). This is a different
+  resolution path from the genuine gaps left absent for Aries and Taurus,
+  where no such independent cross-check was available. Otherwise this
+  Lagna's dignity claims track the standard BPHS friendship table
+  unusually closely — most placements here (debilitation in Libra for the
+  Sun, in Scorpio for the Moon, in Cancer for Mars, in Aries for Saturn;
+  exaltation in Taurus for the Moon, in Capricorn for Mars, in Virgo for
+  Mercury, in Pisces for Venus; and every one of Saturn's twelve
+  friend/enemy calls) line up exactly with the textbook table, a cleaner
+  match than several earlier Lagnas.
+- **Remaining 5 Lagnas (Scorpio through Pisces)** — not yet done. Each is a
   similar-sized read (~35-45 PDF pages, ~2000 OCR lines) and paraphrase
   pass; `planet_house_text()` falls back cleanly to the Lagna-independent
   Brihat Jataka table for any Lagna not yet in `BHRIGU_LAGNA_HOUSE_TEXT`, so
   partial coverage never breaks anything — it just means those natives get
-  the same generic text every Lagna got before this work started. Libra
-  (Tula) begins at PDF page 327.
+  the same generic text every Lagna got before this work started. Scorpio
+  (Vrishchika) begins at PDF page 369.
