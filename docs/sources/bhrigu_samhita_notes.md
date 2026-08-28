@@ -129,10 +129,21 @@ left absent, never guessed at, and flagged if actually noticed.
   grahas — vs. Taurus's roughly six pages) before full prose resumes; the
   length of that preamble varies per Lagna and isn't itself a signal of
   anything missing, just checked directly each time.
-- **Remaining 9 Lagnas (Cancer through Pisces)** — not yet done. Each is a
+- **Cancer (Karka)** — complete, all 108 entries, no documented gap. Read
+  from PDF pages 201-243 (chunks `pages_0201-0220.txt`, `pages_0221-0240.txt`
+  and the start of `pages_0241-0260.txt`). Several entries here state a
+  planet's natural friendship with another graha's sign differently from
+  the standard BPHS ch. 3 table this app otherwise cites (e.g. Mercury
+  reading as Mars's "friend" rather than the standard "enemy") — these
+  are reported as this source states them, not corrected, the same
+  distinction drawn in `docs/sources/README.md` between fixable
+  rulership-math errors (corrected) and genuine tradition-to-tradition
+  variation in dignity/friendship claims (reported faithfully, not
+  "fixed" against a different source's table).
+- **Remaining 8 Lagnas (Leo through Pisces)** — not yet done. Each is a
   similar-sized read (~35-45 PDF pages, ~2000 OCR lines) and paraphrase
   pass; `planet_house_text()` falls back cleanly to the Lagna-independent
   Brihat Jataka table for any Lagna not yet in `BHRIGU_LAGNA_HOUSE_TEXT`, so
   partial coverage never breaks anything — it just means those natives get
-  the same generic text every Lagna got before this work started. Cancer
-  (Karka) begins at PDF page 201.
+  the same generic text every Lagna got before this work started. Leo
+  (Simha) begins at PDF page 244.
