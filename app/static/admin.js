@@ -1,9 +1,7 @@
 /* Admin panel.
  *
  * Every endpoint it touches is already gated server-side by the `admin`
- * dependency, so this file is convenience, not security: hiding a button here
- * protects nobody. The gate below exists only to explain to a signed-out or
- * non-admin visitor what they are looking at.
+ * dependency, so this file is convenience, not security.
  */
 'use strict';
 
@@ -12,6 +10,8 @@ const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g,
   (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+const rupees = (n) => `₹${Number(n).toLocaleString('en-IN')}`;
 
 async function api(path, opts = {}) {
   const res = await fetch(path, {
@@ -40,8 +40,6 @@ async function boot() {
   }
 
   const user = me && me.user;
-  // Operator-facing, but still a person: say what to do, not which environment
-  // variable to grep for.
   if (!user) return showGate('Sign in required',
     'Sign in with the Google account registered as an administrator.', true);
 
@@ -56,19 +54,27 @@ async function boot() {
   $('#panel').hidden = false;
   wireTabs();
   wireCoupons();
-  await Promise.all([loadUpi(), loadKundalis(), loadCoupons()]);
+  wireUsers();
+  wireQuestions();
+
+  // Load active tab initially and prefetch background queues
+  await Promise.all([
+    loadMetrics(),
+    loadCoupons(),
+    loadUpi(),
+    loadKundalis(),
+    loadHealth(),
+  ]);
 }
 
-async function showGate(title, msg, offerSignIn) {
+function showGate(title, msg, offerSignIn) {
   $('#gate').hidden = false;
   $('#gate-title').textContent = title;
   $('#gate-msg').textContent = msg;
   if (!offerSignIn) return;
 
   const box = $('#gate-actions');
-  try {
-    const { providers, dev_login } = await api('/api/auth/providers');
-    // Each provider is {key, label} — not a bare string.
+  api('/api/auth/providers').then(({ providers, dev_login }) => {
     (providers || []).forEach((p) => {
       const a = document.createElement('a');
       a.className = 'primary as-button';
@@ -88,14 +94,12 @@ async function showGate(title, msg, offerSignIn) {
       };
       box.appendChild(b);
     }
-  } catch (e) {
-    // Say so rather than rendering an empty box — a silent catch here once hid
-    // a bug that left the page with no way to sign in at all.
+  }).catch((e) => {
     const p = document.createElement('p');
     p.className = 'error';
     p.textContent = `Could not load sign-in options: ${e.message}`;
     box.appendChild(p);
-  }
+  });
 }
 
 function wireTabs() {
@@ -103,16 +107,396 @@ function wireTabs() {
     b.onclick = () => {
       $$('.atab').forEach((x) => x.classList.toggle('active', x === b));
       $$('.apane').forEach((p) => p.classList.toggle('active', p.id === `pane-${b.dataset.tab}`));
+      
+      const tab = b.dataset.tab;
+      if (tab === 'metrics') loadMetrics();
+      else if (tab === 'coupons') loadCoupons();
+      else if (tab === 'users') loadUsers();
+      else if (tab === 'questions') loadQuestions();
+      else if (tab === 'health') loadHealth();
+      else if (tab === 'upi') loadUpi();
+      else if (tab === 'kundali') loadKundalis();
     };
   });
 }
 
-const rupees = (n) => `₹${Number(n).toLocaleString('en-IN')}`;
-
 function setCount(id, n) {
   const el = $(id);
+  if (!el) return;
   el.textContent = n ? String(n) : '';
   el.classList.toggle('has', !!n);
+}
+
+/* ------------------------------------------------------------- metrics --- */
+
+async function loadMetrics() {
+  try {
+    const data = await api('/api/admin/metrics');
+    $('#m-rev-all').textContent = rupees(data.revenue_all_rupees);
+    $('#m-rev-month').textContent = rupees(data.revenue_month_rupees);
+    $('#m-rev-today').textContent = rupees(data.revenue_today_rupees);
+    $('#m-users').textContent = Number(data.total_users).toLocaleString('en-IN');
+    $('#m-orders').textContent = Number(data.total_paid_orders).toLocaleString('en-IN');
+    $('#m-questions').textContent = Number(data.total_questions).toLocaleString('en-IN');
+
+    // Product sales table
+    const pBox = $('#product-sales-list');
+    if (data.products && data.products.length) {
+      pBox.innerHTML = `
+        <table class="admin-table">
+          <thead>
+            <tr><th>Product</th><th>Orders</th><th>Revenue</th></tr>
+          </thead>
+          <tbody>
+            ${data.products.map((p) => `
+              <tr>
+                <td><b>${esc(p.title)}</b><br><span class="muted">${esc(p.sku)}</span></td>
+                <td>${p.count}</td>
+                <td>${rupees(p.revenue_paise / 100)}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>`;
+    } else {
+      pBox.innerHTML = '<p class="empty">No product sales yet.</p>';
+    }
+
+    // Recent transactions table
+    const oBox = $('#recent-orders-list');
+    if (data.recent_orders && data.recent_orders.length) {
+      oBox.innerHTML = `
+        <table class="admin-table">
+          <thead>
+            <tr><th>Customer</th><th>Product</th><th>Amount</th><th>Status</th><th>Time</th></tr>
+          </thead>
+          <tbody>
+            ${data.recent_orders.map((o) => `
+              <tr>
+                <td>${esc(o.buyer_name || '—')}<br><span class="muted">${esc(o.buyer_email)}</span></td>
+                <td>${esc(o.title)}</td>
+                <td><b>${rupees(o.amount_paise / 100)}</b></td>
+                <td><span class="pill ${esc(o.status)}">${esc(o.status)}</span></td>
+                <td><span class="muted">${esc(o.paid_at || o.created_at)}</span></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>`;
+    } else {
+      oBox.innerHTML = '<p class="empty">No recent orders.</p>';
+    }
+  } catch (e) {
+    console.error('Failed to load metrics:', e);
+  }
+}
+
+/* ------------------------------------------------------------- coupons --- */
+
+let allCoupons = [];
+
+function wireCoupons() {
+  const form = $('#coupon-form');
+  const btnToggle = $('#btn-toggle-coupon-form');
+  const btnCancel = $('#btn-cancel-coupon-form');
+  const search = $('#coupon-search');
+
+  btnToggle.onclick = () => { form.hidden = !form.hidden; };
+  btnCancel.onclick = () => { form.hidden = true; };
+
+  search.oninput = () => renderCouponsList();
+
+  const kind = $('#c-kind');
+  kind.onchange = () => {
+    $('#c-value-label').textContent = {
+      percent: 'Value (%)', flat: 'Value (₹ off)', extra_credits: 'Extra questions',
+    }[kind.value];
+  };
+
+  api('/api/products').then(({ products }) => {
+    $('#c-skus').innerHTML = (products || [])
+      .map((p) => `<option value="${esc(p.sku)}">${esc(p.title)} — ${rupees(p.rupees)}</option>`)
+      .join('');
+  }).catch(() => {});
+
+  form.onsubmit = async (ev) => {
+    ev.preventDefault();
+    const err = $('#coupon-error');
+    err.hidden = true;
+
+    const skus = $$('#c-skus option:checked').map((o) => o.value);
+    const until = $('#c-until').value;
+    const body = {
+      code: $('#c-code').value,
+      kind: $('#c-kind').value,
+      value: Number($('#c-value').value),
+      applies_to: skus.length ? skus.join(',') : 'all',
+      max_redemptions: $('#c-max').value ? Number($('#c-max').value) : null,
+      max_per_user: Number($('#c-per').value || 1),
+      expires_at: until ? `${until}T23:59:59` : null,
+    };
+
+    try {
+      await api('/api/admin/coupons', { method: 'POST', body: JSON.stringify(body) });
+      form.reset();
+      form.hidden = true;
+      kind.onchange();
+      await loadCoupons();
+    } catch (e) {
+      err.textContent = e.message;
+      err.hidden = false;
+    }
+  };
+}
+
+function describe(c) {
+  if (c.kind === 'percent') return `${c.value}% off`;
+  if (c.kind === 'flat') return `${rupees(c.value / 100)} off`;
+  return `+${c.value} free questions`;
+}
+
+async function loadCoupons() {
+  try {
+    const { coupons } = await api('/api/admin/coupons');
+    allCoupons = coupons || [];
+    setCount('#c-coupons', allCoupons.filter((c) => c.active).length);
+    renderCouponsList();
+  } catch (e) {
+    console.error('Failed to load coupons:', e);
+  }
+}
+
+function renderCouponsList() {
+  const box = $('#coupon-list');
+  const query = ($('#coupon-search')?.value || '').trim().toLowerCase();
+
+  const filtered = allCoupons.filter((c) => 
+    !query || c.code.toLowerCase().includes(query) || (c.applies_to && c.applies_to.toLowerCase().includes(query))
+  );
+
+  if (!filtered.length) {
+    box.innerHTML = query
+      ? '<p class="empty">No coupons match your filter.</p>'
+      : '<p class="empty">No coupons created yet. Click "+ Create New Coupon" above.</p>';
+    return;
+  }
+
+  box.innerHTML = filtered.map((c) => `
+    <div class="row" data-id="${c.id}">
+      <div class="row-main">
+        <div class="row-title">
+          <code class="code">${esc(c.code)}</code>
+          <button class="ghost sm btn-copy" data-code="${esc(c.code)}" title="Copy code" style="padding:2px 7px;font-size:0.75rem;margin-left:6px;">&#128203; Copy</button>
+          <span class="pill ${c.active ? 'delivered' : 'off'}" style="margin-left:6px;">${c.active ? 'live' : 'paused'}</span>
+          &middot; <b>${esc(describe(c))}</b>
+        </div>
+        <div class="row-sub">
+          Target: <code>${esc(c.applies_to === 'all' ? 'All Products' : c.applies_to)}</code>
+          &middot; Redemptions: <b>${c.redemptions}${c.max_redemptions ? ` / ${c.max_redemptions}` : ' (unlimited)'}</b>
+          &middot; Max per user: ${c.max_per_user || '∞'}
+          ${c.expires_at ? `&middot; Expires: <b>${esc(c.expires_at.slice(0, 10))}</b>` : '&middot; No expiry'}
+          ${c.total_discount_paise ? `<br><span class="muted">Total customer savings given: ${rupees(c.total_discount_paise / 100)}</span>` : ''}
+        </div>
+      </div>
+      <div class="row-act">
+        <button class="ghost sm" data-act="toggle">${c.active ? 'Pause' : 'Resume'}</button>
+        <button class="danger sm" data-act="delete">Delete</button>
+      </div>
+    </div>`).join('');
+
+  $$('#coupon-list .row').forEach((row) => {
+    const id = Number(row.dataset.id);
+    const c = allCoupons.find((x) => x.id === id);
+
+    row.querySelector('.btn-copy').onclick = (ev) => {
+      const code = ev.currentTarget.dataset.code;
+      navigator.clipboard.writeText(code).then(() => {
+        ev.currentTarget.textContent = 'Copied!';
+        setTimeout(() => { ev.currentTarget.textContent = '📋 Copy'; }, 1500);
+      });
+    };
+
+    row.querySelector('[data-act="toggle"]').onclick = async () => {
+      await api(`/api/admin/coupons/${id}`, {
+        method: 'PATCH', body: JSON.stringify({ active: !c.active }),
+      });
+      await loadCoupons();
+    };
+
+    row.querySelector('[data-act="delete"]').onclick = async () => {
+      if (!confirm(`Delete ${c.code}? Coupons that have been used are paused instead, so redemption records survive.`)) return;
+      try {
+        await api(`/api/admin/coupons/${id}`, { method: 'DELETE' });
+      } catch (e) { alert(e.message); }
+      await loadCoupons();
+    };
+  });
+}
+
+/* --------------------------------------------------------------- users --- */
+
+function wireUsers() {
+  const search = $('#user-search');
+  if (search) search.oninput = debounce(() => loadUsers(), 300);
+}
+
+async function loadUsers() {
+  const box = $('#users-list');
+  const q = ($('#user-search')?.value || '').trim();
+  try {
+    const { users } = await api(`/api/admin/users?q=${encodeURIComponent(q)}`);
+    if (!users || !users.length) {
+      box.innerHTML = '<p class="empty">No users found.</p>';
+      return;
+    }
+
+    box.innerHTML = `
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>User / Email</th>
+            <th>Credits</th>
+            <th>Questions</th>
+            <th>Paid Orders</th>
+            <th>Total Spend</th>
+            <th>Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${users.map((u) => `
+            <tr data-id="${u.id}" data-email="${esc(u.email)}">
+              <td>
+                <b>${esc(u.name || '—')}</b><br>
+                <span class="muted">${esc(u.email || u.provider)}</span>
+                ${u.blocked ? '<span class="pill off" style="margin-left:4px;">blocked</span>' : ''}
+                ${u.is_admin ? '<span class="pill delivered" style="margin-left:4px;">admin</span>' : ''}
+              </td>
+              <td><b>${u.balance}</b></td>
+              <td>${u.questions_count}</td>
+              <td>${u.orders_count}</td>
+              <td><b>${rupees(u.spent_rupees)}</b></td>
+              <td><span class="muted">${esc(u.created_at)}</span></td>
+              <td>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                  <button class="ghost sm btn-credit" title="Gift or adjust credits">Adjust Credits</button>
+                  ${!u.is_admin ? `<button class="danger sm btn-block">${u.blocked ? 'Unblock' : 'Block'}</button>` : ''}
+                </div>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+
+    $$('#users-list tr[data-id]').forEach((row) => {
+      const id = Number(row.dataset.id);
+      const email = row.dataset.email;
+
+      row.querySelector('.btn-credit').onclick = async () => {
+        const deltaStr = prompt(`Adjust question credits for ${email} (enter positive number to grant, negative to deduct):`, '5');
+        if (deltaStr === null) return;
+        const delta = parseInt(deltaStr, 10);
+        if (isNaN(delta) || delta === 0) return alert('Please enter a valid non-zero number.');
+        const note = prompt('Reason / audit note (optional):', 'Customer support grant') || '';
+        try {
+          const res = await api(`/api/admin/users/${id}/credits`, {
+            method: 'POST',
+            body: JSON.stringify({ delta, note }),
+          });
+          alert(`Credits updated! New balance: ${res.new_balance}`);
+          await loadUsers();
+        } catch (e) { alert(e.message); }
+      };
+
+      const blockBtn = row.querySelector('.btn-block');
+      if (blockBtn) {
+        blockBtn.onclick = async () => {
+          const isBlocked = blockBtn.textContent === 'Unblock';
+          if (!confirm(`${isBlocked ? 'Unblock' : 'Block'} account for ${email}?`)) return;
+          try {
+            await api(`/api/admin/users/${id}/block`, {
+              method: 'POST',
+              body: JSON.stringify({ blocked: !isBlocked }),
+            });
+            await loadUsers();
+          } catch (e) { alert(e.message); }
+        };
+      }
+    });
+  } catch (e) {
+    box.innerHTML = `<p class="error">${esc(e.message)}</p>`;
+  }
+}
+
+/* ----------------------------------------------------------- questions --- */
+
+function wireQuestions() {
+  const search = $('#question-search');
+  if (search) search.oninput = debounce(() => loadQuestions(), 300);
+}
+
+async function loadQuestions() {
+  const box = $('#questions-list');
+  const q = ($('#question-search')?.value || '').trim();
+  try {
+    const { questions } = await api(`/api/admin/questions?q=${encodeURIComponent(q)}`);
+    if (!questions || !questions.length) {
+      box.innerHTML = '<p class="empty">No questions logged yet.</p>';
+      return;
+    }
+
+    box.innerHTML = questions.map((item) => `
+      <div class="row">
+        <div class="row-main">
+          <div class="row-title">
+            <b>${esc(item.question)}</b>
+            ${item.verdict ? `<span class="pill delivered" style="margin-left:6px;">${esc(item.verdict)}</span>` : ''}
+            <span class="pill off" style="margin-left:4px;">${esc(item.language.toUpperCase())}</span>
+          </div>
+          <div class="row-sub">
+            <span class="muted">${esc(item.user_email)} &middot; ${esc(item.asked_at)} &middot; Topic: ${esc(item.topic || 'general')}</span>
+            <p style="margin:6px 0 0;font-size:0.84rem;color:rgba(255,255,255,0.85);">${esc(item.answer_preview)}</p>
+          </div>
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    box.innerHTML = `<p class="error">${esc(e.message)}</p>`;
+  }
+}
+
+/* -------------------------------------------------------------- health --- */
+
+async function loadHealth() {
+  const box = $('#health-grid');
+  try {
+    const health = await api('/api/admin/system-health');
+    box.innerHTML = `
+      <div class="health-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <b>Database</b>
+          <span class="health-status-badge ${health.database.ok ? 'ok' : 'err'}">${health.database.ok ? 'Online' : 'Error'}</span>
+        </div>
+        <div class="muted" style="font-size:0.82rem;">Engine: ${esc(health.database.driver)}</div>
+      </div>
+      <div class="health-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <b>Vedic Ephemeris</b>
+          <span class="health-status-badge ${health.ephemeris.ok ? 'ok' : 'err'}">${health.ephemeris.ok ? 'Active' : 'Offline'}</span>
+        </div>
+        <div class="muted" style="font-size:0.82rem;">${esc(health.ephemeris.engine)}</div>
+      </div>
+      <div class="health-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <b>LLM Intelligence</b>
+          <span class="health-status-badge ${health.llm.ok ? 'ok' : 'warn'}">${health.llm.ok ? 'Configured' : 'Missing Key'}</span>
+        </div>
+        <div class="muted" style="font-size:0.82rem;">Provider: ${esc(health.llm.provider)}</div>
+      </div>
+      <div class="health-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <b>Payment Gateway</b>
+          <span class="health-status-badge ${health.gateways.live ? 'ok' : 'warn'}">${esc(health.gateways.provider)} (${health.gateways.mode})</span>
+        </div>
+        <div class="muted" style="font-size:0.82rem;">Currencies: INR / UPI</div>
+      </div>`;
+  } catch (e) {
+    box.innerHTML = `<p class="error">${esc(e.message)}</p>`;
+  }
 }
 
 /* --------------------------------------------------------- UPI queue ----- */
@@ -148,49 +532,42 @@ async function loadUpi() {
   $$('#upi-list .row').forEach((row) => {
     row.querySelectorAll('button[data-act]').forEach((btn) => {
       btn.onclick = async () => {
-        const approve = btn.dataset.act === 'approve';
-        const amount = row.querySelector('b').textContent;
-        if (!confirm(approve
-          ? `Approve ${amount}? Only do this if you can see it in your bank statement. `
-            + 'This grants the credits immediately.'
-          : 'Reject this claim? No credits will be granted.')) return;
-
-        row.querySelectorAll('button').forEach((b) => (b.disabled = true));
+        const id = Number(row.dataset.id);
+        const act = btn.dataset.act;
+        const note = row.querySelector('.note').value;
+        btn.disabled = true;
         try {
-          await api('/api/admin/upi/verify', {
+          await api(`/api/admin/upi/${act}`, {
             method: 'POST',
-            body: JSON.stringify({
-              order_id: Number(row.dataset.id),
-              approve,
-              note: row.querySelector('.note').value,
-            }),
+            body: JSON.stringify({ order_id: id, note }),
           });
           await loadUpi();
+          await loadMetrics();
         } catch (e) {
           alert(e.message);
-          row.querySelectorAll('button').forEach((b) => (b.disabled = false));
+          btn.disabled = false;
         }
       };
     });
   });
 }
 
-/* ---------------------------------------------------- kundali queue ------ */
+/* ----------------------------------------------------- kundali queue ----- */
 
 const FULFIL = [
-  ['pending', 'Not started'],
+  ['pending', 'Pending'],
   ['in_progress', 'In progress'],
   ['delivered', 'Delivered'],
 ];
 
 async function loadKundalis() {
   const box = $('#kundali-list');
-  const state = $('#k-all').checked ? 'all' : 'open';
-  const { kundalis } = await api(`/api/admin/kundalis?state=${state}`);
-  setCount('#c-kundali', kundalis.filter((k) => k.fulfilment !== 'delivered').length);
+  const all = $('#k-all').checked;
+  const { kundalis } = await api(`/api/admin/kundalis?all=${all ? 1 : 0}`);
+  setCount('#c-kundali', kundalis.filter((k) => k.fulfilment === 'pending').length);
 
   if (!kundalis.length) {
-    box.innerHTML = '<p class="empty">No paid kundali orders in this view.</p>';
+    box.innerHTML = '<p class="empty">No hand-written kundalis in the queue.</p>';
     return;
   }
 
@@ -245,115 +622,12 @@ async function loadKundalis() {
   });
 }
 
-/* ------------------------------------------------------------ coupons --- */
-
-function wireCoupons() {
-  $('#k-all').onchange = loadKundalis;
-
-  const kind = $('#c-kind');
-  kind.onchange = () => {
-    $('#c-value-label').textContent = {
-      percent: 'Value (%)', flat: 'Value (₹ off)', extra_credits: 'Extra questions',
-    }[kind.value];
+function debounce(fn, wait) {
+  let timer = null;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), wait);
   };
-
-  // Populate the product filter from the live catalogue so the codes can never
-  // drift from what is actually on sale.
-  api('/api/products').then(({ products }) => {
-    $('#c-skus').innerHTML = (products || [])
-      .map((p) => `<option value="${esc(p.sku)}">${esc(p.title)} — ${rupees(p.rupees)}</option>`)
-      .join('');
-  }).catch(() => {});
-
-  $('#coupon-form').onsubmit = async (ev) => {
-    ev.preventDefault();
-    const err = $('#coupon-error');
-    err.hidden = true;
-
-    const skus = $$('#c-skus option:checked').map((o) => o.value);
-    const until = $('#c-until').value;
-    const body = {
-      code: $('#c-code').value,
-      kind: $('#c-kind').value,
-      value: Number($('#c-value').value),
-      applies_to: skus.length ? skus.join(',') : 'all',
-      max_redemptions: $('#c-max').value ? Number($('#c-max').value) : null,
-      max_per_user: Number($('#c-per').value || 1),
-      // End of the chosen day, so a coupon marked "expires 31 Dec" works all
-      // of 31 December rather than dying at midnight as it begins.
-      expires_at: until ? `${until}T23:59:59` : null,
-    };
-
-    try {
-      await api('/api/admin/coupons', { method: 'POST', body: JSON.stringify(body) });
-      $('#coupon-form').reset();
-      kind.onchange();
-      await loadCoupons();
-    } catch (e) {
-      err.textContent = e.message;
-      err.hidden = false;
-    }
-  };
-}
-
-function describe(c) {
-  if (c.kind === 'percent') return `${c.value}% off`;
-  if (c.kind === 'flat') return `${rupees(c.value / 100)} off`;
-  return `+${c.value} free questions`;
-}
-
-async function loadCoupons() {
-  const box = $('#coupon-list');
-  const { coupons } = await api('/api/admin/coupons');
-  setCount('#c-coupons', coupons.filter((c) => c.active).length);
-
-  if (!coupons.length) {
-    box.innerHTML = '<p class="empty">No coupons yet.</p>';
-    return;
-  }
-
-  box.innerHTML = coupons.map((c) => `
-    <div class="row" data-id="${c.id}">
-      <div class="row-main">
-        <div class="row-title">
-          <code class="code">${esc(c.code)}</code>
-          <span class="pill ${c.active ? 'delivered' : 'off'}">${c.active ? 'live' : 'paused'}</span>
-          &middot; ${esc(describe(c))}
-        </div>
-        <div class="row-sub">
-          ${esc(c.applies_to === 'all' ? 'all products' : c.applies_to)}
-          &middot; used ${c.redemptions}${c.max_redemptions ? ` / ${c.max_redemptions}` : ''}
-          &middot; ${c.max_per_user} per customer
-          ${c.expires_at ? `&middot; expires ${esc(c.expires_at.slice(0, 10))}` : ''}
-          ${c.total_discount_paise ? `&middot; <span class="muted">${rupees(c.total_discount_paise / 100)} given away</span>` : ''}
-        </div>
-      </div>
-      <div class="row-act">
-        <button class="ghost sm" data-act="toggle">${c.active ? 'Pause' : 'Resume'}</button>
-        <button class="danger sm" data-act="delete">Delete</button>
-      </div>
-    </div>`).join('');
-
-  $$('#coupon-list .row').forEach((row) => {
-    const id = Number(row.dataset.id);
-    const c = coupons.find((x) => x.id === id);
-
-    row.querySelector('[data-act="toggle"]').onclick = async () => {
-      await api(`/api/admin/coupons/${id}`, {
-        method: 'PATCH', body: JSON.stringify({ active: !c.active }),
-      });
-      await loadCoupons();
-    };
-
-    row.querySelector('[data-act="delete"]').onclick = async () => {
-      if (!confirm(`Delete ${c.code}? Coupons that have been used are paused instead, `
-        + 'so the redemption history survives.')) return;
-      try {
-        await api(`/api/admin/coupons/${id}`, { method: 'DELETE' });
-      } catch (e) { alert(e.message); }
-      await loadCoupons();
-    };
-  });
 }
 
 boot().catch((e) => showGate('Something went wrong', e.message, false));

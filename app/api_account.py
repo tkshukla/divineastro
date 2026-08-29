@@ -6,12 +6,13 @@ money path can be read and audited on its own.
 
 from __future__ import annotations
 
+import datetime as dt
 import os
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from . import auth, billing, coupons
@@ -833,4 +834,208 @@ def ledger(user: User = Depends(me), db: Session = Depends(get_db)) -> dict:
             "delta": e.delta, "kind": e.kind.value, "note": e.note,
             "at": e.created_at.strftime("%d %b %Y, %H:%M"),
         } for e in rows],
+    }
+
+
+# --------------------------------------------------------------------------
+# Admin — Metrics, Users, Questions & Health
+# --------------------------------------------------------------------------
+
+class CreditAdjustIn(BaseModel):
+    delta: int
+    note: str = ""
+
+
+class UserBlockIn(BaseModel):
+    blocked: bool
+
+
+@router.get("/admin/metrics")
+def admin_metrics(_: User = Depends(admin), db: Session = Depends(get_db)) -> dict:
+    """Revenue, order volumes, user statistics, and recent activity."""
+    now = dt.datetime.now(dt.timezone.utc)
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    # 1. Revenue
+    paid_stmt = select(Order).where(Order.status == OrderStatus.paid)
+    all_paid = db.execute(paid_stmt).scalars().all()
+
+    rev_all_paise = sum(o.amount_paise for o in all_paid)
+    rev_today_paise = sum(o.amount_paise for o in all_paid if o.paid_at and o.paid_at >= today_start)
+    rev_month_paise = sum(o.amount_paise for o in all_paid if o.paid_at and o.paid_at >= month_start)
+
+    # 2. Total counts
+    total_users = db.execute(select(func.count(User.id))).scalar_one() or 0
+    total_questions = db.execute(select(func.count(QuestionLog.id))).scalar_one() or 0
+    total_paid_orders = len(all_paid)
+
+    # 3. Product breakdown
+    sku_counts: dict[str, dict] = {}
+    for o in all_paid:
+        sku = o.sku or "other"
+        if sku not in sku_counts:
+            sku_counts[sku] = {"sku": sku, "title": o.title or sku, "count": 0, "revenue_paise": 0}
+        sku_counts[sku]["count"] += 1
+        sku_counts[sku]["revenue_paise"] += o.amount_paise
+
+    # 4. Recent orders
+    recent_orders_rows = db.execute(
+        select(Order, User)
+        .outerjoin(User, User.id == Order.user_id)
+        .order_by(Order.created_at.desc())
+        .limit(15)
+    ).all()
+
+    recent_orders = []
+    for o, u in recent_orders_rows:
+        recent_orders.append({
+            "id": o.id,
+            "sku": o.sku,
+            "title": o.title,
+            "amount_paise": o.amount_paise,
+            "status": o.status.value,
+            "buyer_email": u.email if u else "anonymous",
+            "buyer_name": u.name if u else "",
+            "provider": o.provider,
+            "created_at": o.created_at.strftime("%d %b %Y, %H:%M") if o.created_at else "—",
+            "paid_at": o.paid_at.strftime("%d %b %Y, %H:%M") if o.paid_at else None,
+        })
+
+    return {
+        "revenue_all_rupees": rev_all_paise / 100,
+        "revenue_today_rupees": rev_today_paise / 100,
+        "revenue_month_rupees": rev_month_paise / 100,
+        "total_users": total_users,
+        "total_questions": total_questions,
+        "total_paid_orders": total_paid_orders,
+        "products": list(sku_counts.values()),
+        "recent_orders": recent_orders,
+    }
+
+
+@router.get("/admin/users")
+def admin_users(q: str = "", limit: int = 50, _: User = Depends(admin),
+                db: Session = Depends(get_db)) -> dict:
+    """Search and manage registered users."""
+    stmt = select(User)
+    if q.strip():
+        search = f"%{q.strip().lower()}%"
+        stmt = stmt.where((func.lower(User.email).like(search)) | (func.lower(User.name).like(search)))
+    
+    users = db.execute(stmt.order_by(User.created_at.desc()).limit(min(limit, 100))).scalars().all()
+
+    results = []
+    for u in users:
+        # Questions asked count
+        q_count = db.execute(
+            select(func.count(QuestionLog.id)).where(QuestionLog.user_id == u.id)
+        ).scalar_one() or 0
+
+        # Paid orders count & spend
+        paid_orders = db.execute(
+            select(Order).where(Order.user_id == u.id, Order.status == OrderStatus.paid)
+        ).scalars().all()
+        spent_rupees = sum(o.amount_paise for o in paid_orders) / 100
+
+        results.append({
+            "id": u.id,
+            "email": u.email,
+            "name": u.name,
+            "phone": u.phone,
+            "provider": u.provider,
+            "is_admin": u.is_admin,
+            "blocked": u.blocked,
+            "balance": balance(db, u.id),
+            "questions_count": q_count,
+            "orders_count": len(paid_orders),
+            "spent_rupees": spent_rupees,
+            "created_at": u.created_at.strftime("%d %b %Y, %H:%M") if u.created_at else "—",
+            "last_seen_at": u.last_seen_at.strftime("%d %b %Y, %H:%M") if u.last_seen_at else "—",
+        })
+
+    return {"users": results, "count": len(results)}
+
+
+@router.post("/admin/users/{user_id}/credits")
+def admin_adjust_credits(user_id: int, body: CreditAdjustIn, admin_user: User = Depends(admin),
+                         db: Session = Depends(get_db)) -> dict:
+    """Manual credit addition or subtraction with audit note."""
+    target_user = db.get(User, user_id)
+    if target_user is None:
+        raise HTTPException(404, "User not found.")
+
+    note = f"Admin ({admin_user.email}): {body.note.strip()}" if body.note.strip() else f"Admin adjustment by {admin_user.email}"
+    grant(db, user_id, body.delta, EntryKind.admin_adjust, note=note)
+    db.commit()
+
+    return {"ok": True, "user_id": user_id, "new_balance": balance(db, user_id)}
+
+
+@router.post("/admin/users/{user_id}/block")
+def admin_block_user(user_id: int, body: UserBlockIn, admin_user: User = Depends(admin),
+                     db: Session = Depends(get_db)) -> dict:
+    """Block or unblock a user account."""
+    target_user = db.get(User, user_id)
+    if target_user is None:
+        raise HTTPException(404, "User not found.")
+    if target_user.id == admin_user.id:
+        raise HTTPException(400, "You cannot block yourself.")
+
+    target_user.blocked = body.blocked
+    db.commit()
+    return {"ok": True, "user_id": user_id, "blocked": target_user.blocked}
+
+
+@router.get("/admin/questions")
+def admin_questions(q: str = "", limit: int = 50, _: User = Depends(admin),
+                    db: Session = Depends(get_db)) -> dict:
+    """Feed of recent user questions and consultations."""
+    stmt = select(QuestionLog, User).outerjoin(User, User.id == QuestionLog.user_id)
+    if q.strip():
+        search = f"%{q.strip().lower()}%"
+        stmt = stmt.where((func.lower(QuestionLog.question).like(search)) | (func.lower(User.email).like(search)))
+
+    rows = db.execute(stmt.order_by(QuestionLog.created_at.desc()).limit(min(limit, 100))).all()
+    questions = []
+    for q_log, u in rows:
+        questions.append({
+            "id": q_log.id,
+            "user_id": q_log.user_id,
+            "user_email": u.email if u else "anonymous",
+            "question": q_log.question,
+            "answer_preview": (q_log.answer[:140] + "...") if q_log.answer and len(q_log.answer) > 140 else (q_log.answer or ""),
+            "topic": q_log.topic,
+            "verdict": q_log.verdict,
+            "language": q_log.language,
+            "asked_at": q_log.created_at.strftime("%d %b %Y, %H:%M") if q_log.created_at else "—",
+        })
+    return {"questions": questions}
+
+
+@router.get("/admin/system-health")
+def admin_system_health(_: User = Depends(admin), db: Session = Depends(get_db)) -> dict:
+    """Live diagnostic health check of the platform."""
+    from . import gateways
+    from .astro import panchang
+
+    # Check ephemeris
+    swe_active = panchang.swe is not None
+
+    # Check LLM key
+    llm_configured = bool(os.getenv("ANTHROPIC_API_KEY"))
+
+    # Check DB
+    db_ok = True
+    try:
+        db.execute(select(func.count(User.id))).scalar_one()
+    except Exception:
+        db_ok = False
+
+    return {
+        "status": "healthy" if (db_ok and swe_active and llm_configured) else "degraded",
+        "database": {"ok": db_ok, "driver": db.bind.dialect.name if db.bind else "unknown"},
+        "ephemeris": {"ok": swe_active, "engine": "Swiss Ephemeris / pyswisseph" if swe_active else "offline"},
+        "llm": {"ok": llm_configured, "provider": "Anthropic Claude"},
+        "gateways": gateways.status(),
     }

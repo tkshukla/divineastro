@@ -743,6 +743,22 @@ def shodashvarga_endpoint(sid: str, request: Request, lang: str = "en") -> dict:
     return get_shodashvarga_data(session, lang=lang)
 
 
+@app.get("/api/jaimini/{sid}")
+def jaimini_endpoint(sid: str, request: Request, lang: str = "en") -> dict:
+    """Jaimini 7 Chara Karakas, Karakamsha Lagna, and 12 Arudha Padas."""
+    from .astro.jaimini import get_jaimini_data
+    session = _session(sid, request)
+    return get_jaimini_data(session, lang=lang)
+
+
+@app.get("/api/sudarshana/{sid}")
+def sudarshana_endpoint(sid: str, request: Request, lang: str = "en") -> dict:
+    """Sudarshana Chakra 3-tier synthesis across Janma, Moon, and Sun Lagnas."""
+    from .astro.sudarshana import get_sudarshana_data
+    session = _session(sid, request)
+    return get_sudarshana_data(session, lang=lang)
+
+
 @app.delete("/api/session/{sid}")
 def forget(sid: str, request: Request) -> dict:
     _session(sid, request)          # only the owner may discard it

@@ -63,7 +63,7 @@ const I18N = {
     expandHint: "Open a mahadasha to see its antardashas.",
     noDasha: "Vimshottari dasha needs a sidereal (Vedic) chart. Recast with the sidereal zodiac to see mahadashas and antardashas.",
     moonAt: "Moon at",
-    placements: "Placements", houses: "Houses", aspects: "Aspects", now: "Now",
+    placements: "Placements", houses: "Houses", vargas: "Vargas", ashtakavarga: "Ashtakavarga", jaimini: "Jaimini", sudarshana: "Sudarshana", aspects: "Aspects", now: "Now",
     askPh: "Ask about career, money, love, health, timing…",
     reading: "Reading the chart…", writing: "Writing it out…",
     elemental: "Elemental balance", patterns: "Patterns", cusps: "cusps",
@@ -222,7 +222,7 @@ const I18N = {
     expandHint: "अंतर्दशा देखने के लिए किसी महादशा पर क्लिक करें।",
     noDasha: "विंशोत्तरी दशा के लिए निरयन (वैदिक) कुंडली आवश्यक है। महादशा और अंतर्दशा देखने हेतु निरयन राशि पद्धति चुनकर कुंडली दोबारा बनाएँ।",
     moonAt: "चंद्र",
-    placements: "ग्रह स्थिति", houses: "भाव", aspects: "दृष्टि", now: "वर्तमान",
+    placements: "ग्रह स्थिति", houses: "भाव", vargas: "वर्ग (D1-D60)", ashtakavarga: "अष्टकवर्ग", jaimini: "जैमिनी कारक", sudarshana: "सुदर्शन चक्र", aspects: "दृष्टि", now: "वर्तमान",
     askPh: "करियर, धन, विवाह, स्वास्थ्य, समय — कुछ भी पूछें…",
     reading: "कुंडली पढ़ी जा रही है…", writing: "उत्तर लिखा जा रहा है…",
     elemental: "तत्व संतुलन", patterns: "योग", cusps: "आरंभ",
@@ -1466,6 +1466,8 @@ function renderReading(data) {
   if (state.sessionId) {
     renderVargas(state.sessionId);
     renderAshtakavarga(state.sessionId);
+    renderJaimini(state.sessionId);
+    renderSudarshana(state.sessionId);
   }
   renderStarters();
 
@@ -1727,6 +1729,117 @@ async function renderAshtakavarga(sessionId) {
         </div>
       ` : ''}
     `;
+  } catch (err) {
+    pane.innerHTML = `<p class="mini-title" style="color:var(--rose);">${escapeHtml(err.message)}</p>`;
+  }
+}
+
+async function renderJaimini(sessionId) {
+  const pane = $("#pane-jaimini");
+  if (!pane) return;
+  const isHi = state.lang === "hi";
+  pane.innerHTML = `<p class="mini-title">${escapeHtml(isHi ? 'जैमिनी कारक लोड हो रहे हैं...' : 'Loading Jaimini Karakas...')}</p>`;
+  try {
+    const res = await fetch(`/api/jaimini/${sessionId}?lang=${state.lang}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Could not load Jaimini');
+
+    const karakas = data.karakas || [];
+    const arudhas = data.arudhas || [];
+    const kl = data.karakamsha;
+
+    const karakaRows = karakas.map(k => `
+      <li>
+        <span class="glyph" style="font-size:10px; font-weight:bold; color:var(--gold);">${escapeHtml(k.code)}</span>
+        <span class="name">
+          <b>${escapeHtml(k.planet_label)}</b> <em>${escapeHtml(k.sign_label)} (${k.degree})</em>
+          <div style="font-size:10px; color:var(--ink-dim);">${escapeHtml(k.title)} · ${escapeHtml(k.role)}</div>
+        </span>
+        <span class="pos" style="font-size:11px;">D9: ${escapeHtml(k.navamsha_label)}</span>
+      </li>
+    `).join('');
+
+    const arudhaRows = arudhas.map(a => `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.03); font-size:11.5px;">
+        <div>
+          <b>${escapeHtml(a.code)} (${escapeHtml(a.title)})</b>: ${escapeHtml(a.sign_label)}
+          <div style="font-size:10px; color:var(--ink-dim);">${escapeHtml(a.area)}</div>
+        </div>
+        <span class="badge neutral" style="font-size:10px;">${isHi ? 'भाव ' + a.arudha_house : 'H' + a.arudha_house}</span>
+      </div>
+    `).join('');
+
+    pane.innerHTML = `
+      <div style="padding: 8px 10px; border-radius: 6px; background: rgba(212, 175, 55, 0.08); border-left: 3px solid var(--gold); margin-bottom: 12px; font-size: 11.5px; line-height: 1.4;">
+        <b>${isHi ? 'कारकांश लग्न:' : 'Karakamsha Lagna:'}</b> ${escapeHtml(kl.sign_label)} (${escapeHtml(kl.atmakaraka_label)})<br/>
+        ${escapeHtml(kl.summary)}
+      </div>
+      <p class="mini-title">${isHi ? '7 चर कारक (Jaimini 7 Chara Karakas)' : '7 Chara Karakas (Planetary Significators)'}</p>
+      <ul class="plist" style="margin-bottom:14px;">${karakaRows}</ul>
+      <p class="mini-title">${isHi ? '12 आरूढ़ पद (Arudha Padas - A1 to A12)' : '12 Arudha Padas (Manifested Realities)'}</p>
+      <div>${arudhaRows}</div>
+    `;
+  } catch (err) {
+    pane.innerHTML = `<p class="mini-title" style="color:var(--rose);">${escapeHtml(err.message)}</p>`;
+  }
+}
+
+async function renderSudarshana(sessionId) {
+  const pane = $("#pane-sudarshana");
+  if (!pane) return;
+  const isHi = state.lang === "hi";
+  pane.innerHTML = `<p class="mini-title">${escapeHtml(isHi ? 'सुदर्शन चक्र विश्लेषण लोड हो रहा है...' : 'Loading Sudarshana Chakra...')}</p>`;
+  try {
+    const res = await fetch(`/api/sudarshana/${sessionId}?lang=${state.lang}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Could not load Sudarshana Chakra');
+
+    const lagnas = data.lagnas;
+    const houses = data.houses || [];
+    const highlights = data.convergence_highlights || [];
+
+    const lagnaHeader = `
+      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:12px; text-align:center;">
+        <div style="padding:6px; border-radius:6px; background:rgba(255,255,255,0.03); border:1px solid var(--line);">
+          <div style="font-size:10px; color:var(--ink-dim);">${isHi ? 'तनु (लग्न)' : 'Janma Lagna'}</div>
+          <div style="font-weight:bold; color:var(--gold); font-size:12px;">${escapeHtml(lagnas.janma.sign_label)}</div>
+        </div>
+        <div style="padding:6px; border-radius:6px; background:rgba(255,255,255,0.03); border:1px solid var(--line);">
+          <div style="font-size:10px; color:var(--ink-dim);">${isHi ? 'चंद्र लग्न' : 'Chandra Lagna'}</div>
+          <div style="font-weight:bold; color:#56d4dd; font-size:12px;">${escapeHtml(lagnas.chandra.sign_label)}</div>
+        </div>
+        <div style="padding:6px; border-radius:6px; background:rgba(255,255,255,0.03); border:1px solid var(--line);">
+          <div style="font-size:10px; color:var(--ink-dim);">${isHi ? 'सूर्य लग्न' : 'Surya Lagna'}</div>
+          <div style="font-weight:bold; color:#f0c674; font-size:12px;">${escapeHtml(lagnas.surya.sign_label)}</div>
+        </div>
+      </div>
+    `;
+
+    const highlightHtml = highlights.length ? `
+      <div style="padding: 8px 10px; border-radius: 6px; background: rgba(34, 197, 94, 0.08); border-left: 3px solid #22c55e; margin-bottom: 12px; font-size: 11.5px; line-height: 1.4;">
+        <b>${isHi ? 'त्रि-लग्न शुभ योग:' : 'Tri-Lagna Convergence:'}</b><br/>
+        ${highlights.map(h => `<div>• ${escapeHtml(h)}</div>`).join('')}
+      </div>
+    ` : '';
+
+    const houseRows = houses.map(h => {
+      const badgeClass = h.verdict_code === 'strong' ? 'excellent' : (h.verdict_code === 'average' ? 'neutral' : 'caution');
+      return `
+        <div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-size:12px; font-weight:bold;">${isHi ? 'भाव ' + h.house : 'House ' + h.house}: ${escapeHtml(h.title)}</span>
+            <span class="badge ${badgeClass}" style="font-size:9.5px;">${escapeHtml(h.verdict)} (${h.score}/5)</span>
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:4px; font-size:10.5px; color:var(--ink-dim);">
+            <div>L: <b>${escapeHtml(h.janma_tier.sign_label)}</b> ${h.janma_tier.planets.length ? `(${escapeHtml(h.janma_tier.planets.join(','))})` : ''}</div>
+            <div>M: <b>${escapeHtml(h.chandra_tier.sign_label)}</b> ${h.chandra_tier.planets.length ? `(${escapeHtml(h.chandra_tier.planets.join(','))})` : ''}</div>
+            <div>S: <b>${escapeHtml(h.surya_tier.sign_label)}</b> ${h.surya_tier.planets.length ? `(${escapeHtml(h.surya_tier.planets.join(','))})` : ''}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    pane.innerHTML = lagnaHeader + highlightHtml + `<div style="margin-top:6px;">${houseRows}</div>`;
   } catch (err) {
     pane.innerHTML = `<p class="mini-title" style="color:var(--rose);">${escapeHtml(err.message)}</p>`;
   }

@@ -28,38 +28,68 @@
 
 <main id="panel" hidden>
   <nav class="admin-tabs">
-    <button class="atab active" data-tab="upi">Payments to verify <span class="count" id="c-upi"></span></button>
-    <button class="atab" data-tab="kundali">Kundali queue <span class="count" id="c-kundali"></span></button>
-    <button class="atab" data-tab="coupons">Coupons <span class="count" id="c-coupons"></span></button>
+    <button class="atab active" data-tab="metrics">&#128200; Overview</button>
+    <button class="atab" data-tab="coupons">&#127991; Coupons <span class="count" id="c-coupons"></span></button>
+    <button class="atab" data-tab="upi">&#128179; UPI Queue <span class="count" id="c-upi"></span></button>
+    <button class="atab" data-tab="kundali">&#128220; Kundali Queue <span class="count" id="c-kundali"></span></button>
+    <button class="atab" data-tab="users">&#128101; Users</button>
+    <button class="atab" data-tab="questions">&#128172; Questions</button>
+    <button class="atab" data-tab="health">&#9889; System Health</button>
   </nav>
 
-  <!-- ============ UPI verification ============ -->
-  <section class="apane active" id="pane-upi">
-    <p class="pane-help">
-      A customer has told us they paid. <strong>Check your bank or UPI app for the
-      exact amount and reference before approving</strong> — approving is what
-      grants the credits, and nothing else does.
-    </p>
-    <div id="upi-list" class="rows"></div>
-  </section>
+  <!-- ============ Metrics Overview ============ -->
+  <section class="apane active" id="pane-metrics">
+    <div class="metrics-grid">
+      <div class="stat-card">
+        <div class="stat-val" id="m-rev-all">₹0</div>
+        <div class="stat-label">Lifetime Revenue</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="m-rev-month">₹0</div>
+        <div class="stat-label">This Month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="m-rev-today">₹0</div>
+        <div class="stat-label">Today's Revenue</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="m-users">0</div>
+        <div class="stat-label">Total Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="m-orders">0</div>
+        <div class="stat-label">Paid Orders</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="m-questions">0</div>
+        <div class="stat-label">AI Questions</div>
+      </div>
+    </div>
 
-  <!-- ============ Kundali fulfilment ============ -->
-  <section class="apane" id="pane-kundali">
-    <p class="pane-help">
-      Paid hand-written kundali orders. Turnaround is quoted at ~10 days.
-      Mark <em>In progress</em> when Pandit Shukla starts, and
-      <em>Delivered</em> once the scan has been sent.
-      <label class="inline-check">
-        <input type="checkbox" id="k-all" /> show delivered too
-      </label>
-    </p>
-    <div id="kundali-list" class="rows"></div>
+    <div class="admin-section-grid">
+      <div class="card">
+        <h3>Product Sales Breakdown</h3>
+        <div id="product-sales-list" class="table-wrap"></div>
+      </div>
+      <div class="card">
+        <h3>Recent Transactions</h3>
+        <div id="recent-orders-list" class="table-wrap"></div>
+      </div>
+    </div>
   </section>
 
   <!-- ============ Coupons ============ -->
   <section class="apane" id="pane-coupons">
-    <form id="coupon-form" class="coupon-form card">
-      <h3>New coupon</h3>
+    <div class="pane-header-actions">
+      <div>
+        <h2 style="margin:0 0 4px;font-size:1.25rem;">Coupons &amp; Promo Codes</h2>
+        <p class="pane-help" style="margin-bottom:0;">Create, inspect, and manage promotional discount codes and credit bonuses.</p>
+      </div>
+      <button class="primary sm" id="btn-toggle-coupon-form">+ Create New Coupon</button>
+    </div>
+
+    <form id="coupon-form" class="coupon-form card" hidden style="margin-top:16px;">
+      <h3>Create Promotion Code</h3>
       <div class="crow">
         <div class="field">
           <label for="c-code">Code</label>
@@ -68,9 +98,9 @@
         <div class="field">
           <label for="c-kind">Type</label>
           <select id="c-kind">
-            <option value="percent">Percent off</option>
+            <option value="percent">Percent off (%)</option>
             <option value="flat">Flat &#8377; off</option>
-            <option value="extra_credits">Extra questions</option>
+            <option value="extra_credits">Extra bonus questions</option>
           </select>
         </div>
         <div class="field">
@@ -96,10 +126,79 @@
         <label for="c-skus">Limit to products <span class="opt">blank = all</span></label>
         <select id="c-skus" multiple size="4"></select>
       </div>
-      <button type="submit" class="primary"><span class="label">Create coupon</span></button>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button type="submit" class="primary"><span class="label">Save &amp; Activate Coupon</span></button>
+        <button type="button" class="ghost" id="btn-cancel-coupon-form">Cancel</button>
+      </div>
       <p id="coupon-error" class="error" hidden></p>
     </form>
-    <div id="coupon-list" class="rows"></div>
+
+    <div class="card" style="margin-top:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+        <h3 style="margin:0;">Active &amp; Past Coupons</h3>
+        <input id="coupon-search" placeholder="Filter coupon code..." style="padding:6px 10px;font-size:0.85rem;width:200px;" />
+      </div>
+      <div id="coupon-list" class="rows"></div>
+    </div>
+  </section>
+
+  <!-- ============ UPI verification ============ -->
+  <section class="apane" id="pane-upi">
+    <p class="pane-help">
+      A customer has told us they paid. <strong>Check your bank or UPI app for the
+      exact amount and reference before approving</strong> — approving is what
+      grants the credits, and nothing else does.
+    </p>
+    <div id="upi-list" class="rows"></div>
+  </section>
+
+  <!-- ============ Kundali fulfilment ============ -->
+  <section class="apane" id="pane-kundali">
+    <p class="pane-help">
+      Paid hand-written kundali orders. Turnaround is quoted at ~10 days.
+      Mark <em>In progress</em> when Pandit Shukla starts, and
+      <em>Delivered</em> once the scan has been sent.
+      <label class="inline-check">
+        <input type="checkbox" id="k-all" /> show delivered too
+      </label>
+    </p>
+    <div id="kundali-list" class="rows"></div>
+  </section>
+
+  <!-- ============ User Management ============ -->
+  <section class="apane" id="pane-users">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <h3 style="margin:0 0 4px;">Registered Users</h3>
+          <p class="pane-help" style="margin-bottom:0;">View customer history, adjust question credits, or manage accounts.</p>
+        </div>
+        <input id="user-search" placeholder="Search by email or name..." style="padding:8px 12px;font-size:0.85rem;width:240px;" />
+      </div>
+      <div id="users-list" class="table-wrap"></div>
+    </div>
+  </section>
+
+  <!-- ============ Questions Feed ============ -->
+  <section class="apane" id="pane-questions">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <h3 style="margin:0 0 4px;">Live AI Consultation Log</h3>
+          <p class="pane-help" style="margin-bottom:0;">Real-time feed of Vedic questions asked and answered across the platform.</p>
+        </div>
+        <input id="question-search" placeholder="Filter questions..." style="padding:8px 12px;font-size:0.85rem;width:220px;" />
+      </div>
+      <div id="questions-list" class="rows"></div>
+    </div>
+  </section>
+
+  <!-- ============ System Health ============ -->
+  <section class="apane" id="pane-health">
+    <div class="card">
+      <h3>Platform System Health &amp; Diagnostics</h3>
+      <div id="health-grid" class="health-grid" style="margin-top:14px;"></div>
+    </div>
   </section>
 </main>
 
