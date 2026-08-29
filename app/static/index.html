@@ -118,7 +118,7 @@
       </div>
       <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
         <button type="button" class="btn" id="dash-download-pdf" style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 13px;">
-          📥 Download Kundali PDF
+          📥 <span id="dash-download-pdf-label">Download Kundali PDF</span>
         </button>
         <button type="button" class="ghost-btn" id="dash-change-profile">Switch Profile</button>
       </div>
@@ -127,7 +127,7 @@
     <!-- Daily Forecast & Transit Score -->
     <div class="card forecast-card">
       <div class="forecast-header">
-        <h2>Your Personal Daily Forecast</h2>
+        <h2 id="dash-forecast-title">Your Personal Daily Forecast</h2>
         <span id="transit-badge" class="badge neutral">Neutral</span>
       </div>
       <p id="transit-advice">Loading your daily transit guidance...</p>
@@ -136,75 +136,74 @@
     <div class="dash-grid">
       <!-- Panchang Card -->
       <div class="card dash-card">
-        <h3>Today's Panchang</h3>
+        <h3 id="dash-panchang-title">Today's Panchang</h3>
         <ul class="dash-list">
-          <li><b>Tithi:</b> <span id="dash-tithi">—</span></li>
-          <li><b>Nakshatra:</b> <span id="dash-nakshatra">—</span></li>
-          <li><b>Yoga:</b> <span id="dash-yoga">—</span></li>
-          <li><b>Karana:</b> <span id="dash-karana">—</span></li>
+          <li><b id="lbl-tithi">Tithi:</b> <span id="dash-tithi">—</span></li>
+          <li><b id="lbl-nakshatra">Nakshatra:</b> <span id="dash-nakshatra">—</span></li>
+          <li><b id="lbl-yoga">Yoga:</b> <span id="dash-yoga">—</span></li>
+          <li><b id="lbl-karana">Karana:</b> <span id="dash-karana">—</span></li>
         </ul>
       </div>
 
       <!-- Muhurtha Card -->
       <div class="card dash-card">
-        <h3>Muhurtha &amp; Timings</h3>
+        <h3 id="dash-muhurtha-title">Muhurtha &amp; Timings</h3>
         <ul class="dash-list">
-          <li><b>Abhijit (Auspicious):</b> <span id="dash-abhijit">—</span></li>
-          <li class="warning-item"><b>Rahu Kalam (Avoid):</b> <span id="dash-rahu-kalam">—</span></li>
-          <li><b>Sunrise:</b> <span id="dash-sunrise">—</span></li>
-          <li><b>Sunset:</b> <span id="dash-sunset">—</span></li>
+          <li><b id="lbl-abhijit">Abhijit (Auspicious):</b> <span id="dash-abhijit">—</span></li>
+          <li class="warning-item"><b id="lbl-rahu-kalam">Rahu Kalam (Avoid):</b> <span id="dash-rahu-kalam">—</span></li>
+          <li><b id="lbl-sunrise">Sunrise:</b> <span id="dash-sunrise">—</span></li>
+          <li><b id="lbl-sunset">Sunset:</b> <span id="dash-sunset">—</span></li>
         </ul>
       </div>
 
       <!-- Dasha Card -->
       <div class="card dash-card">
-        <h3>Current Dasha Timeline</h3>
+        <h3 id="dash-dasha-title">Current Dasha Timeline</h3>
         <ul class="dash-list">
-          <li><b>Mahadasha Lord:</b> <span id="dash-mahadasha-lord">—</span></li>
-          <li><b>Duration:</b> <span id="dash-mahadasha-dates">—</span></li>
-          <li><b>Antardasha Lord:</b> <span id="dash-antardasha-lord">—</span></li>
-          <li><b>Duration:</b> <span id="dash-antardasha-dates">—</span></li>
+          <li><b id="lbl-md-lord">Mahadasha Lord:</b> <span id="dash-mahadasha-lord">—</span></li>
+          <li><b id="lbl-md-dur">Duration:</b> <span id="dash-mahadasha-dates">—</span></li>
+          <li><b id="lbl-ad-lord">Antardasha Lord:</b> <span id="dash-antardasha-lord">—</span></li>
+          <li><b id="lbl-ad-dur">Duration:</b> <span id="dash-antardasha-dates">—</span></li>
         </ul>
       </div>
     </div>
 
     <!-- Dasha Visual Timeline -->
     <div class="card timeline-card" style="margin-top: 20px;">
-      <h3 style="margin-bottom: 4px;">Dasha Visual Timeline</h3>
-      <p style="font-size: 11px; color: var(--ink-dim); margin-bottom: 16px;">
+      <h3 id="dash-timeline-title" style="margin-bottom: 4px;">Dasha Visual Timeline</h3>
+      <p id="dash-timeline-desc" style="font-size: 11px; color: var(--ink-dim); margin-bottom: 16px;">
         Interactive mapping of your Vimshottari Mahadasha and Antardasha sequence. Active period is highlighted.
       </p>
       <div class="timeline-visual-container" id="timeline-visual">
-        <div style="text-align: center; color: var(--ink-dim); padding: 20px;">Loading timeline...</div>
+        <div id="dash-timeline-loading" style="text-align: center; color: var(--ink-dim); padding: 20px;">Loading timeline...</div>
       </div>
     </div>
 
-
     <!-- Quick Navigation Hub -->
-    <h2 class="section-title">Explore Your Chart</h2>
+    <h2 class="section-title" id="dash-explore-title">Explore Your Chart</h2>
     <div class="action-grid">
       <button type="button" class="action-card" id="dash-nav-chat">
         <span class="action-icon">💬</span>
-        <span class="action-title">Ask AI Guru</span>
-        <span class="action-desc">Get detailed answers about your career, marriage, and life</span>
+        <span class="action-title" id="nav-chat-title">Ask AI Guru</span>
+        <span class="action-desc" id="nav-chat-desc">Get detailed answers about your career, marriage, and life</span>
       </button>
 
       <button type="button" class="action-card" id="dash-nav-remedies">
         <span class="action-icon">💎</span>
-        <span class="action-title">Remedies &amp; Gemstones</span>
-        <span class="action-desc">Auspicious stones, mantras, and remedies for your active dasha</span>
+        <span class="action-title" id="nav-remedies-title">Remedies &amp; Gemstones</span>
+        <span class="action-desc" id="nav-remedies-desc">Auspicious stones, mantras, and remedies for your active dasha</span>
       </button>
 
       <button type="button" class="action-card" id="dash-nav-doshas">
         <span class="action-icon">⚖️</span>
-        <span class="action-title">Dosha &amp; Afflictions</span>
-        <span class="action-desc">Detailed check for Manglik, Sade Sati, and Kaal Sarp</span>
+        <span class="action-title" id="nav-doshas-title">Dosha &amp; Afflictions</span>
+        <span class="action-desc" id="nav-doshas-desc">Detailed check for Manglik, Sade Sati, and Kaal Sarp</span>
       </button>
 
       <button type="button" class="action-card" id="dash-nav-milan">
         <span class="action-icon">💑</span>
-        <span class="action-title">Kundali Milan</span>
-        <span class="action-desc">Compare compatibility with another profile</span>
+        <span class="action-title" id="nav-milan-title">Kundali Milan</span>
+        <span class="action-desc" id="nav-milan-desc">Compare compatibility with another profile</span>
       </button>
     </div>
   </div>
@@ -214,18 +213,18 @@
 <div id="remedies-modal" class="modal-overlay" style="display: none;">
   <div class="modal-content card">
     <div class="modal-header">
-      <h2>Remedies &amp; Gemstones</h2>
+      <h2 id="modal-remedies-title">Remedies &amp; Gemstones</h2>
       <button type="button" class="close-modal-btn" id="close-remedies-modal">&times;</button>
     </div>
     <div class="modal-body">
-      <h3>Recommended Gemstones</h3>
+      <h3 id="modal-remedies-gems-title">Recommended Gemstones</h3>
       <div class="gemstones-container" id="gems-list"></div>
       
-      <h3 style="margin-top: 24px;">Active Dasha Remedies</h3>
+      <h3 id="modal-remedies-dasha-title" style="margin-top: 24px;">Active Dasha Remedies</h3>
       <div class="dasha-remedy-card" id="dasha-remedies-content"></div>
       
       <button type="button" class="btn" id="download-remedies-pdf" style="margin-top: 20px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
-        <span>📥</span> Download AI-Driven Remedy PDF Report
+        <span>📥</span> <span id="modal-remedies-pdf-btn">Download AI-Driven Remedy PDF Report</span>
       </button>
     </div>
   </div>

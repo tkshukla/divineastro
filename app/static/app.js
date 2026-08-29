@@ -111,6 +111,54 @@ const I18N = {
       "What are my biggest strengths and blind spots?",
       "I got married in 2012 — what was my chart doing?",
     ],
+    dashDownloadPdf: "Download Kundali PDF",
+    dashChangeProfile: "Switch Profile",
+    dashForecastTitle: "Your Personal Daily Forecast",
+    dashTransitLoading: "Loading your daily transit guidance...",
+    dashPanchangTitle: "Today's Panchang",
+    dashTithi: "Tithi:",
+    dashNakshatra: "Nakshatra:",
+    dashYoga: "Yoga:",
+    dashKarana: "Karana:",
+    dashMuhurthaTitle: "Muhurtha & Timings",
+    dashAbhijit: "Abhijit (Auspicious):",
+    dashRahuKalam: "Rahu Kalam (Avoid):",
+    dashSunrise: "Sunrise:",
+    dashSunset: "Sunset:",
+    dashDashaTitle: "Current Dasha Timeline",
+    dashMdLord: "Mahadasha Lord:",
+    dashAdLord: "Antardasha Lord:",
+    dashDuration: "Duration:",
+    dashTimelineTitle: "Dasha Visual Timeline",
+    dashTimelineDesc: "Interactive mapping of your Vimshottari Mahadasha and Antardasha sequence. Active period is highlighted.",
+    dashTimelineLoading: "Loading timeline...",
+    dashExploreTitle: "Explore Your Chart",
+    dashNavChatTitle: "Ask AI Guru",
+    dashNavChatDesc: "Get detailed answers about your career, marriage, and life",
+    dashNavRemediesTitle: "Remedies & Gemstones",
+    dashNavRemediesDesc: "Auspicious stones, mantras, and remedies for your active dasha",
+    dashNavDoshasTitle: "Dosha & Afflictions",
+    dashNavDoshasDesc: "Detailed check for Manglik, Sade Sati, and Kaal Sarp",
+    dashNavMilanTitle: "Kundali Milan",
+    dashNavMilanDesc: "Compare compatibility with another profile",
+    modalRemediesTitle: "Remedies & Gemstones",
+    modalRemediesGemsTitle: "Recommended Gemstones",
+    modalRemediesDashaTitle: "Active Dasha Remedies",
+    modalRemediesPdfBtn: "Download AI-Driven Remedy PDF Report",
+    noneToday: "None today",
+    selectedPeriod: "Selected period:",
+    mahadashaWord: "Mahadasha",
+    yearsWord: "years",
+    durationWord: "Duration:",
+    toWord: "to",
+    scoreExcellent: "Excellent",
+    scoreNeutral: "Neutral",
+    scoreCaution: "Caution",
+    metalLabel: "Metal:",
+    wearOnLabel: "Wear on:",
+    currentMDRuled: "Your current Mahadasha is ruled by",
+    recommendedMantra: "Recommended Mantra:",
+    charityFasting: "Charity & Fasting:",
   },
   hi: {
     tagline: "स्विस एफ़ेमेरिस की सटीकता, वैदिक विवेचन — आपकी कुंडली, सही ढंग से।",
@@ -186,6 +234,54 @@ const I18N = {
       "मेरी सबसे बड़ी शक्तियाँ और कमियाँ क्या हैं?",
       "मेरा विवाह 2012 में हुआ — तब कुंडली में क्या था?",
     ],
+    dashDownloadPdf: "जन्म कुंडली PDF डाउनलोड करें",
+    dashChangeProfile: "प्रोफ़ाइल बदलें",
+    dashForecastTitle: "आपका दैनिक गोचर राशिफल",
+    dashTransitLoading: "दैनिक गोचर फलादेश लोड हो रहा है...",
+    dashPanchangTitle: "आज का पंचांग",
+    dashTithi: "तिथि:",
+    dashNakshatra: "नक्षत्र:",
+    dashYoga: "योग:",
+    dashKarana: "करण:",
+    dashMuhurthaTitle: "मुहूर्त एवं समय",
+    dashAbhijit: "अभिजीत मुहूर्त (शुभ):",
+    dashRahuKalam: "राहुकाल (त्याज्य):",
+    dashSunrise: "सूर्योदय:",
+    dashSunset: "सूर्यास्त:",
+    dashDashaTitle: "वर्तमान दशा काल",
+    dashMdLord: "महादशा स्वामी:",
+    dashAdLord: "अंतर्दशा स्वामी:",
+    dashDuration: "अवधि:",
+    dashTimelineTitle: "दशा समय-चक्र",
+    dashTimelineDesc: "विंशोत्तरी महादशा एवं अंतर्दशा का दृश्य मानचित्र। वर्तमान सक्रिय काल चयनित है।",
+    dashTimelineLoading: "समय-चक्र लोड हो रहा है...",
+    dashExploreTitle: "अपनी कुंडली जानें",
+    dashNavChatTitle: "ज्योतिष गुरु से पूछें",
+    dashNavChatDesc: "करियर, विवाह और जीवन के बारे में सटीक मार्गदर्शन प्राप्त करें",
+    dashNavRemediesTitle: "उपाय एवं रत्न",
+    dashNavRemediesDesc: "सक्रिय दशा के लिए शुभ रत्न, वैदिक मंत्र और उपाय",
+    dashNavDoshasTitle: "दोष एवं शांति",
+    dashNavDoshasDesc: "मांगलिक, साढ़े साती और कालसर्प दोष की विस्तृत जांच",
+    dashNavMilanTitle: "कुंडली मिलान",
+    dashNavMilanDesc: "अष्टकूट गुण मिलान और वैवाहिक अनुकूलता",
+    modalRemediesTitle: "उपाय एवं रत्न परामर्श",
+    modalRemediesGemsTitle: "अनुशंसित रत्न",
+    modalRemediesDashaTitle: "सक्रिय दशा के उपाय",
+    modalRemediesPdfBtn: "उपाय PDF रिपोर्ट डाउनलोड करें",
+    noneToday: "आज नहीं है",
+    selectedPeriod: "चयनित अवधि:",
+    mahadashaWord: "महादशा",
+    yearsWord: "वर्ष",
+    durationWord: "अवधि:",
+    toWord: "से",
+    scoreExcellent: "उत्तम (शुभ)",
+    scoreNeutral: "सामान्य (Neutral)",
+    scoreCaution: "सावधानी (सतर्क रहें)",
+    metalLabel: "धातु:",
+    wearOnLabel: "धारण अंगुली:",
+    currentMDRuled: "आपकी वर्तमान महादशा के स्वामी हैं",
+    recommendedMantra: "अनुशंसित मंत्र:",
+    charityFasting: "दान एवं व्रत:",
   },
 };
 
@@ -752,6 +848,43 @@ function applyLanguage() {
   ph("#f-place", t("pobPh"));
   ph("#q", t("askPh"));
 
+  // Dashboard screen elements
+  set("#dash-download-pdf-label", t("dashDownloadPdf"));
+  set("#dash-change-profile", t("dashChangeProfile"));
+  set("#dash-forecast-title", t("dashForecastTitle"));
+  set("#dash-panchang-title", t("dashPanchangTitle"));
+  set("#lbl-tithi", t("dashTithi"));
+  set("#lbl-nakshatra", t("dashNakshatra"));
+  set("#lbl-yoga", t("dashYoga"));
+  set("#lbl-karana", t("dashKarana"));
+  set("#dash-muhurtha-title", t("dashMuhurthaTitle"));
+  set("#lbl-abhijit", t("dashAbhijit"));
+  set("#lbl-rahu-kalam", t("dashRahuKalam"));
+  set("#lbl-sunrise", t("dashSunrise"));
+  set("#lbl-sunset", t("dashSunset"));
+  set("#dash-dasha-title", t("dashDashaTitle"));
+  set("#lbl-md-lord", t("dashMdLord"));
+  set("#lbl-md-dur", t("dashDuration"));
+  set("#lbl-ad-lord", t("dashAdLord"));
+  set("#lbl-ad-dur", t("dashDuration"));
+  set("#dash-timeline-title", t("dashTimelineTitle"));
+  set("#dash-timeline-desc", t("dashTimelineDesc"));
+  set("#dash-explore-title", t("dashExploreTitle"));
+  set("#nav-chat-title", t("dashNavChatTitle"));
+  set("#nav-chat-desc", t("dashNavChatDesc"));
+  set("#nav-remedies-title", t("dashNavRemediesTitle"));
+  set("#nav-remedies-desc", t("dashNavRemediesDesc"));
+  set("#nav-doshas-title", t("dashNavDoshasTitle"));
+  set("#nav-doshas-desc", t("dashNavDoshasDesc"));
+  set("#nav-milan-title", t("dashNavMilanTitle"));
+  set("#nav-milan-desc", t("dashNavMilanDesc"));
+
+  // Modals
+  set("#modal-remedies-title", t("modalRemediesTitle"));
+  set("#modal-remedies-gems-title", t("modalRemediesGemsTitle"));
+  set("#modal-remedies-dasha-title", t("modalRemediesDashaTitle"));
+  set("#modal-remedies-pdf-btn", t("modalRemediesPdfBtn"));
+
   $$(".tab").forEach((tab) => { tab.textContent = t(tab.dataset.tab); });
   $("#back").title = state.sessionId ? "Back to Dashboard" : t("newChart");
 
@@ -768,6 +901,10 @@ function applyLanguage() {
   renderSavedCharts();
   describeProvider();   // the Hindi caveat depends on the active language
   localStorage.setItem("astro.lang", state.lang);
+
+  if (state.sessionId) {
+    loadAndShowDashboard();
+  }
 }
 
 $$(".lang").forEach((btn) => {
@@ -1650,7 +1787,7 @@ async function loadAndShowDashboard() {
   showStage("stage-dashboard");
   
   try {
-    const dash = await (await fetch(`/api/dashboard/${state.sessionId}`)).json();
+    const dash = await (await fetch(`/api/dashboard/${state.sessionId}?language=${state.lang}`)).json();
     
     // Populate Panchang
     $("#dash-tithi").textContent = dash.panchang.tithi || "—";
@@ -1660,22 +1797,26 @@ async function loadAndShowDashboard() {
     
     // Populate Muhurtha
     $("#dash-abhijit").textContent = dash.panchang.muhurtha.abhijit.start ? 
-      `${dash.panchang.muhurtha.abhijit.start.slice(11, 16)} - ${dash.panchang.muhurtha.abhijit.end.slice(11, 16)}` : "None today";
+      `${dash.panchang.muhurtha.abhijit.start.slice(11, 16)} - ${dash.panchang.muhurtha.abhijit.end.slice(11, 16)}` : t("noneToday");
     $("#dash-rahu-kalam").textContent = dash.panchang.muhurtha.rahu_kaal.start ? 
       `${dash.panchang.muhurtha.rahu_kaal.start.slice(11, 16)} - ${dash.panchang.muhurtha.rahu_kaal.end.slice(11, 16)}` : "—";
     $("#dash-sunrise").textContent = dash.panchang.sunrise ? dash.panchang.sunrise.slice(11, 16) : "—";
     $("#dash-sunset").textContent = dash.panchang.sunset ? dash.panchang.sunset.slice(11, 16) : "—";
     
     // Populate Dasha
-    $("#dash-mahadasha-lord").textContent = dash.dasha.mahadasha.lord;
-    $("#dash-mahadasha-dates").textContent = `${dash.dasha.mahadasha.start} - ${dash.dasha.mahadasha.end}`;
-    $("#dash-antardasha-lord").textContent = dash.dasha.antardasha.lord;
-    $("#dash-antardasha-dates").textContent = `${dash.dasha.antardasha.start} - ${dash.dasha.antardasha.end}`;
+    $("#dash-mahadasha-lord").textContent = dash.dasha.mahadasha ? (tPlanet(dash.dasha.mahadasha.lord) || dash.dasha.mahadasha.lord) : "—";
+    $("#dash-mahadasha-dates").textContent = dash.dasha.mahadasha ? `${dash.dasha.mahadasha.start} - ${dash.dasha.mahadasha.end}` : "—";
+    $("#dash-antardasha-lord").textContent = dash.dasha.antardasha ? (tPlanet(dash.dasha.antardasha.lord) || dash.dasha.antardasha.lord) : "—";
+    $("#dash-antardasha-dates").textContent = dash.dasha.antardasha ? `${dash.dasha.antardasha.start} - ${dash.dasha.antardasha.end}` : "—";
     
     // Populate Daily Forecast
     const badge = $("#transit-badge");
-    badge.className = `badge ${dash.daily_transit.score.toLowerCase()}`;
-    badge.textContent = dash.daily_transit.score;
+    const scoreText = dash.daily_transit.score || "";
+    let badgeClass = "neutral";
+    if (scoreText.includes("Excellent") || scoreText.includes("उत्तम")) badgeClass = "excellent";
+    else if (scoreText.includes("Caution") || scoreText.includes("सावधानी")) badgeClass = "caution";
+    badge.className = `badge ${badgeClass}`;
+    badge.textContent = scoreText;
     $("#transit-advice").textContent = dash.daily_transit.advice;
     
     // Render visual timeline
@@ -1689,11 +1830,12 @@ async function loadAndShowDashboard() {
         const years = parseFloat(item[1]);
         const start = item[2];
         const end = item[3];
-        const status = item[4]; // 'past', 'current', or 'ahead'
+        const status = item[4]; // 'past', 'current', or 'ahead' (or localized)
         const pct = (years / totalYears) * 100;
+        const normStatus = (status === 'सक्रिय' || status === 'current') ? 'current' : ((status === 'गत काल' || status === 'past') ? 'past' : 'ahead');
         
         blocksHtml += `
-          <div class="timeline-block ${status}" style="width: ${pct}%;" 
+          <div class="timeline-block ${normStatus}" style="width: ${pct}%;" 
                data-lord="${escapeHtml(lord)}" data-years="${years}" 
                data-start="${escapeHtml(start)}" data-end="${escapeHtml(end)}" data-status="${status}">
             <span class="block-lord">${escapeHtml(lord.slice(0, 3))}</span>
@@ -1703,11 +1845,12 @@ async function loadAndShowDashboard() {
       });
       blocksHtml += '</div>';
       
-      const currentDasha = dash.dasha.ladder.find(item => item[4] === "current") || dash.dasha.ladder[0];
+      const currentDasha = dash.dasha.ladder.find(item => item[4] === "current" || item[4] === "सक्रिय") || dash.dasha.ladder[0];
+      const periodStatus = currentDasha[4];
       blocksHtml += `
         <div class="timeline-detail-box" id="timeline-detail-box" style="margin-top: 10px;">
-          Selected period: <b>${escapeHtml(currentDasha[0])} Mahadasha</b> (${currentDasha[1]} years)<br/>
-          Duration: <b>${escapeHtml(currentDasha[2])}</b> to <b>${escapeHtml(currentDasha[3])}</b> (${currentDasha[4].toUpperCase()})
+          ${t("selectedPeriod")} <b>${escapeHtml(currentDasha[0])} ${t("mahadashaWord")}</b> (${currentDasha[1]} ${t("yearsWord")})<br/>
+          ${t("durationWord")} <b>${escapeHtml(currentDasha[2])}</b> ${t("toWord")} <b>${escapeHtml(currentDasha[3])}</b> (${String(periodStatus).toUpperCase()})
         </div>
       `;
       timelineContainer.innerHTML = blocksHtml;
@@ -1722,8 +1865,8 @@ async function loadAndShowDashboard() {
           const end = block.dataset.end;
           const status = block.dataset.status;
           dBox.innerHTML = `
-            Selected period: <b>${escapeHtml(lord)} Mahadasha</b> (${years} years)<br/>
-            Duration: <b>${escapeHtml(start)}</b> to <b>${escapeHtml(end)}</b> (${status.toUpperCase()})
+            ${t("selectedPeriod")} <b>${escapeHtml(lord)} ${t("mahadashaWord")}</b> (${years} ${t("yearsWord")})<br/>
+            ${t("durationWord")} <b>${escapeHtml(start)}</b> ${t("toWord")} <b>${escapeHtml(end)}</b> (${String(status).toUpperCase()})
           `;
         };
         block.addEventListener("mouseenter", updateBox);
@@ -1742,7 +1885,7 @@ $("#dash-nav-remedies")?.addEventListener("click", async () => {
   modal.style.display = "flex";
   
   try {
-    const data = await (await fetch(`/api/remedies/${state.sessionId}`)).json();
+    const data = await (await fetch(`/api/remedies/${state.sessionId}?language=${state.lang}`)).json();
     
     // Gemstones
     const gemsList = $("#gems-list");
@@ -1753,19 +1896,19 @@ $("#dash-nav-remedies")?.addEventListener("click", async () => {
           <p>${escapeHtml(g.name)}</p>
         </div>
         <div class="gem-right">
-          Metal: <b>${escapeHtml(g.metal)}</b><br/>
-          Wear on: <b>${escapeHtml(g.finger)}</b>
+          ${t("metalLabel")} <b>${escapeHtml(g.metal)}</b><br/>
+          ${t("wearOnLabel")} <b>${escapeHtml(g.finger)}</b>
         </div>
       </div>
     `).join("");
     
     // Remedies
     $("#dasha-remedies-content").innerHTML = `
-      <p>Your current Mahadasha is ruled by <b>${escapeHtml(data.dasha_remedies.mahadasha_lord)}</b>.</p>
-      <p><b>Recommended Mantra:</b><br/>
+      <p>${t("currentMDRuled")} <b>${escapeHtml(data.dasha_remedies.mahadasha_lord)}</b>.</p>
+      <p><b>${t("recommendedMantra")}</b><br/>
          <span style="font-size: 14px; color: var(--gold); display: block; margin-top: 6px; font-family: monospace;">${escapeHtml(data.dasha_remedies.mantra)}</span>
       </p>
-      <p><b>Charity &amp; Fasting:</b><br/>
+      <p><b>${t("charityFasting")}</b><br/>
          ${escapeHtml(data.dasha_remedies.charity)}
       </p>
     `;

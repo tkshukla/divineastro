@@ -456,6 +456,53 @@ def _vedic_context(session) -> dict:
     return out
 
 
+TITHI_HI = {
+    "Pratipada": "प्रतिपदा", "Dwitiya": "द्वितीया", "Tritiya": "तृतीया",
+    "Chaturthi": "चतुर्थी", "Panchami": "पंचमी", "Shashthi": "षष्ठी",
+    "Saptami": "सप्तमी", "Ashtami": "अष्टमी", "Navami": "नवमी",
+    "Dashami": "दशमी", "Ekadashi": "एकादशी", "Dwadashi": "द्वादशी",
+    "Trayodashi": "त्रयोदशी", "Chaturdashi": "चतुर्दशी", "Purnima": "पूर्णिमा",
+    "Amavasya": "अमावस्या"
+}
+
+YOGA_HI = {
+    "Vishkambha": "विष्कम्भ", "Priti": "प्रीति", "Ayushman": "आयुष्मान",
+    "Saubhagya": "सौभाग्य", "Shobhana": "शोभन", "Atiganda": "अतिगण्ड",
+    "Sukarma": "सुकर्मा", "Dhriti": "धृति", "Shula": "शूल", "Ganda": "गण्ड",
+    "Vriddhi": "वृद्धि", "Dhruva": "ध्रुव", "Vyaghata": "व्याघात",
+    "Harshana": "हर्षण", "Vajra": "वज्र", "Siddhi": "सिद्धि",
+    "Vyatipata": "व्यतीपात", "Variyana": "वरीयान", "Parigha": "परिघ",
+    "Shiva": "शिव", "Siddha": "सिद्ध", "Sadhya": "साध्य", "Shubha": "शुभ",
+    "Shukla": "शुक्ल", "Brahma": "ब्रह्म", "Indra": "इन्द्र", "Vaidhriti": "वैधृति"
+}
+
+KARANA_HI = {
+    "Bava": "बव", "Balava": "बालव", "Kaulava": "कौलव", "Taitila": "तैतिल",
+    "Gara": "गर", "Vanija": "वणिज", "Vishti": "विष्टि (भद्रा)", "Shakuni": "शकुनि",
+    "Chatushpada": "चतुष्पाद", "Naga": "नाग", "Kimstughna": "किंस्तुघ्न"
+}
+
+NAKSHATRAS_HI = {
+    "Ashwini": "अश्विनी", "Bharani": "भरणी", "Krittika": "कृत्तिका",
+    "Rohini": "रोहिणी", "Mrigashira": "मृगशिरा", "Ardra": "आर्द्रा",
+    "Punarvasu": "पुनर्वसु", "Pushya": "पुष्य", "Ashlesha": "आश्लेषा",
+    "Magha": "मघा", "Purva Phalguni": "पूर्वा फाल्गुनी",
+    "Uttara Phalguni": "उत्तरा फाल्गुनी", "Hasta": "हस्त", "Chitra": "चित्रा",
+    "Swati": "स्वाति", "Vishakha": "विशाखा", "Anuradha": "अनुराधा",
+    "Jyeshtha": "ज्येष्ठा", "Mula": "मूल", "Purva Ashadha": "पूर्वाषाढ़ा",
+    "Uttara Ashadha": "उत्तराषाढ़ा", "Shravana": "श्रवण",
+    "Dhanishta": "धनिष्ठा", "Shatabhisha": "शतभिषा",
+    "Purva Bhadrapada": "पूर्व भाद्रपद", "Uttara Bhadrapada": "उत्तर भाद्रपद",
+    "Revati": "रेवती"
+}
+
+PLANET_HI = {
+    "Sun": "सूर्य", "Moon": "चंद्रमा", "Mars": "मंगल", "Mercury": "बुध",
+    "Jupiter": "बृहस्पति", "Venus": "शुक्र", "Saturn": "शनि",
+    "Rahu": "राहु", "Ketu": "केतु"
+}
+
+
 @app.get("/api/doshas/{sid}")
 def chart_doshas(sid: str, request: Request) -> dict:
     """Sade Sati, Kaal Sarp and Manglik Dosha analysis for a chart already on screen."""
@@ -471,15 +518,52 @@ def chart_doshas(sid: str, request: Request) -> dict:
 
 
 @app.get("/api/remedies/{sid}")
-def chart_remedies(sid: str, request: Request) -> dict:
+def chart_remedies(sid: str, request: Request, language: str = "en") -> dict:
     """Get gemstone recommendations and dasha-specific remedies."""
     from .astro.remedies import recommend_remedies
     session = _session(sid, request)
-    return recommend_remedies(session)
+    data = recommend_remedies(session)
+    if language == "hi":
+        role_map = {
+            "Life Stone": "लग्न रत्न (जीवन रत्न)",
+            "Lucky Stone": "भाग्य रत्न (पंचमेश)",
+            "Fortune Stone": "भाग्येश रत्न (नवमेश)"
+        }
+        gem_hi = {
+            "Ruby (Manik)": "माणिक्य (Ruby)",
+            "Pearl (Moti)": "मोती (Pearl)",
+            "Red Coral (Moonga)": "मूंगा (Red Coral)",
+            "Emerald (Panna)": "पन्ना (Emerald)",
+            "Yellow Sapphire (Pukhraj)": "पुखराज (Yellow Sapphire)",
+            "Diamond or White Sapphire": "हीरा अथवा सफेद पुखराज",
+            "Blue Sapphire (Neelam)": "नीलम (Blue Sapphire)",
+            "Hessonite (Gomed)": "गोमेद (Hessonite)",
+            "Cat's Eye (Lehsuniya)": "लहसुनिया (Cat's Eye)"
+        }
+        translated_gems = {}
+        for k, v in data.get("gemstones", {}).items():
+            translated_gems[k] = {
+                **v,
+                "role": role_map.get(v.get("role"), v.get("role")),
+                "name": gem_hi.get(v.get("name"), v.get("name")),
+                "metal": "सोना या तांबा" if "Gold" in v.get("metal", "") else ("चांदी" if "Silver" in v.get("metal", "") else v.get("metal")),
+                "finger": "अनामिका (Ring Finger)" if "Ring" in v.get("finger", "") else ("कनिष्ठिका (Little Finger)" if "Little" in v.get("finger", "") else ("तर्जनी (Index Finger)" if "Index" in v.get("finger", "") else "मध्यमा (Middle Finger)"))
+            }
+        dr = data.get("dasha_remedies", {})
+        translated_dr = {
+            **dr,
+            "mahadasha_lord": PLANET_HI.get(dr.get("mahadasha_lord"), dr.get("mahadasha_lord"))
+        }
+        return {
+            **data,
+            "gemstones": translated_gems,
+            "dasha_remedies": translated_dr
+        }
+    return data
 
 
 @app.get("/api/dashboard/{sid}")
-def get_dashboard(sid: str, request: Request) -> dict:
+def get_dashboard(sid: str, request: Request, language: str = "en") -> dict:
     """Get daily personalized cosmic dashboard for the native."""
     from .astro import panchang as panchang_engine
     from .chart_service import vimshottari
@@ -517,14 +601,24 @@ def get_dashboard(sid: str, request: Request) -> dict:
     dist_moon = _sign_distance(natal_moon_sign, moon_sign_now)
     dist_lagna = _sign_distance(natal_lagna_sign, moon_sign_now)
 
-    transit_score = "Neutral"
-    transit_advice = "The Moon brings an ordinary day. Good for routine tasks and reflection."
-    if dist_moon in (3, 6, 10, 11):
-        transit_score = "Excellent"
-        transit_advice = "A highly productive and auspicious day. Great for initiating new tasks, social gains, and actions."
-    elif dist_moon in (4, 8, 12):
-        transit_score = "Caution"
-        transit_advice = "Moon is transiting a dusthana house from your natal Moon. Avoid starting major conflicts, drive carefully, and rest."
+    if language == "hi":
+        transit_score = "सामान्य"
+        transit_advice = "चंद्रमा का गोचर सामान्य फलदायी है। नित्य कार्यों को योजनाबद्ध रूप से करने और आत्म-चिंतन के लिए उत्तम दिन है।"
+        if dist_moon in (3, 6, 10, 11):
+            transit_score = "उत्तम"
+            transit_advice = "आज का दिन अत्यंत शुभ और फलदायी है। नए कार्यों की शुरुआत, सामाजिक लाभ और महत्वपूर्ण निर्णयों के लिए समय अनुकूल है।"
+        elif dist_moon in (4, 8, 12):
+            transit_score = "सावधानी"
+            transit_advice = "चंद्रमा आपकी जन्म राशि से अशुभ (४, ८, १२वें) भाव में गोचर कर रहा है। व्यर्थ के विवादों से बचें, वाहन सावधानी से चलाएं और धैर्य रखें।"
+    else:
+        transit_score = "Neutral"
+        transit_advice = "The Moon brings an ordinary day. Good for routine tasks and reflection."
+        if dist_moon in (3, 6, 10, 11):
+            transit_score = "Excellent"
+            transit_advice = "A highly productive and auspicious day. Great for initiating new tasks, social gains, and actions."
+        elif dist_moon in (4, 8, 12):
+            transit_score = "Caution"
+            transit_advice = "Moon is transiting a dusthana house from your natal Moon. Avoid starting major conflicts, drive carefully, and rest."
 
     dasha_info = vimshottari(session, now)
     
@@ -546,6 +640,33 @@ def get_dashboard(sid: str, request: Request) -> dict:
     
     karanas = p_data.get("karana", [])
     karana_name = karanas[0].get("name") if (isinstance(karanas, list) and len(karanas) > 0) else "—"
+
+    if language == "hi":
+        tithi_name = TITHI_HI.get(tithi_name, tithi_name)
+        nakshatra_name = NAKSHATRAS_HI.get(nakshatra_name, nakshatra_name)
+        yoga_name = YOGA_HI.get(yoga_name, yoga_name)
+        karana_name = KARANA_HI.get(karana_name, karana_name)
+
+        maha = dasha_info.get("mahadasha")
+        if maha:
+            maha = {**maha, "lord": PLANET_HI.get(maha.get("lord"), maha.get("lord"))}
+        antar = dasha_info.get("antardasha")
+        if antar:
+            antar = {**antar, "lord": PLANET_HI.get(antar.get("lord"), antar.get("lord"))}
+        
+        status_map = {"past": "गत काल", "current": "सक्रिय", "ahead": "आगामी"}
+        translated_ladder = []
+        for row in ladder:
+            r = list(row)
+            if len(r) > 0:
+                r[0] = PLANET_HI.get(r[0], r[0])
+            if len(r) > 4:
+                r[4] = status_map.get(r[4], r[4])
+            translated_ladder.append(r)
+        ladder = translated_ladder
+    else:
+        maha = dasha_info.get("mahadasha")
+        antar = dasha_info.get("antardasha")
 
     return {
         "panchang": {
@@ -574,8 +695,8 @@ def get_dashboard(sid: str, request: Request) -> dict:
             "advice": transit_advice
         },
         "dasha": {
-            "mahadasha": dasha_info.get("mahadasha"),
-            "antardasha": dasha_info.get("antardasha"),
+            "mahadasha": maha,
+            "antardasha": antar,
             "ladder": ladder
         }
     }
