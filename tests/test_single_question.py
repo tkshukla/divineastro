@@ -8,8 +8,11 @@ from app.chart_service import BirthData, build
 from app.pdf_report import single_question_pdf
 
 
+import os
+
 class TestSingleQuestion(unittest.TestCase):
     def setUp(self):
+        os.environ["ASTRO_GATEWAY"] = "test"
         database.Base.metadata.create_all(database.engine)
         self.db = database.session()
         self.user = database.User(
