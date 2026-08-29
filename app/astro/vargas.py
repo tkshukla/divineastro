@@ -1723,3 +1723,69 @@ def analyse(chart: object, divisions: tuple[str, ...] = DEFAULT_DIVISIONS) -> di
             "on a life."
         ),
     }
+
+
+_VARGA_META_HI = {
+    "D1": {"name": "Rashi", "name_hi": "लग्न / राशि कुंडली", "purpose": "General Life & Physical Self", "purpose_hi": "समग्र जीवन व शरीर"},
+    "D3": {"name": "Drekkana", "name_hi": "द्रेष्काण", "purpose": "Siblings & Courage", "purpose_hi": "सहज, पराक्रम व भाई-बहन"},
+    "D7": {"name": "Saptamsha", "name_hi": "सप्तांश", "purpose": "Children & Lineage", "purpose_hi": "संतान व वंश वृद्धि"},
+    "D9": {"name": "Navamsha", "name_hi": "नवमांश", "purpose": "Dharma, Spouse & Destiny", "purpose_hi": "धर्म, जीवनसाथी व भाग्य"},
+    "D10": {"name": "Dashamsha", "name_hi": "दशमांश", "purpose": "Career, Profession & Status", "purpose_hi": "करियर, पद व आजीविका"},
+    "D12": {"name": "Dwadashamsha", "name_hi": "द्वादशांश", "purpose": "Parents & Lineage", "purpose_hi": "माता-पिता व पितृ विचार"},
+}
+
+_SIGNS_HI = {
+    "Aries": "मेष", "Taurus": "वृषभ", "Gemini": "मिथुन", "Cancer": "कर्क",
+    "Leo": "सिंह", "Virgo": "कन्या", "Libra": "तुला", "Scorpio": "वृश्चिक",
+    "Sagittarius": "धनु", "Capricorn": "मकर", "Aquarius": "कुंभ", "Pisces": "मीन"
+}
+
+_PLANETS_HI = {
+    "Sun": "सूर्य", "Moon": "चंद्र", "Mars": "मंगल", "Mercury": "बुध",
+    "Jupiter": "गुरु", "Venus": "शुक्र", "Saturn": "शनि", "Rahu": "राहु",
+    "Ketu": "केतु", "Lagna": "लग्न", "ASC": "लग्न"
+}
+
+
+def get_shodashvarga_data(chart: object, lang: str = "en") -> dict:
+    """Public helper returning structured Shodashvarga chart tables for UI and API."""
+    is_hi = lang == "hi"
+    v_dict = divisional_charts(chart)
+    results = {}
+    for code, v_data in v_dict.items():
+        meta = _VARGA_META_HI.get(code, {"name": code, "name_hi": code, "purpose": "", "purpose_hi": ""})
+        title = meta["name_hi"] if is_hi else meta["name"]
+        purpose = meta["purpose_hi"] if is_hi else meta["purpose"]
+        asc_sign = v_data["lagna"]
+        asc_label = _SIGNS_HI.get(asc_sign, asc_sign) if is_hi else asc_sign
+
+        placements = []
+        houses_map = {h: [] for h in range(1, 13)}
+        for p_name, p_info in v_data["positions"].items():
+            p_sign = p_info["sign"]
+            p_house = p_info["house"]
+            p_label = _PLANETS_HI.get(p_name, p_name) if is_hi else p_name
+            sign_label = _SIGNS_HI.get(p_sign, p_sign) if is_hi else p_sign
+            placements.append({
+                "planet": p_name,
+                "planet_label": p_label,
+                "sign": p_sign,
+                "sign_label": sign_label,
+                "house": p_house,
+            })
+            houses_map[p_house].append(p_label)
+
+        results[code] = {
+            "code": code,
+            "title": title,
+            "purpose": purpose,
+            "ascendant_sign": asc_sign,
+            "ascendant_label": asc_label,
+            "placements": placements,
+            "houses": houses_map,
+        }
+
+    return {
+        "vargas": results,
+        "available_codes": list(results.keys()),
+    }

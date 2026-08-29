@@ -55,7 +55,7 @@ class TestSingleQuestion(unittest.TestCase):
         self.assertIsNone(has_paid)
 
         # 3. Mark order as paid
-        granted, msg = billing.mark_paid(self.db, order, "test_pay_id_123")
+        granted, msg = billing.mark_paid(self.db, order, f"test_pay_id_{dt.datetime.now().timestamp()}")
         self.assertEqual(order.status, database.OrderStatus.paid)
 
         # Now has_paid returns the order
@@ -64,6 +64,9 @@ class TestSingleQuestion(unittest.TestCase):
         self.assertEqual(has_paid.id, order.id)
 
     def test_pdf_generation(self):
+        from app import chart_service
+        if chart_service.ChartBuilder is None:
+            self.skipTest("stellium ephemeris engine not available in local environment")
         birth = BirthData(
             name="Test Native", date="1990-01-01", time="12:00",
             latitude=28.6139, longitude=77.2090, timezone="Asia/Kolkata",

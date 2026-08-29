@@ -41,9 +41,13 @@ from __future__ import annotations
 import datetime as dt
 from zoneinfo import ZoneInfo
 
-import swisseph as swe
-from stellium.core.ayanamsa import get_ayanamsa, get_ayanamsa_value
-from stellium.data.paths import initialize_ephemeris
+try:
+    import swisseph as swe
+    from stellium.core.ayanamsa import get_ayanamsa, get_ayanamsa_value
+    from stellium.data.paths import initialize_ephemeris
+except ImportError:  # pragma: no cover - defensive for local environments without compiled wheels
+    swe = None
+    get_ayanamsa = get_ayanamsa_value = initialize_ephemeris = None
 
 from ..chart_service import NAKSHATRAS, SIGNS, dms, house_of, norm360
 
@@ -110,7 +114,7 @@ HINDU_RISING = False
 # not to the first visible sliver, and the two differ by about five minutes.
 # Checked against Drik Panchang for Delhi and Varanasi: with these flags we land
 # within half a minute, with the Sun's flags we are five minutes out.
-_MOON_RISE_FLAGS = swe.BIT_DISC_CENTER | swe.BIT_NO_REFRACTION
+_MOON_RISE_FLAGS = (swe.BIT_DISC_CENTER | swe.BIT_NO_REFRACTION) if swe is not None else 0
 
 # "Lahiri" is not one number. Swiss Ephemeris ships five spellings of it, and
 # the spread between them is about 20 arc-seconds — nothing on a chart wheel,

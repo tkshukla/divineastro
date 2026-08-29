@@ -165,6 +165,15 @@ const I18N = {
     toolPanchangSub: "Tithi, nakshatra and Rahu Kaal",
     toolMuhuratName: "Muhurat Finder",
     toolMuhuratSub: "Auspicious dates for marriage, house & events",
+    toolChoghadiyaName: "Choghadiya Muhurta",
+    toolChoghadiyaSub: "Real-time auspicious & inauspicious hours",
+    choghadiyaTitle: "Choghadiya Muhurta",
+    choghadiyaSub: "Real-time 16-slot Day and Night Vedic intervals for immediate decision making.",
+    lblChoghadiyaDate: "Date",
+    lblChoghadiyaPlace: "Place",
+    btnChoghadiyaCheck: "View Choghadiya Schedule",
+    tabVargas: "Vargas (D1-D60)",
+    tabAshtakavarga: "Ashtakavarga",
     muhuratTitle: "Muhurat Finder",
     muhuratSub: "Find classical auspicious dates and timings for marriage, house warming, ceremonies and important events.",
     lblMuhuratEvent: "Event / Ceremony",
@@ -314,6 +323,15 @@ const I18N = {
     toolPanchangSub: "तिथि, नक्षत्र और राहुकाल",
     toolMuhuratName: "शुभ मुहूर्त खोजें",
     toolMuhuratSub: "विवाह, गृह प्रवेश व शुभ कार्यों हेतु शुभ तिथियां",
+    toolChoghadiyaName: "चौघड़िया मुहूर्त",
+    toolChoghadiyaSub: "शुभ व अशुभ समय का वास्तविक समय चक्र",
+    choghadiyaTitle: "चौघड़िया मुहूर्त",
+    choghadiyaSub: "दिन व रात के 16 चौघड़िया मुहूर्त: अमृत, शुभ, लाभ, चर, रोग, काल, उद्वेग।",
+    lblChoghadiyaDate: "दिनांक",
+    lblChoghadiyaPlace: "स्थान",
+    btnChoghadiyaCheck: "चौघड़िया मुहूर्त देखें",
+    tabVargas: "षोडशवर्ग (D1-D60)",
+    tabAshtakavarga: "अष्टकवर्ग चक्र",
     muhuratTitle: "शुभ मुहूर्त खोजक",
     muhuratSub: "विवाह, गृह प्रवेश, मुंडन, नामकरण एवं सर्वकार्यों हेतु शास्त्रीय शुभ तिथियां व समय जानें।",
     lblMuhuratEvent: "शुभ कार्य / संस्कार",
@@ -878,6 +896,8 @@ function applyLanguage() {
   set("#tool-panchang-sub", t("toolPanchangSub"));
   set("#tool-muhurat-name", t("toolMuhuratName"));
   set("#tool-muhurat-sub", t("toolMuhuratSub"));
+  set("#tool-choghadiya-name", t("toolChoghadiyaName"));
+  set("#tool-choghadiya-sub", t("toolChoghadiyaSub"));
 
   // Muhurat stage
   set("#muhurat-title", t("muhuratTitle"));
@@ -887,6 +907,19 @@ function applyLanguage() {
   set("#lbl-muhurat-from", t("lblMuhuratFrom"));
   set("#lbl-muhurat-to", t("lblMuhuratTo"));
   set("#btn-muhurat-search", t("btnMuhuratSearch"));
+
+  // Choghadiya stage
+  set("#choghadiya-title", t("choghadiyaTitle"));
+  set("#choghadiya-sub", t("choghadiyaSub"));
+  set("#lbl-choghadiya-date", t("lblChoghadiyaDate"));
+  set("#lbl-choghadiya-place", t("lblChoghadiyaPlace"));
+  set("#btn-choghadiya-check", t("btnChoghadiyaCheck"));
+
+  // Panel Tabs
+  const vargasTab = $('button.tab[data-tab="vargas"]');
+  if (vargasTab) vargasTab.textContent = t("tabVargas");
+  const ashtakaTab = $('button.tab[data-tab="ashtakavarga"]');
+  if (ashtakaTab) ashtakaTab.textContent = t("tabAshtakavarga");
   // Birth screen
   set("#birth-title", t("birthTitle"));
   set("#birth-sub", t("birthSub"));
@@ -1430,6 +1463,10 @@ function renderReading(data) {
   renderHouses(c);
   renderAspects(c);
   renderNow(data.now, c);
+  if (state.sessionId) {
+    renderVargas(state.sessionId);
+    renderAshtakavarga(state.sessionId);
+  }
   renderStarters();
 
   $("#thread").innerHTML = "";
@@ -1584,6 +1621,115 @@ function renderNow(now, c) {
     }
   }
   $("#pane-now").innerHTML = bits.filter(Boolean).join("");
+}
+
+async function renderVargas(sessionId) {
+  const pane = $("#pane-vargas");
+  if (!pane) return;
+  pane.innerHTML = `<p class="mini-title">${escapeHtml(state.lang === 'hi' ? 'षोडशवर्ग कुंडलियां लोड हो रही हैं...' : 'Loading Shodashvarga charts...')}</p>`;
+  try {
+    const res = await fetch(`/api/vargas/${sessionId}?lang=${state.lang}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Could not load vargas');
+    const vargas = data.vargas;
+    const codes = data.available_codes || Object.keys(vargas);
+    
+    let activeCode = "D9";
+    function drawVargaContent(code) {
+      const v = vargas[code];
+      if (!v) return;
+      const isHi = state.lang === "hi";
+      const selectHtml = `
+        <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <label style="font-size: 11.5px; color: var(--gold); font-weight: bold;">${isHi ? 'वर्ग चयन:' : 'Select Varga:'}</label>
+          <select id="varga-select" style="padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.06); color: var(--ink); border: 1px solid var(--line);">
+            ${codes.map(c => `<option value="${c}" ${c === code ? 'selected' : ''}>${c}: ${escapeHtml(vargas[c].title)}</option>`).join('')}
+          </select>
+        </div>
+      `;
+
+      const headerHtml = `
+        <div style="padding: 8px 10px; border-radius: 6px; background: rgba(212, 175, 55, 0.08); border: 1px solid var(--line); margin-bottom: 12px;">
+          <div style="font-weight: bold; color: var(--gold); font-size: 13px;">${escapeHtml(v.title)} (${v.code})</div>
+          <div style="font-size: 11px; color: var(--ink-dim);">${escapeHtml(v.purpose)} · ${isHi ? 'लग्न:' : 'Ascendant:'} <b>${escapeHtml(v.ascendant_label)}</b></div>
+        </div>
+      `;
+
+      const rows = (v.placements || []).map(p => `
+        <li>
+          <span class="glyph">${p.house}</span>
+          <span class="name"><b>${escapeHtml(p.planet_label)}</b><em>${escapeHtml(p.sign_label)}</em></span>
+          <span class="pos">${isHi ? 'भाव ' + p.house : 'House ' + p.house}</span>
+        </li>
+      `).join('');
+
+      pane.innerHTML = selectHtml + headerHtml + `<ul class="plist">${rows}</ul>`;
+
+      const sel = $("#varga-select");
+      if (sel) {
+        sel.onchange = (e) => {
+          activeCode = e.target.value;
+          drawVargaContent(activeCode);
+        };
+      }
+    }
+
+    drawVargaContent(activeCode);
+  } catch (err) {
+    pane.innerHTML = `<p class="mini-title" style="color:var(--rose);">${escapeHtml(err.message)}</p>`;
+  }
+}
+
+async function renderAshtakavarga(sessionId) {
+  const pane = $("#pane-ashtakavarga");
+  if (!pane) return;
+  const isHi = state.lang === "hi";
+  pane.innerHTML = `<p class="mini-title">${escapeHtml(isHi ? 'अष्टकवर्ग चक्र लोड हो रहा है...' : 'Loading Ashtakavarga Matrix...')}</p>`;
+  try {
+    const res = await fetch(`/api/ashtakavarga/${sessionId}?lang=${state.lang}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Could not load Ashtakavarga');
+
+    const tbl = data.table;
+    const note = data.financial_note;
+    const rows = (tbl.rows || []).map(r => {
+      const savScore = Number(r[r.length - 1]);
+      let colorClass = '#22c55e'; // Strong >= 28
+      if (savScore < 25) colorClass = '#ef4444';
+      else if (savScore < 28) colorClass = '#eab308';
+
+      const cells = r.map((c, idx) => {
+        if (idx === 0) return `<td style="padding: 6px 4px; font-weight: bold;">${escapeHtml(String(c))}</td>`;
+        if (idx === r.length - 1) return `<td style="padding: 6px 4px; font-weight: bold; color: ${colorClass}; text-align: center;">${c}</td>`;
+        return `<td style="padding: 6px 3px; text-align: center; color: var(--ink-dim);">${c}</td>`;
+      }).join('');
+      return `<tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">${cells}</tr>`;
+    }).join('');
+
+    const headers = (tbl.headers || []).map((h, idx) => `
+      <th style="padding: 6px 3px; font-size: 11px; text-align: ${idx === 0 ? 'left' : 'center'}; color: var(--gold);">${escapeHtml(h)}</th>
+    `).join('');
+
+    pane.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-size: 12px; font-weight: bold; color: var(--gold);">${isHi ? 'सर्वाष्टकवर्ग (कुल 337 बिंदु)' : 'Sarvashtakavarga (337 Bindus)'}</span>
+        <span style="font-size: 11px; color: var(--ink-dim);">${isHi ? 'उच्च बल: ≥28 | सामान्य: 25-27' : 'Strong: ≥28 | Avg: 25-27'}</span>
+      </div>
+      <div style="overflow-x: auto; margin-bottom: 12px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 11.5px;">
+          <thead><tr style="border-bottom: 1px solid var(--line);">${headers}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      ${note ? `
+        <div style="padding: 8px 10px; border-radius: 6px; background: rgba(212, 175, 55, 0.08); border-left: 3px solid var(--gold); font-size: 11.5px; color: var(--ink-dim); line-height: 1.4;">
+          ${escapeHtml(note)}
+        </div>
+      ` : ''}
+    `;
+  } catch (err) {
+    pane.innerHTML = `<p class="mini-title" style="color:var(--rose);">${escapeHtml(err.message)}</p>`;
+  }
 }
 
 $$(".tab").forEach((tab) => {

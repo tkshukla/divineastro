@@ -118,6 +118,12 @@ PRODUCTS: dict[str, Product] = {p.sku: p for p in [
             "Targeted Vedic insight into wealth houses, investments, business ventures and prosperity periods.",
             "धन भावों, निवेश, व्यापारिक उद्यमों और समृद्धि अवधियों पर लक्षित वैदिक रिपोर्ट।",
             pages=2),
+
+    Product("life_book", "Comprehensive Vedic Life Book", "सम्पूर्ण वैदिक जीवन कुंडली महाग्रन्थ",
+            49900, 0, "kundali_book",
+            "Exhaustive 35+ page master horoscope book with deep Shodashvarga, full 120-year dasha ladder, 12-house readings, 5-year Varshphal and classical remedies.",
+            "35+ पृष्ठों का सम्पूर्ण जीवन फल महाग्रन्थ: षोडशवर्ग, 120 वर्षीय दशाएं, द्वादश भाव फल, 5 वर्षीय वर्षफल व वैदिक उपाय।",
+            pages=35, highlight=True),
 ]}
 
 

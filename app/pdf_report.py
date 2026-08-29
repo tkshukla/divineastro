@@ -522,6 +522,106 @@ _SINGLE_QUESTION_BODY = """
 ]
 """
 
+_LIFE_BOOK_BODY = """
+#cover(d.subject)
+#counter(page).update(1)
+#set page(paper: "a4", margin: (x: 52pt, top: 60pt, bottom: 56pt), header: running)
+
+#let section(title) = block(above: 16pt, below: 8pt, {
+  text(font: DISP, size: 13pt, fill: ACC, title)
+  v(3pt)
+  line(length: 100%, stroke: 0.7pt + RULE)
+})
+
+#let vedic(path, label) = align(center)[
+  #image(path, width: 100%)
+  #v(3pt)
+  #text(size: 8.2pt, fill: MUTED, label)
+]
+
+#section(d.texts.birth_details)
+#kvtable(d.birth)
+
+#if d.d1_north != "" or d.d1_south != "" {
+  section(d.texts.d1_title)
+  let cells = ()
+  if d.d1_north != "" { cells.push(vedic(d.d1_north, d.texts.north_indian)) }
+  if d.d1_south != "" { cells.push(vedic(d.d1_south, d.texts.south_indian)) }
+  grid(columns: cells.map(c => 1fr), gutter: 14pt, ..cells)
+}
+
+#if d.d9_north != "" or d.d9_south != "" {
+  section(d.texts.d9_title)
+  let cells = ()
+  if d.d9_north != "" { cells.push(vedic(d.d9_north, d.texts.north_indian)) }
+  if d.d9_south != "" { cells.push(vedic(d.d9_south, d.texts.south_indian)) }
+  grid(columns: cells.map(c => 1fr), gutter: 14pt, ..cells)
+}
+
+#section(d.texts.planetary_positions)
+#datatable(d.positions)
+
+#section(d.texts.houses)
+#datatable(d.houses)
+
+#if d.aspects.rows.len() > 0 [
+  #section(d.texts.aspects)
+  #datatable(d.aspects)
+]
+
+#section(d.texts.ashtakavarga_title)
+#datatable(d.ashtakavarga)
+
+#if d.ashtakavarga_note != "" [
+  #v(4pt)
+  #text(size: 9.2pt, fill: MUTED, style: "italic", d.ashtakavarga_note)
+]
+
+#section(d.texts.vargas_title)
+#datatable(d.vargas)
+
+#section(d.texts.yogas_title)
+#datatable(d.yogas)
+
+#if d.dasha != none [
+  #section(d.texts.dasha)
+  #kvtable(d.dasha.summary)
+  #v(8pt)
+  #datatable(d.dasha.table)
+  
+  #v(8pt)
+  #section(d.texts.antardasha_title)
+  #datatable(d.dasha.antardasha)
+]
+
+#if d.houses_detailed.len() > 0 [
+  #section(d.texts.houses_detailed_title)
+  #blocks(d.houses_detailed)
+]
+
+#if d.planets_detailed.len() > 0 [
+  #section(d.texts.planets_detailed_title)
+  #blocks(d.planets_detailed)
+]
+
+#if d.varshphal.len() > 0 [
+  #section(d.texts.varshphal_title)
+  #grid(
+    columns: (auto, 1fr),
+    gutter: 12pt,
+    ..d.varshphal.map(m => (
+      text(weight: "bold", fill: ACC, m.at(0)),
+      blocks(m.at(1))
+    )).flatten()
+  )
+]
+
+#if d.remedies_detailed.len() > 0 [
+  #section(d.texts.remedies_detailed_title)
+  #blocks(d.remedies_detailed)
+]
+"""
+
 _QUESTIONS_BODY = """
 #cover(d.subject)
 #counter(page).update(1)
@@ -1552,6 +1652,7 @@ _LOCALIZED_TEXTS = {
         "upcoming_title": "Upcoming Key Periods",
         "house_summary_title": "House-wise Summary",
         "vargas_title": "Divisional Placements Table",
+        "ashtakavarga_title": "Sarvashtakavarga Matrix (337 Bindus)",
         "yogas_title": "Formed Yogas Analysis",
         "antardasha_title": "Antardashas of Active Mahadasha",
         "houses_detailed_title": "Detailed House Analysis",
@@ -1577,6 +1678,7 @@ _LOCALIZED_TEXTS = {
         "upcoming_title": "आगामी महत्वपूर्ण समय",
         "house_summary_title": "भाव फल सारांश",
         "vargas_title": "वर्ग कुंडली स्थिति चक्र",
+        "ashtakavarga_title": "सर्वाष्टकवर्ग एवं भिन्नाष्टकवर्ग चक्र (337 बिंदु)",
         "yogas_title": "कुंडली में स्थित महत्वपूर्ण योग",
         "antardasha_title": "सक्रिय महादशा की अंतर्दशाएं",
         "houses_detailed_title": "द्वादश भाव फल विवेचन",
@@ -2188,6 +2290,194 @@ Planetary alignments and friendly aspects in the relevant houses strengthen the 
     return _compile(_SINGLE_QUESTION_BODY, data)
 
 
+def life_book_pdf(
+    session,
+    *,
+    brand: str = "Divine Astro",
+    site: str = "divineastro.org",
+    when: dt.datetime | None = None,
+    language: str = "en"
+) -> bytes:
+    """A comprehensive 35+ page luxury Vedic Life Book PDF report."""
+    from .astro.ashtakavarga import calculate_ashtakavarga
+    from .astro.vargas import get_shodashvarga_data
+    from .llm import generate_kundali_narratives
+
+    when = when or dt.datetime.now()
+    bundle = session.bundle
+    birth = session.birth
+    meta = bundle["meta"]
+
+    texts = _LOCALIZED_TEXTS.get(language, _LOCALIZED_TEXTS["en"])
+    files: dict[str, str] = {}
+
+    d1_north = d1_south = d9_north = d9_south = ""
+    try:
+        from . import vedic_chart
+        d1_north_svg = vedic_chart.render_north_indian(session, theme="light")
+        d1_south_svg = vedic_chart.render_south_indian(session, theme="light")
+        d1_north, d1_south = "d1_north.svg", "d1_south.svg"
+        files[d1_north] = d1_north_svg
+        files[d1_south] = d1_south_svg
+
+        d9_north_svg = vedic_chart.render_north_indian(session, varga="D9", theme="light")
+        d9_south_svg = vedic_chart.render_south_indian(session, varga="D9", theme="light")
+        d9_north, d9_south = "d9_north.svg", "d9_south.svg"
+        files[d9_north] = d9_north_svg
+        files[d9_south] = d9_south_svg
+    except Exception as exc:
+        logging.getLogger(__name__).warning("vedic chart SVGs unavailable: %s", exc)
+
+    hi = language == "hi"
+
+    dasha = None
+    antardasha_lord = None
+    if birth.zodiac == "sidereal":
+        try:
+            summary = vimshottari(session, when)
+            maha, antar = summary.get("mahadasha"), summary.get("antardasha")
+            antardasha_lord = antar["lord"] if antar else None
+
+            def _period(p: dict) -> str:
+                if not p:
+                    return "—"
+                lord = _PLANETS_HI.get(p["lord"], p["lord"]) if hi else p["lord"]
+                start, end = p["start"], p["end"]
+                if hi:
+                    start, end = _month_year_hi(start), _month_year_hi(end)
+                return f"{lord}  {start} – {end}"
+
+            nak = summary["nakshatra"]
+            nak_label = f"{_NAKSHATRAS_HI.get(nak, nak)} (पाद {summary['pada']})" if hi else f"{nak} (pada {summary['pada']})"
+
+            yogini_summary_rows: list[list[str]] = []
+            try:
+                from .chart_service import yogini_dasha as _yogini_dasha
+                yd = _yogini_dasha(session, when)
+                def _yperiod(p: dict | None) -> str:
+                    if not p:
+                        return "—"
+                    name = _YOGINI_HI.get(p["name"], p["name"]) if hi else p["name"]
+                    graha = _PLANETS_HI.get(p["graha"], p["graha"]) if hi else p["graha"]
+                    start, end = p["start"], p["end"]
+                    if hi:
+                        start, end = _month_year_hi(start), _month_year_hi(end)
+                    return f"{name} — {graha}  {start} – {end}"
+
+                yogini_summary_rows = [
+                    ["Yogini Dasha" if not hi else "योगिनी दशा", _yperiod(yd.get("mahadasha"))],
+                    ["Yogini Antardasha" if not hi else "योगिनी अंतर्दशा", _yperiod(yd.get("antardasha"))],
+                ]
+            except Exception:
+                pass
+
+            dasha = {
+                "summary": [
+                    ["Moon" if not hi else "चंद्रमा", summary["moon_position"]],
+                    ["Nakshatra" if not hi else "नक्षत्र", nak_label],
+                    ["Mahadasha" if not hi else "वर्तमान महादशा", _period(maha)],
+                    ["Antardasha" if not hi else "वर्तमान अंतर्दशा", _period(antar)],
+                    *yogini_summary_rows,
+                    ["As of" if not hi else "तिथि के अनुसार", when.strftime("%d %B %Y")],
+                ],
+                "table": {
+                    "headers": ["Mahadasha", "Years", "From", "To", "Status"] if not hi else ["महादशा", "वर्ष", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"],
+                    "cols": [0, 0, 0, 0, 1],
+                    "rows": _dasha_ladder(session, when),
+                },
+                "antardasha": {
+                    "headers": ["Antardasha", "From", "To", "Status"] if not hi else ["अंतर्दशा", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"],
+                    "cols": [0, 0, 0, 1],
+                    "rows": _antardasha_ladder(session, when)
+                }
+            }
+        except Exception:
+            dasha = None
+
+    av_data = calculate_ashtakavarga(session, lang=language)
+    ashtakavarga_table = av_data["table"]
+    ashtakavarga_note = av_data["financial_note"]
+
+    vargas_table = _varga_grid(session)
+    yogas_table = _yogas_pdf_table(session, language=language)
+    pos_table = _positions_table(bundle)
+    houses_table = _houses_table(bundle)
+    aspects_table = _aspects_table(bundle)
+
+    analysis_input = {
+        "meta": meta,
+        "lagna": bundle["objects"]["ASC"]["sign"],
+        "dasha": {"mahadasha": _current_mahadasha(dasha), "antardasha": {"lord": antardasha_lord if dasha else None}},
+        "placements": pos_table["rows"],
+        "houses": houses_table["rows"],
+        "vargas": vargas_table,
+        "yogas": _yogas_for_prompt(session),
+        "ashtakavarga": av_data["sav_by_house"],
+    }
+    if "Moon" in bundle["objects"]:
+        analysis_input["moon_sign"] = bundle["objects"]["Moon"]["sign"]
+
+    try:
+        from .astro.remedies import recommend_remedies
+        analysis_input["remedies"] = recommend_remedies(session)
+    except Exception:
+        pass
+
+    narratives = generate_kundali_narratives(analysis_input, language=language)
+
+    if language == "hi":
+        pos_table["headers"] = [_translate_val(h, language) for h in pos_table["headers"]]
+        pos_table["rows"] = [[_translate_val(cell, language) for cell in row] for row in pos_table["rows"]]
+        houses_table["headers"] = [_translate_val(h, language) for h in houses_table["headers"]]
+        houses_table["rows"] = [[_translate_val(cell, language) for cell in row] for row in houses_table["rows"]]
+        aspects_table["headers"] = [_translate_val(h, language) for h in aspects_table["headers"]]
+        aspects_table["rows"] = [[_translate_val(cell, language) for cell in row] for row in aspects_table["rows"]]
+        vargas_table["headers"] = [_translate_val(h, language) for h in vargas_table["headers"]]
+        vargas_table["rows"] = [[_translate_val(cell, language) for cell in row] for row in vargas_table["rows"]]
+
+    data = {
+        "brand": brand,
+        "title": "Vedic Life Horoscope Book" if not hi else "सम्पूर्ण वैदिक जीवन कुंडली महाग्रन्थ",
+        "subject": meta["name"],
+        "lang": language,
+        "cover": [
+            [texts["born"], meta["local_time"]],
+            [texts["at"], meta["place"]],
+            [texts["system"], _translate_val(f"{birth.zodiac} / {birth.ayanamsa} / {birth.house_system}", language)],
+            [texts["generated"], dt.datetime.now().strftime("%d %B %Y")],
+        ],
+        "footer": f"{brand} · {site}",
+        "birth": [
+            [texts["born"], meta["local_time"]],
+            [texts["at"], meta["place"]],
+            [texts["system"], _translate_val(f"{birth.zodiac} / {birth.ayanamsa} / {birth.house_system}", language)],
+            ["Lagna (Ascendant)" if not hi else "लग्न राशि", _translate_val(bundle["objects"]["ASC"]["sign"], language)],
+            ["Moon Sign" if not hi else "चंद्र राशि", _translate_val(bundle["objects"].get("Moon", {}).get("sign", "—"), language)],
+        ],
+        "d1_north": d1_north,
+        "d1_south": d1_south,
+        "d9_north": d9_north,
+        "d9_south": d9_south,
+        "positions": pos_table,
+        "houses": houses_table,
+        "aspects": aspects_table,
+        "ashtakavarga": ashtakavarga_table,
+        "ashtakavarga_note": ashtakavarga_note,
+        "vargas": vargas_table,
+        "yogas": yogas_table,
+        "dasha": dasha,
+        "houses_detailed": markdown_blocks(narratives.get("houses_detailed", "")),
+        "planets_detailed": markdown_blocks(narratives.get("planets_detailed", "")),
+        "varshphal": [
+            [f"Year {y['year']} ({y['ascendant']})" if not hi else f"वर्ष {y['year']} (वर्ष लग्न: {y['ascendant']})", markdown_blocks(y["text"])]
+            for y in narratives.get("varshphal", [])
+        ],
+        "remedies_detailed": markdown_blocks(narratives.get("remedies_detailed", "")),
+        "texts": texts,
+    }
+    return _compile(_LIFE_BOOK_BODY, data, files=files)
+
+
 # --------------------------------------------------------------------------
 # Filenames
 # --------------------------------------------------------------------------
@@ -2204,7 +2494,7 @@ def safe_filename(*parts: str, suffix: str = ".pdf") -> str:
 
 __all__ = [
     "chart_pdf", "devanagari_font", "font_paths", "inline_spans",
-    "markdown_blocks", "pdf_font_report", "questions_pdf", "remedies_pdf",
-    "single_question_pdf", "safe_filename",
+    "life_book_pdf", "markdown_blocks", "pdf_font_report", "questions_pdf",
+    "remedies_pdf", "single_question_pdf", "safe_filename",
 ]
 

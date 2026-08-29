@@ -8,6 +8,9 @@ from app.astro import muhurat
 
 class TestMuhurat(unittest.TestCase):
     def test_muhurat_marriage_scan(self):
+        from app.astro import panchang
+        if panchang.swe is None:
+            self.skipTest("swisseph engine not available in local environment")
         d_from = dt.date(2026, 9, 1)
         d_to = dt.date(2026, 9, 7)
         res_en = muhurat.find_muhurat(

@@ -36,6 +36,10 @@ const A_I18N = {
     perQ: "per question", buy: "Buy", popular: "Most popular",
     kundaliTitle: "Hand-written Kundali",
     kundaliSub: "Written by hand by our astrologer and delivered as a scanned PDF.",
+    singleQuestionTitle: "Targeted Consultation Reports",
+    singleQuestionSub: "Dedicated 2-page deep dive on career, marriage, or wealth with specific planetary yogas & remedies.",
+    lifeBookTitle: "Flagship Vedic Life Book",
+    lifeBookSub: "Exhaustive 35+ page master horoscope book with deep Shodashvarga, full dasha ladders, 12-house readings, 5-year Varshphal and classical remedies.",
     pages: "pages", plusQs: "questions included",
     processing: "Opening payment…", paid: "Payment received —", added: "questions added.",
     payFailed: "Payment could not be completed.",
@@ -82,6 +86,10 @@ const A_I18N = {
     perQ: "प्रति प्रश्न", buy: "खरीदें", popular: "सर्वाधिक लोकप्रिय",
     kundaliTitle: "हस्तलिखित कुंडली",
     kundaliSub: "हमारे ज्योतिषी द्वारा हाथ से लिखी, स्कैन की गई PDF के रूप में।",
+    singleQuestionTitle: "लक्षित परामर्श रिपोर्ट",
+    singleQuestionSub: "करियर, विवाह या धन पर समर्पित 2-पृष्ठीय गहन वैदिक विश्लेषण, योग एवं उपाय।",
+    lifeBookTitle: "सम्पूर्ण वैदिक जीवन कुंडली महाग्रन्थ",
+    lifeBookSub: "35+ पृष्ठों का सम्पूर्ण जीवन फल महाग्रन्थ: षोडशवर्ग, 120 वर्षीय दशाएं, द्वादश भाव फल, 5 वर्षीय वर्षफल व वैदिक उपाय।",
     pages: "पृष्ठ", plusQs: "प्रश्न शामिल",
     processing: "भुगतान खोला जा रहा है…", paid: "भुगतान प्राप्त —", added: "प्रश्न जोड़े गए।",
     payFailed: "भुगतान पूरा नहीं हो सका।",
@@ -377,17 +385,35 @@ function openStore(outOfCredits = false) {
   if (!acct.user) return openSignIn(() => openStore(outOfCredits));
   acct.coupon = null;
   const packs = acct.products.filter((p) => p.kind === "questions");
+  const singleReports = acct.products.filter((p) => p.kind === "single_question");
+  const lifeBooks = acct.products.filter((p) => p.kind === "kundali_book");
   const kundalis = acct.products.filter((p) => p.kind === "kundali");
 
   const back = modal(`
     <h2 class="modal-title">${escapeHtml(outOfCredits ? at("outTitle") : at("buyMore"))}</h2>
     <p class="modal-sub">${escapeHtml(outOfCredits ? at("outSub") : "")}</p>
     ${acct.live ? "" : `<p class="test-banner">${escapeHtml(at("testMode"))}</p>`}
+    
     <div class="packs" data-kind="questions">${packs.map(packCard).join("")}</div>
-    <h3 class="store-h">${escapeHtml(at("kundaliTitle"))}</h3>
-    <p class="modal-sub">${escapeHtml(at("kundaliSub"))}${
-      acct.astrologer ? ` ${escapeHtml(acct.astrologer)} · ~${acct.turnaround} days.` : ""}</p>
-    <div class="packs" data-kind="kundali">${kundalis.map(packCard).join("")}</div>
+
+    ${singleReports.length ? `
+      <h3 class="store-h">${escapeHtml(at("singleQuestionTitle"))}</h3>
+      <p class="modal-sub">${escapeHtml(at("singleQuestionSub"))}</p>
+      <div class="packs" data-kind="single_question">${singleReports.map(packCard).join("")}</div>
+    ` : ""}
+
+    ${lifeBooks.length ? `
+      <h3 class="store-h" style="color:var(--gold);">${escapeHtml(at("lifeBookTitle"))}</h3>
+      <p class="modal-sub">${escapeHtml(at("lifeBookSub"))}</p>
+      <div class="packs" data-kind="kundali_book">${lifeBooks.map(packCard).join("")}</div>
+    ` : ""}
+
+    ${kundalis.length ? `
+      <h3 class="store-h">${escapeHtml(at("kundaliTitle"))}</h3>
+      <p class="modal-sub">${escapeHtml(at("kundaliSub"))}${
+        acct.astrologer ? ` ${escapeHtml(acct.astrologer)} · ~${acct.turnaround} days.` : ""}</p>
+      <div class="packs" data-kind="kundali">${kundalis.map(packCard).join("")}</div>
+    ` : ""}
 
     <h3 class="store-h">${escapeHtml(at("couponLabel"))}</h3>
     <div style="display:flex;gap:10px;align-items:center">
@@ -406,10 +432,14 @@ function openStore(outOfCredits = false) {
   const msg = back.querySelector(".coupon-msg");
 
   const repaint = () => {
-    back.querySelector('.packs[data-kind="questions"]').innerHTML =
-      packs.map(packCard).join("");
-    back.querySelector('.packs[data-kind="kundali"]').innerHTML =
-      kundalis.map(packCard).join("");
+    const qPacks = back.querySelector('.packs[data-kind="questions"]');
+    if (qPacks) qPacks.innerHTML = packs.map(packCard).join("");
+    const sqPacks = back.querySelector('.packs[data-kind="single_question"]');
+    if (sqPacks) sqPacks.innerHTML = singleReports.map(packCard).join("");
+    const lbPacks = back.querySelector('.packs[data-kind="kundali_book"]');
+    if (lbPacks) lbPacks.innerHTML = lifeBooks.map(packCard).join("");
+    const kPacks = back.querySelector('.packs[data-kind="kundali"]');
+    if (kPacks) kPacks.innerHTML = kundalis.map(packCard).join("");
     back.querySelectorAll(".buy-btn").forEach((b) => {
       b.onclick = () => startCheckout(b.dataset.sku, back);
     });

@@ -158,3 +158,26 @@ def get_muhurat(
         }
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
+
+
+@router.get("/choghadiya")
+def get_choghadiya(
+    date: str | None = None,
+    latitude: float = 28.6139,
+    longitude: float = 77.2090,
+    timezone: str = "",
+    language: str = "en",
+) -> dict:
+    """Real-time 16-slot Day and Night Choghadiya timeline with active slot."""
+    from .astro import choghadiya
+    tz = timezone or geo.timezone_for(latitude, longitude)
+    try:
+        return choghadiya.get_choghadiya_schedule(
+            target_date=date,
+            latitude=latitude,
+            longitude=longitude,
+            tz_name=tz,
+            lang=language,
+        )
+    except Exception as exc:
+        raise HTTPException(400, f"Could not compute Choghadiya: {exc}") from exc

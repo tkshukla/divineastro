@@ -372,4 +372,167 @@
     q('#muhurat-result').hidden = false;
     q('#muhurat-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+
+  // --------------------------------------------------------------------------
+  // Choghadiya
+  // --------------------------------------------------------------------------
+
+  let choPlace = null;
+  const choPlaceInput = q('#cho-place');
+  const choResults = q('#cho-results');
+  const choChosen = q('#cho-chosen');
+
+  q('#open-choghadiya')?.addEventListener('click', () => {
+    show('stage-choghadiya');
+    if (!q('#cho-date').value) {
+      q('#cho-date').value = new Date().toISOString().slice(0, 10);
+    }
+  });
+
+  if (choPlaceInput) {
+    choPlaceInput.addEventListener('input', () => {
+      suggest(choPlaceInput.value, choResults, (p) => {
+        choPlace = p;
+        choPlaceInput.value = p.label;
+        choChosen.textContent = p.label;
+        choChosen.hidden = false;
+        choResults.hidden = true;
+      });
+    });
+  }
+
+  q('#choghadiya-go')?.addEventListener('click', async () => {
+    const err = q('#choghadiya-error');
+    err.hidden = true; err.textContent = '';
+    const btn = q('#choghadiya-go');
+    const targetDate = q('#cho-date').value || new Date().toISOString().slice(0, 10);
+    const place = choPlace || {
+      label: 'New Delhi, India',
+      latitude: 28.6139,
+      longitude: 77.2090,
+      timezone: 'Asia/Kolkata',
+    };
+    const lang = (window.APP_STATE && window.APP_STATE.lang) || 'en';
+
+    const params = new URLSearchParams({
+      date: targetDate,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      timezone: place.timezone || '',
+      language: lang,
+    });
+
+    btn.disabled = true; btn.classList.add('busy');
+    try {
+      const res = await fetch(`/api/choghadiya?${params}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Could not calculate Choghadiya.');
+      renderChoghadiya(data, place.label, lang);
+    } catch (ex) {
+      err.textContent = ex.message; err.hidden = false;
+    } finally {
+      btn.disabled = false; btn.classList.remove('busy');
+    }
+  });
+
+  function renderChoghadiya(data, placeLabel, lang) {
+    const isHi = lang === 'hi';
+    const act = data.active_slot;
+    const badgeColor = {
+      auspicious: '#22c55e',
+      neutral: '#eab308',
+      inauspicious: '#ef4444',
+    };
+
+    function renderSlots(slots) {
+      return slots.map(s => {
+        const bg = s.is_current ? 'background: rgba(212, 175, 55, 0.15); border-left: 3px solid var(--gold);' : '';
+        const dotColor = badgeColor[s.quality] || '#999';
+        return `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); ${bg}">
+            <td style="padding: 10px 8px; font-weight: bold;">
+              ${esc(s.start)} – ${esc(s.end)}
+              ${s.is_current ? `<span style="margin-left: 6px; font-size: 10px; color: var(--gold); border: 1px solid var(--gold); border-radius: 4px; padding: 1px 4px;">${isHi ? 'वर्तमान' : 'NOW'}</span>` : ''}
+            </td>
+            <td style="padding: 10px 8px;">
+              <b>${esc(s.name_label)}</b><br/>
+              <span style="font-size: 11px; color: var(--ink-dim);">${isHi ? 'स्वामी: ' : 'Lord: '}${esc(s.ruler_label)}</span>
+            </td>
+            <td style="padding: 10px 8px;">
+              <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; color: ${dotColor};">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: ${dotColor};"></span>
+                ${esc(s.quality_label)}
+              </span>
+            </td>
+            <td style="padding: 10px 8px; font-size: 12px; color: var(--ink-dim);">
+              ${esc(s.description)}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    q('#choghadiya-result').innerHTML = `
+      <div class="card" style="margin-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 16px;">
+          <div>
+            <h3 style="color: var(--gold); margin: 0;">
+              ${isHi ? 'दैनिक चौघड़िया चक्र' : 'Choghadiya Muhurta Schedule'} — ${esc(placeLabel)}
+            </h3>
+            <p style="margin: 4px 0 0 0; font-size: 12.5px; color: var(--ink-dim);">
+              ${esc(isHi ? data.weekday_hi : data.weekday)} · ${esc(data.date)} · ${isHi ? 'सूर्योदय' : 'Sunrise'}: ${esc(data.sunrise)} · ${isHi ? 'सूर्यास्त' : 'Sunset'}: ${esc(data.sunset)}
+            </p>
+          </div>
+          ${act ? `
+            <div style="padding: 8px 14px; border-radius: 8px; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold); text-align: right;">
+              <span style="font-size: 11px; color: var(--gold); text-transform: uppercase;">${isHi ? 'वर्तमान सक्रिय मुहूर्त' : 'Active Muhurta Now'}</span>
+              <div style="font-size: 16px; font-weight: bold; color: var(--ink);">
+                ${esc(act.name_label)} (${esc(act.start)} – ${esc(act.end)})
+              </div>
+            </div>
+          ` : ''}
+        </div>
+
+        <h4 style="margin: 18px 0 8px 0; color: var(--gold); font-size: 14px; border-bottom: 1px solid var(--line); padding-bottom: 4px;">
+          ☀️ ${isHi ? 'दिन का चौघड़िया (सूर्योदय से सूर्यास्त)' : 'Day Choghadiya (Sunrise to Sunset)'}
+        </h4>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; margin-bottom: 16px;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--line); color: var(--ink-dim);">
+                <th style="padding: 6px 8px;">${isHi ? 'समय' : 'Time'}</th>
+                <th style="padding: 6px 8px;">${isHi ? 'चौघड़िया / स्वामी' : 'Muhurta / Lord'}</th>
+                <th style="padding: 6px 8px;">${isHi ? 'प्रकृति' : 'Nature'}</th>
+                <th style="padding: 6px 8px;">${isHi ? 'उपयुक्त कार्य व परामर्श' : 'Recommended Activities'}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${renderSlots(data.day_slots)}
+            </tbody>
+          </table>
+        </div>
+
+        <h4 style="margin: 18px 0 8px 0; color: var(--gold); font-size: 14px; border-bottom: 1px solid var(--line); padding-bottom: 4px;">
+          🌙 ${isHi ? 'रात्रि का चौघड़िया (सूर्यास्त से सूर्योदय)' : 'Night Choghadiya (Sunset to Next Sunrise)'}
+        </h4>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--line); color: var(--ink-dim);">
+                <th style="padding: 6px 8px;">${isHi ? 'समय' : 'Time'}</th>
+                <th style="padding: 6px 8px;">${isHi ? 'चौघड़िया / स्वामी' : 'Muhurta / Lord'}</th>
+                <th style="padding: 6px 8px;">${isHi ? 'प्रकृति' : 'Nature'}</th>
+                <th style="padding: 6px 8px;">${isHi ? 'उपयुक्त कार्य व परामर्श' : 'Recommended Activities'}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${renderSlots(data.night_slots)}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    q('#choghadiya-result').hidden = false;
+    q('#choghadiya-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 })();

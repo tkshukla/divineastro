@@ -77,6 +77,11 @@
         <span class="tool-name" id="tool-muhurat-name">Muhurat Finder</span>
         <span class="tool-sub" id="tool-muhurat-sub">Auspicious dates for marriage, house &amp; events</span>
       </button>
+      <button type="button" class="tool-card" id="open-choghadiya">
+        <span class="tool-icon">&#9200;</span>
+        <span class="tool-name" id="tool-choghadiya-name">Choghadiya Muhurta</span>
+        <span class="tool-sub" id="tool-choghadiya-sub">Real-time auspicious &amp; inauspicious hours</span>
+      </button>
     </div>
 
     <!-- Saved charts live here on the home screen: a returning customer opens
@@ -409,6 +414,36 @@
   </div>
 </section>
 
+<!-- ==================== CHOGHADIYA ==================== -->
+<section id="stage-choghadiya" class="stage">
+  <div class="tool-inner">
+    <h1 id="choghadiya-title">Choghadiya Muhurta</h1>
+    <p class="tagline" id="choghadiya-sub">
+      Real-time 16-slot Day and Night Vedic intervals for immediate decision making.
+    </p>
+
+    <form class="card" id="choghadiya-form" autocomplete="off">
+      <div class="row">
+        <div class="field"><label id="lbl-choghadiya-date">Date</label>
+          <input type="date" id="cho-date" /></div>
+        <div class="field place">
+          <label id="lbl-choghadiya-place">Place</label>
+          <input type="text" id="cho-place" placeholder="Start typing a city…" required />
+          <ul id="cho-results" class="suggest" hidden></ul>
+          <p id="cho-chosen" class="chosen" hidden></p>
+        </div>
+      </div>
+      <button type="button" class="primary" id="choghadiya-go" style="margin-top:16px; width:100%;">
+        <span class="label" id="btn-choghadiya-check">View Choghadiya Schedule</span>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+    </form>
+    <p id="choghadiya-error" class="error" hidden></p>
+
+    <div id="choghadiya-result" hidden></div>
+  </div>
+</section>
+
 <!-- ==================== STAGE 1 : BIRTH DATA ==================== -->
 <section id="stage-birth" class="stage">
   <div class="intro">
@@ -546,12 +581,16 @@
       <nav class="tabs">
         <button class="tab active" data-tab="placements">Placements</button>
         <button class="tab" data-tab="houses">Houses</button>
+        <button class="tab" data-tab="vargas">Vargas (D1-D60)</button>
+        <button class="tab" data-tab="ashtakavarga">Ashtakavarga</button>
         <button class="tab" data-tab="aspects">Aspects</button>
         <button class="tab" data-tab="now">Now</button>
       </nav>
       <div class="tabpanes">
         <div class="pane active" id="pane-placements"></div>
         <div class="pane" id="pane-houses"></div>
+        <div class="pane" id="pane-vargas"></div>
+        <div class="pane" id="pane-ashtakavarga"></div>
         <div class="pane" id="pane-aspects"></div>
         <div class="pane" id="pane-now"></div>
       </div>

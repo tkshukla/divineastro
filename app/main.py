@@ -727,6 +727,22 @@ def report(sid: str, request: Request) -> dict:
     return {"text": session.chart.to_prompt_text()}
 
 
+@app.get("/api/ashtakavarga/{sid}")
+def ashtakavarga_endpoint(sid: str, request: Request, lang: str = "en") -> dict:
+    """Sarvashtakavarga (337 bindus) and Bhinnashtakavarga matrix and house strengths."""
+    from .astro.ashtakavarga import calculate_ashtakavarga
+    session = _session(sid, request)
+    return calculate_ashtakavarga(session, lang=lang)
+
+
+@app.get("/api/vargas/{sid}")
+def shodashvarga_endpoint(sid: str, request: Request, lang: str = "en") -> dict:
+    """Classical Parashari Shodashvarga divisional charts (D1 to D60)."""
+    from .astro.vargas import get_shodashvarga_data
+    session = _session(sid, request)
+    return get_shodashvarga_data(session, lang=lang)
+
+
 @app.delete("/api/session/{sid}")
 def forget(sid: str, request: Request) -> dict:
     _session(sid, request)          # only the owner may discard it
@@ -853,6 +869,24 @@ def pdf_single_question(sid: str, request: Request, sku: str = "sq_career", lang
         raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
     return _pdf_response(
         data, pdf_report.safe_filename(BRAND, sku, session.birth.name or "report"))
+
+
+@app.get("/api/pdf/life-book/{sid}")
+def pdf_life_book(sid: str, request: Request, lang: str = "en") -> Response:
+    """Download the comprehensive 35+ page Vedic Life Book PDF report."""
+    with db_session() as db:
+        user = auth.require_user(request, db)
+        order = billing.has_paid_report(db, user, sku="life_book", topic="life_book")
+        if not order:
+            raise HTTPException(402, "The Comprehensive Life Book requires purchase before downloading.")
+
+    session = _session(sid, request)
+    try:
+        data = pdf_report.life_book_pdf(session, brand=BRAND, site=SITE_URL, language=lang)
+    except Exception as exc:
+        raise HTTPException(500, f"Could not build the Life Book PDF: {exc}") from exc
+    return _pdf_response(
+        data, pdf_report.safe_filename(BRAND, "life-book", session.birth.name or "horoscope"))
 
 
 

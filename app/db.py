@@ -29,9 +29,12 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, Session
 
+_default_db_path = Path(__file__).resolve().parent.parent / "data" / "astro.db"
+_default_db_path.parent.mkdir(parents=True, exist_ok=True)
+
 DB_URL = os.environ.get(
     "ASTRO_DATABASE_URL",
-    f"sqlite:///{Path(__file__).resolve().parent.parent / 'data' / 'astro.db'}",
+    f"sqlite:///{_default_db_path}",
 )
 
 engine = create_engine(

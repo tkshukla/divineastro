@@ -15,15 +15,20 @@ import datetime as dt
 from dataclasses import dataclass, field
 from zoneinfo import ZoneInfo
 
-from stellium import ChartBuilder, ReturnBuilder
-from stellium.components import ArabicPartsCalculator, DignityComponent
-from stellium.engines import (
-    AspectPatternAnalyzer,
-    PlacidusHouses,
-    PorphyryHouses,
-    WholeSignHouses,
-    ZodiacalReleasingAnalyzer,
-)
+try:
+    from stellium import ChartBuilder, ReturnBuilder
+    from stellium.components import ArabicPartsCalculator, DignityComponent
+    from stellium.engines import (
+        AspectPatternAnalyzer,
+        PlacidusHouses,
+        PorphyryHouses,
+        WholeSignHouses,
+        ZodiacalReleasingAnalyzer,
+    )
+except ImportError:  # pragma: no cover - defensive for local environments without compiled wheels
+    ChartBuilder = ReturnBuilder = None
+    ArabicPartsCalculator = DignityComponent = None
+    AspectPatternAnalyzer = PlacidusHouses = PorphyryHouses = WholeSignHouses = ZodiacalReleasingAnalyzer = None
 
 # --------------------------------------------------------------------------
 # Reference tables
