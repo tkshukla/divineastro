@@ -6023,6 +6023,636 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                 "and bold",
         },
     },
+    "Aquarius": {
+        "Sun": {
+            1: "Enemy's sign brings some deficiency in physical "
+               "beauty and health, though growth in influence and "
+               "strength, and gives a fierce, restlessly active "
+               "temperament; its aspect on the 7th (own sign) brings "
+               "special comfort through a spouse, and success in "
+               "daily income through personal effort, marking a "
+               "joyful domestic life",
+            2: "Friend's sign brings growth in wealth and family "
+               "comfort, though some particular deficiency regarding "
+               "a spouse; its aspect on the 8th brings growth in "
+               "longevity and inheritance, along with an influential "
+               "daily life",
+            3: "Exalted in a friend's sign, brings ample sibling "
+               "comfort and great growth in personal drive, along "
+               "with success through business in other spheres too; "
+               "its aspect on the 9th (debilitated) brings some "
+               "obstacles to fortune's advance and religious "
+               "observance, and diminished honour",
+            4: "Enemy's sign brings comfort through mother, land and "
+               "home achieved with some difficulty, along with "
+               "trouble in business; its aspect on the 10th brings "
+               "success and gain through father, state and business, "
+               "with growing standing",
+            5: "Friend's sign brings success in education, "
+               "intelligence and children, along with comfort "
+               "through a spouse and in business; its aspect on the "
+               "11th brings good income through intelligence, "
+               "marking a happy, wealthy, influential nature",
+            6: "Friend's sign brings victory over rivals and gain "
+               "through disputes, along with success in business "
+               "achieved with some difficulty; its aspect on the "
+               "12th brings heavy expense, and some difficulty "
+               "through distant connections",
+            7: "In its own sign here (Sun rules the 7th), brings "
+               "ample comfort through a spouse, and success in "
+               "business, along with gain through in-laws and a "
+               "joyful domestic life; its aspect on the Lagna brings "
+               "some deficiency in physical beauty",
+            8: "Friend's sign brings growth in longevity and "
+               "inheritance, along with some trouble regarding a "
+               "spouse and difficulty in business, though some gain "
+               "through distant connections; its aspect on the 2nd "
+               "brings wealth accumulated through hard effort, and "
+               "family comfort",
+            9: "Debilitated in an enemy's sign brings some "
+               "deficiency in fortune and religious practice, along "
+               "with difficulty regarding a spouse and business, and "
+               "gives little regard for propriety in pursuit of "
+               "self-interest; its aspect on the 3rd (exalted) "
+               "brings special growth in sibling comfort and "
+               "personal drive, marking a bold, courageous, daring "
+               "nature",
+            10: "Friend's sign brings gain through father, state and "
+                "business, along with special strength through a "
+                "spouse; its aspect on the 4th brings some "
+                "deficiency in comfort through mother, land and home",
+            11: "Friend's sign brings good income through business, "
+                "along with special gain through a spouse; its "
+                "aspect on the 5th brings special advancement in "
+                "education, intelligence and children, and comfort too",
+            12: "Enemy's sign brings difficulty over heavy expenses, "
+                "along with gain through distant connections offset "
+                "by loss in local business, and much deficiency in a "
+                "spouse's comfort; its aspect on the 6th brings "
+                "influence over rivals, and gain through disputes",
+        },
+        "Moon": {
+            1: "Enemy's sign brings an unhealthy body and an anxious "
+               "mind, though the native succeeds in establishing "
+               "influence over rivals and winning disputes; its "
+               "aspect on the 7th brings some discord regarding a "
+               "spouse, and worries and difficulty in daily business",
+            2: "Friend's sign brings wealth accumulated through hard "
+               "effort, along with growth in family comfort; despite "
+               "trouble from rivals, the native gains through "
+               "disputes; its aspect on the 8th brings some trouble "
+               "regarding longevity and inheritance",
+            3: "Friend's sign brings growth in morale and valour, "
+               "though some discord with siblings; its aspect on "
+               "the 9th brings growth in fortune and religious "
+               "practice after some difficulty",
+            4: "Exalted, though in only a friend's sign — brings "
+               "comfort through mother, land and home, along with a "
+               "hold over rivals and gain through disputes; its "
+               "aspect on the 10th brings difficulty through father, "
+               "state and business",
+            5: "Friend's sign brings success in education, "
+               "intelligence and children achieved with some "
+               "difficulty, along with a hold over rivals; its "
+               "aspect on the 11th brings growth in income despite "
+               "some difficulty, achieved through secretive method",
+            6: "In its own sign here (Moon rules the 6th), brings a "
+               "strong hold over rivals and success in disputes, "
+               "though some worry over wealth; its aspect on the "
+               "12th brings difficulty over expenses, and trouble "
+               "through distant connections",
+            7: "Friend's sign brings trouble through illness "
+               "regarding a spouse, with success in business "
+               "achieved only after difficulty, along with a hold "
+               "over rivals; its aspect on the Lagna brings the body "
+               "prone to illness and worry, though growing morale",
+            8: "Friend's sign brings difficulty regarding longevity "
+               "and inheritance, along with a hold over rivals "
+               "established only after real difficulty, constant "
+               "worry, and weak maternal-side connections; its "
+               "aspect on the 2nd brings special effort needed for "
+               "wealth and family growth",
+            9: "In only a friend's sign, brings some difficulty in "
+               "fortune's advance and diminished fame, along with a "
+               "hold over rivals and gain through disputes; its "
+               "aspect on the 3rd brings some difficulty regarding "
+               "sibling comfort, though special growth in personal "
+               "drive",
+            10: "Friend's sign, debilitated, brings difficulty "
+                "through father, state and business, along with "
+                "great trouble from rivals; its aspect on the 4th "
+                "brings only ordinary comfort through mother, land "
+                "and home",
+            11: "Friend's sign brings growth in income through "
+                "morale and physical effort, along with a hold over "
+                "rivals and gain through disputes; its aspect on the "
+                "5th brings ample gain through education and "
+                "intelligence, though some worry regarding children",
+            12: "Enemy's sign brings difficulty managing expenses, "
+                "and trouble through distant connections, along with "
+                "mental worry caused by rivals; its aspect on the "
+                "6th brings influence established over rivals "
+                "through humility, and success",
+        },
+        "Mars": {
+            1: "Enemy's sign brings physical beauty and an "
+               "influential presence, along with growth in sibling "
+               "comfort and valour; its aspects bring comfort "
+               "through mother, land and home, comfort through a "
+               "spouse and in business, and growth in longevity and "
+               "inheritance",
+            2: "Friend's sign brings wealth and family comfort "
+               "achieved with some difficulty, along with some "
+               "deficiency in sibling comfort and comfort through "
+               "father; its aspects bring success in education, "
+               "intelligence and children, growth in longevity and "
+               "inheritance, and special advancement in fortune and "
+               "religious practice, with gain in fame",
+            3: "In its own sign here (Mars rules the 3rd), brings "
+               "sibling comfort and special growth in valour; its "
+               "aspects bring trouble from rivals with loss to "
+               "maternal-side connections (debilitated), advancement "
+               "in fortune and religious practice, and special "
+               "success through father, state and business (own sign)",
+            4: "In only a friend's sign, brings comfort through "
+               "mother, land and home achieved with some deficiency; "
+               "its aspects bring success with a spouse and in "
+               "business through effort, advancement through father, "
+               "state and business (own sign), and excellent income",
+            5: "Friend's sign brings excellent comfort through "
+               "education, intelligence and children, along with "
+               "comfort through siblings and father and gain through "
+               "state and business; its aspects bring growth in "
+               "longevity and inheritance, strong income, and heavy "
+               "expense offset by good gain through distant "
+               "connections (exalted)",
+            6: "Friend's sign brings success over rivals achieved "
+               "with some difficulty, along with some discord with "
+               "siblings and father and diminished standing in state "
+               "affairs; its aspects bring advancement in fortune "
+               "and religion through hard effort, heavy expense "
+               "offset by ample gain through distant connections "
+               "(exalted), and some deficiency in physical beauty "
+               "though growing influence",
+            7: "Friend's sign brings special success with a spouse "
+               "and in daily business, along with sibling strength; "
+               "its aspects bring gain through father, state and "
+               "business (own sign), some deficiency in physical "
+               "beauty though growth in influence and honour, and "
+               "excellent wealth and family comfort",
+            8: "Friend's sign brings growth in longevity and "
+               "inheritance, along with some difficulty through "
+               "father, state and business, and some deficiency in "
+               "sibling comfort and valour; its aspects bring good "
+               "income, wealth and family comfort, and growth in "
+               "valour with sibling comfort (own sign)",
+            9: "In only a friend's sign, brings advancement in "
+               "fortune and religious practice, along with comfort "
+               "through father, state and business; its aspects "
+               "bring heavy expense offset by good gain through "
+               "distant connections (exalted), growth in valour with "
+               "sibling comfort (own sign), and excellent comfort "
+               "through mother, land and home",
+            10: "In its own sign here (Mars rules the 10th), brings "
+                "cooperation, honour and success through father, "
+                "state and business, along with growth in valour and "
+                "sibling comfort; its aspects bring some deficiency "
+                "in physical beauty though growth in honour, "
+                "standing and influence, only ordinary comfort "
+                "through mother, land and home, and growth in "
+                "education, intelligence and children",
+            11: "Friend's sign brings good income, along with gain "
+                "through father, state and business, and growth in "
+                "wealth, sibling comfort and valour; its aspects "
+                "bring good savings with family comfort, excellent "
+                "gain through children and education, and trouble "
+                "from rivals with weak maternal-side connections "
+                "(debilitated)",
+            12: "Exalted in an enemy's sign, brings heavy expense "
+                "offset by ample gain through distant connections, "
+                "along with loss through state, father and business, "
+                "though the native prospers living abroad; its "
+                "aspects bring growth in sibling comfort and valour "
+                "(own sign), weak standing against rivals with weak "
+                "maternal-side connections (debilitated), and "
+                "comfort through a spouse with success in business",
+        },
+        "Mercury": {
+            1: "Friend's sign brings some deficiency in physical "
+               "beauty and health, though gain in longevity, "
+               "inheritance and children, and growth in influence "
+               "and honour; its aspect on the 7th brings comfort "
+               "through a spouse and gain in daily business, "
+               "achieved with some difficulty",
+            2: "Debilitated in a friend's sign brings inability to "
+               "save wealth, and discord with family, with weak "
+               "education and children; its aspect on the 8th (own "
+               "sign) brings excellent strength in longevity, though "
+               "incomplete gain in inheritance, achieved through "
+               "discernment and learning",
+            3: "Friend's sign brings trouble through siblings, and "
+               "difficulty regarding children, along with valour, "
+               "education and intelligence gained with some "
+               "difficulty; its aspect on the 9th brings advancement "
+               "in fortune and religion achieved with some difficulty",
+            4: "Friend's sign brings comfort through land and home "
+               "achieved with some difficulty, though some "
+               "deficiency regarding mother, along with comfort "
+               "through children, and growth in longevity and "
+               "education too; its aspect on the 10th brings "
+               "advancement in business",
+            5: "In its own sign here (Mercury rules the 5th), brings "
+               "comfort through children achieved with some "
+               "difficulty, and excellent gain in education, marking "
+               "an intelligent, discerning nature rich in eloquence; "
+               "its aspect on the 11th brings special success in "
+               "income through discernment",
+            6: "Enemy's sign brings unrest from rivals, with success "
+               "in disputes achieved only through discernment, and "
+               "weak education, children, longevity and inheritance, "
+               "along with real trouble; its aspect on the 12th "
+               "brings heavy expense offset by gain through distant "
+               "connections",
+            7: "Friend's sign brings success with a spouse and in "
+               "business achieved after some difficulty, along with "
+               "gain in education, longevity and inheritance; its "
+               "aspect on the Lagna brings some physical trouble, "
+               "though growth in influence and honour",
+            8: "Exalted in its own sign here (Mercury rules the "
+               "8th), brings special gain in longevity and "
+               "inheritance, and an influential daily life, with "
+               "abundant discernment and eloquence, though some "
+               "deficiency in education and children; its aspect on "
+               "the 2nd (debilitated) brings difficulty saving "
+               "wealth and in family comfort",
+            9: "Friend's sign brings special advancement in fortune "
+               "and religious practice, along with good gain in "
+               "children, education, longevity and inheritance; its "
+               "aspect on the 3rd brings a somewhat flawed gain in "
+               "sibling comfort and valour, marking a wealthy, "
+               "contented nature",
+            10: "Friend's sign brings some difficulty through "
+                "father, state and business, though ample gain in "
+                "children, education, longevity and inheritance; its "
+                "aspect on the 4th brings comfort through mother, "
+                "land and home achieved with some deficiency, along "
+                "with growth in fame and discernment",
+            11: "Friend's sign brings excellent income, along with "
+                "gain in longevity and inheritance, and a joyful "
+                "daily life; its aspect on the 5th brings success in "
+                "education, intelligence and children achieved with "
+                "some difficulty",
+            12: "Friend's sign brings heavy expense, along with some "
+                "gain through distant connections, and loss to "
+                "longevity and inheritance, with some deficiency in "
+                "children and education; its aspect on the 6th "
+                "brings success over rivals achieved through "
+                "cleverness, and gain through discernment",
+        },
+        "Jupiter": {
+            1: "Enemy's sign brings physical strength, honour and "
+               "influence, along with wealth and family comfort; its "
+               "aspects bring success in education, intelligence and "
+               "children, success through a spouse and business, and "
+               "advancement in fortune and religious practice",
+            2: "In its own sign here (Jupiter rules the 2nd), brings "
+               "ample wealth and family comfort; its aspects bring "
+               "influence established over rivals through gain from "
+               "disputes, growth in longevity and inheritance, and "
+               "ample success through father, state and business",
+            3: "Friend's sign brings growth in valour, along with "
+               "ample gain in wealth and family comfort; its aspects "
+               "bring a beautiful spouse with success in daily "
+               "business and gain from in-laws, advancement in "
+               "fortune through hard effort though some obstacles, "
+               "and ample success through father, state and business",
+            4: "In only an ordinary enemy's sign, brings some "
+               "deficiency regarding mother though some gain through "
+               "her, along with good comfort through land and home, "
+               "and growth in wealth and family; its aspects bring "
+               "growth in longevity and inheritance, success through "
+               "father, state and business, and expenses managed "
+               "with difficulty though ultimately fine",
+            5: "Friend's sign brings excellent gain through "
+               "education, intelligence and children, along with "
+               "wealth and family comfort; its aspects bring "
+               "advancement in fortune achieved with some "
+               "difficulty, good gain in income, and growth of "
+               "physical influence, fame and honour",
+            6: "Friend's sign brings a heavy hold over rivals with "
+               "gain through disputes, along with strong "
+               "maternal-side connections, though some family "
+               "trouble and difficulty in savings; its aspects bring "
+               "ample gain through father, state and business, heavy "
+               "expense with dissatisfying distant connections "
+               "(debilitated), and growth in wealth and family "
+               "through some difficulty (own sign)",
+            7: "Friend's sign brings a beautiful spouse with wealth "
+               "and comfort through her, and excellent gain in "
+               "business, along with maintained family comfort; its "
+               "aspects bring strong income (own sign), some "
+               "deficiency in physical beauty though growth in "
+               "honour and influence, and growth in valour with "
+               "sibling comfort",
+            8: "Friend's sign brings growth in longevity and "
+               "inheritance, though loss to accumulated wealth and "
+               "some deficiency in family comfort; its aspects bring "
+               "heavy expense with trouble through distant "
+               "connections, growth in wealth through special effort "
+               "with family comfort, and some deficiency regarding "
+               "mother though only ordinary comfort through land and "
+               "home",
+            9: "Enemy's sign brings special advancement in fortune "
+               "and religious observance, along with ample wealth "
+               "and family comfort; its aspects bring growth of "
+               "physical influence, growth in sibling comfort and "
+               "valour, and excellent gain through education, "
+               "intelligence and children",
+            10: "Friend's sign brings ample success through father, "
+                "state and business, marking a grand, fortunate "
+                "life; its aspects bring growth in wealth and "
+                "family, ample comfort through mother, land and "
+                "home, and a strong hold established over rivals "
+                "through gain from disputes",
+            11: "In its own sign here (Jupiter rules the 11th), "
+                "brings ample growth in income, with occasional "
+                "sudden gain; its aspects bring growth in valour and "
+                "sibling comfort, success in children and education, "
+                "and complete comfort through a spouse with ample "
+                "success in daily business",
+            12: "Enemy's sign brings heavy expense, trouble through "
+                "distant connections, loss to accumulated wealth, "
+                "and some deficiency in family comfort; its aspects "
+                "bring some deficiency in comfort through mother, "
+                "land and home, influence established over rivals "
+                "with gain through disputes, and growth in fortune "
+                "and religious observance",
+        },
+        "Venus": {
+            1: "Friend's sign brings physical comfort, beauty and "
+               "influence, along with comfort through mother, land "
+               "and home, and strong religious and social standing; "
+               "its aspect on the 7th brings comfort through a "
+               "spouse though some difficulty in business",
+            2: "Exalted, though in only a friend's sign, brings "
+               "special comfort through wealth and family, and "
+               "abundant comfort through mother, land and home, "
+               "marking a wealthy, famous, respected nature; its "
+               "aspect on the 8th brings some deficiency in "
+               "longevity and inheritance, and some worry in daily "
+               "life",
+            3: "In only a friend's sign, brings sibling comfort and "
+               "special growth in valour, along with comfort through "
+               "mother, land and home; its aspect on the 9th brings "
+               "great advancement in fortune, with religious duty "
+               "properly kept, marking a courageous, wealthy, happy, "
+               "righteous nature",
+            4: "In its own sign here (Venus rules the 4th), brings "
+               "comfort through mother, land and home, along with "
+               "advancement in fortune and religion; its aspect on "
+               "the 10th brings success through father, state and "
+               "business, marking a happy, fortunate nature",
+            5: "Friend's sign brings success in education and "
+               "children, along with comfort through mother, land "
+               "and home, and continuous advancement in fortune; its "
+               "aspect on the 11th brings good gain through "
+               "cleverness",
+            6: "Enemy's sign brings success over rivals and gain "
+               "through disputes, though some deficiency regarding "
+               "mother and possible separation from one's native "
+               "land, with weak land, home, fortune and religious "
+               "standing; its aspect on the 12th brings heavy "
+               "expense offset by success through distant connections",
+            7: "Enemy's sign brings some discontent-tinged comfort "
+               "through a spouse, and success in business achieved "
+               "through real effort, along with ample comfort "
+               "through mother and home, and effort toward fortune "
+               "and religious practice; its aspect on the Lagna "
+               "brings physical beauty, comfort, honour and influence",
+            8: "Debilitated in a friend's sign brings an unsettled "
+               "life, some deficiency in longevity and inheritance, "
+               "and real weakness regarding land, home and mother; "
+               "its aspect on the 2nd (exalted, and an ordinary "
+               "friend's sign) brings growth in wealth and family "
+               "comfort through effort",
+            9: "In its own sign here (Venus rules the 9th), brings "
+               "great advancement in fortune, with religious duty "
+               "properly kept, along with ample comfort through "
+               "mother, land and home; its aspect on the 3rd brings "
+               "growth in valour, with excellent sibling comfort",
+            10: "In only an ordinary friend's sign, brings ample "
+                "success through father, state and business, marking "
+                "a righteous, famous, respected nature; its aspect "
+                "on the 4th brings ample comfort through mother, "
+                "land and home",
+            11: "In only an ordinary friend's sign, brings ample "
+                "growth in income, marking a wealthy, just, clever, "
+                "righteous, famous nature, along with excellent "
+                "comfort through mother, land and home; its aspect "
+                "on the 5th brings comfort through children, and "
+                "good advancement in education",
+            12: "Friend's sign brings heavy expense offset by gain "
+                "through distant connections, and religious duty "
+                "kept, though separation from parents comes at a "
+                "young age, with some diminished fame; its aspect on "
+                "the 6th brings victory over rivals through "
+                "cleverness, and gain through disputes",
+        },
+        "Saturn": {
+            1: "In its own sign here (Saturn is Lagna-lord), brings "
+               "growth in physical beauty and influence, marking a "
+               "famous, prosperous nature; its aspects bring some "
+               "deficiency in sibling comfort and valour "
+               "(debilitated), dissatisfaction regarding a spouse "
+               "with trouble in daily business, and obstacles "
+               "through father, state and business",
+            2: "Enemy's sign brings savings achieved through hard "
+               "effort, some deficiency in wealth and family "
+               "comfort, heavy expense, standing gained through "
+               "distant connections, and some deficiency in physical "
+               "beauty; its aspects bring comfort through mother, "
+               "land and home though some deficiency in domestic "
+               "happiness, gain in longevity and inheritance, and "
+               "obstacles in the path of income",
+            3: "Enemy's sign brings some deficiency in valour, along "
+               "with trouble through siblings, and some deficiency "
+               "in physical beauty and health; its aspects bring "
+               "growth in comfort through education, intelligence "
+               "and children, advancement in fortune and religious "
+               "practice (exalted), and trouble over expenses offset "
+               "by gain through distant connections (own sign)",
+            4: "Friend's sign brings full comfort through mother, "
+               "land and home; its aspects bring protection from "
+               "rivals through physical strength and outward "
+               "security, trouble through father, state and "
+               "business, and growth of physical beauty and "
+               "influence (own sign)",
+            5: "Friend's sign brings success in education, "
+               "intelligence and children, freedom from worry, and "
+               "gain through distant connections; its aspects bring "
+               "difficulty regarding a spouse and business, "
+               "obstacles in the path of income, and worry over "
+               "wealth and family",
+            6: "Enemy's sign brings growth in influence through "
+               "effort and victory over rivals, though some "
+               "deficiency in physical beauty; its aspects bring "
+               "growth in longevity and inheritance, heavy expense "
+               "offset by gain through distant connections (own "
+               "sign), and some deficiency in sibling comfort and "
+               "valour (debilitated)",
+            7: "Enemy's sign brings trouble regarding a spouse, "
+               "difficulty in business, and heavy expense; its "
+               "aspects bring special advancement in fortune and "
+               "religious practice (exalted), growth of physical "
+               "beauty, fame, honour and influence (own sign), and "
+               "comfort through mother, land and home",
+            8: "Friend's sign brings growth in longevity though some "
+               "loss in inheritance, along with trouble regarding "
+               "the physical body and expenses, though gain through "
+               "distant connections; its aspects bring discord with "
+               "father alongside obstacles to advancement through "
+               "state and business, flawed wealth and family "
+               "comfort, and comfort through children with gain "
+               "through education achieved with some deficiency",
+            9: "Exalted in a friend's sign, brings ample advancement "
+               "in fortune and wealth, a beautiful and healthy body, "
+               "and gain through distant connections; its aspects "
+               "bring some difficulty though success in the path of "
+               "income, some deficiency in sibling comfort and "
+               "valour (debilitated), and special effort needed to "
+               "establish influence over rivals",
+            10: "Enemy's sign brings success through father, state "
+                "and business achieved with some difficulty; its "
+                "aspects bring heavy expense offset by gain through "
+                "distant connections (own sign), comfort through "
+                "mother, land and home, and dissatisfaction "
+                "regarding a spouse with difficulty in daily income",
+            11: "Enemy's sign brings excellent growth in income "
+                "along with heavy expense, offset by gain through "
+                "distant connections; its aspects bring growth of "
+                "physical beauty, influence and fame (own sign), "
+                "ample success in education and intelligence with "
+                "some flawed gain regarding children, and growth in "
+                "longevity and inheritance",
+            12: "In its own sign here (Saturn rules the 12th), "
+                "brings heavy expense offset by special gain through "
+                "distant connections, along with frequent travel; "
+                "its aspects bring special effort needed for wealth "
+                "and family growth, some trouble from rivals at "
+                "first though influence established later, and "
+                "religious duty kept with growth in fortune",
+        },
+        "Rahu": {
+            1: "Brings injury to the body somewhere, and some "
+               "deficiency in health and beauty; the native is "
+               "beset by hidden worry, though establishes influence "
+               "through mental strength",
+            2: "Brings some deficiency in wealth and family comfort, "
+               "and occasionally a severe financial crisis; the "
+               "native eventually accumulates wealth through "
+               "secretive method and hard effort, and comes to be "
+               "regarded as wealthy and fortunate, being quite bold",
+            3: "Brings great growth in valour, though discord with "
+               "siblings; the native achieves success and comfort "
+               "through cleverness and secretive method, and earns a "
+               "respected place in society",
+            4: "Brings great trouble through the mother's side, an "
+               "unsettled domestic life, and some deficiency in "
+               "comfort through land and home, though after much "
+               "struggle the native achieves real success",
+            5: "Brings some initial trouble regarding children that "
+               "later turns to comfort, along with special gain in "
+               "education and intelligence; the native is skilled at "
+               "hiding their inner weaknesses, and is influential "
+               "and sweet-spoken",
+            6: "Brings a heavy hold over rivals, and success in "
+               "disputes and quarrels through intelligence; though "
+               "inwardly troubled, the native never abandons "
+               "patience and courage, and ultimately prevails over "
+               "every difficulty",
+            7: "Brings great trouble regarding a spouse, and "
+               "difficulty in the field of daily income, though the "
+               "native ultimately prevails over every difficulty "
+               "through patience, courage and hard effort",
+            8: "Brings many crises to life, and loss to inheritance, "
+               "with disorder in the lower body, though the native "
+               "lives a long life and manages it capably through "
+               "discernment and intelligence",
+            9: "Brings obstacles to fortune's advance, and improper "
+               "observance of religious duty, though the native "
+               "ultimately prevails over every difficulty through "
+               "sharp wit, and does not let their weaknesses show",
+            10: "Brings trouble through the father, difficulty "
+                "through state affairs, and loss in business, though "
+                "the native struggles through with effort and "
+                "cleverness and ultimately achieves success",
+            11: "Brings great difficulty in the path of income, "
+                "though the native achieves some victory through the "
+                "power of intelligence, never letting their "
+                "difficulties show to others",
+            12: "Brings great difficulty over expenses, though some "
+                "gain through distant connections; the native must "
+                "work hard to manage their spending",
+        },
+        "Ketu": {
+            1: "Brings a mark or scar somewhere on the body, and "
+               "some diminishment of physical beauty; the native is "
+               "bold, capable, skilled in secretive method and "
+               "hard-working, and earns respect through these very "
+               "qualities",
+            2: "Brings trouble regarding wealth and family comfort, "
+               "with constant new upheaval in the family; the native "
+               "tries to earn wealth through patience, hard effort "
+               "and honest means, and ultimately achieves some success",
+            3: "Brings great growth in valour, though some "
+               "deficiency in sibling comfort; the native is bold, "
+               "patient, hard-working, industrious and skilled in "
+               "secretive method, and ultimately advances their life "
+               "through these very qualities",
+            4: "Brings loss or deficiency in comfort through mother, "
+               "including separation from one's native land, and "
+               "some deficiency in comfort through land and home "
+               "too, though the native later achieves some success "
+               "in resolving these deficiencies through secretive "
+               "method",
+            5: "Brings difficulty gaining comfort through children, "
+               "requiring painful effort and secretive method, and "
+               "even then only slight comfort results; real "
+               "difficulty in education too, with an unsettled mind "
+               "and somewhat diminished character and discernment",
+            6: "Brings unrest caused by rivals, though the native "
+               "succeeds in establishing influence and achieving "
+               "victory over them; outwardly the native appears bold "
+               "and fearless despite inner fear, being patient, "
+               "hard-working and skilled in secretive method",
+            7: "Brings special trouble regarding a spouse, and "
+               "crises in business, along with disorder in the "
+               "reproductive organs; the native ultimately achieves "
+               "ordinary success through effort and secretive method",
+            8: "Brings growth in longevity, though occasionally "
+               "severe crises threatening life; ordinary gain in "
+               "inheritance, with occasional loss too, though the "
+               "native ultimately manages to resolve difficulties "
+               "through secretive method",
+            9: "Brings obstacles to fortune's advance, and no "
+               "special advancement in religious practice, though "
+               "the native advances their fortune through secretive "
+               "method, patience and hard effort, never growing "
+               "discouraged despite repeated setbacks",
+            10: "Brings great trouble through the father, difficulty "
+                "through state affairs, and loss in business, though "
+                "the native ultimately prevails over these setbacks "
+                "through righteousness, courage and cleverness",
+            11: "Brings great growth in income, with occasional "
+                "sudden gain too; the native strives for advancement "
+                "and earns great wealth through honest means, living "
+                "happily",
+            12: "Brings heavy expense causing difficulty, though the "
+                "native prevails through secretive method, never "
+                "losing courage even amid despair; some gain through "
+                "distant connections comes too",
+        },
+    },
 }
 
 

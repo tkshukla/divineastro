@@ -247,14 +247,31 @@ left absent, never guessed at, and flagged if actually noticed.
   exalted in Pisces, debilitated in Virgo; Saturn exalted in Libra,
   debilitated in Aries — an unusually complete confirmation set for one
   Lagna.
-- **Remaining 2 Lagnas (Aquarius, Pisces)** — not yet done. Each is a
-  similar-sized read (~35-45 PDF pages, ~2000 OCR lines) and paraphrase
-  pass; `planet_house_text()` falls back cleanly to the Lagna-independent
+- **Aquarius (Kumbha)** — complete, all 108 entries, no documented gap.
+  Read from PDF pages 496-538 (chunks `pages_0481-0500.txt`,
+  `pages_0501-0520.txt`, `pages_0521-0540.txt`; pages 496-502 are the
+  index preamble, full prose resumes at page 502 with Sun). A few
+  section headers were lost across page breaks (Moon's 4th house, Mars's
+  aspect-ordinal labels in a couple of entries) but the body prose was
+  intact in every case, so nothing was left as a gap — only the printed
+  "which numbered aspect is this" labels were occasionally garbled or
+  swapped, never the substance of which house is being described or
+  what it brings. Unlike Capricorn's Venus section, this Lagna's Venus
+  entries state a consistent "friend" relationship to Jupiter across
+  both of Jupiter's signs (Pisces at the 2nd house, Sagittarius at the
+  11th) — no internal contradiction here. Confirmed correctly-placed
+  dignity facts: Sun exalted in Aries, debilitated in Libra; Moon
+  exalted in Taurus, debilitated in Scorpio; Mars exalted in Capricorn;
+  Mercury debilitated in Pisces, exalted in Virgo; Venus exalted in
+  Pisces, debilitated in Virgo; Saturn exalted in Libra.
+- **Remaining 1 Lagna (Pisces)** — not yet done, the last of the twelve.
+  `planet_house_text()` falls back cleanly to the Lagna-independent
   Brihat Jataka table for any Lagna not yet in `BHRIGU_LAGNA_HOUSE_TEXT`,
   so partial coverage never breaks anything — it just means those
   natives get the same generic text every Lagna got before this work
-  started. Aquarius (Kumbha) begins at PDF page 496. Note for
-  `tests/test_delineation.py`: all seven non-royal signs are
-  Bhrigu-covered and now so is one royal sign (Capricorn), so the
-  Saturn-1st-house "royal" example moved to Aquarius — the last
-  remaining royal sign once Aquarius itself is done will be Pisces.
+  started. Pisces (Meena) begins at PDF page 539. Note for
+  `tests/test_delineation.py`: with Aquarius now covered, Pisces is the
+  only sign left for the "not yet transcribed" and Saturn-1st-house
+  "royal" examples — once it's done, those checks will need a genuinely
+  different approach (there will be no real sign left to serve as the
+  negative example).
