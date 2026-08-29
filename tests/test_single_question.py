@@ -10,11 +10,14 @@ from app.pdf_report import single_question_pdf
 
 class TestSingleQuestion(unittest.TestCase):
     def setUp(self):
-        # Create an in-memory SQLite db session
-        database.init_db("sqlite:///:memory:")
-        self.db = database.SessionLocal()
+        database.Base.metadata.create_all(database.engine)
+        self.db = database.session()
         self.user = database.User(
-            email="tester@example.com", name="Test Native", phone="9999999999"
+            email=f"tester_{dt.datetime.now().timestamp()}@example.com",
+            name="Test Native",
+            phone="9999999999",
+            provider="test",
+            provider_sub=f"test_sub_{dt.datetime.now().timestamp()}"
         )
         self.db.add(self.user)
         self.db.commit()
