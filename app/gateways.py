@@ -461,9 +461,12 @@ _TEST = TestGateway()
 
 def active() -> Gateway:
     """The configured gateway, or the test one when nothing is set up yet."""
-    if GATEWAY in _ALL and _ALL[GATEWAY].configured():
-        return _ALL[GATEWAY]
-    if GATEWAY in _ALL:                      # named but missing credentials
+    gw = os.environ.get("ASTRO_GATEWAY", "cashfree").lower()
+    if gw == "test":
+        return _TEST
+    if gw in _ALL and _ALL[gw].configured():
+        return _ALL[gw]
+    if gw in _ALL:                      # named but missing credentials
         return _TEST
     for gateway in _ALL.values():            # otherwise take whatever is ready
         if gateway.configured():
