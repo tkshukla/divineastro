@@ -6,6 +6,8 @@
 :root {
   --bg-0: #05060f;
   --bg-1: #0a0c1c;
+  --bg-card: rgba(20, 24, 48, 0.55);
+  --bg-card-hover: rgba(30, 36, 70, 0.7);
   --ink: #eef0ff;
   --ink-dim: #a4a9c9;
   --ink-faint: #6c7192;
@@ -25,10 +27,30 @@
   --mono: "Cascadia Mono", "SF Mono", Consolas, "Roboto Mono", monospace;
 }
 
+[data-theme="light"],
+.theme-light {
+  --bg-0: #f4f6fc;
+  --bg-1: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.92);
+  --bg-card-hover: rgba(245, 247, 255, 0.98);
+  --ink: #14172a;
+  --ink-dim: #475175;
+  --ink-faint: #6b769e;
+  --gold: #9a6300;
+  --gold-soft: #7a4d00;
+  --violet: #5c47d6;
+  --cyan: #0284c7;
+  --rose: #d91b49;
+  --green: #15803d;
+  --line: rgba(80, 95, 150, 0.18);
+  --glass: rgba(255, 255, 255, 0.9);
+  --glass-strong: rgba(255, 255, 255, 0.98);
+  --shadow: 0 14px 40px rgba(20, 30, 70, 0.08);
+}
+
 * { box-sizing: border-box; }
 
-html, body {
-  height: 100%;
+html {
   margin: 0;
   background: var(--bg-0);
   color: var(--ink);
@@ -36,7 +58,32 @@ html, body {
   font-size: 15.5px;
   line-height: 1.62;
   -webkit-font-smoothing: antialiased;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-0);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15.5px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+body:not(.admin-body) {
+  height: 100%;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+body.admin-body {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: block !important;
 }
 
 /* The app shell: a header of natural height, then one screen taking the rest.
@@ -1520,5 +1567,164 @@ details.reasoning summary:hover { color: var(--gold); }
   color: var(--gold);
 }
 
+/* ============================================================
+   Theme Switcher & Light Mode Component Overrides
+   ============================================================ */
 
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--glass);
+  color: var(--gold);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0;
+  transition: all 0.2s ease;
+  flex: none;
+}
 
+.theme-toggle:hover {
+  background: rgba(240, 198, 116, 0.15);
+  border-color: var(--gold);
+  transform: scale(1.06);
+}
+
+[data-theme="light"] #sky {
+  opacity: 0.15;
+}
+
+[data-theme="light"] .glow-a {
+  background: #c7d2fe;
+  opacity: 0.3;
+}
+
+[data-theme="light"] .glow-b {
+  background: #bae6fd;
+  opacity: 0.3;
+}
+
+[data-theme="light"] .site-header {
+  background: rgba(255, 255, 255, 0.88);
+  border-bottom: 1px solid var(--line);
+}
+
+[data-theme="light"] .card,
+[data-theme="light"] .milan-card,
+[data-theme="light"] .stat-card,
+[data-theme="light"] .health-card,
+[data-theme="light"] .tool-card {
+  background: var(--bg-card);
+  box-shadow: var(--shadow);
+}
+
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  background: rgba(0, 0, 0, 0.035);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] select:focus,
+[data-theme="light"] textarea:focus {
+  background: #ffffff;
+  border-color: var(--gold);
+}
+
+[data-theme="light"] .vchart polygon.vc-lagna {
+  fill: rgba(154, 99, 0, 0.08);
+}
+
+[data-theme="light"] .vchart .vc-line {
+  stroke: rgba(70, 85, 140, 0.35);
+}
+
+[data-theme="light"] .vchart .vc-num {
+  fill: var(--ink-faint);
+}
+
+[data-theme="light"] .vchart .vc-planet {
+  fill: var(--ink);
+}
+
+[data-theme="light"] .vchart .vc-centre {
+  fill: var(--gold-soft);
+}
+
+[data-theme="light"] .acct-drop {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.1);
+}
+
+[data-theme="light"] .acct-drop button,
+[data-theme="light"] .acct-drop .drop-link {
+  color: var(--ink);
+}
+
+[data-theme="light"] .acct-drop button:hover,
+[data-theme="light"] .acct-drop .drop-link:hover {
+  background: rgba(92, 71, 214, 0.08);
+  color: var(--violet);
+}
+
+[data-theme="light"] .topbar {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+[data-theme="light"] .msg.bot {
+  background: #ffffff;
+  color: var(--ink);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+}
+
+[data-theme="light"] .msg.user {
+  background: rgba(92, 71, 214, 0.09);
+  color: var(--ink);
+}
+
+[data-theme="light"] .suggest {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+[data-theme="light"] .suggest li {
+  color: var(--ink);
+}
+
+[data-theme="light"] .suggest li:hover,
+[data-theme="light"] .suggest li.active {
+  background: rgba(92, 71, 214, 0.08);
+  color: var(--violet);
+}
+
+[data-theme="light"] .composer input {
+  background: #ffffff;
+  color: var(--ink);
+}
+
+[data-theme="light"] .panel {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="light"] .tab.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+[data-theme="light"] .modal-overlay {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+[data-theme="light"] .modal-content {
+  background: #ffffff;
+  color: var(--ink);
+}

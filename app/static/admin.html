@@ -46,7 +46,12 @@
   <img class="topbar-logo ok" src="/static/logo.png" alt="" onerror="this.remove();" />
   <h1>Admin</h1>
   <span id="who" class="who-chip"></span>
-  <a class="ghost-link" href="/">&#8592; Site</a>
+  <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+    <button type="button" class="theme-toggle" id="theme-toggle" title="Toggle Light/Dark Theme" aria-label="Toggle theme">
+      <span class="theme-icon">☀️</span>
+    </button>
+    <a class="ghost-link" href="/">&#8592; Site</a>
+  </div>
 </header>
 
 <!-- Shown when the visitor is not signed in, or is signed in without rights. -->

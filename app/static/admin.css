@@ -353,3 +353,43 @@ code, .utr, .code {
   .row-act .note { flex: 1 1 120px; width: auto; }
   .admin-section-grid { grid-template-columns: 1fr; }
 }
+
+/* Light Mode Overrides for Admin Panel */
+[data-theme="light"] .stat-card,
+[data-theme="light"] .health-card,
+[data-theme="light"] .admin-section-grid .card,
+[data-theme="light"] .apane .card,
+[data-theme="light"] .row {
+  background: #ffffff;
+  border-color: rgba(70, 85, 140, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .admin-table th {
+  border-bottom: 2px solid rgba(70, 85, 140, 0.15);
+  color: var(--ink-dim);
+}
+
+[data-theme="light"] .admin-table td {
+  border-bottom: 1px solid rgba(70, 85, 140, 0.08);
+  color: var(--ink);
+}
+
+[data-theme="light"] .admin-table tr:hover td {
+  background: rgba(92, 71, 214, 0.04);
+}
+
+[data-theme="light"] .code {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--violet);
+}
+
+[data-theme="light"] .atab {
+  color: var(--ink-dim);
+}
+
+[data-theme="light"] .atab:hover,
+[data-theme="light"] .atab.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
