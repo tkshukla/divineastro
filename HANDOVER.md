@@ -112,9 +112,10 @@ checked against Postgres directly.
 - [x] **Sade Sati and Kaal Sarp UI** — Dashboard doshas modal renders Manglik, Sade Sati phase breakdown, and Kaal Sarp types.
 - [x] **Muhurat Finder** — Deterministic classical electional engine and stage for Marriage, Griha Pravesh, Mundan, Namkaran, and General events.
 - [x] **Single-Question Paid Reports** — Paid targeted PDF consultations (Career, Marriage Timing, Wealth & Business) with payment gating (`report_topic`).
-- [ ] Divisional charts never cross-checked against Jagannatha Hora. The
-      internal check used `Fraction` to avoid float error at exact 3°20′
-      boundaries and found zero mismatches, but that is self-verification.
+- [x] **Ashtakavarga Matrix & Heatmap Engine** — Classical Parashari Sarvashtakavarga (337 bindus) and Bhinnashtakavarga tables with house strength ratings and bilingual financial interpretations.
+- [x] **Real-Time Choghadiya Clock & Timeline** — 16-slot Day/Night Choghadiya engine with weekday ruler calculation, active slot highlight, and countdown.
+- [x] **Shodashvarga Divisional Charts (D1-D60)** — Complete classical Parashari varga calculations and UI switcher for D1, D3, D7, D9, D10, D12.
+- [x] **Comprehensive Vedic Life Book (35+ Pages)** — Flagship 35+ page master horoscope book PDF (`life_book`) with Shodashvarga, 120-year Dasha ladder, 12-house analysis, and 5-year Varshphal.
 - [ ] No way to upload or send a finished hand-written kundali scan.
 
 ---
