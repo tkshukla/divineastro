@@ -2,11 +2,24 @@
    .primary, .ghost, .field and .error primitives; only what is specific to
    the operator screens lives here. */
 
+/* styles.css locks html/body overflow to hidden for the single-page chart UI;
+   the admin panel is a multi-screen reporting page and must scroll freely. */
+html,
+body,
+body.admin-body {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+  min-height: 100vh !important;
+}
+
 .admin-body {
   display: block;
-  padding: 20px clamp(12px, 4vw, 40px) 60px;
+  padding: 20px clamp(12px, 4vw, 40px) 80px;
   max-width: 1100px;
   margin: 0 auto;
+  min-height: 100vh;
+  overflow-y: visible !important;
 }
 
 /* The brand watermark (body::after in styles.css) is a positioned layer, so it
