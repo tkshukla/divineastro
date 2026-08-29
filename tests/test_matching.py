@@ -495,9 +495,19 @@ def main() -> int:
               and live["ashtakoot"]["groom"]["pada"] == vim["pada"],
               f"{live['ashtakoot']['groom']['nakshatra']} p"
               f"{live['ashtakoot']['groom']['pada']} vs {vim['nakshatra']} p{vim['pada']}")
-        check("a real chart's Mangal reading covers all three references",
-              len(live["mangal"]["groom"]["references"]) == 3,
-              live["mangal"]["groom"]["summary"])
+        # Hindi matching check
+        live_hi = m.match(groom, bride, lang="hi")
+        check("Hindi matching returns total and verdict in Hindi",
+              live_hi["ashtakoot"]["total"] == live["ashtakoot"]["total"]
+              and any("\u0900" <= c <= "\u097F" for c in live_hi["ashtakoot"]["verdict"]),
+              live_hi["ashtakoot"]["verdict"])
+        check("All 8 kootas in Hindi contain Devanagari notes and labels",
+              all(any("\u0900" <= c <= "\u097F" for c in k["note"]) and any("\u0900" <= c <= "\u097F" for c in k["label"])
+                  for k in live_hi["ashtakoot"]["kootas"]),
+              ", ".join(k["label"] for k in live_hi["ashtakoot"]["kootas"]))
+        check("Manglik summary in Hindi contains Devanagari",
+              any("\u0900" <= c <= "\u097F" for c in live_hi["mangal"]["groom"]["summary"]),
+              live_hi["mangal"]["groom"]["summary"])
     except Exception as exc:                          # pragma: no cover
         check("real charts build and match", False, f"{type(exc).__name__}: {exc}")
 

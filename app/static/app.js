@@ -159,6 +159,32 @@ const I18N = {
     currentMDRuled: "Your current Mahadasha is ruled by",
     recommendedMantra: "Recommended Mantra:",
     charityFasting: "Charity & Fasting:",
+    toolMilanName: "Kundali Milan",
+    toolMilanSub: "36-point marriage matching",
+    toolPanchangName: "Today's Panchang",
+    toolPanchangSub: "Tithi, nakshatra and Rahu Kaal",
+    toolMuhuratName: "Muhurat Finder",
+    toolMuhuratSub: "Auspicious dates for marriage, house & events",
+    muhuratTitle: "Muhurat Finder",
+    muhuratSub: "Find classical auspicious dates and timings for marriage, house warming, ceremonies and important events.",
+    lblMuhuratEvent: "Event / Ceremony",
+    lblMuhuratPlace: "Place",
+    lblMuhuratFrom: "From Date",
+    lblMuhuratTo: "To Date",
+    btnMuhuratSearch: "Find Auspicious Dates",
+    muhuratResultsTitle: "Auspicious Dates Summary",
+    milanTitle: "Kundali Milan",
+    mangalTitle: "Mangal Dosha Analysis",
+    milanNeedDate: "Both dates of birth are needed.",
+    milanNeedPlace: "Pick both birth places from the suggestions so the coordinates are exact.",
+    beforeCancellation: "before cancellation",
+    tithiL: "Tithi",
+    nakL: "Nakshatra",
+    yogaL: "Yoga",
+    karanaL: "Karana",
+    timingsL: "Timings",
+    until: "until",
+    none: "none today",
   },
   hi: {
     tagline: "स्विस एफ़ेमेरिस की सटीकता, वैदिक विवेचन — आपकी कुंडली, सही ढंग से।",
@@ -282,6 +308,32 @@ const I18N = {
     currentMDRuled: "आपकी वर्तमान महादशा के स्वामी हैं",
     recommendedMantra: "अनुशंसित मंत्र:",
     charityFasting: "दान एवं व्रत:",
+    toolMilanName: "कुंडली मिलान",
+    toolMilanSub: "36 गुण मिलान और वैवाहिक अनुकूलता",
+    toolPanchangName: "आज का पंचांग",
+    toolPanchangSub: "तिथि, नक्षत्र और राहुकाल",
+    toolMuhuratName: "शुभ मुहूर्त खोजें",
+    toolMuhuratSub: "विवाह, गृह प्रवेश व शुभ कार्यों हेतु शुभ तिथियां",
+    muhuratTitle: "शुभ मुहूर्त खोजक",
+    muhuratSub: "विवाह, गृह प्रवेश, मुंडन, नामकरण एवं सर्वकार्यों हेतु शास्त्रीय शुभ तिथियां व समय जानें।",
+    lblMuhuratEvent: "शुभ कार्य / संस्कार",
+    lblMuhuratPlace: "स्थान",
+    lblMuhuratFrom: "आरंभ तिथि",
+    lblMuhuratTo: "अंतिम तिथि",
+    btnMuhuratSearch: "शुभ मुहूर्त खोजें",
+    muhuratResultsTitle: "शुभ मुहूर्त विवरण",
+    milanTitle: "कुंडली मिलान",
+    mangalTitle: "मांगलिक दोष विश्लेषण",
+    milanNeedDate: "दोनों की जन्म तिथियां आवश्यक हैं।",
+    milanNeedPlace: "सुझावों में से दोनों जन्म स्थान चुनें ताकि देशांतर सही रहें।",
+    beforeCancellation: "परिहार से पूर्व",
+    tithiL: "तिथि",
+    nakL: "नक्षत्र",
+    yogaL: "योग",
+    karanaL: "करण",
+    timingsL: "शुभ-अशुभ समय",
+    until: "तक",
+    none: "आज नहीं है",
   },
 };
 
@@ -818,6 +870,23 @@ function applyLanguage() {
   [t("point1"), t("point2"), t("point3")].forEach((txt, i) => {
     if (pts[i]) pts[i].textContent = txt;
   });
+
+  // Tools buttons
+  set("#tool-milan-name", t("toolMilanName"));
+  set("#tool-milan-sub", t("toolMilanSub"));
+  set("#tool-panchang-name", t("toolPanchangName"));
+  set("#tool-panchang-sub", t("toolPanchangSub"));
+  set("#tool-muhurat-name", t("toolMuhuratName"));
+  set("#tool-muhurat-sub", t("toolMuhuratSub"));
+
+  // Muhurat stage
+  set("#muhurat-title", t("muhuratTitle"));
+  set("#muhurat-sub", t("muhuratSub"));
+  set("#lbl-muhurat-event", t("lblMuhuratEvent"));
+  set("#lbl-muhurat-place", t("lblMuhuratPlace"));
+  set("#lbl-muhurat-from", t("lblMuhuratFrom"));
+  set("#lbl-muhurat-to", t("lblMuhuratTo"));
+  set("#btn-muhurat-search", t("btnMuhuratSearch"));
   // Birth screen
   set("#birth-title", t("birthTitle"));
   set("#birth-sub", t("birthSub"));
@@ -1987,7 +2056,8 @@ $("#dash-nav-doshas")?.addEventListener("click", async () => {
 
     // Kaal Sarp
     const ks = data.kaal_sarp;
-    const ksBadge = ks.is_formed ? `<span class="badge caution">Kaal Sarp formed (${ks.type})</span>` : '<span class="badge excellent">No Kaal Sarp</span>';
+    const ksTypeName = ks.type?.name ?? "Formed";
+    const ksBadge = ks.forms ? `<span class="badge caution">Kaal Sarp formed (${escapeHtml(ksTypeName)})</span>` : '<span class="badge excellent">No Kaal Sarp</span>';
 
     content.innerHTML = `
       <div class="dosha-group">
@@ -2020,7 +2090,7 @@ $("#dash-nav-doshas")?.addEventListener("click", async () => {
         <div class="dosha-badge-row">
           ${ksBadge}
         </div>
-        <p>Forms when all seven classical planets are hemmed between Rahu and Ketu. ${ks.is_formed ? `Your chart forms the <b>${escapeHtml(ks.type)}</b> type of Kaal Sarp.` : "Your planets are distributed freely, forming no Kaal Sarp alignment."}</p>
+        <p>Forms when all seven classical planets are hemmed between Rahu and Ketu. ${ks.forms ? `Your chart forms the <b>${escapeHtml(ks.type?.name ?? "Kaal Sarp")}</b> type of Kaal Sarp (Rahu in house ${escapeHtml(ks.type?.rahu_house ?? "—")}).` : "Your planets are distributed freely, forming no Kaal Sarp alignment."}</p>
       </div>
     `;
   } catch (ex) {

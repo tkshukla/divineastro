@@ -57,6 +57,7 @@ class OrderIn(BaseModel):
     sku: str
     birth_id: int | None = None
     coupon_code: str | None = None
+    report_topic: str | None = None
 
 
 class CouponPreviewIn(BaseModel):
@@ -365,7 +366,7 @@ def create_order(body: OrderIn, user: User = Depends(me),
                  db: Session = Depends(get_db)) -> dict:
     try:
         order, checkout = billing.create_order(
-            db, user, body.sku, body.birth_id, body.coupon_code)
+            db, user, body.sku, body.birth_id, body.coupon_code, body.report_topic)
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
     except Exception as exc:
@@ -610,6 +611,7 @@ def _order_dict(o: Order) -> dict:
         "created_at": o.created_at.strftime("%d %b %Y"),
         "paid_at": o.paid_at.strftime("%d %b %Y") if o.paid_at else None,
         "delivered": bool(o.delivered_path),
+        "report_topic": o.report_topic,
         # Coupon trail — paise, so the client can render exact rupees.
         "amount_paise": o.amount_paise,
         "original_amount_paise": o.original_amount_paise or o.amount_paise,

@@ -320,6 +320,7 @@ class Order(Base):
     fulfil_note: Mapped[str] = mapped_column(Text, default="")
     delivered_path: Mapped[str] = mapped_column(String(255), default="")
     birth_id: Mapped[int | None] = mapped_column(ForeignKey("birth_profiles.id"), nullable=True)
+    report_topic: Mapped[str | None] = mapped_column(String(64), nullable=True, default=None)
 
     # --- manual UPI collection -------------------------------------------
     # What the customer claims, and who checked it.

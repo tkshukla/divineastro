@@ -72,6 +72,11 @@
         <span class="tool-name" id="tool-panchang-name">Today's Panchang</span>
         <span class="tool-sub" id="tool-panchang-sub">Tithi, nakshatra and Rahu Kaal</span>
       </button>
+      <button type="button" class="tool-card" id="open-muhurat">
+        <span class="tool-icon">&#11088;</span>
+        <span class="tool-name" id="tool-muhurat-name">Muhurat Finder</span>
+        <span class="tool-sub" id="tool-muhurat-sub">Auspicious dates for marriage, house &amp; events</span>
+      </button>
     </div>
 
     <!-- Saved charts live here on the home screen: a returning customer opens
@@ -353,6 +358,54 @@
     <p id="panchang-error" class="error" hidden></p>
 
     <div id="panchang-result" hidden></div>
+  </div>
+</section>
+
+<!-- ==================== MUHURAT ==================== -->
+<section id="stage-muhurat" class="stage">
+  <div class="tool-inner">
+    <h1 id="muhurat-title">Muhurat Finder</h1>
+    <p class="tagline" id="muhurat-sub">
+      Find classical auspicious dates and timings for marriage, house warming, ceremonies and important events.
+    </p>
+
+    <form class="card" id="muhurat-form" autocomplete="off">
+      <div class="row">
+        <div class="field">
+          <label id="lbl-muhurat-event">Event / Ceremony</label>
+          <select id="mu-event" style="width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); color:var(--ink); border:1px solid var(--line);">
+            <option value="marriage">Marriage / Vivaha (विवाह)</option>
+            <option value="griha_pravesh">House Warming / Griha Pravesh (गृह प्रवेश)</option>
+            <option value="mundan">Tonsure / Mundan (मुंडन संस्कार)</option>
+            <option value="namkaran">Naming / Namkaran (नामकरण)</option>
+            <option value="general" selected>General Auspicious (सर्वकार्य शुभ)</option>
+          </select>
+        </div>
+        <div class="field place">
+          <label id="lbl-muhurat-place">Place</label>
+          <input type="text" id="mu-place" placeholder="Start typing a city…" />
+          <ul class="suggest" id="mu-results" hidden></ul>
+          <p class="chosen" id="mu-chosen" hidden></p>
+        </div>
+      </div>
+      <div class="row" style="margin-top: 12px;">
+        <div class="field">
+          <label id="lbl-muhurat-from">From Date</label>
+          <input type="date" id="mu-from" />
+        </div>
+        <div class="field">
+          <label id="lbl-muhurat-to">To Date</label>
+          <input type="date" id="mu-to" />
+        </div>
+      </div>
+      <button type="button" class="primary" id="muhurat-go" style="margin-top:16px; width:100%;">
+        <span class="label" id="btn-muhurat-search">Find Auspicious Dates</span>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+    </form>
+    <p id="muhurat-error" class="error" hidden></p>
+
+    <div id="muhurat-result" hidden></div>
   </div>
 </section>
 

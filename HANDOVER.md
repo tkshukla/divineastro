@@ -106,10 +106,12 @@ checked against Postgres directly.
 > `.gitignore` alone is not a safety net. Grep staged *content* for
 > `sk-ant-api03`, `GOCSPX-`, `AIza…`, `xkeysib-`, `BEGIN … PRIVATE KEY`.
 
-**Quality**
+**Quality & Features**
 
-- [ ] Guna Milan results are English-only; the koota notes are untranslated.
-- [ ] Sade Sati and Kaal Sarp have API endpoints but no UI.
+- [x] **Guna Milan bilingual localization** — Complete English & Devanagari Hindi translations for all 8 kootas, score bands, and Mangal Dosha.
+- [x] **Sade Sati and Kaal Sarp UI** — Dashboard doshas modal renders Manglik, Sade Sati phase breakdown, and Kaal Sarp types.
+- [x] **Muhurat Finder** — Deterministic classical electional engine and stage for Marriage, Griha Pravesh, Mundan, Namkaran, and General events.
+- [x] **Single-Question Paid Reports** — Paid targeted PDF consultations (Career, Marriage Timing, Wealth & Business) with payment gating (`report_topic`).
 - [ ] Divisional charts never cross-checked against Jagannatha Hora. The
       internal check used `Fraction` to avoid float error at exact 3°20′
       boundaries and found zero mismatches, but that is self-verification.

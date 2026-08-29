@@ -45,6 +45,7 @@ class PersonIn(BaseModel):
 class MatchIn(BaseModel):
     groom: PersonIn
     bride: PersonIn
+    lang: str = "en"
 
 
 def _chart(p: PersonIn):
@@ -79,7 +80,7 @@ def kundali_milan(body: MatchIn) -> dict:
     """36-point Ashtakoot Guna Milan plus Mangal Dosha for both people."""
     groom, bride = _chart(body.groom), _chart(body.bride)
     try:
-        result = matching.match(groom, bride)
+        result = matching.match(groom, bride, lang=body.lang)
     except matching.MatchingError as exc:
         raise HTTPException(400, str(exc)) from exc
 
@@ -91,6 +92,8 @@ def kundali_milan(body: MatchIn) -> dict:
     }
     if not (body.groom.time_known and body.bride.time_known):
         result["caveat"] = (
+            "जन्म समय उपलब्ध न होने से दोपहर 12:00 का समय लिया गया है। 36 गुण मिलान चंद्र पर आधारित होने से सटीक है, किंतु मांगलिक विचार लग्न पर निर्भर होने से सांकेतिक है।"
+            if body.lang == "hi" else
             "A birth time is missing, so noon was used. The 36-point score is "
             "unaffected — it depends only on the Moon — but the Manglik verdict "
             "depends on the ascendant and should not be relied on here."
@@ -115,3 +118,43 @@ def daily_panchang(
         return panchang_engine.daily_panchang(when, latitude, longitude, tz)
     except ValueError as exc:
         raise HTTPException(400, f"Could not compute the panchang: {exc}") from exc
+
+
+@router.get("/muhurat")
+def get_muhurat(
+    event: str = Query("general"),
+    from_date: str = Query(...),
+    to_date: str = Query(...),
+    latitude: float = Query(..., ge=-90, le=90),
+    longitude: float = Query(..., ge=-180, le=180),
+    timezone: str = "",
+    language: str = "en",
+) -> dict:
+    """Find auspicious dates for an event within a date range."""
+    from .astro import muhurat
+    tz = timezone or geo.timezone_for(latitude, longitude)
+    try:
+        d_from = dt.date.fromisoformat(from_date)
+        d_to = dt.date.fromisoformat(to_date)
+    except ValueError:
+        raise HTTPException(400, "Invalid date format. Use YYYY-MM-DD.") from None
+
+    try:
+        results = muhurat.find_muhurat(
+            event=event,
+            from_date=d_from,
+            to_date=d_to,
+            latitude=latitude,
+            longitude=longitude,
+            timezone=tz,
+            language=language
+        )
+        return {
+            "event": event,
+            "from_date": from_date,
+            "to_date": to_date,
+            "days": results,
+            "count": len(results),
+        }
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc

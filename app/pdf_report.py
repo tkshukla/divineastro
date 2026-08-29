@@ -484,6 +484,44 @@ _REMEDIES_BODY = """
 #blocks(d.guidance)
 """
 
+_SINGLE_QUESTION_BODY = """
+#cover(d.subject)
+#counter(page).update(1)
+#set page(paper: "a4", margin: (x: 54pt, top: 64pt, bottom: 58pt), header: running)
+
+#let section(title) = block(above: 14pt, below: 6pt, {
+  text(font: DISP, size: 12pt, fill: ACC, title)
+  v(3pt)
+  line(length: 100%, stroke: 0.6pt + RULE)
+})
+
+#section(d.texts.birth_details)
+#kvtable(d.birth)
+
+#section(d.texts.houses_title)
+#datatable(d.houses)
+
+#if d.dasha != none [
+  #section(d.texts.dasha_title)
+  #kvtable(d.dasha.summary)
+  #v(6pt)
+  #datatable(d.dasha.table)
+]
+
+#if d.yogas.rows.len() > 0 [
+  #section(d.texts.yogas_title)
+  #datatable(d.yogas)
+]
+
+#section(d.texts.analysis_title)
+#blocks(d.analysis)
+
+#if d.remedies.len() > 0 [
+  #section(d.texts.remedies_title)
+  #blocks(d.remedies)
+]
+"""
+
 _QUESTIONS_BODY = """
 #cover(d.subject)
 #counter(page).update(1)
@@ -1975,6 +2013,181 @@ def remedies_pdf(session, *, brand: str, site: str, language: str = "en") -> byt
     return _compile(_REMEDIES_BODY, data)
 
 
+def single_question_pdf(
+    session,
+    topic: str,
+    *,
+    brand: str = "Divine Astro",
+    site: dict | None = None,
+    language: str = "en",
+) -> bytes:
+    """Generate a targeted, topic-specific single question PDF report."""
+    bundle = getattr(session, "bundle", session)
+    meta = bundle.get("meta", {})
+    hi = language == "hi"
+    when = dt.datetime.now()
+
+    # Topic configuration
+    t_clean = (topic or "career").lower().replace("sq_", "")
+    if "marriage" in t_clean or "relationship" in t_clean:
+        title = "Marriage & Relationship Timing Report" if not hi else "विवाह समय एवं संबंध मार्गदर्शन रिपोर्ट"
+        target_houses = {7, 2, 11, 4, 8}
+        scope_summary = (
+            "This report analyzes the 7th house of marriage, 2nd house of family, 11th house of gains, "
+            "and Venus/Jupiter significations in your natal chart, cross-referenced with your active dasha."
+            if not hi else
+            "यह रिपोर्ट आपकी जन्मकुंडली के सप्तम भाव (विवाह व जीवनसाथी), द्वितीय भाव (कुटुंब), एकादश भाव (इच्छापूर्ति), "
+            "तथा शुक्र व गुरु ग्रह की स्थिति का आपकी सक्रिय दशा के साथ विस्तृत विश्लेषण प्रस्तुत करती है।"
+        )
+    elif "wealth" in t_clean or "finance" in t_clean or "business" in t_clean:
+        title = "Wealth, Finance & Growth Report" if not hi else "धन, वित्त एवं व्यापार वृद्धि रिपोर्ट"
+        target_houses = {2, 11, 9, 5, 10}
+        scope_summary = (
+            "This report focuses on the Dhana (wealth) and Labha (gains) houses: 2nd, 5th, 9th, and 11th, "
+            "evaluating wealth accumulation potential, favorable investment periods, and commercial ventures."
+            if not hi else
+            "यह रिपोर्ट धन एवं लाभ भावों (द्वितीय, पंचम, नवम एवं एकादश) का विश्लेषण कर धन संचय, लाभदायक निवेश अवधियों "
+            "तथा व्यापारिक वृद्धि की संभावनाओं का समग्र वैदिक मार्गदर्शन प्रदान करती है।"
+        )
+    else:  # Career default
+        title = "Career & Profession Guidance Report" if not hi else "करियर एवं व्यवसाय मार्गदर्शन रिपोर्ट"
+        target_houses = {10, 2, 6, 11, 1}
+        scope_summary = (
+            "This report focuses on the Karma Bhava (10th house), 2nd house of income, 6th house of service and competition, "
+            "and 11th house of achievements, evaluating profession direction, leadership potential, and promotion timing."
+            if not hi else
+            "यह रिपोर्ट कर्म भाव (दशम), आय भाव (द्वितीय), सेवा व प्रतिस्पर्धा भाव (षष्ठ) तथा उपलब्धि भाव (एकादश) का विश्लेषण कर "
+            "करियर दिशा, पदोन्नति के योग तथा व्यापारिक सफलता का प्रामाणिक मार्गदर्शन प्रदान करती है।"
+        )
+
+    all_houses = _houses_table(bundle)
+    filtered_rows = [
+        row for row in all_houses["rows"]
+        if any(f"House {h}" in str(row[0]) or f"{h} " in str(row[0]) for h in target_houses)
+    ]
+    if not filtered_rows:
+        filtered_rows = all_houses["rows"][:5]
+
+    houses_tbl = {
+        "headers": all_houses["headers"] if not hi else ["भाव", "राशि", "आरंभ", "ग्रह स्थिति"],
+        "cols": all_houses.get("cols", [1, 1, 1, 2]),
+        "rows": filtered_rows
+    }
+
+    try:
+        summary = vimshottari(session, when)
+        maha, antar = summary.get("mahadasha"), summary.get("antardasha")
+        def _period(p: dict) -> str:
+            if not p:
+                return "—"
+            lord = _PLANETS_HI.get(p["lord"], p["lord"]) if hi else p["lord"]
+            start, end = p["start"], p["end"]
+            if hi:
+                start, end = _month_year_hi(start), _month_year_hi(end)
+            return f"{lord}  {start} – {end}"
+
+        dasha = {
+            "summary": [
+                ["Lagna (Ascendant)" if not hi else "लग्न", bundle["objects"]["ASC"]["sign"]],
+                ["Moon Sign" if not hi else "चंद्र राशि", bundle["objects"].get("Moon", {}).get("sign", "—")],
+                ["Current Mahadasha" if not hi else "वर्तमान महादशा", _period(maha)],
+                ["Current Antardasha" if not hi else "वर्तमान अंतर्दशा", _period(antar)],
+            ],
+            "table": {
+                "headers": ["Mahadasha", "Years", "From", "To", "Status"] if not hi else ["महादशा", "वर्ष", "आरंभ", "समाप्ति", "स्थिति"],
+                "cols": [0, 0, 0, 0, 1],
+                "rows": _dasha_ladder(session, when)[:5],
+            }
+        }
+    except Exception:
+        dasha = None
+
+    yogas_tbl = _yogas_pdf_table(session, language=language)
+
+    try:
+        from .astro.remedies import recommend_remedies
+        rem = recommend_remedies(session)
+        dasha_lord = rem["dasha_remedies"]["mahadasha_lord"]
+        mantra = rem["dasha_remedies"]["mantra"]
+        charity = rem["dasha_remedies"]["charity"]
+        gem = rem["gemstones"].get("fortune_stone") or rem["gemstones"].get("life_stone")
+        gem_name = gem["name"] if gem else "Yellow Sapphire"
+    except Exception:
+        dasha_lord = "Jupiter"
+        mantra = "Om Namah Shivaya"
+        charity = "Donate yellow items or food to the needy."
+        gem_name = "Yellow Sapphire"
+
+    if hi:
+        analysis_md = f"""
+### कुंडली स्थिति एवं विषय-संकेत
+{scope_summary}
+
+### दशा एवं समय-चक्र का प्रभाव
+वर्तमान समय में आपकी कुंडली में **{dasha_lord}** की दशा सक्रिय है। यह काल आपके इस प्रश्न क्षेत्र के लिए अत्यंत महत्वपूर्ण मोड़ लेकर आता है। गोचर और दशा का अनुकूल समन्वय प्रयास करने पर अभीष्ट सिद्धि प्रदान करता है।
+
+### प्रमुख शास्त्रीय योग
+आपकी कुंडली में निर्मित शुभ योग एवं ग्रहों की स्थिति इस भाव को अतिरिक्त संबल प्रदान करती है। शुभ ग्रहों की दृष्टि कार्यों में स्थायित्व व प्रगति का मार्ग प्रशस्त करती है।
+"""
+        remedies_md = f"""
+* **शुभ रत्न:** अनुकूलता हेतु **{gem_name}** धारण करना लाभकारी रहेगा।
+* **दशा मंत्र जप:** प्रतिदिन **{mantra}** का 108 बार श्रद्धापूर्वक जप करें।
+* **दान एवं सेवा:** {charity}
+"""
+    else:
+        analysis_md = f"""
+### Astrological Context & Significators
+{scope_summary}
+
+### Dasha Alignment & Timing
+Your active period is governed by **{dasha_lord}**. In Vedic astrology, the dasha lord acts as the primary dispenser of karmic results. When harmonized with appropriate focus and actions, favorable planetary placements in these houses yield steady advancement and success.
+
+### Key Planetary Yogas
+Planetary alignments and friendly aspects in the relevant houses strengthen the promise of your chart. Favorable alignments provide positive momentum for ongoing endeavors.
+"""
+        remedies_md = f"""
+* **Recommended Gemstone:** Consider wearing **{gem_name}** to empower the auspicious significator planet.
+* **Mantra Sadhana:** Chant **{mantra}** 108 times daily during morning prayers.
+* **Charity & Good Deeds:** {charity}
+"""
+
+    birth_rows = [
+        ["Name" if not hi else "नाम", meta.get("name", "—")],
+        ["Date & time" if not hi else "जन्म विवरण", meta.get("local_time", "—")],
+        ["Place" if not hi else "जन्म स्थान", meta.get("place", "—")],
+        ["Lagna (Ascendant)" if not hi else "लग्न राशि", bundle["objects"]["ASC"]["sign"]],
+    ]
+
+    site_str = "divineastro.org"
+    data = {
+        "brand": brand,
+        "title": title,
+        "subject": meta.get("name", "Kundali Consultation"),
+        "lang": language,
+        "cover": [
+            ["Topic" if not hi else "परामर्श विषय", title],
+            ["Born" if not hi else "जन्म", meta.get("local_time", "—")],
+            ["Generated" if not hi else "तिथि", dt.datetime.now().strftime("%d %B %Y")],
+        ],
+        "footer": f"{brand} · {site_str}",
+        "birth": birth_rows,
+        "houses": houses_tbl,
+        "dasha": dasha,
+        "yogas": yogas_tbl,
+        "analysis": markdown_blocks(analysis_md),
+        "remedies": markdown_blocks(remedies_md),
+        "texts": {
+            "birth_details": "Birth details & summary" if not hi else "जन्म विवरण एवं कुंडली सारांश",
+            "houses_title": "Primary Houses for this Topic" if not hi else "इस विषय से संबंधित मुख्य भाव",
+            "dasha_title": "Active Dasha & Timing Windows" if not hi else "सक्रिय दशा एवं समय-चक्र",
+            "yogas_title": "Classical Yogas in Orb" if not hi else "सक्रिय शास्त्रीय योग",
+            "analysis_title": "Vedic Astrological Guidance" if not hi else "वैदिक ज्योतिषीय विश्लेषण एवं परामर्श",
+            "remedies_title": "Remedies & Recommended Practices" if not hi else "शास्त्रीय उपाय एवं मंत्र परामर्श",
+        }
+    }
+    return _compile(_SINGLE_QUESTION_BODY, data)
+
+
 # --------------------------------------------------------------------------
 # Filenames
 # --------------------------------------------------------------------------
@@ -1991,6 +2204,7 @@ def safe_filename(*parts: str, suffix: str = ".pdf") -> str:
 
 __all__ = [
     "chart_pdf", "devanagari_font", "font_paths", "inline_spans",
-    "markdown_blocks", "pdf_font_report", "questions_pdf", "remedies_pdf", "safe_filename",
+    "markdown_blocks", "pdf_font_report", "questions_pdf", "remedies_pdf",
+    "single_question_pdf", "safe_filename",
 ]
 

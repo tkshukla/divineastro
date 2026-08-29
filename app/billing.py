@@ -102,6 +102,22 @@ PRODUCTS: dict[str, Product] = {p.sku: p for p in [
             "Three hand-written pages plus three questions answered personally.",
             "तीन हस्तलिखित पृष्ठ और तीन प्रश्नों के व्यक्तिगत उत्तर।",
             pages=3, highlight=True),
+
+    Product("sq_career", "Career & Profession Report", "करियर एवं व्यवसाय मार्गदर्शन रिपोर्ट",
+            11100, 0, "single_question",
+            "Targeted Vedic guidance on career direction, promotions, business and financial timing.",
+            "करियर दिशा, पदोन्नति, व्यापार और वित्तीय समय पर लक्षित वैदिक मार्गदर्शन रिपोर्ट।",
+            pages=2, highlight=True),
+    Product("sq_marriage_timing", "Marriage & Relationship Report", "विवाह समय एवं संबंध मार्गदर्शन रिपोर्ट",
+            11100, 0, "single_question",
+            "Targeted Vedic analysis of marriage timing, spouse characteristics and relationship compatibility.",
+            "विवाह समय, जीवनसाथी के लक्षण और वैवाहिक अनुकूलता पर लक्षित वैदिक रिपोर्ट।",
+            pages=2),
+    Product("sq_wealth_business", "Wealth, Finance & Growth Report", "धन, वित्त एवं व्यापार वृद्धि रिपोर्ट",
+            11100, 0, "single_question",
+            "Targeted Vedic insight into wealth houses, investments, business ventures and prosperity periods.",
+            "धन भावों, निवेश, व्यापारिक उद्यमों और समृद्धि अवधियों पर लक्षित वैदिक रिपोर्ट।",
+            pages=2),
 ]}
 
 
@@ -114,7 +130,8 @@ def catalogue(kind: str | None = None) -> list[dict]:
 # --------------------------------------------------------------------------
 
 def create_order(db: Session, user, sku: str, birth_id: int | None = None,
-                 coupon_code: str | None = None) -> tuple[Order, dict]:
+                 coupon_code: str | None = None,
+                 report_topic: str | None = None) -> tuple[Order, dict]:
     """Create the local order, then ask the active gateway to open a session.
 
     A coupon is priced here, once, and the result is frozen onto the order:
@@ -134,6 +151,7 @@ def create_order(db: Session, user, sku: str, birth_id: int | None = None,
         if coupon is None:
             raise ValueError(message or "That coupon cannot be used.")
 
+    topic = report_topic or (product.sku if product.kind == "single_question" else None)
     gateway = gateways.active()
     order = Order(
         user_id=user.id,
@@ -145,6 +163,7 @@ def create_order(db: Session, user, sku: str, birth_id: int | None = None,
         coupon_id=coupon.id if coupon else None,
         credits=product.credits + bonus,
         birth_id=birth_id,
+        report_topic=topic,
         fulfilment=(FulfilStatus.pending if product.kind == "kundali"
                     else FulfilStatus.not_applicable),
         provider=gateway.key,
@@ -155,6 +174,24 @@ def create_order(db: Session, user, sku: str, birth_id: int | None = None,
     checkout = gateway.create(order, user)
     db.commit()
     return order, checkout
+
+
+def has_paid_report(db: Session, user, sku: str | None = None,
+                    birth_id: int | None = None,
+                    topic: str | None = None) -> Order | None:
+    """Check if the user has a paid order for this single-question report or sku."""
+    query = select(Order).where(
+        Order.user_id == user.id,
+        Order.status == OrderStatus.paid,
+    )
+    if sku:
+        query = query.where(Order.sku == sku)
+    if topic:
+        query = query.where(Order.report_topic == topic)
+    if birth_id is not None:
+        query = query.where((Order.birth_id == birth_id) | (Order.birth_id == None))
+    query = query.order_by(Order.id.desc())
+    return db.execute(query).scalars().first()
 
 
 # --------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-/* Free Vedic tools: Kundali Milan and Panchang.
+/* Free Vedic tools: Kundali Milan, Panchang, and Muhurat Finder.
  *
  * Deliberately self-contained. The birth form in app.js has its own place
  * autocomplete wired to specific element ids; generalising it would have meant
@@ -20,8 +20,6 @@
   };
 
   /* ---------------------------------------------------------- place picker */
-  /* Attaches to an input + <ul> pair and reports the chosen place through a
-     callback. Returns a getter so the caller never reads the DOM itself. */
   function placePicker(input, list, chosenEl) {
     let chosen = null;
     let timer = null;
@@ -38,7 +36,6 @@
         let places = [];
         try {
           const res = await fetch(`/api/places?q=${encodeURIComponent(term)}`);
-          // The endpoint returns { results: [...] } — not { places: [...] }.
           places = (await res.json()).results || [];
         } catch { hide(); return; }
         if (!places.length) { hide(); return; }
@@ -72,10 +69,11 @@
   q('#open-milan')?.addEventListener('click', () => showStage('stage-milan'));
   q('#open-panchang')?.addEventListener('click', () => {
     showStage('stage-panchang');
-    // Load something immediately rather than showing an empty screen: a
-    // panchang with no location is useless, so fall back to Delhi until the
-    // visitor picks their own city.
     if (!q('#panchang-result').innerHTML) loadPanchang();
+  });
+  q('#open-muhurat')?.addEventListener('click', () => {
+    showStage('stage-muhurat');
+    initMuhuratDates();
   });
 
   /* ---------------------------------------------------------- kundali milan */
@@ -112,7 +110,8 @@
     err.hidden = true;
     let payload;
     try {
-      payload = { groom: readSide('groom'), bride: readSide('bride') };
+      const currentLang = (typeof state !== 'undefined' && state.lang) ? state.lang : 'en';
+      payload = { groom: readSide('groom'), bride: readSide('bride'), lang: currentLang };
     } catch (ex) { err.textContent = ex.message; err.hidden = false; return; }
 
     btn.disabled = true; btn.classList.add('busy');
@@ -144,14 +143,16 @@
       </tr>`).join('');
 
     const manglik = (who, m) => {
-      const flags = ['lagna', 'moon', 'venus']
-        .filter((ref) => m[ref] && m[ref].afflicted)
-        .map((ref) => ref === 'lagna' ? 'ascendant' : ref);
+      if (!m) return '';
+      const refs = (m.references || []).filter(r => r.afflicted).map(r => r.reference);
+      const isAff = m.manglik;
       return `<li><b>${esc(who)}:</b> ${
-        flags.length
-          ? `Manglik by the ${flags.join(', ')} reading${flags.length > 1 ? 's' : ''}`
-          : 'not Manglik'}${m.severity ? ` — ${esc(m.severity)}` : ''}</li>`;
+        isAff
+          ? `Manglik (${esc(m.severity || 'mild')})`
+          : 'Not Manglik'}${m.summary ? ` — ${esc(m.summary)}` : ''}</li>`;
     };
+
+    const cancellations = (ak.cancellations_applied || []).map(c => typeof c === 'object' ? `${c.koota}: ${c.reason}` : c).join('; ');
 
     q('#milan-result').innerHTML = `
       <div class="milan-score ${tone}">
@@ -159,21 +160,21 @@
         <div class="ms-meta">
           <div class="ms-verdict">${esc(ak.verdict || '')}</div>
           <div class="ms-bar"><i style="width:${pct}%"></i></div>
-          ${ak.cancellations_applied && ak.cancellations_applied.length
-            ? `<div class="ms-note">${esc(ak.total_before_cancellation)} before
-                 cancellation — ${esc(ak.cancellations_applied.join('; '))}</div>` : ''}
+          ${cancellations
+            ? `<div class="ms-note">${esc(ak.total_before_cancellation)} ${tr('beforeCancellation', 'before cancellation')} — ${esc(cancellations)}</div>` : ''}
         </div>
       </div>
 
       <table class="koota-table"><tbody>${rows}</tbody></table>
 
       <div class="card milan-extra">
-        <h3>${esc(tr('mangalTitle', 'Mangal Dosha'))}</h3>
-        <ul>${manglik(ak.groom.name || 'Groom', d.mangal.groom)}
-            ${manglik(ak.bride.name || 'Bride', d.mangal.bride)}</ul>
-        ${d.mangal.compatible === false
-          ? `<p class="warn-line">${esc(d.mangal.note || '')}</p>`
-          : d.mangal.note ? `<p class="muted-line">${esc(d.mangal.note)}</p>` : ''}
+        <h3>${esc(tr('mangalTitle', 'Mangal Dosha Analysis'))}</h3>
+        <ul style="line-height: 1.6; font-size: 13.5px; padding-left: 18px; margin: 10px 0;">
+          ${manglik(ak.groom.name || 'Groom (वर)', d.mangal.groom)}
+          ${manglik(ak.bride.name || 'Bride (कन्या)', d.mangal.bride)}
+        </ul>
+        ${d.mangal.pair?.note ? `<p style="margin-top: 10px; color: var(--gold);">${esc(d.mangal.pair.note)}</p>` : ''}
+        ${d.mangal.pair?.tradition_note ? `<p class="muted-line" style="margin-top: 6px; font-size: 12px;">${esc(d.mangal.pair.tradition_note)}</p>` : ''}
       </div>
 
       ${d.caveat ? `<p class="warn-line">${esc(d.caveat)}</p>` : ''}
@@ -195,8 +196,6 @@
   async function loadPanchang() {
     const err = q('#panchang-error');
     err.hidden = true;
-    // New Delhi until the visitor says otherwise — an empty panchang screen
-    // would be worse than a defaulted one.
     const place = paPlace || paPick() ||
       { latitude: 28.6139, longitude: 77.2090, timezone: 'Asia/Kolkata', label: 'New Delhi, India' };
     const params = new URLSearchParams({
@@ -219,7 +218,6 @@
   const span = (w) => (w ? `${hhmm(w.start)} – ${hhmm(w.end)}` : '—');
 
   function renderPanchang(p, label) {
-    // tithi/nakshatra/yoga/karana are lists: a vedic day can carry two of each.
     const limb = (rows, key) => (rows || []).map((r) =>
       `<div class="limb-line"><b>${esc(r.label || r.name)}</b> ` +
       `<span>${esc(tr('until', 'until'))} ${hhmm(r.ends)}</span></div>`).join('') || '—';
@@ -260,5 +258,118 @@
       ${(p.notes || []).length
         ? `<p class="muted-line">${esc(p.notes.join(' '))}</p>` : ''}`;
     q('#panchang-result').hidden = false;
+  }
+
+  /* ---------------------------------------------------------------- muhurat */
+  const muPick = placePicker(q('#mu-place'), q('#mu-results'), q('#mu-chosen'));
+  let muPlace = null;
+
+  function initMuhuratDates() {
+    const today = new Date();
+    const future = new Date();
+    future.setDate(today.getDate() + 30);
+    const toIso = (d) => d.toISOString().slice(0, 10);
+    if (!q('#mu-from').value) q('#mu-from').value = toIso(today);
+    if (!q('#mu-to').value) q('#mu-to').value = toIso(future);
+  }
+
+  q('#mu-place')?.addEventListener('place:chosen', (e) => {
+    muPlace = e.detail;
+  });
+
+  q('#muhurat-go')?.addEventListener('click', async () => {
+    const btn = q('#muhurat-go');
+    const err = q('#muhurat-error');
+    err.hidden = true;
+
+    const event = q('#mu-event').value;
+    const fromDate = q('#mu-from').value;
+    const toDate = q('#mu-to').value;
+    if (!fromDate || !toDate) {
+      err.textContent = 'Please choose both from and to dates.';
+      err.hidden = false;
+      return;
+    }
+
+    const place = muPlace || muPick() ||
+      { latitude: 28.6139, longitude: 77.2090, timezone: 'Asia/Kolkata', label: 'New Delhi, India' };
+
+    const lang = (typeof state !== 'undefined' && state.lang) ? state.lang : 'en';
+    const params = new URLSearchParams({
+      event,
+      from_date: fromDate,
+      to_date: toDate,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      timezone: place.timezone || '',
+      language: lang,
+    });
+
+    btn.disabled = true; btn.classList.add('busy');
+    try {
+      const res = await fetch(`/api/muhurat?${params}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Could not calculate muhurat.');
+      renderMuhurat(data, place.label);
+    } catch (ex) {
+      err.textContent = ex.message; err.hidden = false;
+    } finally {
+      btn.disabled = false; btn.classList.remove('busy');
+    }
+  });
+
+  function renderMuhurat(data, placeLabel) {
+    const days = data.days || [];
+    if (!days.length) {
+      q('#muhurat-result').innerHTML = '<div class="card"><p>No dates found for this range.</p></div>';
+      q('#muhurat-result').hidden = false;
+      return;
+    }
+
+    const rows = days.map((d) => `
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+        <td style="padding: 10px 8px; white-space: nowrap;">
+          <b>${esc(d.date)}</b><br/>
+          <span style="font-size: 11.5px; color: var(--ink-dim);">${esc(d.vara)}</span>
+        </td>
+        <td style="padding: 10px 8px;">
+          <span class="badge ${esc(d.badge)}" style="font-size: 11px;">${esc(d.verdict)}</span>
+        </td>
+        <td style="padding: 10px 8px; font-size: 12.5px;">
+          <b>${esc(d.tithi)}</b> · ${esc(d.nakshatra)}<br/>
+          <span style="font-size: 11.5px; color: var(--ink-dim);">${esc(d.yoga)}</span>
+        </td>
+        <td style="padding: 10px 8px; font-size: 11.5px; color: var(--gold);">
+          ${d.abhijit ? `Abhijit: ${esc(d.abhijit)}` : '—'}
+        </td>
+        <td style="padding: 10px 8px; font-size: 12px;">
+          ${(d.reasons || []).map(r => `<span style="display:block;">• ${esc(r)}</span>`).join('') || '—'}
+        </td>
+      </tr>
+    `).join('');
+
+    q('#muhurat-result').innerHTML = `
+      <div class="card" style="margin-top: 20px; overflow-x: auto;">
+        <h3 style="margin-bottom: 12px; color: var(--gold);">
+          ${esc(tr('muhuratResultsTitle', 'Auspicious Dates Summary'))} — ${esc(placeLabel)}
+        </h3>
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--line); color: var(--ink-dim);">
+              <th style="padding: 8px;">Date / Day</th>
+              <th style="padding: 8px;">Verdict</th>
+              <th style="padding: 8px;">Tithi &amp; Nakshatra</th>
+              <th style="padding: 8px;">Abhijit</th>
+              <th style="padding: 8px;">Evaluation / Reasons</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      </div>
+    `;
+    q('#muhurat-result').hidden = false;
+    q('#muhurat-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 })();

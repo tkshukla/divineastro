@@ -837,6 +837,24 @@ def pdf_remedies(sid: str, request: Request, lang: str = "en") -> Response:
         data, pdf_report.safe_filename(BRAND, "remedies", session.birth.name or "remedies"))
 
 
+@app.get("/api/pdf/single-question/{sid}")
+def pdf_single_question(sid: str, request: Request, sku: str = "sq_career", lang: str = "en") -> Response:
+    """Download a purchased single-question consultation report (Career, Marriage, Wealth)."""
+    with db_session() as db:
+        user = auth.require_user(request, db)
+        order = billing.has_paid_report(db, user, sku=sku, topic=sku)
+        if not order:
+            raise HTTPException(402, "This single-question report requires purchase before downloading.")
+
+    session = _session(sid, request)
+    try:
+        data = pdf_report.single_question_pdf(session, topic=sku, brand=BRAND, site=SITE_URL, language=lang)
+    except Exception as exc:
+        raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
+    return _pdf_response(
+        data, pdf_report.safe_filename(BRAND, sku, session.birth.name or "report"))
+
+
 
 @app.get("/api/pdf/fonts")
 def pdf_fonts(request: Request) -> dict:
