@@ -18,13 +18,16 @@ sources) have a paper trail back to where a rule came from.
   translating its Hindi prose directly, and never naming this specific edition
   in a way that implies it's been redistributed. Its ~1300-entry per-Lagna
   planet-in-house corpus (`app/astro/delineation.py`'s `BHRIGU_LAGNA_HOUSE_TEXT`)
-  is being brought in one Lagna at a time — Aries (Mesha), Taurus (Vrishabha),
-  Gemini (Mithuna), Cancer (Karka), Leo (Simha), Virgo (Kanya), Libra
-  (Tula), Scorpio (Vrishchika), Sagittarius (Dhanu), Capricorn (Makara)
-  and Aquarius (Kumbha) are done — only Pisces remains; the notes file
-  tracks that and two documented per-Lagna gaps (a real scan gap for
-  Aries, an internally contradictory source entry for Taurus — every
-  other Lagna done so far has none).
+  is now **complete for all twelve Lagnas** — Aries (Mesha) through Pisces
+  (Meena) — 1,293 of 1,296 possible entries, with three genuine documented
+  scan-page gaps (Aries/Jupiter 8th-10th houses, Taurus/Jupiter 3rd house,
+  Pisces/Ketu 2nd-4th houses) and one documented internal source
+  contradiction left unresolved rather than guessed (Taurus's Jupiter 3rd
+  house). See the notes file for the full per-Lagna breakdown, including
+  the recurring cross-Lagna patterns (a habit of calling Mercury "friend"
+  to planets the standard table calls neutral or enemy; occasional
+  Guru/Budh body-text mixups resolved via section headers or fixed
+  rulership facts) and every confirmed exaltation/debilitation placement.
 
 - **`ravana_samhita_notes.md`** — a modern compilation presented as "Ravana
   Samhita" (5 volumes; likely still under copyright, same handling as the

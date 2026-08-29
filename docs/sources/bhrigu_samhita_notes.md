@@ -264,14 +264,43 @@ left absent, never guessed at, and flagged if actually noticed.
   exalted in Taurus, debilitated in Scorpio; Mars exalted in Capricorn;
   Mercury debilitated in Pisces, exalted in Virgo; Venus exalted in
   Pisces, debilitated in Virgo; Saturn exalted in Libra.
-- **Remaining 1 Lagna (Pisces)** — not yet done, the last of the twelve.
-  `planet_house_text()` falls back cleanly to the Lagna-independent
-  Brihat Jataka table for any Lagna not yet in `BHRIGU_LAGNA_HOUSE_TEXT`,
-  so partial coverage never breaks anything — it just means those
-  natives get the same generic text every Lagna got before this work
-  started. Pisces (Meena) begins at PDF page 539. Note for
-  `tests/test_delineation.py`: with Aquarius now covered, Pisces is the
-  only sign left for the "not yet transcribed" and Saturn-1st-house
-  "royal" examples — once it's done, those checks will need a genuinely
-  different approach (there will be no real sign left to serve as the
-  negative example).
+- **Pisces (Meena)** — the twelfth and final Lagna. 105 of 108 entries.
+  Read from PDF pages 539-580 (chunks `pages_0541-0560.txt`,
+  `pages_0561-0580.txt`; pages 539-545 are the index preamble, full
+  prose resumes at page 545 with Sun). This closes out the full
+  12-Lagna corpus.
+
+  **One genuine documented gap**: Ketu's 2nd, 3rd and 4th houses. The
+  scanned pages themselves jump straight from the end of Ketu's 1st
+  house (page 577) to the start of its 5th (page 578) — a real
+  scan-page loss of the same kind as the Aries/Jupiter gap, not a
+  reading oversight (confirmed by re-reading the page-boundary lines
+  directly). Left absent rather than guessed at.
+
+  One rulership-math correction: the Sun's 11th house entry states
+  "own sign" for what is astronomically Capricorn (Saturn's sign, not
+  the Sun's) — an outright contradiction, not a tradition-specific
+  dignity call. Corrected to "enemy's sign" (Saturn), which is both the
+  astronomically fixed fact and matches this same Lagna's own explicit
+  "enemy Saturn" claim for the Sun's 12th house two entries later — a
+  well-grounded fix, not a guess. A few OCR losses of individual
+  aspect-effect clauses (Moon's 9th house; a couple of section-header
+  labels elsewhere) were written conservatively, inferring only what
+  the surrounding pattern for that Lagna already established, never
+  inventing specifics beyond that. Confirmed correctly-placed dignity
+  facts: Sun exalted in Aries, debilitated in Libra; Moon exalted in
+  Taurus, debilitated in Scorpio; Mars debilitated in Cancer; Mercury
+  exalted in Virgo; Jupiter exalted in Cancer; Venus exalted in Pisces,
+  debilitated in Virgo; Saturn debilitated in Aries.
+
+**All twelve Lagnas of the Bhrigu per-Lagna corpus (`BHRIGU_LAGNA_HOUSE_TEXT`)
+are now complete** — Aries through Pisces, 1,293 of 1,296 possible
+entries (three genuine, documented scan-page gaps: Aries/Jupiter
+8th-10th, Taurus/Jupiter 3rd, Pisces/Ketu 2nd-4th; one further
+documented internal source contradiction left unresolved rather than
+guessed, Taurus's Jupiter 3rd house). `tests/test_delineation.py`
+covers every Lagna's completeness (or documented gap) individually,
+and the module falls back cleanly to the Lagna-independent Brihat
+Jataka table (or, for Rahu/Ketu, raises `KeyError` rather than
+guessing) whenever a specific Lagna/planet/house combination isn't
+covered.

@@ -121,8 +121,14 @@ def main() -> int:
           d.planet_house_text("Venus", 1) == d._VENUS_OVERRIDES[1]
           and d.planet_house_text("Venus", 10) == d._JUPITER_HOUSE_TEXT[10]
           and d.planet_house_text("Venus", 10) != d._BASE_HOUSE_TEXT[10])
-    check("Saturn's 1st house depends on the Lagna sign",
-          d.planet_house_text("Saturn", 1, "Pisces") == d._SATURN_HOUSE1_ROYAL
+    check("Saturn's 1st-house royal/ordinary fallback logic is still "
+          "correct, though now unreachable via any transcribed Lagna — "
+          "all five royal signs are Bhrigu-covered, which is always "
+          "checked first",
+          d._SATURN_LAGNA_ROYAL_SIGNS ==
+          {"Libra", "Sagittarius", "Capricorn", "Aquarius", "Pisces"}
+          and all(d.bhrigu_house_text(sign, "Saturn", 1) is not None
+                  for sign in d._SATURN_LAGNA_ROYAL_SIGNS)
           and d.planet_house_text("Saturn", 1) == d._SATURN_HOUSE1_ORDINARY)
     check("Saturn falls back to the Sun's table for every other house",
           d.planet_house_text("Saturn", 7) == d._BASE_HOUSE_TEXT[7])
@@ -131,8 +137,8 @@ def main() -> int:
     check("an unknown planet is refused",
           _raises(lambda: d.planet_house_text("Rahu", 1), KeyError))
 
-    print("\n2b. Bhrigu per-Lagna house table — Aries, Taurus, Gemini, Cancer, Leo, "
-          "Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius so far")
+    print("\n2b. Bhrigu per-Lagna house table — all twelve Lagnas, Aries "
+          "through Pisces")
     check("bhrigu_house_text() returns the Lagna-specific entry directly",
           d.bhrigu_house_text("Aries", "Sun", 1)
           == d.BHRIGU_LAGNA_HOUSE_TEXT["Aries"]["Sun"][1])
@@ -142,8 +148,10 @@ def main() -> int:
           and d.planet_house_text("Sun", 1, "Aries") != d._BASE_HOUSE_TEXT[1])
     check("without a lagna_sign, the Brihat Jataka fallback is used as before",
           d.planet_house_text("Sun", 1) == d._BASE_HOUSE_TEXT[1])
-    check("a Lagna not yet transcribed (e.g. Pisces) falls back cleanly, no KeyError",
-          d.planet_house_text("Sun", 1, "Pisces") == d._BASE_HOUSE_TEXT[1])
+    check("all twelve Lagnas are now transcribed, so an unrecognised "
+          "Lagna name is the only way left to exercise this fallback, "
+          "and it still falls back cleanly, no KeyError",
+          d.planet_house_text("Sun", 1, "Nonexistent") == d._BASE_HOUSE_TEXT[1])
     check("this table is the only path that can answer for Rahu/Ketu, and it "
           "does, for the Lagnas it covers",
           d.planet_house_text("Rahu", 5, "Aries") is not None
@@ -157,10 +165,18 @@ def main() -> int:
           and d.planet_house_text("Rahu", 5, "Scorpio") is not None
           and d.planet_house_text("Rahu", 5, "Sagittarius") is not None
           and d.planet_house_text("Rahu", 5, "Capricorn") is not None
-          and d.planet_house_text("Rahu", 5, "Aquarius") is not None)
-    check("Rahu/Ketu are still refused without a covering Lagna, not guessed at",
-          _raises(lambda: d.planet_house_text("Rahu", 5, "Pisces"), KeyError)
-          and _raises(lambda: d.planet_house_text("Rahu", 5), KeyError))
+          and d.planet_house_text("Rahu", 5, "Aquarius") is not None
+          and d.planet_house_text("Rahu", 5, "Pisces") is not None)
+    check("Rahu/Ketu are still refused without any lagna_sign at all, "
+          "not guessed at",
+          _raises(lambda: d.planet_house_text("Rahu", 5), KeyError))
+    check("Ketu's own documented gap for Pisces (houses 2-4, a real "
+          "scan-page loss) still raises KeyError rather than guessing, "
+          "since Ketu has no non-Bhrigu fallback table to drop to",
+          d.bhrigu_house_text("Pisces", "Ketu", 2) is None
+          and d.bhrigu_house_text("Pisces", "Ketu", 3) is None
+          and d.bhrigu_house_text("Pisces", "Ketu", 4) is None
+          and _raises(lambda: d.planet_house_text("Ketu", 2, "Pisces"), KeyError))
     check("all seven classical grahas have all 12 houses for Aries",
           all(len(d.BHRIGU_LAGNA_HOUSE_TEXT["Aries"][p]) == 12
               for p in ("Sun", "Moon", "Mars", "Mercury", "Venus", "Saturn", "Rahu", "Ketu")))
@@ -239,6 +255,26 @@ def main() -> int:
           {"Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"}
           and all(len(d.BHRIGU_LAGNA_HOUSE_TEXT["Aquarius"][p]) == 12
                   for p in d.BHRIGU_LAGNA_HOUSE_TEXT["Aquarius"]))
+    check("Pisces is the twelfth and final Lagna transcribed, completing "
+          "the corpus — its one documented gap is Ketu's 2nd/3rd/4th "
+          "houses, a real scan-page loss (the source's own printed pages "
+          "jump straight from Ketu's 1st house to its 5th)",
+          set(d.BHRIGU_LAGNA_HOUSE_TEXT["Pisces"]) ==
+          {"Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"}
+          and all(len(d.BHRIGU_LAGNA_HOUSE_TEXT["Pisces"][p]) == 12
+                  for p in ("Sun", "Moon", "Mars", "Mercury", "Jupiter",
+                            "Venus", "Saturn", "Rahu"))
+          and sorted(d.BHRIGU_LAGNA_HOUSE_TEXT["Pisces"]["Ketu"]) ==
+          [1, 5, 6, 7, 8, 9, 10, 11, 12])
+    check("bhrigu_house_text() returns None rather than guessing for "
+          "that Ketu gap",
+          d.bhrigu_house_text("Pisces", "Ketu", 2) is None
+          and d.bhrigu_house_text("Pisces", "Ketu", 3) is None
+          and d.bhrigu_house_text("Pisces", "Ketu", 4) is None)
+    check("all twelve Lagnas of the Bhrigu per-Lagna corpus are now present",
+          set(d.BHRIGU_LAGNA_HOUSE_TEXT) ==
+          {"Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra",
+           "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"})
     check("an unknown Lagna name is simply not found, not an error",
           d.bhrigu_house_text("Nonexistent", "Sun", 1) is None)
 
