@@ -116,6 +116,9 @@ checked against Postgres directly.
 - [x] **Real-Time Choghadiya Clock & Timeline** — 16-slot Day/Night Choghadiya engine with weekday ruler calculation, active slot highlight, and countdown.
 - [x] **Shodashvarga Divisional Charts (D1-D60)** — Complete classical Parashari varga calculations and UI switcher for D1, D3, D7, D9, D10, D12.
 - [x] **Comprehensive Vedic Life Book (35+ Pages)** — Flagship 35+ page master horoscope book PDF (`life_book`) with Shodashvarga, 120-year Dasha ladder, 12-house analysis, and 5-year Varshphal.
+- [x] **Admin Panel Overhaul & Existing Coupons Suite** — Complete existing coupons list with live/paused status, filter/copy codes, usage/discount tracking, KPI Revenue Overview, Customer Account Manager with credit adjustments, Live AI Questions Stream, and Platform System Diagnostics.
+- [x] **Jaimini Chara Karakas & Arudha Padas (A1-A12)** — Classical Jaimini soul purpose analysis (7 Karakas: AK, AmK, BK, MK, PK, GK, DK), Karakamsha Lagna, and 12 Arudha Padas (AL, UL) with bilingual Hindi/English interpretations.
+- [x] **Sudarshana Chakra (Triple-Lagna) Synthesis** — 3-tier simultaneous chart analysis from Janma Lagna, Chandra Lagna, and Surya Lagna with tri-lagna convergence ratings across all 12 houses.
 - [ ] No way to upload or send a finished hand-written kundali scan.
 
 ---
