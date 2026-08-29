@@ -272,11 +272,11 @@ def _check_yoni_table() -> None:
     size = len(YONI_ORDER)
     for i in range(size):
         for j in range(size):
-            if YONI_TABLE[YONI_ORDER[i]][YONI_ORDER[j]] != YONI_TABLE[YONI_ORDER[j]][YONI_ORDER[i]]:
+            if YONI_TABLE[YONI_ORDER[i]][j] != YONI_TABLE[YONI_ORDER[j]][i]:
                 raise AssertionError(f"Yoni table asymmetric at {YONI_ORDER[i]}/{YONI_ORDER[j]}")
     zeros = {
         frozenset((YONI_ORDER[i], YONI_ORDER[j]))
-        for i in range(size) for j in range(size) if YONI_TABLE[i][j] == 0
+        for i in range(size) for j in range(size) if YONI_TABLE[YONI_ORDER[i]][j] == 0
     }
     if zeros != {frozenset(p) for p in YONI_ENEMIES}:
         raise AssertionError("Yoni zero cells do not match the enemy-pair list")
