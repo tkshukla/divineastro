@@ -77,7 +77,7 @@ body.admin-body {
 }
 
 /* ---------- backdrop ---------- */
-#sky { position: fixed; inset: 0; z-index: 0; display: block; }
+#sky { position: fixed; inset: 0; z-index: 0; display: block; pointer-events: none; }
 
 .glow {
   position: fixed;
@@ -499,23 +499,30 @@ body.lang-hi, .lang-hi .bubble {
   position: relative;
   z-index: 1;
   display: none;
-  /* Fill whatever the header leaves, rather than claiming 100% of the body and
-     pushing the header off-screen. min-height:0 lets inner panes scroll. */
-  flex: 1;
+  flex: 1 1 0%;
   min-height: 0;
+  height: 100%;
 }
-.stage.active { display: flex; }
+.stage.active {
+  display: block;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
 
-#stage-birth {
+#stage-birth.active {
+  display: flex;
   flex-direction: column;
   align-items: center;
-  /* `safe` matters: a plain centred flex column that overflows pushes its first
-     child above the scroll origin, where scrolling cannot reach it — the top of
-     the logo was being cut off for good on short windows. */
   justify-content: safe center;
   gap: 26px;
   overflow-y: auto;
   padding: 40px 20px;
+}
+
+#stage-chat.active {
+  display: flex;
+  overflow: hidden;
 }
 
 /* ---------- intro ---------- */
