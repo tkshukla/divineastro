@@ -1301,17 +1301,20 @@ async function loadSavedCharts() {
    saved (or signed out) the form is the landing page exactly as before. */
 /* Screens are plain siblings; exactly one carries .active. Everything routes
    through here so there is one place that decides what is on screen. */
-const STAGES = ["stage-home", "stage-birth", "stage-chat",
-                "stage-milan", "stage-panchang", "stage-dashboard"];
+const STAGES = [
+  "stage-home", "stage-birth", "stage-chat",
+  "stage-milan", "stage-panchang", "stage-muhurat",
+  "stage-choghadiya", "stage-dashboard"
+];
 
 function showStage(id) {
   STAGES.forEach((s) => {
     const el = document.getElementById(s);
     if (el) el.classList.toggle("active", s === id);
   });
-  // Reset BOTH: body is the flex shell and scrolls independently of the
-  // document element, so scrolling only the window leaves the header hidden.
-  window.scrollTo({ top: 0 });
+  document.body.classList.toggle("in-reading", id === "stage-chat");
+  window.scrollTo({ top: 0, behavior: "instant" });
+  document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
 }
 
