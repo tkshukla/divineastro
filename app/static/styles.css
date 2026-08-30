@@ -52,6 +52,7 @@
 
 html {
   margin: 0;
+  padding: 0;
   background: var(--bg-0);
   color: var(--ink);
   font-family: var(--sans);
@@ -59,12 +60,11 @@ html {
   line-height: 1.62;
   -webkit-font-smoothing: antialiased;
   min-height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
 }
 
 body {
   margin: 0;
+  padding: 0;
   background: var(--bg-0);
   color: var(--ink);
   font-family: var(--sans);
@@ -74,14 +74,12 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
-  overflow-y: auto;
 }
 
 /* Chat reading screen locks the viewport so side-by-side panes fill the screen */
-body.in-reading,
-body:has(#stage-chat.active) {
+body.in-reading {
   height: 100vh;
+  max-height: 100vh;
   overflow: hidden;
 }
 
@@ -184,9 +182,9 @@ body.admin-body {
 }
 .home-logo {
   display: none;                     /* revealed by onload */
-  width: min(420px, 82vw);
+  width: min(280px, 65vw);
   height: auto;
-  margin: 0 auto 18px;
+  margin: 0 auto 16px;
   border-radius: 14px;
   filter: drop-shadow(0 0 40px rgba(240, 198, 116, 0.2));
 }
@@ -506,7 +504,7 @@ body.lang-hi, .lang-hi .bubble {
   z-index: 1;
   display: none;
   width: 100%;
-  flex: 1 1 auto;
+  flex: 1 0 auto;
 }
 .stage.active {
   display: block;
