@@ -50,7 +50,8 @@
 
 * { box-sizing: border-box; }
 
-html {
+html, body {
+  height: 100%;
   margin: 0;
   background: var(--bg-0);
   color: var(--ink);
@@ -58,26 +59,15 @@ html {
   font-size: 15.5px;
   line-height: 1.62;
   -webkit-font-smoothing: antialiased;
-  min-height: 100%;
+  overflow: hidden;
 }
 
 body {
-  margin: 0;
-  background: var(--bg-0);
-  color: var(--ink);
-  font-family: var(--sans);
-  font-size: 15.5px;
-  line-height: 1.62;
-  -webkit-font-smoothing: antialiased;
-}
-
-body:not(.admin-body) {
-  height: 100%;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
+html.admin-page,
 body.admin-body {
   height: auto !important;
   min-height: 100vh !important;
@@ -85,14 +75,6 @@ body.admin-body {
   overflow-x: hidden !important;
   display: block !important;
 }
-
-/* The app shell: a header of natural height, then one screen taking the rest.
-   The stages used to be `height: 100%` of the body, which was correct while
-   they were the body's only children. Adding the header in flow made the
-   content exactly one header taller than the viewport, and with overflow
-   hidden the header was pushed off the top of the screen entirely. Flex makes
-   the arithmetic the browser's problem instead of ours. */
-body { display: flex; flex-direction: column; }
 
 /* ---------- backdrop ---------- */
 #sky { position: fixed; inset: 0; z-index: 0; display: block; }
@@ -212,7 +194,18 @@ body { display: flex; flex-direction: column; }
   content: "\269C"; position: absolute; left: 0; color: var(--gold); opacity: 0.75;
 }
 
-#stage-home, #stage-dashboard, #stage-milan, #stage-panchang { flex-direction: column; overflow-y: auto; }
+#stage-home,
+#stage-birth,
+#stage-dashboard,
+#stage-milan,
+#stage-panchang,
+#stage-muhurat,
+#stage-choghadiya {
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
 #stage-home .saved-charts { text-align: left; margin: 0 auto 8px; }
 
 /* Shown above the birth form once the visitor has saved charts, so the form
