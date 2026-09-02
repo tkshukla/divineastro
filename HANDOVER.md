@@ -1,10 +1,63 @@
 # Handover — Divine Astro
 
-Written 20 Aug 2026, at the end of a long session. Point the next session at
-this file.
+Written 20 Aug 2026, updated 2 Sep 2026. Point the next session at this file.
 
 Live at https://divineastro.org · GCP `divineastro`, zone `asia-south1-a`,
 project `astro-505710` · static IP `8.234.96.206`.
+
+## Fixed 2 Sep 2026
+
+- **Every live chat answer was missing all Vedic content.** `/api/ask/stream`
+  (the only endpoint the frontend actually calls) never set `result["vedic"]`,
+  so yogas/dashas/sade-sati/vargottama never reached the narration prompt —
+  confirmed the single highest-impact bug found this session. One-line fix in
+  `main.py`'s `ask_stream()`, mirroring the unused `/api/ask`'s own line.
+- **Kaal Sarp dashboard modal** always showed "No Kaal Sarp" — a key-name
+  mismatch (`ks.is_formed` vs the real `ks.forms`, and `ks.type` treated as a
+  string when it's an object). Fixed in `app.js`; the API and modal were
+  otherwise already correct.
+- **Chat response display cleanup**: paragraph fragmentation (every `\n` was
+  its own `<p>`), bold-marker flicker while streaming, forced scroll-to-bottom
+  on every token, a duplicate error bubble on mid-stream failure, silently
+  dropped keystrokes while busy, starter chips that never went away, no
+  stop/cancel control, and no truncation signal when a narration hit its token
+  cap. See `app.js`'s `markdown()`/`scrollThread()`/the `#ask-form` handler.
+- **Topic misclassification**: "will I get promoted" routed to the generic
+  `timing` topic, not `career` — `topics.py` had "promotion" but not
+  "promoted"/"promote", the same gap class as the dasha-compound fix below.
+  Also widened `gather()`'s evidence caps to match the larger `Topic`
+  definitions, added a post-generation date-auditor check (the "12/12 across a
+  question sweep" claim below had no matching test — there's one now,
+  `tests/test_llm_date_audit.py`), and grounded `generate_spiritual_guidance()`
+  in the chart's actual computed remedies instead of three bare scalars.
+- **UPI payment-claim notification.** `submit_utr()` used to grant nothing and
+  notify nobody — an admin had to remember to check `/admin/upi/pending`. Now
+  emails `ASTRO_ADMIN_EMAILS` via `app/mail.py` (new `ASTRO_SMTP_*` env vars,
+  best-effort — a mail outage never fails the claim). See "No notification…"
+  below, now checked off.
+- **Muhurat finder** — new tool (`app/astro/muhurat.py`, `GET /api/muhurat`,
+  a new tool-card/stage) scanning a date range for the classical red flags
+  (rikta tithi, Amavasya, Bhadra) per event. Deliberately scoped to only the
+  near-universal exclusions — see the module docstring for what it does not
+  claim.
+- **Guna Milan is now bilingual.** `matching.py`'s eight koota functions,
+  Mangal Dosha, and every verdict/label/disclaimer string now have an
+  independently-authored Hindi twin (`lang="hi"`), not a translation layer
+  bolted on after. See "Guna Milan results are English-only" below, now
+  checked off.
+- **Single-question paid reports** — a new `single_question` product kind
+  (`sq_career`, `sq_marriage`, `sq_money`, ₹249 each), gated on an actually-
+  paid `Order` (new `Order.report_topic` column, migration `d4a2f9c1e7b3`),
+  reusing the same `analyse()` + `llm.polish()` pipeline the chat already
+  uses rather than new astrology logic. New `single_question_pdf()` in
+  `pdf_report.py`, new gated `GET /api/pdf/single-question/{sid}` route, new
+  store-modal section in `account.js`. Verified end-to-end against a live
+  dev server in `ASTRO_GATEWAY=test` mode — `tests/test_single_question.py`.
+
+All nine items were tracked as Jira issues in a new `DIVASTRO` project
+(https://marketpandits-yavi.atlassian.net/browse/DIVASTRO-40 through -48) —
+DIVASTRO-40 through 47 are done, DIVASTRO-48 (the credential rotations below)
+is still open pending operator action.
 
 ---
 
@@ -30,9 +83,14 @@ All 11 suites pass, but only under the right environment. Three of them
 
 | Suite | Needs |
 |---|---|
-| `test_money_path`, `test_coupons` | `ASTRO_GATEWAY=test` |
+| `test_money_path`, `test_coupons`, `test_single_question` | `ASTRO_GATEWAY=test` |
 | `test_upi` | `ASTRO_GATEWAY=upi_manual`, `ASTRO_UPI_VPA` |
 | `test_admin` | `ASTRO_ADMIN_EMAILS=owner@divineastro.org` |
+
+Everything else (`test_delineation`, `test_vargas`, `test_matching`,
+`test_panchang`, `test_muhurat`, `test_topic_routing`, `test_llm_date_audit`,
+`test_mail`, `test_remedies_doshas`, `test_sweep`) needs no server and no
+special env — run directly, e.g. `python -m tests.test_matching`.
 
 So run them in two passes: everything except `test_upi` on `test`, then
 `test_upi` on `upi_manual`.
@@ -81,14 +139,20 @@ checked against Postgres directly.
 - [ ] **One real ₹111 UPI payment, end to end**, then approve it in `/admin`.
       Never done with real money. Approving is the only thing that grants
       credits. The admin page works now, but the happy path is unproven.
-- [ ] No notification when a customer claims a UPI payment — you have to look.
+- [x] No notification when a customer claims a UPI payment — fixed 2 Sep,
+      see above. Requires `ASTRO_SMTP_HOST`/`ASTRO_ADMIN_EMAILS` to actually
+      be set in production — neither is filled in on the VM yet.
 
 **Security, from earlier in the project**
 
 - [ ] **Rotate the Google OAuth client secret.** It was pasted in plaintext.
+      Confirmed 2 Sep: read in exactly one place (`auth.py`), so rotation is
+      a pure `.env.production` swap + redeploy, no code change — genuinely
+      needs the operator, not something to do from a session.
 - [ ] **Delete the old Cloudflare API token.** It carried billing and registrar
       rights. If you still want me to manage DNS, issue one scoped to
-      Zone → DNS → Edit on `divineastro.org` only.
+      Zone → DNS → Edit on `divineastro.org` only. Confirmed 2 Sep: not
+      referenced anywhere in this repo — purely a Cloudflare-dashboard action.
 
 **Legal**
 
@@ -108,12 +172,19 @@ checked against Postgres directly.
 
 **Quality**
 
-- [ ] Guna Milan results are English-only; the koota notes are untranslated.
-- [ ] Sade Sati and Kaal Sarp have API endpoints but no UI.
+- [x] Guna Milan results are English-only — fixed 2 Sep, see above.
+- [x] Sade Sati and Kaal Sarp have API endpoints but no UI — turned out to be
+      a UI bug, not a missing UI; fixed 2 Sep, see above.
 - [ ] Divisional charts never cross-checked against Jagannatha Hora. The
       internal check used `Fraction` to avoid float error at exact 3°20′
       boundaries and found zero mismatches, but that is self-verification.
 - [ ] No way to upload or send a finished hand-written kundali scan.
+- [ ] The numeric verdict/score (`app/interpret/engine.py`'s `score_of()`) is
+      still Western-dignity-only and never incorporates yogas/dashas/sade-sati
+      — those live only in the `vedic` text block (now at least reaching the
+      narration prompt, per the fix above). Folding them into the actual score
+      is a real design question — what weight does a Raja Yoga get against a
+      debilitated house lord? — deliberately left for its own pass.
 
 ---
 
