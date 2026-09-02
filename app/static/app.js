@@ -29,6 +29,13 @@ const state = {
   dashaCheck: null,
   births: [],            // saved charts; only ever filled for a signed-in user
   birthMax: 5,           // the server's cap, echoed by GET /api/births
+  // Which saved birth profile (if any) the on-screen chart came from, so
+  // chat history can be scoped to just this chart's questions. Set when the
+  // "load a saved chart" dropdown fires, cleared the moment any birth-form
+  // field is hand-edited afterward (see the #birth-form guard listener) so
+  // an edited-then-cast chart never gets attributed to the wrong profile.
+  selectedBirthId: null,
+  currentBirthId: null,
 };
 
 /* ------------------------------------------------------------
@@ -66,6 +73,9 @@ const I18N = {
     placements: "Placements", houses: "Houses", vargas: "Vargas", ashtakavarga: "Ashtakavarga", jaimini: "Jaimini", sudarshana: "Sudarshana", aspects: "Aspects", now: "Now",
     askPh: "Ask about career, money, love, health, timing…",
     reading: "Reading the chart…", writing: "Writing it out…",
+    responseTruncated: "The response may have been cut short — ask a follow-up to continue it.",
+    responseStopped: "Stopped.",
+    responseDropped: "Connection dropped — this answer may be incomplete.",
     elemental: "Elemental balance", patterns: "Patterns", cusps: "cusps",
     angular: "Angular", succedent: "Succedent", cadent: "Cadent",
     annualProfection: "Annual profection", lordOfYear: "lord of the year",
@@ -225,6 +235,9 @@ const I18N = {
     placements: "ग्रह स्थिति", houses: "भाव", vargas: "वर्ग (D1-D60)", ashtakavarga: "अष्टकवर्ग", jaimini: "जैमिनी कारक", sudarshana: "सुदर्शन चक्र", aspects: "दृष्टि", now: "वर्तमान",
     askPh: "करियर, धन, विवाह, स्वास्थ्य, समय — कुछ भी पूछें…",
     reading: "कुंडली पढ़ी जा रही है…", writing: "उत्तर लिखा जा रहा है…",
+    responseTruncated: "उत्तर अधूरा रह गया हो सकता है — जारी रखने के लिए अगला प्रश्न पूछें।",
+    responseStopped: "रोक दिया गया।",
+    responseDropped: "कनेक्शन टूट गया — यह उत्तर अधूरा हो सकता है।",
     elemental: "तत्व संतुलन", patterns: "योग", cusps: "आरंभ",
     angular: "केन्द्र", succedent: "पणफर", cadent: "आपोक्लिम",
     annualProfection: "वार्षिक प्रोफ़ेक्शन", lordOfYear: "वर्षेश",
@@ -832,39 +845,54 @@ function escapeHtml(s) {
 }
 
 function markdown(src) {
+  // Only a blank line starts a new paragraph — a lone "\n" inside a run of
+  // prose (a soft wrap, or a model that breaks mid-sentence while streaming)
+  // is joined with a space instead of becoming its own <p>. Without this,
+  // ordinary streamed prose fragments into a string of short, choppy blocks.
   const lines = escapeHtml(src).split("\n");
   const out = [];
   let list = null;
+  let para = [];
 
   const inline = (s) =>
     s
+      // An unclosed "**"/"*" left dangling at the end of the still-streaming
+      // buffer (the closing marker just hasn't arrived yet) is held back as
+      // plain text rather than shown as a literal asterisk for one frame.
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+      .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>")
+      .replace(/\*\*[^*]*$/, "")
+      .replace(/(^|[^*])\*[^*\n]*$/, "$1");
 
   const closeList = () => {
     if (list) { out.push(`</${list}>`); list = null; }
   };
+  const flushPara = () => {
+    if (para.length) { out.push(`<p>${inline(para.join(" "))}</p>`); para = []; }
+  };
 
   for (const raw of lines) {
     const line = raw.replace(/\s+$/, "");
-    if (!line.trim()) { closeList(); continue; }
+    if (!line.trim()) { flushPara(); closeList(); continue; }
 
     const head = line.match(/^###\s+(.*)$/);
-    if (head) { closeList(); out.push(`<h3>${inline(head[1])}</h3>`); continue; }
+    if (head) { flushPara(); closeList(); out.push(`<h3>${inline(head[1])}</h3>`); continue; }
 
     const quote = line.match(/^>\s?(.*)$/);
-    if (quote) { closeList(); out.push(`<blockquote>${inline(quote[1])}</blockquote>`); continue; }
+    if (quote) { flushPara(); closeList(); out.push(`<blockquote>${inline(quote[1])}</blockquote>`); continue; }
 
     const bullet = line.match(/^(\s*)[-*]\s+(.*)$/);
     if (bullet) {
+      flushPara();
       if (!list) { list = "ul"; out.push("<ul>"); }
       out.push(`<li>${inline(bullet[2])}</li>`);
       continue;
     }
 
     closeList();
-    out.push(`<p>${inline(line)}</p>`);
+    para.push(line);
   }
+  flushPara();
   closeList();
   return out.join("");
 }
@@ -1230,6 +1258,7 @@ async function castChart(payload) {
   state.sessionId = data.session_id;
   state.chart = data.chart;
   state.currentBirthData = payload;
+  state.currentBirthId = state.selectedBirthId;
   renderReading(data);
   loadAndShowDashboard();
 }
@@ -1446,11 +1475,18 @@ $("#save-chart-btn")?.addEventListener("click", async () => {
   updateSaveButton();
 });
 
+// Any hand-edit after picking a saved chart means the cast payload may no
+// longer match that profile, so the birth_id sent to chat must not either.
+$("#birth-form")?.addEventListener("input", (e) => {
+  if (e.target.id !== "f-quick-saved") state.selectedBirthId = null;
+});
+
 $("#f-quick-saved")?.addEventListener("change", (e) => {
   const val = e.target.value;
   if (!val) return;
   const b = state.births.find(x => x.id === Number(val));
   if (!b) return;
+  state.selectedBirthId = b.id;
 
   $("#f-name").value = b.name || "";
   $("#f-date").value = b.date || "";
@@ -1885,6 +1921,9 @@ $$(".tab").forEach((tab) => {
 });
 
 function renderStarters() {
+  // A fresh chart (or a language switch) gets the chips back — they're only
+  // meant to disappear once *this* conversation has actually started.
+  $("#starters").hidden = false;
   $("#starters").innerHTML = t("starters")
     .map((s) => `<button class="starter" type="button">${escapeHtml(s)}</button>`)
     .join("");
@@ -1901,7 +1940,7 @@ function addUser(text) {
   el.className = "msg user";
   el.innerHTML = `<div class="bubble">${escapeHtml(text)}</div>`;
   $("#thread").append(el);
-  scrollThread();
+  scrollThread(true);
 }
 
 function verdictClass(score) {
@@ -1947,7 +1986,7 @@ function addBot(md, result, withReasoning = true) {
     (withReasoning ? reasoningHtml(result) : "");
   el.append(bubble);
   $("#thread").append(el);
-  scrollThread();
+  scrollThread(true);
   return bubble;
 }
 
@@ -1957,17 +1996,29 @@ function addThinking() {
   el.innerHTML = `<div class="bubble"><div class="thinking">
     <i></i><i></i><i></i><span style="margin-left:6px">Reading the chart…</span></div></div>`;
   $("#thread").append(el);
-  scrollThread();
+  scrollThread(true);
   return el;
 }
 
-function scrollThread() {
+// `force` snaps to the bottom unconditionally — right for a message the
+// visitor's own action just produced (their question, a fresh bot bubble).
+// Without it (the default, used for in-progress streaming deltas), a token
+// arriving mid-stream only pulls the view down if it was already at the
+// bottom, so scrolling up to reread earlier text isn't yanked back down.
+function scrollThread(force = false) {
   const t = $("#thread");
-  t.scrollTop = t.scrollHeight;
+  const nearBottom = t.scrollHeight - t.scrollTop - t.clientHeight < 80;
+  if (force || nearBottom) t.scrollTop = t.scrollHeight;
 }
 
 /* Streams the reading: the engine's verdict lands immediately, then the
    narration model's rewrite arrives token by token over the top of it. */
+let askAbort = null;
+
+$("#stop").addEventListener("click", () => {
+  askAbort?.abort();
+});
+
 $("#ask-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const input = $("#q");
@@ -1975,7 +2026,14 @@ $("#ask-form").addEventListener("submit", async (e) => {
   if (!question || state.busy) return;
 
   state.busy = true;
+  input.disabled = true;
   $("#send").disabled = true;
+  $("#send").hidden = true;
+  $("#stop").hidden = false;
+  // Once a conversation is under way the starter chips are no longer the
+  // point — leaving them up permanently just crowds the space between the
+  // thread and the composer for the rest of the session.
+  $("#starters").hidden = true;
   input.value = "";
   addUser(question);
   const pending = addThinking();
@@ -1983,8 +2041,9 @@ $("#ask-form").addEventListener("submit", async (e) => {
   let bubble = null;
   let result = null;
   let polished = "";
+  let truncated = false;
 
-  const paint = (streaming) => {
+  const paint = () => {
     if (!bubble) return;
     // No "Rewritten by …" tag and no raw-engine disclosure. Which model wrote
     // the sentences, and what the rule engine's own phrasing was, are our
@@ -1995,12 +2054,15 @@ $("#ask-form").addEventListener("submit", async (e) => {
     scrollThread();
   };
 
+  askAbort = new AbortController();
   try {
     const res = await fetch("/api/ask/stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: askAbort.signal,
       body: JSON.stringify({
         session_id: state.sessionId, question,
+        birth_id: state.currentBirthId,
         language: state.lang, provider: state.provider,
       }),
     });
@@ -2051,7 +2113,9 @@ $("#ask-form").addEventListener("submit", async (e) => {
           }
         } else if (type === "delta" && bubble) {
           polished += data.text;
-          paint(true);
+          paint();
+        } else if (type === "truncated" && bubble) {
+          truncated = true;
         } else if (type === "error" && bubble) {
           // Narration failed; the engine's reading is still valid — show that,
           // without announcing the failure. The reading is complete and correct
@@ -2065,13 +2129,39 @@ $("#ask-form").addEventListener("submit", async (e) => {
         }
       }
     }
-    paint(false);
+    paint();
+    if (truncated && bubble) {
+      bubble.insertAdjacentHTML("beforeend",
+        `<p class="incomplete-note">${escapeHtml(t("responseTruncated"))}</p>`);
+    }
   } catch (ex) {
     pending.remove();
-    addBot(`I could not complete that reading — ${ex.message}`, null, false);
+    if (ex.name === "AbortError") {
+      // The visitor pressed Stop. The reading so far (verdict + whatever
+      // narration streamed in) is still correct — leave it on screen marked
+      // as intentionally stopped, not as a failure.
+      if (bubble) {
+        bubble.classList.add("bubble-incomplete");
+        bubble.insertAdjacentHTML("beforeend",
+          `<p class="incomplete-note">${escapeHtml(t("responseStopped"))}</p>`);
+      }
+    } else if (bubble) {
+      // A network drop mid-stream: the partial reading is still worth
+      // keeping on screen, marked as cut short, rather than buried under a
+      // second, unrelated-looking error bubble.
+      bubble.classList.add("bubble-incomplete");
+      bubble.insertAdjacentHTML("beforeend",
+        `<p class="incomplete-note">${escapeHtml(t("responseDropped"))} ${escapeHtml(ex.message)}</p>`);
+    } else {
+      addBot(`I could not complete that reading — ${ex.message}`, null, false);
+    }
   } finally {
+    askAbort = null;
     state.busy = false;
+    input.disabled = false;
     $("#send").disabled = false;
+    $("#send").hidden = false;
+    $("#stop").hidden = true;
     input.focus({ preventScroll: true });
   }
 });
