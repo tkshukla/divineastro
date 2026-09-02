@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import auth, billing, coupons
+from . import auth, billing, coupons, mail
 from .db import (
     BirthProfile, Coupon, CouponKind, CouponRedemption, CreditEntry, EntryKind,
     FulfilStatus, Order, OrderStatus, QuestionLog, User, balance, grant,
@@ -459,6 +459,20 @@ def submit_utr(body: UtrIn, user: User = Depends(me),
     order.utr_submitted_at = utcnow()
     order.status = OrderStatus.awaiting_verification
     db.commit()
+
+    # Best-effort — a mail outage must never fail a claim that already
+    # succeeded. Previously nothing pinged anyone at all; an admin had to
+    # remember to check /admin/upi/pending.
+    try:
+        mail.send(
+            list(auth.admin_emails()),
+            f"UPI claim: order #{order.id}",
+            f"{user.email} claimed ₹{order.amount_paise / 100:.0f} for "
+            f"{order.title}, UTR {utr}. Verify at /admin.",
+        )
+    except Exception:
+        pass
+
     return {
         "ok": True, "status": order.status.value,
         "message": "Thank you. We are checking this against our bank statement "
