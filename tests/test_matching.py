@@ -28,6 +28,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+# Section 12 prints Hindi (Devanagari) note text as check() detail; Windows
+# consoles default to a cp1252 stdout that cannot encode it and crashes the
+# whole run before it gets anywhere near a real assertion failure.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 from app.astro import matching as m
 from app.chart_service import SIGNS, dms, sign_of
 
@@ -500,6 +506,60 @@ def main() -> int:
               live["mangal"]["groom"]["summary"])
     except Exception as exc:                          # pragma: no cover
         check("real charts build and match", False, f"{type(exc).__name__}: {exc}")
+
+    print("\n12. Hindi (lang='hi') — every note carries real content, not just presence")
+    import re
+
+    devanagari = re.compile(r"[ऀ-ॿ]")
+
+    g = chart(nak_lon(4), asc="Leo", mars="Libra", venus="Gemini", jupiter="Pisces", name="A")
+    b = chart(nak_lon(13), asc="Taurus", mars="Cancer", venus="Leo", jupiter="Virgo", name="B")
+    en = m.match(g, b, lang="en")
+    hi = m.match(g, b, lang="hi")
+
+    check("every Hindi koota label differs from its English counterpart",
+          all(ek["label"] != hk["label"] for ek, hk in
+              zip(en["ashtakoot"]["kootas"], hi["ashtakoot"]["kootas"])),
+          str([(ek["label"], hk["label"]) for ek, hk in
+               zip(en["ashtakoot"]["kootas"], hi["ashtakoot"]["kootas"])
+               if ek["label"] == hk["label"]]))
+    check("every Hindi koota note is non-empty and carries Devanagari",
+          all(hk["note"] and devanagari.search(hk["note"]) for hk in hi["ashtakoot"]["kootas"]),
+          str([hk["key"] for hk in hi["ashtakoot"]["kootas"]
+               if not (hk["note"] and devanagari.search(hk["note"]))]))
+    check("every Hindi koota note differs from its English counterpart",
+          all(ek["note"] != hk["note"] for ek, hk in
+              zip(en["ashtakoot"]["kootas"], hi["ashtakoot"]["kootas"])))
+
+    check("verdict is localised", hi["ashtakoot"]["verdict"] != en["ashtakoot"]["verdict"]
+          and devanagari.search(hi["ashtakoot"]["verdict"]))
+    check("band_note is localised", hi["ashtakoot"]["band_note"] != en["ashtakoot"]["band_note"]
+          and devanagari.search(hi["ashtakoot"]["band_note"]))
+    check("convention_note is localised",
+          devanagari.search(hi["ashtakoot"]["convention_note"]) is not None)
+
+    for who in ("groom", "bride"):
+        eg, hg = en["mangal"][who], hi["mangal"][who]
+        check(f"{who} mangal summary is localised",
+              devanagari.search(hg["summary"]) is not None, hg["summary"])
+        check(f"{who} severity word is localised",
+              hg["severity"] != eg["severity"] and devanagari.search(hg["severity"]),
+              hg["severity"])
+        check(f"{who} mitigations (if any) are localised",
+              all(devanagari.search(x) for x in hg["mitigations"]),
+              str(hg["mitigations"]))
+
+    check("pair note is localised", devanagari.search(hi["mangal"]["pair"]["note"]) is not None)
+    check("pair tradition_note is localised",
+          devanagari.search(hi["mangal"]["pair"]["tradition_note"]) is not None)
+    check("disclaimer is localised",
+          devanagari.search(hi["disclaimer"]) is not None and hi["disclaimer"] != en["disclaimer"])
+
+    # An unrecognised lang value must degrade to English, not raise or emit
+    # a mix of the two.
+    fallback = m.match(g, b, lang="fr")
+    check("an unknown lang falls back to English content, not an error",
+          fallback["disclaimer"] == en["disclaimer"])
 
     print("\n" + "=" * 60)
     if failures:

@@ -282,6 +282,80 @@ SCORE_BANDS = (
     (36.01, "excellent", "Within the conventional 33–36 band."),
 )
 
+# Hindi twin of SCORE_BANDS' verdict/detail, keyed by the English verdict —
+# not a re-derivation, so the two can never drift out of the same four bands.
+_VERDICT_HI = {
+    "not recommended": "अनुशंसित नहीं",
+    "acceptable": "स्वीकार्य",
+    "good": "अच्छा",
+    "excellent": "उत्कृष्ट",
+}
+_BAND_DETAIL_HI = {
+    "not recommended": "पारंपरिक न्यूनतम सीमा 18 से कम।",
+    "acceptable": "पारंपरिक 18–24 के दायरे में।",
+    "good": "पारंपरिक 25–32 के दायरे में।",
+    "excellent": "पारंपरिक 33–36 के दायरे में।",
+}
+
+# --------------------------------------------------------------------------
+# Hindi vocabulary
+# --------------------------------------------------------------------------
+# Parallel-authored, not machine-translated, and independently phrased from
+# the English notes below — same underlying facts, not a line-by-line
+# translation of them. Kept local to this module rather than imported from
+# pdf_report.py's equivalent tables, since matching.py has no other
+# dependency on the PDF layer and this content is small enough not to need one.
+
+_SIGNS_HI = {
+    "Aries": "मेष", "Taurus": "वृषभ", "Gemini": "मिथुन", "Cancer": "कर्क",
+    "Leo": "सिंह", "Virgo": "कन्या", "Libra": "तुला", "Scorpio": "वृश्चिक",
+    "Sagittarius": "धनु", "Capricorn": "मकर", "Aquarius": "कुंभ", "Pisces": "मीन",
+}
+_PLANETS_HI = {
+    "Sun": "सूर्य", "Moon": "चंद्रमा", "Mars": "मंगल", "Mercury": "बुध",
+    "Jupiter": "बृहस्पति", "Venus": "शुक्र", "Saturn": "शनि",
+}
+_NAKSHATRA_HI = {
+    "Ashwini": "अश्विनी", "Bharani": "भरणी", "Krittika": "कृत्तिका",
+    "Rohini": "रोहिणी", "Mrigashira": "मृगशिरा", "Ardra": "आर्द्रा",
+    "Punarvasu": "पुनर्वसु", "Pushya": "पुष्य", "Ashlesha": "आश्लेषा",
+    "Magha": "मघा", "Purva Phalguni": "पूर्वा फाल्गुनी",
+    "Uttara Phalguni": "उत्तरा फाल्गुनी", "Hasta": "हस्त", "Chitra": "चित्रा",
+    "Swati": "स्वाति", "Vishakha": "विशाखा", "Anuradha": "अनुराधा",
+    "Jyeshtha": "ज्येष्ठा", "Mula": "मूल", "Purva Ashadha": "पूर्वाषाढ़ा",
+    "Uttara Ashadha": "उत्तराषाढ़ा", "Shravana": "श्रवण",
+    "Dhanishta": "धनिष्ठा", "Shatabhisha": "शतभिषा",
+    "Purva Bhadrapada": "पूर्व भाद्रपद", "Uttara Bhadrapada": "उत्तर भाद्रपद",
+    "Revati": "रेवती",
+}
+_VARNA_HI = {"Brahmin": "ब्राह्मण", "Kshatriya": "क्षत्रिय", "Vaishya": "वैश्य", "Shudra": "शूद्र"}
+_VASHYA_HI = {
+    "Chatushpada": "चतुष्पद", "Manava": "मानव", "Jalachara": "जलचर",
+    "Vanachara": "वनचर", "Keeta": "कीट",
+}
+_TARA_NAMES_HI = {
+    "Janma": "जन्मा", "Sampat": "सम्पत", "Vipat": "विपत", "Kshema": "क्षेमा",
+    "Pratyak": "प्रत्यक", "Sadhaka": "साधक", "Vadha": "वध", "Mitra": "मित्र",
+    "Ati-Mitra": "अति-मित्र",
+}
+_YONI_HI = {
+    "Horse": "अश्व", "Elephant": "गज", "Sheep": "मेष (भेड़)", "Serpent": "सर्प",
+    "Dog": "श्वान", "Cat": "मार्जार (बिल्ली)", "Rat": "मूषक", "Cow": "गौ",
+    "Buffalo": "महिष (भैंस)", "Tiger": "व्याघ्र", "Deer": "मृग", "Monkey": "वानर",
+    "Mongoose": "नकुल", "Lion": "सिंह",
+}
+_GANA_HI = {"Deva": "देव", "Manushya": "मनुष्य", "Rakshasa": "राक्षस"}
+_NADI_HI = {"Adi": "आदि", "Madhya": "मध्य", "Antya": "अंत्य"}
+_NADI_HUMOUR_HI = {"Vata": "वात", "Pitta": "पित्त", "Kapha": "कफ"}
+_RELATION_HI = {"friend": "मित्र", "neutral": "सम", "enemy": "शत्रु"}
+_YONI_RELATION_HI = {"friendly": "मित्रवत", "neutral": "सम", "uneasy": "असहज"}
+_MANGAL_REFERENCE_HI = {"Lagna": "लग्न", "Moon": "चंद्रमा", "Venus": "शुक्र"}
+_SEVERITY_HI = {"none": "कोई नहीं", "mild": "हल्का", "moderate": "मध्यम", "severe": "गंभीर"}
+_KOOTA_LABEL_HI = {
+    "varna": "वर्ण", "vashya": "वश्य", "tara": "तारा (दिन)", "yoni": "योनि",
+    "graha_maitri": "ग्रह मैत्री", "gana": "गण", "bhakoot": "भकूट", "nadi": "नाड़ी",
+}
+
 
 class MatchingError(ValueError):
     """Raised when a chart cannot support a Kundali Milan reading."""
@@ -456,33 +530,57 @@ def _koota(key: str, label: str, maximum: float, score: float, note: str,
     }
 
 
-def _varna(groom: dict, bride: dict) -> dict:
+def _varna(groom: dict, bride: dict, lang: str = "en") -> dict:
     g, b = groom["varna"], bride["varna"]
     ok = VARNA_RANK[g] >= VARNA_RANK[b]
-    note = (
-        f"{g} groom, {b} bride — the groom's varna is not below the bride's, "
-        f"which is what this koota asks."
-        if ok else
-        f"{g} groom, {b} bride — the bride's varna outranks the groom's. "
-        f"Traditionally read as a mismatch of temperament and work, and it is the "
-        f"smallest koota in the scheme."
-    )
-    return _koota("varna", "Varna", 1.0, 1.0 if ok else 0.0, note,
+    if lang == "hi":
+        gh, bh = _VARNA_HI[g], _VARNA_HI[b]
+        note = (
+            f"वर {gh}, वधू {bh} — वर का वर्ण वधू के वर्ण से नीचे नहीं है, "
+            f"यही इस कूट की कसौटी है।"
+            if ok else
+            f"वर {gh}, वधू {bh} — वधू का वर्ण वर से ऊँचा है। परंपरागत रूप से इसे "
+            f"स्वभाव और कार्यशैली की भिन्नता माना जाता है; यह योजना का सबसे छोटा कूट है।"
+        )
+        label = _KOOTA_LABEL_HI["varna"]
+    else:
+        note = (
+            f"{g} groom, {b} bride — the groom's varna is not below the bride's, "
+            f"which is what this koota asks."
+            if ok else
+            f"{g} groom, {b} bride — the bride's varna outranks the groom's. "
+            f"Traditionally read as a mismatch of temperament and work, and it is the "
+            f"smallest koota in the scheme."
+        )
+        label = "Varna"
+    return _koota("varna", label, 1.0, 1.0 if ok else 0.0, note,
                   groom_varna=g, bride_varna=b)
 
 
-def _vashya(groom: dict, bride: dict) -> dict:
+def _vashya(groom: dict, bride: dict, lang: str = "en") -> dict:
     g, b = groom["vashya"], bride["vashya"]
     score = VASHYA_TABLE[b][VASHYA_GROUPS.index(g)]
-    if g == b:
-        note = f"Both Moons fall in the {g} group — full mutual pull."
-    elif score == 0.0:
-        note = (f"{g} groom against a {b} bride is the weakest cell in the "
-                f"Vashya table: neither has natural sway over the other.")
+    if lang == "hi":
+        gh, bh = _VASHYA_HI[g], _VASHYA_HI[b]
+        if g == b:
+            note = f"दोनों चंद्रमा {gh} वर्ग में हैं — पूर्ण पारस्परिक आकर्षण।"
+        elif score == 0.0:
+            note = (f"वर का {gh}, वधू के {bh} के सामने वश्य तालिका की सबसे "
+                    f"कमजोर स्थिति है — किसी का भी दूसरे पर स्वाभाविक प्रभाव नहीं।")
+        else:
+            note = f"वर का {gh}, वधू के {bh} के साथ — आंशिक प्रभाव, 2 में से {score:g}।"
+        label = _KOOTA_LABEL_HI["vashya"]
     else:
-        note = (f"{g} groom with a {b} bride — partial sway, "
-                f"{score:g} of 2.")
-    return _koota("vashya", "Vashya", 2.0, score, note,
+        if g == b:
+            note = f"Both Moons fall in the {g} group — full mutual pull."
+        elif score == 0.0:
+            note = (f"{g} groom against a {b} bride is the weakest cell in the "
+                    f"Vashya table: neither has natural sway over the other.")
+        else:
+            note = (f"{g} groom with a {b} bride — partial sway, "
+                    f"{score:g} of 2.")
+        label = "Vashya"
+    return _koota("vashya", label, 2.0, score, note,
                   groom_vashya=g, bride_vashya=b)
 
 
@@ -492,7 +590,7 @@ def _tara_count(from_index: int, to_index: int) -> int:
     return steps % 9 or 9
 
 
-def _tara(groom: dict, bride: dict) -> dict:
+def _tara(groom: dict, bride: dict, lang: str = "en") -> dict:
     # Counted in both directions and scored 1.5 each. Some lineages count only
     # from the bride's star to the groom's, which makes Tara asymmetric; the
     # both-ways reading used here is the mainstream North-Indian one and has
@@ -502,74 +600,120 @@ def _tara(groom: dict, bride: dict) -> dict:
     good_g2b, good_b2g = g2b not in TARA_BAD, b2g not in TARA_BAD
     score = 1.5 * good_g2b + 1.5 * good_b2g
 
-    parts = [
-        f"{TARA_NAMES[g2b - 1]} ({_ordinal(g2b)}) counting from the groom's star",
-        f"{TARA_NAMES[b2g - 1]} ({_ordinal(b2g)}) counting from the bride's",
-    ]
-    if score == 3.0:
-        note = f"{parts[0]} and {parts[1]} — both auspicious taras."
-    elif score == 0.0:
-        note = f"{parts[0]} and {parts[1]} — both fall in the Vipat/Pratyak/Vadha set."
+    if lang == "hi":
+        parts = [
+            f"वर के नक्षत्र से गिनने पर {_TARA_NAMES_HI[TARA_NAMES[g2b - 1]]} (क्रमांक {g2b})",
+            f"वधू के नक्षत्र से गिनने पर {_TARA_NAMES_HI[TARA_NAMES[b2g - 1]]} (क्रमांक {b2g})",
+        ]
+        if score == 3.0:
+            note = f"{parts[0]} और {parts[1]} — दोनों शुभ तारा हैं।"
+        elif score == 0.0:
+            note = f"{parts[0]} और {parts[1]} — दोनों विपत/प्रत्यक/वध समूह में आते हैं।"
+        else:
+            note = f"{parts[0]} और {parts[1]} — दोनों में से एक दूषित है।"
+        label = _KOOTA_LABEL_HI["tara"]
     else:
-        note = f"{parts[0]} and {parts[1]} — one of the two is afflicted."
-    return _koota("tara", "Tara (Dina)", 3.0, score, note,
+        parts = [
+            f"{TARA_NAMES[g2b - 1]} ({_ordinal(g2b)}) counting from the groom's star",
+            f"{TARA_NAMES[b2g - 1]} ({_ordinal(b2g)}) counting from the bride's",
+        ]
+        if score == 3.0:
+            note = f"{parts[0]} and {parts[1]} — both auspicious taras."
+        elif score == 0.0:
+            note = f"{parts[0]} and {parts[1]} — both fall in the Vipat/Pratyak/Vadha set."
+        else:
+            note = f"{parts[0]} and {parts[1]} — one of the two is afflicted."
+        label = "Tara (Dina)"
+    return _koota("tara", label, 3.0, score, note,
                   groom_to_bride=g2b, bride_to_groom=b2g,
                   groom_to_bride_name=TARA_NAMES[g2b - 1],
                   bride_to_groom_name=TARA_NAMES[b2g - 1])
 
 
-def _yoni(groom: dict, bride: dict) -> dict:
+def _yoni(groom: dict, bride: dict, lang: str = "en") -> dict:
     g, b = groom["yoni"], bride["yoni"]
     score = yoni_points(g, b)
-    if g == b:
-        note = f"Both are {g} yoni — the tradition's best case for physical rapport."
-    elif score == 0.0:
-        note = f"{g} and {b} are one of the seven natural-enemy yoni pairs."
+    rel = "friendly" if score == 3.0 else "neutral" if score == 2.0 else "uneasy"
+    if lang == "hi":
+        gh, bh = _YONI_HI[g], _YONI_HI[b]
+        if g == b:
+            note = f"दोनों की योनि {gh} है — शारीरिक तालमेल के लिए परंपरा में सर्वोत्तम स्थिति।"
+        elif score == 0.0:
+            note = f"{gh} और {bh} सात परस्पर-शत्रु योनि युग्मों में से एक हैं।"
+        else:
+            note = f"वर की {gh} योनि, वधू की {bh} योनि के साथ — {_YONI_RELATION_HI[rel]} योनि।"
+        label = _KOOTA_LABEL_HI["yoni"]
     else:
-        note = (f"{g} groom with a {b} bride — "
-                f"{'friendly' if score == 3.0 else 'neutral' if score == 2.0 else 'uneasy'} yonis.")
-    return _koota("yoni", "Yoni", 4.0, score, note,
+        if g == b:
+            note = f"Both are {g} yoni — the tradition's best case for physical rapport."
+        elif score == 0.0:
+            note = f"{g} and {b} are one of the seven natural-enemy yoni pairs."
+        else:
+            note = f"{g} groom with a {b} bride — {rel} yonis."
+        label = "Yoni"
+    return _koota("yoni", label, 4.0, score, note,
                   groom_yoni=g, bride_yoni=b,
                   groom_gender=groom["yoni_gender"], bride_gender=bride["yoni_gender"])
 
 
-def _graha_maitri(groom: dict, bride: dict) -> dict:
+def _graha_maitri(groom: dict, bride: dict, lang: str = "en") -> dict:
     gl, bl = groom["rashi_lord"], bride["rashi_lord"]
+    label = _KOOTA_LABEL_HI["graha_maitri"] if lang == "hi" else "Graha Maitri"
     if gl == bl:
-        return _koota("graha_maitri", "Graha Maitri", 5.0, 5.0,
-                      f"Both Moon rashis are ruled by {gl}, so the two minds run on "
-                      f"the same planet.",
+        note = (f"दोनों की चंद्र राशियों के स्वामी {_PLANETS_HI[gl]} हैं, अतः दोनों मन "
+                f"एक ही ग्रह की धारा में बहते हैं।"
+                if lang == "hi" else
+                f"Both Moon rashis are ruled by {gl}, so the two minds run on "
+                f"the same planet.")
+        return _koota("graha_maitri", label, 5.0, 5.0, note,
                       groom_lord=gl, bride_lord=bl,
                       groom_to_bride="same", bride_to_groom="same")
     g2b, b2g = _relation(gl, bl), _relation(bl, gl)
     score = MAITRI_POINTS[frozenset((g2b, b2g))]
-    note = (f"{gl} rules the groom's Moon and {bl} the bride's; {gl} treats {bl} as a "
-            f"{g2b} and {bl} treats {gl} as a {b2g}.")
-    return _koota("graha_maitri", "Graha Maitri", 5.0, score, note,
+    if lang == "hi":
+        note = (f"वर के चंद्रमा पर {_PLANETS_HI[gl]} और वधू के चंद्रमा पर {_PLANETS_HI[bl]} "
+                f"का शासन है; {_PLANETS_HI[gl]}, {_PLANETS_HI[bl]} को {_RELATION_HI[g2b]} "
+                f"मानता है और {_PLANETS_HI[bl]}, {_PLANETS_HI[gl]} को {_RELATION_HI[b2g]} मानता है।")
+    else:
+        note = (f"{gl} rules the groom's Moon and {bl} the bride's; {gl} treats {bl} as a "
+                f"{g2b} and {bl} treats {gl} as a {b2g}.")
+    return _koota("graha_maitri", label, 5.0, score, note,
                   groom_lord=gl, bride_lord=bl,
                   groom_to_bride=g2b, bride_to_groom=b2g)
 
 
-def _gana(groom: dict, bride: dict) -> dict:
+def _gana(groom: dict, bride: dict, lang: str = "en") -> dict:
     g, b = groom["gana"], bride["gana"]
     score = GANA_TABLE[g][GANA_ORDER.index(b)]
-    if g == b:
-        note = f"Both {g} gana — the same basic temperament."
-    elif score >= 5.0:
-        note = f"{g} groom and {b} bride sit next to each other in temperament."
+    if lang == "hi":
+        gh, bh = _GANA_HI[g], _GANA_HI[b]
+        if g == b:
+            note = f"दोनों {gh} गण के हैं — मूल स्वभाव समान है।"
+        elif score >= 5.0:
+            note = f"वर का {gh} गण और वधू का {bh} गण स्वभाव में एक-दूसरे के निकट हैं।"
+        else:
+            note = (f"वर का {gh} गण और वधू का {bh} गण — यह गण का प्रचलित असंतुलन है; "
+                    f"परंपरा में तनाव की स्थिति में दोनों के व्यवहार में टकराव की आशंका मानी जाती है।")
+        label = _KOOTA_LABEL_HI["gana"]
     else:
-        note = (f"{g} groom against a {b} bride is the classic Gana mismatch: "
-                f"the tradition expects friction over how each one behaves under stress.")
-    return _koota("gana", "Gana", 6.0, score, note, groom_gana=g, bride_gana=b)
+        if g == b:
+            note = f"Both {g} gana — the same basic temperament."
+        elif score >= 5.0:
+            note = f"{g} groom and {b} bride sit next to each other in temperament."
+        else:
+            note = (f"{g} groom against a {b} bride is the classic Gana mismatch: "
+                    f"the tradition expects friction over how each one behaves under stress.")
+        label = "Gana"
+    return _koota("gana", label, 6.0, score, note, groom_gana=g, bride_gana=b)
 
 
-def _bhakoot(groom: dict, bride: dict) -> dict:
+def _bhakoot(groom: dict, bride: dict, lang: str = "en") -> dict:
     g2b = _sign_distance(groom["rashi"], bride["rashi"])
     b2g = _sign_distance(bride["rashi"], groom["rashi"])
     afflicted = (g2b, b2g) in BHAKOOT_DOSHA_PAIRS
     raw = 0.0 if afflicted else 7.0
 
-    cancelled, reason = False, ""
+    cancelled, reason, reason_hi = False, "", ""
     if afflicted:
         gl, bl = groom["rashi_lord"], bride["rashi_lord"]
         # The two standard cancellations. Same lord covers pairs like Aries and
@@ -577,33 +721,49 @@ def _bhakoot(groom: dict, bride: dict) -> dict:
         if gl == bl:
             cancelled = True
             reason = f"both Moon rashis are ruled by {gl}"
+            reason_hi = f"दोनों चंद्र राशियों के स्वामी {_PLANETS_HI[gl]} हैं"
         elif _mutually_friendly(gl, bl):
             cancelled = True
             reason = f"the rashi lords {gl} and {bl} are mutual natural friends"
+            reason_hi = f"राशि स्वामी {_PLANETS_HI[gl]} और {_PLANETS_HI[bl]} परस्पर स्वाभाविक मित्र हैं"
 
     score = 7.0 if cancelled else raw
-    if not afflicted:
-        note = (f"The Moon rashis stand {g2b}/{b2g} from each other, clear of the "
-                f"2/12, 5/9 and 6/8 axes.")
-    elif cancelled:
-        note = (f"A {min(g2b, b2g)}/{max(g2b, b2g)} Bhakoot dosha, cancelled because "
-                f"{reason}. Points restored on that cancellation.")
+    lo, hi = min(g2b, b2g), max(g2b, b2g)
+    if lang == "hi":
+        if not afflicted:
+            note = (f"दोनों चंद्र राशियाँ एक-दूसरे से {g2b}/{b2g} स्थान पर हैं, जो "
+                    f"2/12, 5/9 और 6/8 की दूषित धुरी से मुक्त है।")
+        elif cancelled:
+            note = (f"{lo}/{hi} भकूट दोष है, परंतु {reason_hi} के कारण यह निरस्त हो "
+                    f"जाता है। इस निरस्तीकरण पर अंक पुनः प्राप्त होते हैं।")
+        else:
+            note = (f"{lo}/{hi} भकूट दोष है और कोई निरस्तीकरण उपलब्ध नहीं है। "
+                    f"परंपरागत रूप से यह कूट घर की समृद्धि और स्वास्थ्य से जोड़ा जाता है।")
+        label = _KOOTA_LABEL_HI["bhakoot"]
     else:
-        note = (f"A {min(g2b, b2g)}/{max(g2b, b2g)} Bhakoot dosha with no cancellation "
-                f"available. This is the koota traditionally tied to prosperity and "
-                f"the health of the household.")
-    return _koota("bhakoot", "Bhakoot", 7.0, score, note,
+        if not afflicted:
+            note = (f"The Moon rashis stand {g2b}/{b2g} from each other, clear of the "
+                    f"2/12, 5/9 and 6/8 axes.")
+        elif cancelled:
+            note = (f"A {lo}/{hi} Bhakoot dosha, cancelled because "
+                    f"{reason}. Points restored on that cancellation.")
+        else:
+            note = (f"A {lo}/{hi} Bhakoot dosha with no cancellation "
+                    f"available. This is the koota traditionally tied to prosperity and "
+                    f"the health of the household.")
+        label = "Bhakoot"
+    return _koota("bhakoot", label, 7.0, score, note,
                   groom_to_bride=g2b, bride_to_groom=b2g,
                   dosha=afflicted, cancelled=cancelled,
-                  cancellation=reason, raw_score=raw)
+                  cancellation=(reason_hi if lang == "hi" else reason), raw_score=raw)
 
 
-def _nadi(groom: dict, bride: dict) -> dict:
+def _nadi(groom: dict, bride: dict, lang: str = "en") -> dict:
     g, b = groom["nadi"], bride["nadi"]
     afflicted = g == b
     raw = 0.0 if afflicted else 8.0
 
-    cancelled, reason = False, ""
+    cancelled, reason, reason_hi = False, "", ""
     if afflicted:
         # The two cancellations the mainstream agrees on. Both rest on the same
         # idea: identical nadi only bites when the Moons are otherwise identical
@@ -612,40 +772,65 @@ def _nadi(groom: dict, bride: dict) -> dict:
             cancelled = True
             reason = (f"both Moons are in {groom['rashi']} but in different "
                       f"nakshatras ({groom['nakshatra']} and {bride['nakshatra']})")
+            reason_hi = (f"दोनों चंद्रमा {_SIGNS_HI[groom['rashi']]} राशि में हैं परंतु भिन्न "
+                        f"नक्षत्रों में — {_NAKSHATRA_HI[groom['nakshatra']]} और "
+                        f"{_NAKSHATRA_HI[bride['nakshatra']]}")
         elif groom["nakshatra"] == bride["nakshatra"] and groom["pada"] != bride["pada"]:
             cancelled = True
             reason = (f"both Moons are in {groom['nakshatra']} but in different "
                       f"padas ({groom['pada']} and {bride['pada']})")
+            reason_hi = (f"दोनों चंद्रमा {_NAKSHATRA_HI[groom['nakshatra']]} नक्षत्र में हैं परंतु "
+                        f"भिन्न चरणों में — चरण {groom['pada']} और {bride['pada']}")
 
     score = 8.0 if cancelled else raw
-    if not afflicted:
-        note = (f"{g} nadi ({NADI_HUMOUR[g]}) against {b} nadi ({NADI_HUMOUR[b]}) — "
-                f"different, which is what this koota wants.")
-    elif cancelled:
-        note = (f"Both Moons are {g} nadi, but the dosha is cancelled: {reason}. "
-                f"Points restored on that cancellation.")
+    if lang == "hi":
+        gh, bh = _NADI_HI[g], _NADI_HI[b]
+        gh_humour, bh_humour = _NADI_HUMOUR_HI[NADI_HUMOUR[g]], _NADI_HUMOUR_HI[NADI_HUMOUR[b]]
+        if not afflicted:
+            note = (f"{gh} नाड़ी ({gh_humour}) और {bh} नाड़ी ({bh_humour}) — भिन्न हैं, "
+                    f"जो इस कूट के लिए वांछित है।")
+        elif cancelled:
+            note = (f"दोनों चंद्रमा {gh} नाड़ी में हैं, परंतु दोष निरस्त हो जाता है: "
+                    f"{reason_hi}। इस निरस्तीकरण पर अंक पुनः प्राप्त होते हैं।")
+        else:
+            note = (f"दोनों चंद्रमा {gh} नाड़ी ({gh_humour}) में हैं और कोई निरस्तीकरण "
+                    f"लागू नहीं होता। यह योजना का सबसे भारी कूट है और परंपरागत रूप से "
+                    f"इसे संतान व स्वास्थ्य से जोड़कर देखा जाता है।")
+        label = _KOOTA_LABEL_HI["nadi"]
     else:
-        note = (f"Both Moons are {g} nadi ({NADI_HUMOUR[g]}), and no cancellation "
-                f"applies. This is the heaviest koota in the scheme and the one "
-                f"traditionally read against children and health.")
-    return _koota("nadi", "Nadi", 8.0, score, note,
+        if not afflicted:
+            note = (f"{g} nadi ({NADI_HUMOUR[g]}) against {b} nadi ({NADI_HUMOUR[b]}) — "
+                    f"different, which is what this koota wants.")
+        elif cancelled:
+            note = (f"Both Moons are {g} nadi, but the dosha is cancelled: {reason}. "
+                    f"Points restored on that cancellation.")
+        else:
+            note = (f"Both Moons are {g} nadi ({NADI_HUMOUR[g]}), and no cancellation "
+                    f"applies. This is the heaviest koota in the scheme and the one "
+                    f"traditionally read against children and health.")
+        label = "Nadi"
+    return _koota("nadi", label, 8.0, score, note,
                   groom_nadi=g, bride_nadi=b,
                   dosha=afflicted, cancelled=cancelled,
-                  cancellation=reason, raw_score=raw)
+                  cancellation=(reason_hi if lang == "hi" else reason), raw_score=raw)
 
 
 KOOTA_FUNCTIONS = (_varna, _vashya, _tara, _yoni, _graha_maitri, _gana, _bhakoot, _nadi)
 MAXIMUM_POINTS = 36.0
 
 
-def _band(total: float) -> tuple[str, str]:
-    for ceiling, verdict, detail in SCORE_BANDS:
+def _band(total: float, lang: str = "en") -> tuple[str, str]:
+    verdict, detail = SCORE_BANDS[-1][1], SCORE_BANDS[-1][2]
+    for ceiling, v, d in SCORE_BANDS:
         if total < ceiling:
-            return verdict, detail
-    return SCORE_BANDS[-1][1], SCORE_BANDS[-1][2]
+            verdict, detail = v, d
+            break
+    if lang == "hi":
+        return _VERDICT_HI[verdict], _BAND_DETAIL_HI[verdict]
+    return verdict, detail
 
 
-def ashtakoot(groom: object, bride: object) -> dict:
+def ashtakoot(groom: object, bride: object, lang: str = "en") -> dict:
     """The 36-point Guna Milan between two charts.
 
     `groom` and `bride` are `chart_service` chart sessions (or the bundle dicts
@@ -653,11 +838,21 @@ def ashtakoot(groom: object, bride: object) -> dict:
     tradition, so swapping the arguments can legitimately change the total.
     """
     g, b = moon_profile(groom), moon_profile(bride)
-    kootas = [fn(g, b) for fn in KOOTA_FUNCTIONS]
+    kootas = [fn(g, b, lang) for fn in KOOTA_FUNCTIONS]
 
     total = round(sum(k["score"] for k in kootas), 2)
     before = round(sum(k.get("raw_score", k["score"]) for k in kootas), 2)
-    verdict, detail = _band(total)
+    verdict, detail = _band(total, lang)
+
+    convention_note = (
+        "18/25/33 की सीमाएँ एक व्यापक परंपरा हैं, कोई मापन नहीं। कम कुल अंक होने पर भी, "
+        "यदि भारी कूट (भकूट, नाड़ी) निर्दोष हों, तो ज्योतिषी प्रायः इसे अनदेखा करते हैं — "
+        "और अधिक अंक होने पर भी भकूट या नाड़ी दूषित हों तो सतर्क रहते हैं।"
+        if lang == "hi" else
+        "The 18/25/33 thresholds are a widely used convention, not a "
+        "measurement. Astrologers routinely override a low total when the "
+        "heavier kootas are clean, and a high total when Bhakoot or Nadi is not."
+    )
 
     return {
         "groom": g,
@@ -672,11 +867,7 @@ def ashtakoot(groom: object, bride: object) -> dict:
         ],
         "verdict": verdict,
         "band_note": detail,
-        "convention_note": (
-            "The 18/25/33 thresholds are a widely used convention, not a "
-            "measurement. Astrologers routinely override a low total when the "
-            "heavier kootas are clean, and a high total when Bhakoot or Nadi is not."
-        ),
+        "convention_note": convention_note,
     }
 
 
@@ -684,7 +875,7 @@ def ashtakoot(groom: object, bride: object) -> dict:
 # Mangal Dosha
 # --------------------------------------------------------------------------
 
-def _mangal_from(reference: str, ref_sign: str, mars: dict) -> dict:
+def _mangal_from(reference: str, ref_sign: str, mars: dict, lang: str = "en") -> dict:
     """Is Mars in 1/2/4/7/8/12 counted from this reference point?
 
     Whole-sign counting throughout. Vedic practice counts houses by sign from
@@ -696,6 +887,19 @@ def _mangal_from(reference: str, ref_sign: str, mars: dict) -> dict:
     afflicted = house in MANGAL_HOUSES
     exempt_signs = MANGAL_HOUSE_EXEMPTIONS.get(house, set())
     exempt = afflicted and mars["sign"] in exempt_signs
+    if lang == "hi":
+        exemption = (
+            f"{_MANGAL_REFERENCE_HI[reference]} से {house} वें भाव में {_SIGNS_HI[mars['sign']]} "
+            f"राशि का मंगल शास्त्रीय राशि-भाव छूट में से एक है।"
+            if exempt else ""
+        )
+    else:
+        exemption = (
+            f"Mars in {mars['sign']} in the {_ordinal(house)} from "
+            f"{MANGAL_REFERENCE_PHRASE[reference]} is one of the classical "
+            f"sign-in-house exemptions."
+            if exempt else ""
+        )
     return {
         "reference": reference,
         "reference_sign": ref_sign,
@@ -704,16 +908,11 @@ def _mangal_from(reference: str, ref_sign: str, mars: dict) -> dict:
         "raw_afflicted": afflicted,
         "weight": MANGAL_HOUSE_WEIGHT.get(house, 0) if afflicted and not exempt else 0,
         "exempt_by_sign": exempt,
-        "exemption": (
-            f"Mars in {mars['sign']} in the {_ordinal(house)} from "
-            f"{MANGAL_REFERENCE_PHRASE[reference]} is one of the classical "
-            f"sign-in-house exemptions."
-            if exempt else ""
-        ),
+        "exemption": exemption,
     }
 
 
-def _jupiter_relief(bundle: dict, mars: dict) -> str:
+def _jupiter_relief(bundle: dict, mars: dict, lang: str = "en") -> str:
     """Jupiter's conjunction or graha drishti on Mars, the common relief clause.
 
     Jupiter's Vedic aspects are the 5th, 7th and 9th signs from itself. Widely
@@ -724,6 +923,12 @@ def _jupiter_relief(bundle: dict, mars: dict) -> str:
     if jupiter is None:
         return ""
     distance = _sign_distance(jupiter["sign"], mars["sign"])
+    if lang == "hi":
+        if distance == 1:
+            return "बृहस्पति मंगल के साथ युति में है"
+        if distance in (5, 7, 9):
+            return f"बृहस्पति मंगल पर अपनी {distance} वीं भाव दृष्टि डालता है"
+        return ""
     if distance == 1:
         return "Jupiter is conjunct Mars"
     if distance in (5, 7, 9):
@@ -731,7 +936,7 @@ def _jupiter_relief(bundle: dict, mars: dict) -> str:
     return ""
 
 
-def mangal_dosha(chart: object) -> dict:
+def mangal_dosha(chart: object, lang: str = "en") -> dict:
     """Manglik status of a single chart, read from the Lagna, Moon and Venus.
 
     All three references are reported rather than collapsed into one verdict,
@@ -748,18 +953,24 @@ def mangal_dosha(chart: object) -> dict:
     mars = _object(bundle, "Mars")
 
     references = [
-        _mangal_from("Lagna", _object(bundle, "ASC")["sign"], mars),
-        _mangal_from("Moon", _object(bundle, "Moon")["sign"], mars),
-        _mangal_from("Venus", _object(bundle, "Venus")["sign"], mars),
+        _mangal_from("Lagna", _object(bundle, "ASC")["sign"], mars, lang),
+        _mangal_from("Moon", _object(bundle, "Moon")["sign"], mars, lang),
+        _mangal_from("Venus", _object(bundle, "Venus")["sign"], mars, lang),
     ]
     hits = [r for r in references if r["afflicted"]]
 
     mitigations: list[str] = []
-    if mars["sign"] in MARS_OWN_SIGNS:
-        mitigations.append(f"Mars is in its own sign ({mars['sign']})")
-    if mars["sign"] == MARS_EXALTATION:
-        mitigations.append(f"Mars is exalted in {MARS_EXALTATION}")
-    relief = _jupiter_relief(bundle, mars)
+    if lang == "hi":
+        if mars["sign"] in MARS_OWN_SIGNS:
+            mitigations.append(f"मंगल अपनी ही राशि ({_SIGNS_HI[mars['sign']]}) में है")
+        if mars["sign"] == MARS_EXALTATION:
+            mitigations.append(f"मंगल {_SIGNS_HI[MARS_EXALTATION]} में उच्च का है")
+    else:
+        if mars["sign"] in MARS_OWN_SIGNS:
+            mitigations.append(f"Mars is in its own sign ({mars['sign']})")
+        if mars["sign"] == MARS_EXALTATION:
+            mitigations.append(f"Mars is exalted in {MARS_EXALTATION}")
+    relief = _jupiter_relief(bundle, mars, lang)
     if relief:
         mitigations.append(relief)
     for r in references:
@@ -784,21 +995,34 @@ def mangal_dosha(chart: object) -> dict:
     else:
         severity = "mild"
 
-    if hits:
-        where = ", ".join(
-            f"the {_ordinal(r['mars_house'])} from {MANGAL_REFERENCE_PHRASE[r['reference']]}"
-            for r in hits
-        )
-        by = ("all three readings" if len(hits) == 3 else
-              "the " + " and ".join(r["reference"] for r in hits) +
-              f" reading{'s' if len(hits) > 1 else ''}")
-        summary = f"Mars falls in {where}. Manglik by {by}."
+    if lang == "hi":
+        if hits:
+            where = "; ".join(
+                f"{_MANGAL_REFERENCE_HI[r['reference']]} से {r['mars_house']} वें भाव"
+                for r in hits
+            )
+            by = ("तीनों गणनाओं" if len(hits) == 3 else
+                  " और ".join(_MANGAL_REFERENCE_HI[r["reference"]] for r in hits) +
+                  " की गणना")
+            summary = f"मंगल {where} में स्थित है। {by} के अनुसार मांगलिक।"
+        else:
+            summary = "लग्न, चंद्रमा और शुक्र — तीनों से मंगल 1/2/4/7/8/12 भाव से मुक्त है।"
     else:
-        summary = "Mars is clear of 1/2/4/7/8/12 from the Lagna, the Moon and Venus."
+        if hits:
+            where = ", ".join(
+                f"the {_ordinal(r['mars_house'])} from {MANGAL_REFERENCE_PHRASE[r['reference']]}"
+                for r in hits
+            )
+            by = ("all three readings" if len(hits) == 3 else
+                  "the " + " and ".join(r["reference"] for r in hits) +
+                  f" reading{'s' if len(hits) > 1 else ''}")
+            summary = f"Mars falls in {where}. Manglik by {by}."
+        else:
+            summary = "Mars is clear of 1/2/4/7/8/12 from the Lagna, the Moon and Venus."
 
     return {
         "manglik": bool(hits),
-        "severity": severity,
+        "severity": _SEVERITY_HI[severity] if lang == "hi" else severity,
         "mars_position": mars["position"],
         "mars_sign": mars["sign"],
         "references": references,
@@ -808,41 +1032,64 @@ def mangal_dosha(chart: object) -> dict:
     }
 
 
-def _mangal_pair(groom_dosha: dict, bride_dosha: dict) -> dict:
+def _mangal_pair(groom_dosha: dict, bride_dosha: dict, lang: str = "en") -> dict:
     """The pair-level reading, where the both-Manglik cancellation lives."""
     both = groom_dosha["manglik"] and bride_dosha["manglik"]
     either = groom_dosha["manglik"] or bride_dosha["manglik"]
 
-    if both:
-        # The one cancellation almost every lineage accepts: two Manglik charts
-        # are held to neutralise each other, which is why Manglik natives are
-        # traditionally matched with one another.
-        verdict = "balanced"
-        note = ("Both charts are Manglik. The standard reading is that the dosha is "
-                "mutually cancelled — this is the reason Manglik natives are "
-                "conventionally matched together.")
-    elif either:
-        who = "groom" if groom_dosha["manglik"] else "bride"
-        other = groom_dosha if groom_dosha["manglik"] else bride_dosha
-        verdict = "one-sided"
-        note = (f"Only the {who} is Manglik ({other['severity']} severity). This is the "
-                f"case the tradition treats as a genuine dosha rather than a matched "
-                f"pair; the mitigations listed on that chart, if any, are what an "
-                f"astrologer would weigh next.")
+    if lang == "hi":
+        if both:
+            verdict = "balanced"
+            note = ("दोनों कुंडलियाँ मांगलिक हैं। मानक व्याख्या यह है कि दोनों का दोष "
+                    "पारस्परिक रूप से निरस्त हो जाता है — यही कारण है कि मांगलिक जातकों "
+                    "का विवाह परंपरागत रूप से एक-दूसरे से किया जाता है।")
+        elif either:
+            who = "वर" if groom_dosha["manglik"] else "वधू"
+            other = groom_dosha if groom_dosha["manglik"] else bride_dosha
+            verdict = "one-sided"
+            note = (f"केवल {who} मांगलिक है (तीव्रता: {other['severity']})। परंपरा में इसे "
+                    f"मेल की स्थिति नहीं बल्कि वास्तविक दोष माना जाता है; उस कुंडली में सूचीबद्ध "
+                    f"शमन (यदि कोई हों) वही हैं जिन्हें एक ज्योतिषी आगे तौलेगा।")
+        else:
+            verdict = "clear"
+            note = "किसी भी कुंडली में तीनों गणनाओं में से किसी से भी मंगल दोष नहीं है।"
+        tradition_note = (
+            "तीव्रता की बात छोड़ भी दें, तो मंगल दोष को दिया जाने वाला महत्व स्वयं विवादास्पद है — "
+            "कई सम्मानित परंपराएँ मानती हैं कि यह केवल लग्न से लागू होता है, और कुछ अन्य मानती हैं "
+            "कि यह जातक की उम्र के अंतिम बीसवें वर्षों के बाद समाप्त हो जाता है।"
+        )
     else:
-        verdict = "clear"
-        note = "Neither chart carries Mangal dosha from any of the three references."
+        if both:
+            # The one cancellation almost every lineage accepts: two Manglik
+            # charts are held to neutralise each other, which is why Manglik
+            # natives are traditionally matched with one another.
+            verdict = "balanced"
+            note = ("Both charts are Manglik. The standard reading is that the dosha is "
+                    "mutually cancelled — this is the reason Manglik natives are "
+                    "conventionally matched together.")
+        elif either:
+            who = "groom" if groom_dosha["manglik"] else "bride"
+            other = groom_dosha if groom_dosha["manglik"] else bride_dosha
+            verdict = "one-sided"
+            note = (f"Only the {who} is Manglik ({other['severity']} severity). This is the "
+                    f"case the tradition treats as a genuine dosha rather than a matched "
+                    f"pair; the mitigations listed on that chart, if any, are what an "
+                    f"astrologer would weigh next.")
+        else:
+            verdict = "clear"
+            note = "Neither chart carries Mangal dosha from any of the three references."
+        tradition_note = (
+            "Severity aside, whether Mangal dosha should carry the weight it does is "
+            "itself disputed — several respected lineages hold that it applies only "
+            "from the Lagna, and others that it lapses after the native's late twenties."
+        )
 
     return {
         "verdict": verdict,
         "both_manglik": both,
         "cancelled_by_both_manglik": both,
         "note": note,
-        "tradition_note": (
-            "Severity aside, whether Mangal dosha should carry the weight it does is "
-            "itself disputed — several respected lineages hold that it applies only "
-            "from the Lagna, and others that it lapses after the native's late twenties."
-        ),
+        "tradition_note": tradition_note,
     }
 
 
@@ -850,24 +1097,37 @@ def _mangal_pair(groom_dosha: dict, bride_dosha: dict) -> dict:
 # Public entry point
 # --------------------------------------------------------------------------
 
-def match(groom: object, bride: object) -> dict:
+def match(groom: object, bride: object, lang: str = "en") -> dict:
     """Full Kundali Milan between two charts, as a JSON-ready dict.
 
     Both arguments are `chart_service` chart sessions (or their bundle dicts)
     built with `zodiac='sidereal'`. The groom's chart goes first: several kootas
     are asymmetric by tradition and the order is part of the reading, not an
-    implementation detail.
+    implementation detail. `lang` is `"en"` or `"hi"` — every note, label and
+    verdict string in the result is authored in that language; `"key"`-style
+    internal identifiers (koota keys, dosha booleans) are unaffected.
     """
-    guna = ashtakoot(groom, bride)
-    groom_mangal = mangal_dosha(groom)
-    bride_mangal = mangal_dosha(bride)
+    guna = ashtakoot(groom, bride, lang)
+    groom_mangal = mangal_dosha(groom, lang)
+    bride_mangal = mangal_dosha(bride, lang)
+    pair = _mangal_pair(groom_mangal, bride_mangal, lang)
+
+    disclaimer = (
+        "अष्टकूट एक पारंपरिक प्रथा है जिसका सांस्कृतिक महत्व वास्तविक है, परंतु इसके पीछे कोई "
+        "भविष्यवाणी का दावा नहीं है। यह परंपरा के अनुसार ही प्रस्तुत किया गया है, और इसे विवाह "
+        "के निर्णय का एकमात्र आधार नहीं बनाना चाहिए।"
+        if lang == "hi" else
+        "Ashtakoot is a traditional convention with real cultural weight and no "
+        "predictive claim behind it. It is offered as the tradition states it, "
+        "and it should not be the deciding input on a marriage."
+    )
 
     return {
         "ashtakoot": guna,
         "mangal": {
             "groom": groom_mangal,
             "bride": bride_mangal,
-            "pair": _mangal_pair(groom_mangal, bride_mangal),
+            "pair": pair,
         },
         "summary": {
             "total": guna["total"],
@@ -880,12 +1140,8 @@ def match(groom: object, bride: object) -> dict:
             "manglik": {
                 "groom": groom_mangal["manglik"],
                 "bride": bride_mangal["manglik"],
-                "verdict": _mangal_pair(groom_mangal, bride_mangal)["verdict"],
+                "verdict": pair["verdict"],
             },
         },
-        "disclaimer": (
-            "Ashtakoot is a traditional convention with real cultural weight and no "
-            "predictive claim behind it. It is offered as the tradition states it, "
-            "and it should not be the deciding input on a marriage."
-        ),
+        "disclaimer": disclaimer,
     }

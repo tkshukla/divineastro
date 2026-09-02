@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 
 from . import geo
 from .astro import matching
+from .astro import muhurat as muhurat_engine
 from .astro import panchang as panchang_engine
 from .chart_service import BirthData, build
 
@@ -45,6 +46,7 @@ class PersonIn(BaseModel):
 class MatchIn(BaseModel):
     groom: PersonIn
     bride: PersonIn
+    lang: str = "en"
 
 
 def _chart(p: PersonIn):
@@ -78,8 +80,9 @@ def _chart(p: PersonIn):
 def kundali_milan(body: MatchIn) -> dict:
     """36-point Ashtakoot Guna Milan plus Mangal Dosha for both people."""
     groom, bride = _chart(body.groom), _chart(body.bride)
+    lang = body.lang if body.lang in ("en", "hi") else "en"
     try:
-        result = matching.match(groom, bride)
+        result = matching.match(groom, bride, lang=lang)
     except matching.MatchingError as exc:
         raise HTTPException(400, str(exc)) from exc
 
@@ -91,6 +94,10 @@ def kundali_milan(body: MatchIn) -> dict:
     }
     if not (body.groom.time_known and body.bride.time_known):
         result["caveat"] = (
+            "जन्म समय अनुपलब्ध था, इसलिए दोपहर का समय उपयोग किया गया। 36-अंक स्कोर "
+            "प्रभावित नहीं है — यह केवल चंद्रमा पर निर्भर करता है — परंतु मांगलिक निर्णय "
+            "लग्न पर निर्भर करता है और इस पर भरोसा नहीं करना चाहिए।"
+            if lang == "hi" else
             "A birth time is missing, so noon was used. The 36-point score is "
             "unaffected — it depends only on the Moon — but the Manglik verdict "
             "depends on the ascendant and should not be relied on here."
@@ -115,3 +122,25 @@ def daily_panchang(
         return panchang_engine.daily_panchang(when, latitude, longitude, tz)
     except ValueError as exc:
         raise HTTPException(400, f"Could not compute the panchang: {exc}") from exc
+
+
+@router.get("/muhurat")
+def find_muhurat(
+    event: str,
+    from_date: str,
+    to_date: str,
+    latitude: float = Query(..., ge=-90, le=90),
+    longitude: float = Query(..., ge=-180, le=180),
+    timezone: str = "",
+) -> dict:
+    """Auspicious-timing search for one event across a date range (<=90 days)."""
+    tz = timezone or geo.timezone_for(latitude, longitude)
+    try:
+        days = muhurat_engine.find_muhurat(event, from_date, to_date, latitude, longitude, tz)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    return {
+        "event": event, "event_label": muhurat_engine.EVENTS[event],
+        "from_date": from_date, "to_date": to_date, "timezone": tz,
+        "days": days,
+    }
