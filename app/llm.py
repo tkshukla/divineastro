@@ -524,9 +524,13 @@ def _build_prompt(analysis: dict, language: str, question: str, history: list[di
     will not cache a prefix below 4096 tokens, and this whole request is a
     fifth of that.
     """
+    # 15, not 10: gather() was widened to match the larger Topic definitions
+    # (career: 3 support houses, 5 significators), so a few more evidence
+    # items can now legitimately outrank the historical top-10 cutoff. Still
+    # comfortably inside Haiku's context at this prompt size.
     evidence = "\n".join(
         f"- [{e['factor']}] {e['detail']} (weight {e['score']:+.2f})"
-        for e in analysis.get("evidence", [])[:10]
+        for e in analysis.get("evidence", [])[:15]
     )
     hist_text = ""
     if history:
@@ -580,11 +584,44 @@ def _brevity_note(provider: str) -> str:
     )
 
 
-def stream_polish(analysis: dict, language: str, provider: str, question: str, history: list[dict] | None = None):
-    """Yield the rewritten answer in chunks. Raises on failure — caller decides."""
+def _audit_dates(meta: dict | None, prompt: str, produced_text: str) -> None:
+    """Log-only check that the model actually obeyed `_allowed_dates_note`.
+
+    The note is a prompt instruction with no enforcement of its own — nothing
+    previously re-scanned the model's real output against it, so a future
+    prompt-wording change could silently reintroduce the exact bug this note
+    was added to fix (the model doing its own arithmetic on a supplied date)
+    with no test anywhere catching it. This does not block or alter the
+    answer — it only surfaces a warning, since a false positive here (e.g. a
+    date the model correctly quoted from conversation history rather than
+    from this turn's evidence) must never break a working reading.
+    """
+    if meta is None:
+        return
+    allowed = {f"{m} {y}" for m, y in _DATE_RE.findall(prompt)}
+    seen = {f"{m} {y}" for m, y in _DATE_RE.findall(produced_text)}
+    violations = sorted(seen - allowed)
+    if violations:
+        meta["date_violations"] = violations
+        logging.getLogger(__name__).warning(
+            "narration printed dates not in the allowed set: %s", violations)
+
+
+def stream_polish(analysis: dict, language: str, provider: str, question: str,
+                   history: list[dict] | None = None, meta: dict | None = None):
+    """Yield the rewritten answer in chunks. Raises on failure — caller decides.
+
+    `meta`, if given, is filled in with `meta["truncated"] = True` when the
+    provider stopped because it hit its own token cap rather than finishing
+    the thought — the caller can use that to tell the visitor the answer may
+    be cut short instead of silently ending mid-sentence — and with
+    `meta["date_violations"]` if the model printed a date not on the allowed
+    list (see `_audit_dates`).
+    """
     kind, model = _split(provider)
     system = _system(language)
     prompt = _build_prompt(analysis, language, question, history) + _brevity_note(kind)
+    produced: list[str] = []
 
     if kind == "ollama":
         payload = json.dumps({
@@ -607,9 +644,13 @@ def stream_polish(analysis: dict, language: str, provider: str, question: str, h
                 event = json.loads(raw)
                 chunk = (event.get("message") or {}).get("content", "")
                 if chunk:
+                    produced.append(chunk)
                     yield chunk
                 if event.get("done"):
-                     return
+                    if meta is not None and event.get("done_reason") == "length":
+                        meta["truncated"] = True
+                    _audit_dates(meta, prompt, "".join(produced))
+                    return
 
     elif kind == "anthropic":
         import anthropic
@@ -636,9 +677,14 @@ def stream_polish(analysis: dict, language: str, provider: str, question: str, h
             **extra,
         ) as stream:
             for text in stream.text_stream:
+                produced.append(text)
                 yield text
-            if stream.get_final_message().stop_reason == "refusal":
+            stop_reason = stream.get_final_message().stop_reason
+            if stop_reason == "refusal":
                 raise RuntimeError("Claude declined to rewrite this reading.")
+            if stop_reason == "max_tokens" and meta is not None:
+                meta["truncated"] = True
+            _audit_dates(meta, prompt, "".join(produced))
     else:
         raise ValueError(f"Unknown provider '{provider}'")
 
@@ -666,15 +712,38 @@ def polish(analysis: dict, language: str = "en", provider: str = "off",
     return text, None
 
 
+# generate_spiritual_guidance() used to hand the model nothing but three
+# scalar facts (lagna, moon sign, dasha lord) with no fact-grounding rules at
+# all — free to invent a gemstone, mantra, or charity the chart's own
+# `recommend_remedies()` never recommended. This is the same "only reference
+# what you were actually given" discipline SYSTEM_PROMPT applies to chat
+# answers, scoped to the remedy facts this prompt actually supplies.
+_REMEDY_GROUNDING = (
+    "You are a warm, wise, and highly experienced Vedic astrologer providing guidance. "
+    "Absolute rules: (1) Only reference the specific gemstones, mantras, and charitable "
+    "acts given to you below — never invent an additional gemstone, mantra, ritual, or "
+    "deity that was not listed. (2) Never change which planet a gemstone or mantra "
+    "belongs to. (3) Do not pad with generic filler like 'stay positive' or 'trust the "
+    "universe' — tie every sentence back to one of the specific facts given below."
+)
+
+
 def generate_spiritual_guidance(analysis: dict, language: str = "en") -> str:
-    """Generate a custom paragraph of spiritual/remedy guidance from Claude or Ollama."""
+    """Generate a custom paragraph of spiritual/remedy guidance from Claude or Ollama.
+
+    `analysis` carries `lagna`, `moon_sign`, `dasha` as before, plus
+    `remedies` — the actual dict `app.astro.remedies.recommend_remedies()`
+    computed for this chart — so the guidance is grounded in the gemstones,
+    mantras, and charity the engine actually recommended, not just the three
+    bare scalars this prompt used to work from.
+    """
     provider = os.environ.get("ASTRO_PROVIDER", "anthropic")
     if not provider or provider == "off":
         if os.environ.get("ANTHROPIC_API_KEY"):
             provider = "anthropic"
         else:
             provider = "off"
-            
+
     if provider == "off":
         return (
             "Continue with your daily meditation, focus on balancing your mind, and wear "
@@ -682,24 +751,46 @@ def generate_spiritual_guidance(analysis: dict, language: str = "en") -> str:
             "the dasha specific mantras to navigate the current transit windows smoothly."
         )
 
-    # Let's build a prompt
-    meta = analysis.get("meta", {})
     lagna = analysis.get("lagna", "") or "Ascendant"
     moon_sign = analysis.get("moon_sign", "") or "Moon Sign"
     dasha_lord = analysis.get("dasha", {}).get("mahadasha", {}).get("lord", "")
-    
+
+    rem = analysis.get("remedies") or {}
+    gem = rem.get("gemstones", {})
+    dr = rem.get("dasha_remedies", {})
+    life, lucky, fortune = gem.get("life_stone", {}), gem.get("lucky_stone", {}), gem.get("fortune_stone", {})
+
+    facts = [f"Lagna: {lagna}. Moon sign: {moon_sign}. Running Mahadasha: {dasha_lord or 'unknown'}."]
+    if life.get("name"):
+        bits = [life["name"]]
+        if life.get("finger"):
+            bits.append(f"worn on the {life['finger']} finger")
+        if life.get("metal"):
+            bits.append(f"set in {life['metal']}")
+        if life.get("alt_herb"):
+            bits.append(f"herb alternative: {life['alt_herb']}")
+        facts.append(f"Life Stone (Lagna lord {life.get('planet', '')}): {', '.join(bits)}.")
+    if lucky.get("name"):
+        facts.append(f"Lucky Stone (5th lord {lucky.get('planet', '')}): {lucky['name']}.")
+    if fortune.get("name"):
+        facts.append(f"Fortune Stone (9th lord {fortune.get('planet', '')}): {fortune['name']}.")
+    if dr.get("mantra"):
+        facts.append(f"Prescribed mantra for {dr.get('mahadasha_lord', dasha_lord)}: {dr['mantra']}.")
+    if dr.get("charity"):
+        facts.append(f"Prescribed charity for {dr.get('mahadasha_lord', dasha_lord)}: {dr['charity']}.")
+
     prompt = (
         f"You are Pandit Shukla, an elite Vedic astrologer with decades of experience. "
-        f"Generate a personalized, warm, and highly authoritative spiritual guidance and remedy guidance "
-        f"report for a native with Lagna in {lagna} and Moon in {moon_sign}. "
-        f"They are currently running their {dasha_lord} Mahadasha. "
-        f"Write 2 to 3 paragraphs of deep, practical, and highly premium spiritual counseling, "
-        f"mindset shifts, and direct advice to make the most of this period. "
-        f"Write {'in Hindi (Devanagari script)' if language == 'hi' else 'in English'}. "
+        f"Write 2 to 3 paragraphs of deep, practical, and highly premium spiritual "
+        f"counseling for a native with the chart facts below — weave the SPECIFIC "
+        f"remedies given into direct, actionable advice for making the most of this "
+        f"period, rather than generic guidance.\n\n"
+        + "\n".join(facts) +
+        f"\n\nWrite {'in Hindi (Devanagari script)' if language == 'hi' else 'in English'}. "
         f"Do not output markdown headings or titles. Go straight into the text."
     )
-    
-    system = "You are a warm, wise, and highly experienced Vedic astrologer providing guidance."
+
+    system = _REMEDY_GROUNDING
     
     try:
         kind, model = _split(provider)

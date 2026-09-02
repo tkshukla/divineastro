@@ -334,6 +334,12 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
 
     session = _session(req.session_id, request)
     result = analyse(session, question, when).to_dict()
+    # Every real chat answer goes through this endpoint (the frontend only
+    # ever calls /api/ask/stream, never /api/ask), so without this the
+    # narration prompt's _vedic_block() is always empty — no yogas, dashas,
+    # sade sati, vargottama — despite /api/ask setting it correctly. See
+    # _vedic_block()'s own docstring for why that content matters.
+    result["vedic"] = _vedic_context(session)
     result["answer_engine"] = result["answer"]
     result["language"] = req.language
 
@@ -350,13 +356,17 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
             return
         try:
             produced = 0
-            for chunk in llm.stream_polish(result, req.language, provider, question, history=history):
+            meta: dict = {}
+            for chunk in llm.stream_polish(result, req.language, provider, question,
+                                            history=history, meta=meta):
                 produced += len(chunk)
                 yield f"event: delta\ndata: {json.dumps({'text': chunk})}\n\n"
             if produced < 120:
                 yield ("event: error\ndata: "
                        + json.dumps({"error": "The model returned too little text to trust."})
                        + "\n\n")
+            elif meta.get("truncated"):
+                yield "event: truncated\ndata: {}\n\n"
         except Exception as exc:
             yield ("event: error\ndata: "
                    + json.dumps({"error": f"{type(exc).__name__}: {exc}"}) + "\n\n")
