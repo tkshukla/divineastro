@@ -16,6 +16,7 @@ factor produced it.
 from __future__ import annotations
 
 import datetime as dt
+import logging
 import re
 from dataclasses import dataclass, field, asdict
 from zoneinfo import ZoneInfo
@@ -26,6 +27,8 @@ from ..chart_service import (
 )
 from . import knowledge as kb
 from .topics import Routing, Topic, classify
+
+_log = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------
 # Scoring
@@ -274,11 +277,14 @@ def gather(session: ChartSession, topic: Topic) -> list[Evidence]:
     evidence: list[Evidence] = []
     for i, h in enumerate(topic.primary_houses):
         evidence += house_evidence(session, h, weight=1.0 if i == 0 else 0.7)
-    for h in topic.support_houses[:2]:
+    # Slices matched to the largest `Topic` definitions (career: 3 support
+    # houses, 5 significators) — a smaller cap here silently dropped real
+    # signal for those topics before scoring ever saw it.
+    for h in topic.support_houses[:3]:
         evidence += house_evidence(session, h, weight=0.35)
 
     key_planets = [session.house_ruler(h) for h in topic.primary_houses]
-    for i, sig in enumerate(topic.significators[:3]):
+    for i, sig in enumerate(topic.significators[:5]):
         ev = significator_evidence(session, sig, topic, weight=0.9 if i == 0 else 0.55)
         if ev:
             evidence.append(ev)
@@ -574,7 +580,11 @@ def search_periods(session: ChartSession, topic: Topic, start: dt.datetime,
                 reasons.append(
                     f"monthly profection to the {_ord(monthly.profected_house)} house")
         except Exception:
-            pass
+            # Visibility only — a failure here just drops profection's
+            # contribution to this month's score with no other signal that
+            # it happened, silently ranking candidate years on fewer
+            # techniques than intended.
+            _log.warning("search_periods: profection failed for %s", moment, exc_info=True)
 
         # --- zodiacal releasing ------------------------------------------
         try:
@@ -591,7 +601,7 @@ def search_periods(session: ChartSession, topic: Topic, start: dt.datetime,
                 reasons.append(
                     f"releasing into {zr.l2.sign} — the sign on your {_ord(house)} house")
         except Exception:
-            pass
+            _log.warning("search_periods: zodiacal releasing failed for %s", moment, exc_info=True)
 
         # --- slow transits -----------------------------------------------
         try:
@@ -640,7 +650,7 @@ def search_periods(session: ChartSession, topic: Topic, start: dt.datetime,
                     fam["dasha"] += 2.0
                     reasons.append(f"{ad} antardasha — a key significator")
             except Exception:
-                pass
+                _log.warning("search_periods: vimshottari failed for %s", moment, exc_info=True)
 
         active = sum(1 for v in fam.values() if v > 0)
         return sum(fam.values()) * (1.0 + 0.3 * max(0, active - 1)), reasons
