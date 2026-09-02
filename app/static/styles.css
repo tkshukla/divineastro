@@ -1020,6 +1020,7 @@ details.reasoning summary:hover { color: var(--gold); }
 
 /* starters */
 .starters { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 30px 12px; }
+.starters[hidden] { display: none; }
 .starter {
   font-size: 12.5px; padding: 7px 14px; border-radius: 999px; cursor: pointer;
   border: 1px solid var(--line); background: rgba(139,123,240,0.08); color: var(--ink-dim);
@@ -1045,6 +1046,16 @@ details.reasoning summary:hover { color: var(--gold); }
 .composer button:hover { transform: scale(1.06); filter: brightness(1.08); }
 .composer button svg { width: 20px; height: 20px; fill: #241a04; }
 .composer button[disabled] { opacity: 0.5; cursor: not-allowed; transform: none; }
+.composer button[hidden] { display: none; }
+.composer input[disabled] { opacity: 0.6; }
+#stop { background: rgba(200,80,80,0.85); box-shadow: 0 8px 22px rgba(200,80,80,0.25); }
+#stop svg { fill: #fff; }
+
+.bubble-incomplete { opacity: 0.85; }
+.incomplete-note {
+  margin: 6px 0 0; padding: 8px 12px; border-radius: 10px; font-size: 12.5px;
+  background: rgba(200,80,80,0.1); border: 1px solid rgba(200,80,80,0.3); color: var(--ink-dim);
+}
 
 /* scrollbars */
 ::-webkit-scrollbar { width: 9px; height: 9px; }

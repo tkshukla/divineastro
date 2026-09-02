@@ -36,6 +36,11 @@ const A_I18N = {
     perQ: "per question", buy: "Buy", popular: "Most popular",
     kundaliTitle: "Hand-written Kundali",
     kundaliSub: "Written by hand by our astrologer and delivered as a scanned PDF.",
+    singleQTitle: "Single-Topic Reports",
+    singleQSub: "A focused PDF on one area of your chart — instant, no waiting.",
+    singleQNeedChart: "Open or save a chart first, then come back here to buy a report for it.",
+    reportReadyTitle: "Your report is ready",
+    reportDownload: "Download PDF",
     pages: "pages", plusQs: "questions included",
     processing: "Opening payment…", paid: "Payment received —", added: "questions added.",
     payFailed: "Payment could not be completed.",
@@ -82,6 +87,11 @@ const A_I18N = {
     perQ: "प्रति प्रश्न", buy: "खरीदें", popular: "सर्वाधिक लोकप्रिय",
     kundaliTitle: "हस्तलिखित कुंडली",
     kundaliSub: "हमारे ज्योतिषी द्वारा हाथ से लिखी, स्कैन की गई PDF के रूप में।",
+    singleQTitle: "एकल-विषय रिपोर्ट",
+    singleQSub: "आपकी कुंडली के एक क्षेत्र पर केंद्रित PDF — तुरंत, बिना प्रतीक्षा के।",
+    singleQNeedChart: "पहले कोई कुंडली खोलें या सहेजें, फिर उसके लिए रिपोर्ट खरीदने यहाँ लौटें।",
+    reportReadyTitle: "आपकी रिपोर्ट तैयार है",
+    reportDownload: "PDF डाउनलोड करें",
     pages: "पृष्ठ", plusQs: "प्रश्न शामिल",
     processing: "भुगतान खोला जा रहा है…", paid: "भुगतान प्राप्त —", added: "प्रश्न जोड़े गए।",
     payFailed: "भुगतान पूरा नहीं हो सका।",
@@ -378,6 +388,12 @@ function openStore(outOfCredits = false) {
   acct.coupon = null;
   const packs = acct.products.filter((p) => p.kind === "questions");
   const kundalis = acct.products.filter((p) => p.kind === "kundali");
+  const singleQ = acct.products.filter((p) => p.kind === "single_question");
+  // A single-question report is scoped to one chart, so it needs a birth_id
+  // — unlike question packs and kundali orders, which don't. Only offer it
+  // once a saved chart is actually loaded (state.currentBirthId), same
+  // birth-id-tracking the chat's own per-chart history filter relies on.
+  const haveBirth = typeof state !== "undefined" && state.currentBirthId;
 
   const back = modal(`
     <h2 class="modal-title">${escapeHtml(outOfCredits ? at("outTitle") : at("buyMore"))}</h2>
@@ -388,6 +404,13 @@ function openStore(outOfCredits = false) {
     <p class="modal-sub">${escapeHtml(at("kundaliSub"))}${
       acct.astrologer ? ` ${escapeHtml(acct.astrologer)} · ~${acct.turnaround} days.` : ""}</p>
     <div class="packs" data-kind="kundali">${kundalis.map(packCard).join("")}</div>
+    ${singleQ.length ? `
+    <h3 class="store-h">${escapeHtml(at("singleQTitle"))}</h3>
+    <p class="modal-sub">${escapeHtml(at("singleQSub"))}</p>
+    ${haveBirth
+      ? `<div class="packs" data-kind="single_question">${singleQ.map(packCard).join("")}</div>`
+      : `<p class="modal-sub">${escapeHtml(at("singleQNeedChart"))}</p>`}
+    ` : ""}
 
     <h3 class="store-h">${escapeHtml(at("couponLabel"))}</h3>
     <div style="display:flex;gap:10px;align-items:center">
@@ -480,6 +503,10 @@ async function startCheckout(sku, back) {
   // re-validates regardless and would reject the order outright.
   const body = { sku };
   if (couponFor(sku)) body.coupon_code = acct.coupon.code;
+  const product = acct.products.find((p) => p.sku === sku);
+  if (product?.kind === "single_question" && typeof state !== "undefined") {
+    body.birth_id = state.currentBirthId;
+  }
 
   try {
     const res = await fetch("/api/orders", {
@@ -637,6 +664,20 @@ async function confirmPayment(orderId, payload) {
         toast(`${at("paid")} ✓`); break;
       }
     }
+    return;
+  }
+
+  // A single-question report grants no question credits — its "you're done"
+  // moment is a direct download link, not the generic credits toast below.
+  const paidProduct = acct.products.find((p) => p.sku === data.order?.sku);
+  if (paidProduct?.kind === "single_question" && typeof state !== "undefined" && state.sessionId) {
+    const link = `/api/pdf/single-question/${state.sessionId}` +
+      `?sku=${encodeURIComponent(paidProduct.sku)}&birth_id=${encodeURIComponent(state.currentBirthId)}`;
+    modal(`
+      <h2 class="modal-title">${escapeHtml(at("reportReadyTitle"))}</h2>
+      <p class="modal-sub">${escapeHtml(paidProduct.title)}</p>
+      <a class="primary" style="display:block;text-align:center;margin-top:14px" href="${link}">
+        ${escapeHtml(at("reportDownload"))}</a>`);
     return;
   }
 

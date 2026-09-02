@@ -77,6 +77,7 @@
     // visitor picks their own city.
     if (!q('#panchang-result').innerHTML) loadPanchang();
   });
+  q('#open-muhurat')?.addEventListener('click', () => showStage('stage-muhurat'));
 
   /* ---------------------------------------------------------- kundali milan */
   const sides = {};
@@ -119,7 +120,7 @@
     try {
       const res = await fetch('/api/match', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...payload, lang: (typeof state !== 'undefined' && state.lang) || 'en' }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || 'Could not match those charts.');
@@ -260,5 +261,78 @@
       ${(p.notes || []).length
         ? `<p class="muted-line">${esc(p.notes.join(' '))}</p>` : ''}`;
     q('#panchang-result').hidden = false;
+  }
+
+  /* ---------------------------------------------------------------- muhurat */
+  const muPick = placePicker(q('#mu-place'), q('#mu-results'), q('#mu-chosen'));
+  let muPlace = null;
+  q('#mu-place')?.addEventListener('place:chosen', (e) => { muPlace = e.detail; });
+
+  // A 30-day window starting today, so the form is already usable on first
+  // open rather than showing two empty date fields.
+  q('#open-muhurat')?.addEventListener('click', () => {
+    const fromEl = q('#mu-from'), toEl = q('#mu-to');
+    if (!fromEl.value) {
+      const today = new Date();
+      const later = new Date(today.getTime() + 30 * 86400000);
+      fromEl.value = today.toISOString().slice(0, 10);
+      toEl.value = later.toISOString().slice(0, 10);
+    }
+  });
+
+  q('#muhurat-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const err = q('#muhurat-error');
+    err.hidden = true;
+
+    const place = muPlace || muPick() ||
+      { latitude: 28.6139, longitude: 77.2090, timezone: 'Asia/Kolkata', label: 'New Delhi, India' };
+    const params = new URLSearchParams({
+      event: q('#mu-event').value,
+      from_date: q('#mu-from').value,
+      to_date: q('#mu-to').value,
+      latitude: place.latitude, longitude: place.longitude, timezone: place.timezone || '',
+    });
+
+    try {
+      const res = await fetch(`/api/muhurat?${params}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Could not search that range.');
+      renderMuhurat(data, place.label);
+    } catch (ex) {
+      err.textContent = ex.message; err.hidden = false;
+    }
+  });
+
+  const VERDICT_LABEL = { good: 'Good', caution: 'Caution', avoid: 'Avoid' };
+  const VERDICT_CLASS = { good: 'good', caution: 'neutral', avoid: 'bad' };
+
+  function renderMuhurat(d, label) {
+    const rows = d.days || [];
+    q('#muhurat-result').innerHTML = `
+      <div class="card pa-card">
+        <h3>${esc(d.event_label)} · ${esc(d.from_date)} – ${esc(d.to_date)}</h3>
+        <p class="muted-line">${esc(label || '')}</p>
+        <div style="overflow-x:auto">
+          <table class="pa-table">
+            <thead><tr>
+              <th>Date</th><th>Verdict</th><th>Tithi</th><th>Nakshatra</th><th>Vara</th><th>Notes</th>
+            </tr></thead>
+            <tbody>
+              ${rows.map((r) => `
+                <tr>
+                  <td>${esc(r.date)}</td>
+                  <td><span class="pa-verdict ${VERDICT_CLASS[r.verdict] || ''}">${
+                    esc(VERDICT_LABEL[r.verdict] || r.verdict)}</span></td>
+                  <td>${esc(r.tithi || '—')}</td>
+                  <td>${esc(r.nakshatra || '—')}</td>
+                  <td>${esc(r.vara || '—')}</td>
+                  <td>${esc((r.notes || []).join('; '))}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    q('#muhurat-result').hidden = false;
   }
 })();

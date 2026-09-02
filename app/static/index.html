@@ -72,6 +72,11 @@
         <span class="tool-name" id="tool-panchang-name">Today's Panchang</span>
         <span class="tool-sub" id="tool-panchang-sub">Tithi, nakshatra and Rahu Kaal</span>
       </button>
+      <button type="button" class="tool-card" id="open-muhurat">
+        <span class="tool-icon">&#10024;</span>
+        <span class="tool-name" id="tool-muhurat-name">Muhurat Finder</span>
+        <span class="tool-sub" id="tool-muhurat-sub">Auspicious dates for marriage, griha pravesh and more</span>
+      </button>
     </div>
 
     <!-- Saved charts live here on the home screen: a returning customer opens
@@ -357,6 +362,47 @@
   </div>
 </section>
 
+<section id="stage-muhurat" class="stage">
+  <div class="tool-inner">
+    <h1 id="muhurat-title">Muhurat Finder</h1>
+    <p class="tagline" id="muhurat-sub">
+      Scans a date range and flags the classical red flags — a rikta tithi,
+      Amavasya, Bhadra — for the event you choose. A "good" day means none of
+      those were found, not a guarantee; for anything that matters, your own
+      family tradition or priest should still have the final word.
+    </p>
+
+    <form class="card" id="muhurat-form" autocomplete="off">
+      <div class="field">
+        <label for="mu-event">Event</label>
+        <select id="mu-event">
+          <option value="marriage">Marriage / wedding</option>
+          <option value="griha_pravesh">Griha Pravesh (house-warming)</option>
+          <option value="mundan">Mundan (first hair-cutting)</option>
+          <option value="namkaran">Namkaran (naming ceremony)</option>
+          <option value="general">General auspicious beginning</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="field"><label>From</label>
+          <input type="date" id="mu-from" /></div>
+        <div class="field"><label>To</label>
+          <input type="date" id="mu-to" /></div>
+      </div>
+      <div class="field place">
+        <label>Place</label>
+        <input type="text" id="mu-place" placeholder="Start typing a city…" />
+        <ul class="suggest" id="mu-results" hidden></ul>
+        <p class="chosen" id="mu-chosen" hidden></p>
+      </div>
+      <button type="submit" class="primary">Find dates</button>
+    </form>
+    <p id="muhurat-error" class="error" hidden></p>
+
+    <div id="muhurat-result" hidden></div>
+  </div>
+</section>
+
 <!-- ==================== STAGE 1 : BIRTH DATA ==================== -->
 <section id="stage-birth" class="stage">
   <div class="intro">
@@ -510,6 +556,9 @@
       <div id="starters" class="starters"></div>
       <form id="ask-form" class="composer">
         <input id="q" type="text" placeholder="Ask about career, money, love, health, timing…" autocomplete="off" />
+        <button type="button" id="stop" aria-label="Stop" hidden>
+          <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+        </button>
         <button type="submit" id="send" aria-label="Send">
           <svg viewBox="0 0 24 24"><path d="M3 20.5 21 12 3 3.5 3 10l12 2-12 2z"/></svg>
         </button>
