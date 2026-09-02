@@ -321,6 +321,10 @@ class Order(Base):
     delivered_path: Mapped[str] = mapped_column(String(255), default="")
     birth_id: Mapped[int | None] = mapped_column(ForeignKey("birth_profiles.id"), nullable=True)
 
+    # Which topic a 'single_question' order is for (e.g. "career"). Unused by
+    # every other product kind. See migration d4a2f9c1e7b3.
+    report_topic: Mapped[str | None] = mapped_column(String(40), nullable=True)
+
     # --- manual UPI collection -------------------------------------------
     # What the customer claims, and who checked it.
     utr: Mapped[str | None] = mapped_column(String(32), nullable=True)

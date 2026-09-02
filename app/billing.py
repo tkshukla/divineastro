@@ -49,11 +49,15 @@ class Product:
     title_hi: str
     amount_paise: int
     credits: int
-    kind: str                 # 'questions' | 'kundali'
+    kind: str                 # 'questions' | 'kundali' | 'single_question'
     blurb: str
     blurb_hi: str
     pages: int = 0
     highlight: bool = False
+    # For kind='single_question' only: the app.interpret.topics.TOPICS key
+    # this report is scoped to. Frozen onto the Order at creation (see
+    # create_order) rather than trusted from the client.
+    topic: str = ""
 
     @property
     def rupees(self) -> int:
@@ -102,6 +106,27 @@ PRODUCTS: dict[str, Product] = {p.sku: p for p in [
             "Three hand-written pages plus three questions answered personally.",
             "तीन हस्तलिखित पृष्ठ और तीन प्रश्नों के व्यक्तिगत उत्तर।",
             pages=3, highlight=True),
+
+    # Single-question reports: one focused PDF scoped to a single life area,
+    # reusing the same dasha/yoga evidence the chat engine already computes
+    # rather than a full chart report. `credits=0` — this isn't a
+    # question-credit product, `has_paid_report()` gates delivery directly
+    # off the paid Order instead.
+    Product("sq_career", "Career Report", "करियर रिपोर्ट", 24900, 0, "single_question",
+            "A focused PDF on career and vocation — the 10th and 6th houses, "
+            "active dashas, and the windows ahead.",
+            "करियर और व्यवसाय पर केंद्रित PDF — दशम और षष्ठ भाव, सक्रिय दशाएँ, और आगामी समय।",
+            pages=3, topic="career"),
+    Product("sq_marriage", "Marriage Timing Report", "विवाह समय रिपोर्ट", 24900, 0, "single_question",
+            "A focused PDF on marriage and partnership — the 7th and 5th houses, "
+            "active dashas, and the windows ahead.",
+            "विवाह और साझेदारी पर केंद्रित PDF — सप्तम और पंचम भाव, सक्रिय दशाएँ, और आगामी समय।",
+            pages=3, topic="love"),
+    Product("sq_money", "Money & Finance Report", "धन एवं वित्त रिपोर्ट", 24900, 0, "single_question",
+            "A focused PDF on money and material security — the 2nd and 11th "
+            "houses, active dashas, and the windows ahead.",
+            "धन और आर्थिक सुरक्षा पर केंद्रित PDF — द्वितीय और एकादश भाव, सक्रिय दशाएँ, और आगामी समय।",
+            pages=3, topic="money"),
 ]}
 
 
@@ -125,6 +150,10 @@ def create_order(db: Session, user, sku: str, birth_id: int | None = None,
     product = PRODUCTS.get(sku)
     if product is None:
         raise ValueError(f"Unknown product '{sku}'")
+    if product.kind == "single_question" and not birth_id:
+        # The report is scoped to one chart; without a birth_id there is
+        # nothing for has_paid_report() to gate delivery against later.
+        raise ValueError("Pick a saved chart before buying a single-question report.")
 
     coupon = None
     discount = bonus = 0
@@ -145,6 +174,7 @@ def create_order(db: Session, user, sku: str, birth_id: int | None = None,
         coupon_id=coupon.id if coupon else None,
         credits=product.credits + bonus,
         birth_id=birth_id,
+        report_topic=product.topic or None,
         fulfilment=(FulfilStatus.pending if product.kind == "kundali"
                     else FulfilStatus.not_applicable),
         provider=gateway.key,
@@ -210,6 +240,21 @@ def mark_paid(db: Session, order: Order, payment_id: str) -> tuple[bool, str]:
 
     db.commit()
     return True, "Payment recorded."
+
+
+def has_paid_report(db: Session, user_id: int, sku: str, birth_id: int) -> Order | None:
+    """A paid single-question Order for this user/sku/chart, if one exists.
+
+    The gate for the report PDF endpoint — deliberately separate from the
+    free `/api/pdf/chart` and `/api/pdf/remedies` routes, which have no
+    payment check at all and must not become the model for a paid product.
+    """
+    return db.execute(
+        select(Order).where(
+            Order.user_id == user_id, Order.sku == sku, Order.birth_id == birth_id,
+            Order.status == OrderStatus.paid,
+        ).order_by(Order.paid_at.desc())
+    ).scalars().first()
 
 
 def verify_return(payload: dict) -> bool:

@@ -484,6 +484,45 @@ _REMEDIES_BODY = """
 #blocks(d.guidance)
 """
 
+_SINGLE_QUESTION_BODY = """
+#cover(d.subject)
+#counter(page).update(1)
+#set page(paper: "a4", margin: (x: 54pt, top: 64pt, bottom: 58pt), header: running)
+
+#let section(title) = block(above: 16pt, below: 8pt, {
+  text(font: DISP, size: 12.5pt, fill: ACC, title)
+  v(3pt)
+  line(length: 100%, stroke: 0.6pt + RULE)
+})
+
+#section(d.texts.birth_details)
+#kvtable(d.birth)
+
+#section(d.texts.verdict_title)
+#block(width: 100%, fill: WASH, inset: 12pt, radius: 4pt, stroke: 0.5pt + RULE)[
+  #text(weight: "bold", size: 12pt, fill: ACC, d.verdict)
+  #h(8pt)
+  #text(size: 8.6pt, fill: MUTED, "(" + d.score + ")")
+  #v(8pt)
+  #{ for c in d.chips { chip(c.at(0), c.at(1)); h(5pt) } }
+]
+
+#section(d.texts.reading_title)
+#blocks(d.reading)
+
+#if d.dasha != none [
+  #section(d.texts.dasha)
+  #kvtable(d.dasha.summary)
+  #v(8pt)
+  #datatable(d.dasha.table)
+]
+
+#if d.yogas.rows.len() > 0 [
+  #section(d.texts.yogas_title)
+  #datatable(d.yogas)
+]
+"""
+
 _QUESTIONS_BODY = """
 #cover(d.subject)
 #counter(page).update(1)
@@ -1905,7 +1944,9 @@ def remedies_pdf(session, *, brand: str, site: str, language: str = "en") -> byt
     # Calculate remedies and gemstones
     rem = recommend_remedies(session)
     
-    # Generate guidance
+    # Generate guidance. `remedies` carries the actual gemstones/mantra/charity
+    # recommend_remedies() computed, so the guidance prompt is grounded in
+    # what this chart was actually given, not just three bare scalars.
     analysis = {
         "meta": meta,
         "lagna": bundle["objects"]["ASC"]["sign"],
@@ -1914,7 +1955,8 @@ def remedies_pdf(session, *, brand: str, site: str, language: str = "en") -> byt
             "mahadasha": {
                 "lord": rem["dasha_remedies"]["mahadasha_lord"]
             }
-        }
+        },
+        "remedies": rem,
     }
     if "Moon" in bundle["objects"]:
         analysis["moon_sign"] = bundle["objects"]["Moon"]["sign"]
@@ -1973,6 +2015,113 @@ def remedies_pdf(session, *, brand: str, site: str, language: str = "en") -> byt
         "guidance": markdown_blocks(guidance_text),
     }
     return _compile(_REMEDIES_BODY, data)
+
+
+# --------------------------------------------------------------------------
+# Single-question paid reports
+# --------------------------------------------------------------------------
+
+# One canned, clearly-routing question per topic — deliberately built from
+# the same strong keywords `app.interpret.topics` already matches on (see
+# tests/test_topic_routing.py), so this reuses the real chat pipeline's
+# topic classification instead of forcing a topic through a side channel.
+# Keeping this small and reviewable in one place beats adding a "just trust
+# me, it's this topic" bypass to analyse() for three SKUs.
+_SINGLE_QUESTION_PROMPTS = {
+    "career": "How does my chart look for my career, job and professional growth right now?",
+    "love": "What does my chart say about my marriage and relationship prospects?",
+    "money": "How is my financial situation and money looking according to my chart?",
+}
+
+_SQ_TEXTS = {
+    "en": {
+        "birth_details": "Birth details", "verdict_title": "The verdict",
+        "reading_title": "The reading", "dasha": "Vimshottari Dasha",
+        "yogas_title": "Yogas in play",
+    },
+    "hi": {
+        "birth_details": "जन्म विवरण", "verdict_title": "निष्कर्ष",
+        "reading_title": "विवेचन", "dasha": "विंशोत्तरी दशा",
+        "yogas_title": "सक्रिय योग",
+    },
+}
+
+
+def single_question_pdf(session, topic: str, *, brand: str, site: str,
+                        provider: str = "", language: str = "en") -> bytes:
+    """A focused report on one life topic — career, love or money today.
+
+    Reuses the same deterministic engine (`app.interpret.analyse`) and
+    narration (`app.llm.polish`) the chat answers already go through, scoped
+    to one of the three canned questions above, rather than any new
+    astrology logic. `topic` must be a key in `_SINGLE_QUESTION_PROMPTS` —
+    the caller (the gated `/api/pdf/single-question/{sid}` route) is
+    responsible for checking payment before this is ever called.
+    """
+    from .interpret import analyse
+    from . import llm as llm_module
+
+    question = _SINGLE_QUESTION_PROMPTS.get(topic)
+    if not question:
+        raise ValueError(f"No single-question report is defined for topic '{topic}'.")
+
+    bundle = session.bundle
+    meta = bundle["meta"]
+    when = dt.datetime.now()
+
+    result = analyse(session, question, when).to_dict()
+    polished, error = llm_module.polish(result, language, provider or llm_module.default_provider(), question)
+    if error:
+        logging.getLogger(__name__).warning("single_question_pdf narration failed: %s", error)
+
+    texts = _SQ_TEXTS.get(language, _SQ_TEXTS["en"])
+
+    birth_rows = [
+        ["Name", meta["name"]],
+        ["Date & time", meta["local_time"]],
+        ["Place", meta["place"]],
+        ["Lagna (Ascendant)", bundle["objects"]["ASC"]["sign"]],
+    ]
+    if "Moon" in bundle["objects"]:
+        birth_rows.append(["Moon Sign", bundle["objects"]["Moon"]["sign"]])
+
+    chips = [[e["factor"], f"{e['score']:+.2f}"] for e in (result.get("evidence") or [])[:6]]
+
+    dasha = None
+    if bundle["meta"].get("zodiac") == "sidereal":
+        try:
+            dasha = {
+                "summary": [["As of", when.strftime("%d %B %Y")]],
+                "table": {
+                    "headers": ["Mahadasha", "Years", "From", "To", "Status"],
+                    "cols": [0, 0, 0, 0, 1],
+                    "rows": _dasha_ladder(session, when),
+                },
+            }
+        except Exception as exc:                # pragma: no cover - defensive
+            logging.getLogger(__name__).warning("single_question_pdf dasha unavailable: %s", exc)
+
+    data = {
+        "brand": brand,
+        "title": result.get("topic_label", topic).title() + " Report",
+        "subject": meta["name"],
+        "lang": language,
+        "cover": [
+            ["Born", meta["local_time"]],
+            ["At", meta["place"]],
+            ["Generated", dt.datetime.now().strftime("%d %B %Y")],
+        ],
+        "footer": f"{brand} · {site}",
+        "texts": texts,
+        "birth": birth_rows,
+        "verdict": result.get("verdict", ""),
+        "score": f"{result.get('score', 0.0):+.2f}",
+        "chips": chips,
+        "reading": markdown_blocks(polished),
+        "dasha": dasha,
+        "yogas": _yogas_pdf_table(session, language=language),
+    }
+    return _compile(_SINGLE_QUESTION_BODY, data)
 
 
 # --------------------------------------------------------------------------
