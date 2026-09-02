@@ -86,7 +86,12 @@ def test_submit_utr_wiring() -> None:
     import random
 
     from app import api_account
-    from app.db import Order, OrderStatus, User, session as db_session
+    from app.db import Base, Order, OrderStatus, User, engine, session as db_session
+
+    # This test never imports app.main (the only place init_db()/Alembic
+    # normally runs), so it must not depend on run order — create_all() is
+    # a no-op against a schema that already exists, and cheap otherwise.
+    Base.metadata.create_all(engine)
 
     email = f"mailtest{random.randint(10000, 99999)}@example.com"
     with db_session() as db:
