@@ -24,13 +24,13 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from . import auth, geo, llm, pdf_report
+from . import auth, billing, geo, llm, pdf_report
 from .api_account import router as account_router
 from .api_tools import router as tools_router
 from .legal import router as legal_router
 from .chart_service import BirthData, build, solar_return, timing_snapshot, transits, wheel_svg
 from .db import (
-    EntryKind, QuestionLog, User, balance, grant, init_db, session as db_session,
+    BirthProfile, EntryKind, QuestionLog, User, balance, grant, init_db, session as db_session,
 )
 from .interpret import analyse
 from .interpret.topics import TOPICS
@@ -334,6 +334,7 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
 
     session = _session(req.session_id, request)
     result = analyse(session, question, when).to_dict()
+    result["vedic"] = _vedic_context(session)
     result["answer_engine"] = result["answer"]
     result["language"] = req.language
 
@@ -350,13 +351,17 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
             return
         try:
             produced = 0
-            for chunk in llm.stream_polish(result, req.language, provider, question, history=history):
+            meta: dict = {}
+            for chunk in llm.stream_polish(result, req.language, provider, question,
+                                            history=history, meta=meta):
                 produced += len(chunk)
                 yield f"event: delta\ndata: {json.dumps({'text': chunk})}\n\n"
             if produced < 120:
                 yield ("event: error\ndata: "
                        + json.dumps({"error": "The model returned too little text to trust."})
                        + "\n\n")
+            elif meta.get("truncated"):
+                yield "event: truncated\ndata: {}\n\n"
         except Exception as exc:
             yield ("event: error\ndata: "
                    + json.dumps({"error": f"{type(exc).__name__}: {exc}"}) + "\n\n")
@@ -714,6 +719,46 @@ def pdf_remedies(sid: str, request: Request, lang: str = "en") -> Response:
         raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
     return _pdf_response(
         data, pdf_report.safe_filename(BRAND, "remedies", session.birth.name or "remedies"))
+
+
+@app.get("/api/pdf/single-question/{sid}")
+def pdf_single_question(sid: str, request: Request, sku: str, birth_id: int,
+                        lang: str = "en") -> Response:
+    """A paid, topic-scoped report PDF — gated on an actually-paid Order.
+
+    Unlike pdf_chart/pdf_remedies above, this is a paid product: no Order in
+    `paid` status for this (user, sku, birth_id) means no PDF, full stop.
+    `birth_id` must be supplied by the caller (the chart session itself
+    carries no birth_id) and must belong to the signed-in user, the same
+    trust model /api/ask already uses for req.birth_id.
+    """
+    product = billing.PRODUCTS.get(sku)
+    if product is None or product.kind != "single_question":
+        raise HTTPException(404, f"'{sku}' is not a single-question report.")
+
+    with db_session() as db:
+        user = auth.require_user(request, db)
+        owns_birth = db.execute(
+            select(BirthProfile.id).where(
+                BirthProfile.id == birth_id, BirthProfile.user_id == user.id)
+        ).first()
+        if not owns_birth:
+            raise HTTPException(404, "Birth profile not found.")
+        order = billing.has_paid_report(db, user.id, sku, birth_id)
+        if order is None:
+            raise HTTPException(
+                402, f"No paid order found for '{product.title}' on this chart. "
+                     f"Buy it from the products page first.")
+
+    session = _session(sid, request)      # and it must be this user's chart
+
+    try:
+        data = pdf_report.single_question_pdf(
+            session, product.topic, brand=BRAND, site=SITE_URL, language=lang)
+    except Exception as exc:
+        raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
+    return _pdf_response(
+        data, pdf_report.safe_filename(BRAND, sku, session.birth.name or "report"))
 
 
 
