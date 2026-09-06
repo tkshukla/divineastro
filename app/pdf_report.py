@@ -2045,7 +2045,9 @@ def remedies_pdf(session, *, brand: str, site: str, language: str = "en") -> byt
     # Calculate remedies and gemstones
     rem = recommend_remedies(session)
     
-    # Generate guidance
+    # Generate guidance. `remedies` carries the actual gemstones/mantra/charity
+    # recommend_remedies() computed, so the guidance prompt is grounded in
+    # what this chart was actually given, not just three bare scalars.
     analysis = {
         "meta": meta,
         "lagna": bundle["objects"]["ASC"]["sign"],
@@ -2054,7 +2056,8 @@ def remedies_pdf(session, *, brand: str, site: str, language: str = "en") -> byt
             "mahadasha": {
                 "lord": rem["dasha_remedies"]["mahadasha_lord"]
             }
-        }
+        },
+        "remedies": rem,
     }
     if "Moon" in bundle["objects"]:
         analysis["moon_sign"] = bundle["objects"]["Moon"]["sign"]

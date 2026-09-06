@@ -615,7 +615,16 @@ body.lang-hi, .lang-hi .bubble {
 }
 
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; position: relative; }
+/* min-width: 0 — same fix as .panel above, same root cause: a grid item's
+   default min-width is content-based, not 0. Found via the muhurat form's
+   event-type <select> (a long option like "House Warming / Griha Pravesh
+   (गृह प्रवेश)" sets the native control's own min-content width), which
+   pushed this row — and the whole page — a few px past a 375px viewport
+   with no mobile override to catch it. Safe everywhere .row/.field is
+   used (the birth form's date/time/place fields included): with room to
+   spare this changes nothing, and only kicks in when content genuinely
+   can't fit, letting it wrap/truncate/scroll internally instead. */
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; position: relative; min-width: 0; }
 
 label {
   font-size: 12px;
@@ -815,6 +824,17 @@ button.ghost:hover { background: rgba(139, 123, 240, 0.16); color: var(--ink); }
   border-right: 1px solid var(--line);
   display: flex; flex-direction: column; min-height: 0;
   background: rgba(6, 8, 20, 0.45);
+  /* A grid item's default min-width is auto (content-based), not 0 — so
+     wide-but-uncompressible content anywhere inside (the 8-tab nav row is
+     the actual culprit today) silently forces this whole column, and the
+     grid track that holds it, past the viewport width. Confirmed on a
+     375px phone: .tabs alone measured 558px because 8 flex:1 tabs (with
+     "Ashtakavarga"/"Sudarshana" among them) wouldn't compress below their
+     own text width, and that leaked all the way up to .workspace's single
+     mobile grid column. min-width: 0 lets this column actually shrink to
+     its container; anything that still doesn't fit scrolls internally
+     instead (see .tabs below). */
+  min-width: 0;
 }
 .wheel { padding: 14px; display: flex; justify-content: center; }
 .wheel svg { width: 100%; height: auto; max-height: 340px; }
@@ -1069,6 +1089,7 @@ details.reasoning summary:hover { color: var(--gold); }
 
 /* starters */
 .starters { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 30px 12px; }
+.starters[hidden] { display: none; }
 .starter {
   font-size: 12.5px; padding: 7px 14px; border-radius: 999px; cursor: pointer;
   border: 1px solid var(--line); background: rgba(139,123,240,0.08); color: var(--ink-dim);
@@ -1094,6 +1115,16 @@ details.reasoning summary:hover { color: var(--gold); }
 .composer button:hover { transform: scale(1.06); filter: brightness(1.08); }
 .composer button svg { width: 20px; height: 20px; fill: #241a04; }
 .composer button[disabled] { opacity: 0.5; cursor: not-allowed; transform: none; }
+.composer button[hidden] { display: none; }
+.composer input[disabled] { opacity: 0.6; }
+#stop { background: rgba(200,80,80,0.85); box-shadow: 0 8px 22px rgba(200,80,80,0.25); }
+#stop svg { fill: #fff; }
+
+.bubble-incomplete { opacity: 0.85; }
+.incomplete-note {
+  margin: 6px 0 0; padding: 8px 12px; border-radius: 10px; font-size: 12.5px;
+  background: rgba(200,80,80,0.1); border: 1px solid rgba(200,80,80,0.3); color: var(--ink-dim);
+}
 
 /* scrollbars */
 ::-webkit-scrollbar { width: 9px; height: 9px; }
@@ -1141,6 +1172,21 @@ details.reasoning summary:hover { color: var(--gold); }
   .workspace[data-view="chat"]  .panel { display: none; }
   .workspace[data-view="chart"] .panel { display: flex; }
   .workspace[data-view="chart"] .chat  { display: none; }
+
+  /* 8 tabs (Placements/Houses/Vargas/Ashtakavarga/Jaimini/Sudarshana/
+     Aspects/Now) at equal flex:1 width can't compress below their own
+     uppercase text — "Ashtakavarga" and "Sudarshana" alone need ~100px
+     each. That forced the whole row to ~558px wide, which (via .panel's
+     old missing min-width: 0) blew the entire chart panel past a 375px
+     phone's viewport. Scrolling the row horizontally at each tab's
+     natural width fixes it without hiding or renaming anything. */
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex: 0 0 auto; padding: 10px 12px; white-space: nowrap; }
 
   /* The chart needs room to be legible on a small screen. */
   .wheel svg { max-height: none; }

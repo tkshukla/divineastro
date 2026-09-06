@@ -32,7 +32,13 @@ TOPICS: tuple[Topic, ...] = (
         primary_houses=(10, 6),
         support_houses=(2, 1, 11),
         significators=("Sun", "Saturn", "Mars", "Mercury", "Jupiter"),
-        strong_keywords=("career", "job", "profession", "vocation", "promotion", "workplace",
+        # "promoted"/"promote" are spelled out rather than left to "promotion"
+        # alone — the same gap as the dasha fix below (_stem only strips one
+        # trailing e/y, which can't bridge "promotion" to "promoted"). That
+        # gap sent "will I get promoted" to the generic timing topic instead
+        # of career, with none of the 10th/6th-house evidence to answer from.
+        strong_keywords=("career", "job", "profession", "vocation", "promotion", "promoted",
+                         "promote", "workplace",
                          "boss", "employer", "resign", "quit my job", "appraisal", "layoff",
                          "business", "startup", "entrepreneur", "self employed", "freelance"),
         keywords=("work", "office", "company", "role", "position", "salary hike", "interview",
@@ -88,7 +94,11 @@ TOPICS: tuple[Topic, ...] = (
         significators=("Jupiter", "Venus", "Moon", "Sun"),
         strong_keywords=("children", "child", "kids", "baby", "pregnancy", "pregnant",
                          "conceive", "fertility", "son", "daughter", "parenthood"),
-        keywords=("creative", "creativity", "art", "hobby", "play", "romance", "speculation"),
+        # "art" (not "artistic") also matches "article" via the \w{0,4} tail
+        # _hits allows for inflections — any message merely mentioning an
+        # article gets pulled toward this topic. "artistic" keeps the signal
+        # without that collision.
+        keywords=("creative", "creativity", "artistic", "hobby", "play", "romance", "speculation"),
         blurb="the 5th house of children and creative output",
     ),
     Topic(
