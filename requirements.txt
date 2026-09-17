@@ -28,6 +28,16 @@ cryptography==50.0.0        # Authlib needs it for Apple's ES256 client secret
 # ---------------------------------------------------------------- payments
 razorpay==2.0.1             # only used when ASTRO_GATEWAY=razorpay
 httpx==0.28.1               # Cashfree REST calls
+qrcode==8.2                 # dynamic per-order UPI QR (app/upi.py) — was
+                            # installed locally but never pinned here, so
+                            # production's image never had it. Uses pillow
+                            # (already pinned above) for PNG rendering.
+pycryptodome==3.23.0        # Paytm's AES-128-CBC checksum (gateways.py) —
+                            # same gap as qrcode above: imported as `Crypto`
+                            # inside PaytmGateway, never pinned, so switching
+                            # ASTRO_GATEWAY=paytm would have crashed the same
+                            # way. Not currently active in production, but
+                            # fixed alongside the confirmed instance of this.
 
 # ---------------------------------------------------------------- documents
 typst==0.15.0               # PDF rendering (ships with stellium; pinned here
