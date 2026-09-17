@@ -28,9 +28,18 @@ const A_I18N = {
           + "Your questions are added once we've matched it against our bank statement — "
           + "usually within a few hours.",
     upiRef: "Quote this reference:", upiOpenApp: "Open a UPI app",
-    upiUtr: "UPI reference / UTR number from your payment app",
+    upiUtr: "Last 5 characters of the UTR / UPI reference number",
     upiSubmit: "I've paid", upiFailed: "That reference was not accepted.",
     upiThanks: "Thank you. We'll confirm and add your questions shortly.",
+    upiHelpTitle: "Where do I find this?",
+    upiHelpApps: [
+      { app: "Google Pay", how: "Tap the payment in your Activity tab — the UTR is shown on the receipt screen." },
+      { app: "PhonePe", how: "Open History, tap the transaction — look for “UTR No.” under the details." },
+      { app: "Paytm", how: "Open Passbook, tap the transaction — look for “UPI Reference No.”" },
+      { app: "FamApp", how: "Open the transaction from your history — the reference number is on the payment detail screen." },
+      { app: "Any other UPI app / BHIM", how: "Look for “UPI Ref No.”, “UTR” or “Transaction ID” on the success screen or in your history." },
+    ],
+    upiHelpFallback: "Can't find it? Your bank's SMS or email for this payment shows the UTR too.",
     outTitle: "You've used all your questions",
     outSub: "Choose a pack to continue. Your charts and history stay saved.",
     perQ: "per question", buy: "Buy", popular: "Most popular",
@@ -78,9 +87,18 @@ const A_I18N = {
     upiSub: "क्यूआर स्कैन करें या नीचे दी गई UPI आईडी पर भुगतान करें, फिर हमें रेफ़रेंस नंबर बताएं। "
           + "बैंक स्टेटमेंट से मिलान होते ही आपके प्रश्न जुड़ जाएंगे — आमतौर पर कुछ घंटों में।",
     upiRef: "यह रेफ़रेंस लिखें:", upiOpenApp: "UPI ऐप खोलें",
-    upiUtr: "आपके भुगतान ऐप का UPI रेफ़रेंस / UTR नंबर",
+    upiUtr: "UTR / UPI रेफ़रेंस नंबर के आख़िरी 5 अंक",
     upiSubmit: "मैंने भुगतान कर दिया", upiFailed: "यह रेफ़रेंस स्वीकार नहीं हुआ।",
     upiThanks: "धन्यवाद। पुष्टि के बाद आपके प्रश्न शीघ्र जोड़ दिए जाएंगे।",
+    upiHelpTitle: "यह कहाँ मिलेगा?",
+    upiHelpApps: [
+      { app: "Google Pay", how: "अपने Activity टैब में भुगतान पर टैप करें — रसीद स्क्रीन पर UTR दिखेगा।" },
+      { app: "PhonePe", how: "History खोलें, लेन-देन पर टैप करें — विवरण में “UTR No.” देखें।" },
+      { app: "Paytm", how: "Passbook खोलें, लेन-देन पर टैप करें — “UPI Reference No.” देखें।" },
+      { app: "FamApp", how: "अपनी हिस्ट्री से लेन-देन खोलें — भुगतान विवरण स्क्रीन पर रेफ़रेंस नंबर दिखेगा।" },
+      { app: "कोई भी अन्य UPI ऐप / BHIM", how: "सफलता स्क्रीन या हिस्ट्री में “UPI Ref No.”, “UTR” या “Transaction ID” देखें।" },
+    ],
+    upiHelpFallback: "नहीं मिल रहा? इस भुगतान के लिए आपके बैंक का SMS या ईमेल भी UTR दिखाता है।",
     outTitle: "आपके सभी प्रश्न समाप्त हो गए",
     outSub: "जारी रखने के लिए पैक चुनें। आपकी कुंडली और इतिहास सुरक्षित रहेंगे।",
     perQ: "प्रति प्रश्न", buy: "खरीदें", popular: "सर्वाधिक लोकप्रिय",
@@ -605,8 +623,15 @@ function openUpiInstructions(orderId, c, back) {
       </div>
     </div>
     <form class="upi-claim">
-      <label for="utr">${escapeHtml(at("upiUtr"))}</label>
-      <input id="utr" required placeholder="e.g. 412345678901" autocomplete="off" />
+      <label for="utr-last5">${escapeHtml(at("upiUtr"))}</label>
+      <input id="utr-last5" required maxlength="5" placeholder="e.g. 78901" autocomplete="off" />
+      <details class="utr-help">
+        <summary>${escapeHtml(at("upiHelpTitle"))}</summary>
+        <ul>
+          ${at("upiHelpApps").map(a => `<li><b>${escapeHtml(a.app)}</b> — ${escapeHtml(a.how)}</li>`).join("")}
+        </ul>
+        <p class="utr-help-fallback">${escapeHtml(at("upiHelpFallback"))}</p>
+      </details>
       <button type="submit" class="primary">${escapeHtml(at("upiSubmit"))}</button>
       <p class="modal-error" hidden></p>
     </form>`;
@@ -622,7 +647,7 @@ function openUpiInstructions(orderId, c, back) {
     try {
       const res = await fetch("/api/orders/upi-claim", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order_id: orderId, utr: body.querySelector("#utr").value }),
+        body: JSON.stringify({ order_id: orderId, utr_last5: body.querySelector("#utr-last5").value }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || at("upiFailed"));

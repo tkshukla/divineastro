@@ -423,7 +423,7 @@ def confirm_order(body: ConfirmIn, user: User = Depends(me),
 
 class UtrIn(BaseModel):
     order_id: int
-    utr: str
+    utr_last5: str
 
 
 @router.post("/orders/upi-claim")
@@ -431,8 +431,14 @@ def submit_utr(body: UtrIn, user: User = Depends(me),
                db: Session = Depends(get_db)) -> dict:
     """Customer says they paid by UPI. Grants nothing — queues it for a human.
 
-    The UTR is stored under a UNIQUE constraint, so the same reference cannot be
-    claimed against two orders. Everything else waits on verification.
+    Only the last 5 characters of the UTR are asked for (less to type on a
+    phone), so unlike the old full-UTR flow this carries no uniqueness
+    guarantee — two honest customers can land on the same 5 characters at
+    realistic order volumes, and this is never treated as proof of payment on
+    its own. It exists purely as a search hint for whoever matches the claim
+    against the real bank statement in /admin; upi_pending() below flags when
+    two pending orders share a suffix so the admin knows to look closer, but
+    neither claim is blocked here.
     """
     from . import upi
 
@@ -443,21 +449,13 @@ def submit_utr(body: UtrIn, user: User = Depends(me),
         return {"ok": True, "status": order.status.value,
                 "message": "This order is already paid."}
 
-    utr = upi.normalise_utr(body.utr)
-    if not upi.valid_utr(utr):
+    suffix = upi.normalise_utr_suffix(body.utr_last5)
+    if not upi.valid_utr_suffix(suffix):
         raise HTTPException(
-            400, "That does not look like a UPI reference. It is usually 12 "
-                 "digits, shown as UTR or Transaction ID in your UPI app.")
+            400, "That doesn't look like the last 5 characters of a UPI "
+                 "reference. Check your payment app's confirmation screen.")
 
-    clash = db.execute(
-        select(Order).where(Order.utr == utr, Order.id != order.id)
-    ).scalar_one_or_none()
-    if clash is not None:
-        raise HTTPException(
-            409, "That reference has already been submitted for another order. "
-                 "Please check the UTR, or contact us if this looks wrong.")
-
-    order.utr = utr
+    order.utr_last5 = suffix
     order.utr_submitted_at = utcnow()
     order.status = OrderStatus.awaiting_verification
     db.commit()
@@ -470,7 +468,7 @@ def submit_utr(body: UtrIn, user: User = Depends(me),
             list(auth.admin_emails()),
             f"UPI claim: order #{order.id}",
             f"{user.email} claimed ₹{order.amount_paise / 100:.0f} for "
-            f"{order.title}, UTR {utr}. Verify at /admin.",
+            f"{order.title}, UTR ends in {suffix}. Verify at /admin.",
         )
     except Exception:
         pass
@@ -491,12 +489,25 @@ def upi_pending(user: User = Depends(admin), db: Session = Depends(get_db)) -> d
         select(Order).where(Order.status == OrderStatus.awaiting_verification)
         .order_by(Order.utr_submitted_at)
     ).scalars().all()
+
+    # utr_last5 carries no uniqueness guarantee (see submit_utr's docstring),
+    # so two pending claims can legitimately share one. Flagging that here —
+    # rather than blocking the customer at claim time — is what actually
+    # protects against mismatching a claim to the wrong bank-statement line:
+    # the admin sees the ambiguity and can tell them apart by amount and
+    # buyer instead of approving on a 5-character match alone.
+    suffix_counts: dict[str, int] = {}
+    for o in rows:
+        if o.utr_last5:
+            suffix_counts[o.utr_last5] = suffix_counts.get(o.utr_last5, 0) + 1
+
     out = []
     for o in rows:
         buyer = db.get(User, o.user_id)
         d = _order_dict(o)
         d.update({
-            "utr": o.utr,
+            "utr_last5": o.utr_last5,
+            "utr_ambiguous": bool(o.utr_last5) and suffix_counts.get(o.utr_last5, 0) > 1,
             "submitted_at": o.utr_submitted_at.strftime("%d %b %Y, %H:%M")
                             if o.utr_submitted_at else None,
             "buyer_email": buyer.email if buyer else "",
@@ -531,7 +542,16 @@ def upi_verify(body: VerifyIn, user: User = Depends(admin),
         db.commit()
         return {"ok": True, "granted": False, "order": _order_dict(order)}
 
-    granted, message = billing.mark_paid(db, order, order.utr or "")
+    # order_id-derived, not the raw customer input — provider_payment_id sits
+    # under UniqueConstraint("provider", "provider_payment_id"), and two
+    # different orders CAN share a utr_last5 by design (see upi_pending's
+    # docstring above). Writing that raw suffix straight into a globally-
+    # unique column would let the second of two colliding approvals crash
+    # with an IntegrityError instead of granting credits. The suffix is still
+    # folded in as a human-readable tag for later lookup.
+    from . import upi
+    payment_id = f"{upi.reference(order.id)}:{order.utr_last5 or ''}"
+    granted, message = billing.mark_paid(db, order, payment_id)
     return {
         "ok": True, "granted": granted, "message": message,
         "order": _order_dict(order),
