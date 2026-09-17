@@ -31,22 +31,27 @@ import urllib.parse
 VPA = os.environ.get("ASTRO_UPI_VPA", "")
 PAYEE = os.environ.get("ASTRO_UPI_PAYEE", os.environ.get("ASTRO_LEGAL_NAME", "Divine Astro"))
 
-# UTRs (Unique Transaction References) are 12 digits on UPI. Some banks show a
-# longer RRN; accept 10-22 alphanumerics and normalise, rather than rejecting a
-# customer who pasted exactly what their app showed them.
-UTR_RE = re.compile(r"^[A-Za-z0-9]{10,22}$")
+# The full UTR is 10-22 alphanumeric characters (12 digits is typical, some
+# banks show a longer RRN) — long enough to type wrong on a phone keyboard.
+# This flow only asks for the last 5, which the customer can read straight
+# off their payment app's confirmation screen. Exactly 5, not a range: a
+# shorter suffix collides between unrelated customers more often, and this
+# value carries no uniqueness guarantee of its own (see db.py's Order.utr_last5
+# docstring) — it is only ever a hint for a human matching claims against the
+# bank statement, never itself proof of payment.
+UTR_SUFFIX_RE = re.compile(r"^[A-Za-z0-9]{5}$")
 
 
 def configured() -> bool:
     return bool(VPA)
 
 
-def normalise_utr(raw: str) -> str:
+def normalise_utr_suffix(raw: str) -> str:
     return re.sub(r"[\s-]", "", (raw or "")).upper()
 
 
-def valid_utr(raw: str) -> bool:
-    return bool(UTR_RE.match(normalise_utr(raw)))
+def valid_utr_suffix(raw: str) -> bool:
+    return bool(UTR_SUFFIX_RE.match(normalise_utr_suffix(raw)))
 
 
 def reference(order_id: int) -> str:
@@ -100,8 +105,8 @@ def instructions(order_id: int, amount_paise: int) -> dict:
         "steps": [
             f"Pay ₹{amount_paise / 100:.0f} to {VPA} using any UPI app.",
             f"Put the reference {reference(order_id)} in the payment note.",
-            "Copy the UTR / transaction reference your app shows after paying.",
-            "Enter it below. We verify against our bank statement and add your "
-            "questions — usually within a few hours.",
+            "Find the UTR / transaction reference your app shows after paying.",
+            "Enter just the last 5 characters below. We verify against our bank "
+            "statement and add your questions — usually within a few hours.",
         ],
     }

@@ -112,7 +112,7 @@ def test_submit_utr_wiring() -> None:
         with patch.object(api_account.mail, "send",
                           side_effect=lambda *a, **k: calls.append((a, k)) or True):
             with patch.dict(os.environ, {"ASTRO_ADMIN_EMAILS": "owner@divineastro.org"}):
-                body = api_account.UtrIn(order_id=order.id, utr=str(random.randint(10**11, 10**12 - 1)))
+                body = api_account.UtrIn(order_id=order.id, utr_last5=str(random.randint(10000, 99999)))
                 result = api_account.submit_utr(body, user=user, db=db)
 
         check("claim succeeded", result.get("ok") is True, str(result))
@@ -122,8 +122,8 @@ def test_submit_utr_wiring() -> None:
             to, subject, msg_body = args
             check("admin recipient list used", to == ["owner@divineastro.org"], str(to))
             check("subject names the order", str(order.id) in subject, subject)
-            check("body carries the buyer's email and the UTR",
-                  email in msg_body and body.utr in msg_body, msg_body)
+            check("body carries the buyer's email and the UTR suffix",
+                  email in msg_body and body.utr_last5 in msg_body, msg_body)
 
         # A second claim on an already-verified order (the early-return
         # branch) must not fire a second notification.
@@ -134,7 +134,7 @@ def test_submit_utr_wiring() -> None:
         with patch.object(api_account.mail, "send",
                           side_effect=lambda *a, **k: calls.append((a, k)) or True):
             api_account.submit_utr(
-                api_account.UtrIn(order_id=order.id, utr=body.utr), user=user, db=db)
+                api_account.UtrIn(order_id=order.id, utr_last5=body.utr_last5), user=user, db=db)
         check("no second notification once already paid", len(calls) == 0, f"called {len(calls)} times")
 
 

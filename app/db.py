@@ -327,7 +327,18 @@ class Order(Base):
 
     # --- manual UPI collection -------------------------------------------
     # What the customer claims, and who checked it.
+    #
+    # utr held the FULL UTR until this column was added; that flow now asks
+    # for only the last 5 characters (easier to type on a phone) and stores
+    # them here instead. utr_last5 deliberately carries NO unique constraint:
+    # at 5 characters, two honest customers sharing a suffix is a real
+    # possibility at realistic order volumes, and a hard constraint would
+    # either wrongly reject the second one's claim or blow up on admin
+    # approval. It exists only as a human-readable hint for whoever matches
+    # claims against the bank statement — the admin's own eyes are still the
+    # actual verification. See upi.py's module docstring.
     utr: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    utr_last5: Mapped[str | None] = mapped_column(String(5), nullable=True)
     utr_submitted_at: Mapped[dt.datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True)
     verified_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)

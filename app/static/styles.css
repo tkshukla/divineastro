@@ -271,6 +271,16 @@ body.admin-body {
   border-radius: 10px; border: 1px solid var(--line);
   background: rgba(0,0,0,0.25); color: var(--ink); font-family: var(--sans);
 }
+.utr-help { margin-bottom: 14px; font-size: 12.5px; }
+.utr-help summary {
+  cursor: pointer; color: var(--ink-faint); font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.utr-help summary:hover { color: var(--gold); }
+.utr-help ul { margin: 8px 0 6px; padding-left: 18px; color: var(--ink-dim); }
+.utr-help li { margin-bottom: 5px; line-height: 1.4; }
+.utr-help li b { color: var(--ink); }
+.utr-help-fallback { color: var(--ink-faint); margin: 0; }
 
 /* ---------- modal ---------- */
 .modal-backdrop {

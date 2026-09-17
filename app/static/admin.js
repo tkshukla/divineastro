@@ -547,8 +547,9 @@ async function loadUpi() {
         <div class="row-sub">
           ${esc(o.buyer_name || '')} &lt;${esc(o.buyer_email)}&gt;<br />
           Reference <code>${esc(o.reference || '—')}</code> &middot;
-          claimed UTR <code class="utr">${esc(o.utr)}</code><br />
+          UTR ends in <code class="utr">${esc(o.utr_last5 || '—')}</code><br />
           <span class="muted">submitted ${esc(o.submitted_at || '—')}</span>
+          ${o.utr_ambiguous ? `<br /><span class="warn">⚠ another pending order ends in the same 5 characters — check the amount and buyer against the bank statement before approving.</span>` : ''}
         </div>
       </div>
       <div class="row-act">
