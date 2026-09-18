@@ -691,10 +691,10 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                 "in career and public life; its aspects strengthen the "
                 "body and bring real success through education and "
                 "children, even as home comfort suffers",
-            11: "Exalted here — grows income steadily despite some "
+            11: "In Saturn's sign here, grows income steadily despite some "
                 "difficulty (Mars rules the 8th here), and its aspects "
-                "bring dissatisfaction over money alongside success in "
-                "education and real courage against rivals",
+                "bring dissatisfaction over money alongside a shortfall "
+                "in education and children, and real courage against rivals",
             12: "Friend's sign brings frequent travel and heavy spending, "
                 "with some cost to appearance; its aspects sharpen "
                 "courage even as they strain both sibling and spousal "
@@ -773,11 +773,11 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                "children, deepened further by its own aspect on the 9th; "
                "income comes with some difficulty but eventual success, "
                "and the body stays healthy and attractive throughout",
-            6: "Own sign here brings success over rivals and advancing "
-               "fortune despite obstacles along the way — its aspects "
-               "bring some deficiency with father or career, heavy "
-               "expense offset by gain from distant places, and some "
-               "discord over money and family",
+            6: "Friend's sign here (Mercury's) brings success over "
+               "rivals and advancing fortune despite obstacles along "
+               "the way — its aspects bring some deficiency with father "
+               "or career, heavy expense offset by gain from distant "
+               "places, and some discord over money and family",
             7: "Enemy's sign brings difficulty around a partner or "
                "business and some obstacle to income, balanced by an "
                "aspect on the Lagna that gives an attractive body and "
@@ -1310,7 +1310,7 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                 "through effort, and continued influence over rivals; "
                 "its aspect on the 4th brings success through mother, "
                 "home and property, achieved with some difficulty",
-            11: "In its own sign here, grows income through hard effort "
+            11: "Exalted here — grows income through hard effort "
                 "despite a tendency toward illness; its aspect on the "
                 "5th brings some deficiency in education and children, "
                 "alongside some gain won even from rivals",
@@ -2866,12 +2866,15 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                 "aspects bring deficiency in beauty and mental vigour, "
                 "growing personal drive and sibling comfort, and some "
                 "difficulty around education and children",
-            12: "Debilitated here — brings heavy expense causing real "
-                "hardship, and difficulty through foreign connections; "
-                "its aspects bring real growth in family comfort "
-                "achieved through effort, some difficulty around home "
-                "comfort, and real influence over rivals despite "
-                "ongoing worry",
+            12: "Enemy's sign here (the Moon's) brings heavy expense "
+                "offset by some gain through distant connections, with "
+                "trouble from rivals; its aspects mean wealth and family "
+                "grow only through special effort, though it gains "
+                "influence over rivals from its own-sign aspect on the "
+                "6th, while its debilitated aspect on the 9th makes "
+                "fortune harder and weakens religious observance — a "
+                "native prone to trouble through a spouse and business, "
+                "poor repute and illness",
         },
         "Rahu": {
             1: "Brings some deficiency in beauty and comfort, with "
@@ -2986,10 +2989,10 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
     # VIRGO (Kanya) LAGNA — complete, all 108 entries, no documented gap.
     "Virgo": {
         "Sun": {
-            1: "In its own sign and as Lagna-lord's own dispositor's "
-               "seat here, brings a frail build, free spending, and "
-               "gain through distant connections, though expense-driven "
-               "worry; its aspect on the 7th brings some loss and "
+            1: "In Mercury's sign here (the Lagna lord's), brings a "
+               "frail build, free spending, and gain through distant "
+               "connections, though spending sometimes causes worry; "
+               "its aspect on the 7th brings some loss and "
                "dissatisfaction around a partner and business",
             2: "Debilitated here — brings loss to wealth and family, "
                "and limited gain from distant connections amid worry "
@@ -3223,7 +3226,7 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                "maternal line; its aspects bring some ordinary "
                "advancement in fortune and religion, growth in income, "
                "and real physical strength, honour and skill",
-            6: "In its own sign here (Jupiter rules the 6th), brings "
+            6: "In an enemy's sign here (Saturn rules the 6th), brings "
                "humility used successfully against rivals, with some "
                "deficiency in home comfort; its aspects bring "
                "standing, comfort and success through father, career "
@@ -6711,7 +6714,7 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                 "business, and victory over rivals; its aspect on "
                 "the 4th brings comfort through mother, land and "
                 "home achieved with some difficulty",
-            11: "In its own sign here (Sun rules the 11th), brings "
+            11: "In an enemy's sign here (Saturn rules the 11th), brings "
                 "strong growth in income through hard effort, and "
                 "victory over rivals; its aspect on the 5th brings "
                 "success in education and children achieved with "
