@@ -189,7 +189,7 @@ def upsert_user(db: Session, provider: str, claims: dict) -> tuple[User, bool]:
 
     db.commit()
     if user.blocked:
-        raise HTTPException(403, "This account has been suspended.")
+        raise HTTPException(403, SUSPENDED_MESSAGE)
     return user, created
 
 
@@ -222,9 +222,31 @@ def current_user(request: Request, db: Session) -> User | None:
     return None if (user is None or user.blocked) else user
 
 
+SUSPENDED_MESSAGE = (
+    "This account has been suspended. If you think this is a mistake, "
+    f"write to {os.environ.get('ASTRO_SUPPORT_EMAIL', 'support@divineastro.org')}.")
+
+
+def _session_is_blocked(request: Request, db: Session) -> bool:
+    """A valid session cookie whose account has since been blocked."""
+    token = request.cookies.get(COOKIE)
+    if not token:
+        return False
+    try:
+        data = _signer.loads(token, max_age=MAX_AGE)
+    except BadSignature:
+        return False
+    user = db.get(User, data.get("uid"))
+    return bool(user is not None and user.blocked)
+
+
 def require_user(request: Request, db: Session) -> User:
     user = current_user(request, db)
     if user is None:
+        # 403, not 401, for a blocked account: "please sign in" would send them
+        # round a loop that can never succeed, and tell them nothing.
+        if _session_is_blocked(request, db):
+            raise HTTPException(403, SUSPENDED_MESSAGE)
         raise HTTPException(401, "Please sign in to continue.")
     return user
 

@@ -190,7 +190,8 @@ CUSTOM_SKU = "custom"
 def create_manual_order(db: Session, user, admin_user, *, sku: str,
                         amount_paise: int, title: str = "", credits: int = 0,
                         method: str = "upi", reference: str = "", note: str = "",
-                        birth_id: int | None = None) -> Order:
+                        birth_id: int | None = None,
+                        provider: str = "manual") -> Order:
     """Record a sale that happened outside the site — cash, a UPI transfer to
     the personal handle, a bank deposit — as an ordinary PAID order.
 
@@ -204,6 +205,11 @@ def create_manual_order(db: Session, user, admin_user, *, sku: str,
     and credit count (bespoke consultations, discounts done by hand); a
     catalogue order takes title and credits from the product, and only the
     amount is the admin's to override.
+
+    `provider` is "manual" for a real off-site sale, or "comp" for something
+    given away free (admin "grant"). A comp is still a PAID order at ₹0 — so the
+    fulfilment queue, the ledger and the customer's order history all treat it
+    like any other — but it is never counted or listed as a sale.
     """
     if amount_paise < 0 or amount_paise > MANUAL_MAX_PAISE:
         raise ValueError("Amount is out of range.")
@@ -239,15 +245,15 @@ def create_manual_order(db: Session, user, admin_user, *, sku: str,
         fulfilment=(FulfilStatus.pending if kind == "kundali"
                     else FulfilStatus.not_applicable),
         fulfil_note=note.strip()[:2000],
-        provider="manual",
+        provider=provider,
         verified_by=admin_user.id,
         verified_at=utcnow(),
         verify_note=" · ".join(
-            p for p in (f"manual/{method}", reference.strip(), note.strip()) if p)[:255],
+            p for p in (f"{provider}/{method}", reference.strip(), note.strip()) if p)[:255],
     )
     db.add(order)
     db.flush()                                   # need order.id below
-    order.provider_order_id = f"MAN{order.id:06d}"
+    order.provider_order_id = f"{'MAN' if provider == 'manual' else 'CMP'}{order.id:06d}"
     # Per-order, never the admin's free-text reference: provider_payment_id is
     # UNIQUE with provider, and two cash sales can both say "cash".
     mark_paid(db, order, f"manual:{order.id}")

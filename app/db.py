@@ -107,6 +107,13 @@ class User(Base):
     last_seen_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     blocked: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Why, when and by whom an account was blocked. All NULL while not blocked.
+    # Kept on the row (not a separate audit table) because it is exactly what
+    # the admin needs to see beside the block button.
+    blocked_reason: Mapped[str | None] = mapped_column(String(255), nullable=True, default=None)
+    blocked_at: Mapped[dt.datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None)
+    blocked_by: Mapped[int | None] = mapped_column(Integer, nullable=True, default=None)
 
     entries: Mapped[list["CreditEntry"]] = relationship(back_populates="user")
     births: Mapped[list["BirthProfile"]] = relationship(back_populates="user")
@@ -176,6 +183,38 @@ class CreditEntry(Base):
 # --------------------------------------------------------------------------
 # Questions asked (also the source for the PDF export)
 # --------------------------------------------------------------------------
+
+FEEDBACK_CATEGORIES = ("general", "bug", "answers", "payments", "idea", "other")
+FEEDBACK_STATUSES = ("new", "read", "resolved")
+
+
+class Feedback(Base):
+    """A message a signed-in user sent us from the /feedback page.
+
+    `status` is a plain string, not a database enum: SQLite happily accepts any
+    label, so an enum can pass every local test and still 500 on Postgres when
+    a value is missing from the live type (that already happened once with
+    orders). A validated string has no such gap.
+    """
+
+    __tablename__ = "feedback"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    category: Mapped[str] = mapped_column(String(20), default="general")
+    rating: Mapped[int | None] = mapped_column(Integer, nullable=True, default=None)  # 1-5
+    message: Mapped[str] = mapped_column(Text)
+    page: Mapped[str] = mapped_column(String(120), default="")   # where they came from
+    # Whether the user said we may email them about it.
+    allow_contact: Mapped[bool] = mapped_column(Boolean, default=True)
+    status: Mapped[str] = mapped_column(String(12), default="new", index=True)
+    admin_note: Mapped[str] = mapped_column(Text, default="")
+    handled_by: Mapped[int | None] = mapped_column(Integer, nullable=True, default=None)
+    handled_at: Mapped[dt.datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None)
+    created_at: Mapped[dt.datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, index=True)
+
 
 class QuestionLog(Base):
     __tablename__ = "questions"

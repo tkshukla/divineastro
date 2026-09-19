@@ -82,7 +82,7 @@ class TestAdminAPI(unittest.TestCase):
             # 3. Block user
             blk_res = self.client.post(
                 f"/api/admin/users/{self.normal_user.id}/block",
-                json={"blocked": True},
+                json={"blocked": True, "reason": "Abusive messages to support"},
             )
             self.assertEqual(blk_res.status_code, 200)
             self.assertTrue(blk_res.json()["blocked"])

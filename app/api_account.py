@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 from . import auth, billing, coupons, mail
 from .db import (
     BirthProfile, Coupon, CouponKind, CouponRedemption, CreditEntry, EntryKind,
-    FulfilStatus, Order, OrderStatus, QuestionLog, User, balance, grant,
+    Feedback, FulfilStatus, Order, OrderStatus, QuestionLog, User, balance, grant,
     session as db_session, utcnow,
 )
 
@@ -1087,6 +1087,17 @@ class CreditAdjustIn(BaseModel):
 
 class UserBlockIn(BaseModel):
     blocked: bool
+    reason: str = ""             # required when blocking; ignored when unblocking
+
+
+class GrantIn(BaseModel):
+    """Give a user something without a payment: question credits, or a whole
+    product (recorded as a ₹0 "comp" order). A note is always required."""
+
+    kind: str                    # "credits" | "product"
+    credits: int = 0
+    sku: str = ""
+    note: str
 
 
 @router.get("/admin/metrics")
@@ -1097,7 +1108,10 @@ def admin_metrics(_: User = Depends(admin), db: Session = Depends(get_db)) -> di
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
     # 1. Revenue
-    paid_stmt = select(Order).where(Order.status == OrderStatus.paid)
+    # Complimentary grants ("comp") are paid ₹0 orders; they are not sales, so
+    # they must not inflate order counts or the product breakdown.
+    paid_stmt = select(Order).where(Order.status == OrderStatus.paid,
+                                    Order.provider != "comp")
     all_paid = db.execute(paid_stmt).scalars().all()
 
     rev_all_paise = sum(o.amount_paise for o in all_paid)
@@ -1183,7 +1197,8 @@ def admin_users(q: str = "", limit: int = 50, _: User = Depends(admin),
 
         # Paid orders count & spend
         paid_orders = db.execute(
-            select(Order).where(Order.user_id == u.id, Order.status == OrderStatus.paid)
+            select(Order).where(Order.user_id == u.id, Order.status == OrderStatus.paid,
+                                Order.provider != "comp")
         ).scalars().all()
         spent_rupees = sum(o.amount_paise for o in paid_orders) / 100
 
@@ -1195,6 +1210,7 @@ def admin_users(q: str = "", limit: int = 50, _: User = Depends(admin),
             "provider": u.provider,
             "is_admin": u.is_admin,
             "blocked": u.blocked,
+            "blocked_reason": u.blocked_reason or "",
             "balance": balance(db, u.id),
             "questions_count": q_count,
             "orders_count": len(paid_orders),
@@ -1213,12 +1229,113 @@ def admin_adjust_credits(user_id: int, body: CreditAdjustIn, admin_user: User = 
     target_user = db.get(User, user_id)
     if target_user is None:
         raise HTTPException(404, "User not found.")
+    if body.delta == 0:
+        raise HTTPException(400, "The adjustment must not be zero.")
+    if abs(body.delta) > 10_000:
+        raise HTTPException(400, "That adjustment is unreasonably large.")
+    # A deduction that would leave a negative balance is almost always a typo
+    # (an extra digit), and a negative balance is meaningless to the customer.
+    if body.delta < 0 and balance(db, user_id) + body.delta < 0:
+        raise HTTPException(
+            400, f"That would take the balance below zero (it is "
+                 f"{balance(db, user_id)}).")
 
     note = f"Admin ({admin_user.email}): {body.note.strip()}" if body.note.strip() else f"Admin adjustment by {admin_user.email}"
-    grant(db, user_id, body.delta, EntryKind.admin_adjust, note=note)
+    grant(db, user_id, body.delta, EntryKind.admin_adjust, note=note[:255])
     db.commit()
 
     return {"ok": True, "user_id": user_id, "new_balance": balance(db, user_id)}
+
+
+@router.post("/admin/users/{user_id}/grant")
+def admin_grant(user_id: int, body: GrantIn, admin_user: User = Depends(admin),
+                db: Session = Depends(get_db)) -> dict:
+    """Give a user something for free, with the reason on the record.
+
+    credits  — appended to the ledger as an admin adjustment.
+    product  — a complimentary order: PAID at ₹0 with provider "comp", so a
+               kundali enters the astrologer's queue and a report/book unlocks,
+               exactly as if bought, but it is never counted as a sale.
+    """
+    target = db.get(User, user_id)
+    if target is None:
+        raise HTTPException(404, "User not found.")
+    note = body.note.strip()
+    if len(note) < 3:
+        raise HTTPException(400, "Say why you are granting this (a short note is required).")
+
+    if body.kind == "credits":
+        if not 1 <= body.credits <= 1000:
+            raise HTTPException(400, "Grant between 1 and 1,000 question credits at a time.")
+        grant(db, target.id, body.credits, EntryKind.admin_adjust,
+              note=f"Grant by {admin_user.email}: {note}"[:255])
+        db.commit()
+        return {"ok": True, "kind": "credits", "new_balance": balance(db, target.id)}
+
+    if body.kind == "product":
+        if body.sku not in billing.PRODUCTS:
+            raise HTTPException(400, f"Unknown product '{body.sku}'.")
+        try:
+            order = billing.create_manual_order(
+                db, target, admin_user, sku=body.sku, amount_paise=0, method="other",
+                note=note, provider="comp")
+        except ValueError as exc:
+            db.rollback()
+            raise HTTPException(400, str(exc))
+        return {"ok": True, "kind": "product", "order": _order_dict(order),
+                "new_balance": balance(db, target.id)}
+
+    raise HTTPException(400, "kind must be 'credits' or 'product'.")
+
+
+@router.get("/admin/users/{user_id}")
+def admin_user_detail(user_id: int, _: User = Depends(admin),
+                      db: Session = Depends(get_db)) -> dict:
+    """Everything the admin wants in front of them before acting on an account."""
+    u = db.get(User, user_id)
+    if u is None:
+        raise HTTPException(404, "User not found.")
+
+    def when(d):
+        return d.strftime("%d %b %Y, %H:%M") if d else ""
+
+    ledger = db.execute(
+        select(CreditEntry).where(CreditEntry.user_id == u.id)
+        .order_by(CreditEntry.id.desc()).limit(30)).scalars().all()
+    orders = db.execute(
+        select(Order).where(Order.user_id == u.id)
+        .order_by(Order.id.desc()).limit(20)).scalars().all()
+    feedback = db.execute(
+        select(Feedback).where(Feedback.user_id == u.id)
+        .order_by(Feedback.id.desc()).limit(5)).scalars().all()
+    blocker = db.get(User, u.blocked_by) if u.blocked_by else None
+
+    return {
+        "user": {
+            "id": u.id, "email": u.email, "name": u.name, "phone": u.phone,
+            "provider": u.provider, "is_admin": u.is_admin,
+            "created_at": when(u.created_at), "last_seen_at": when(u.last_seen_at),
+            "blocked": u.blocked, "blocked_reason": u.blocked_reason or "",
+            "blocked_at": when(u.blocked_at),
+            "blocked_by": blocker.email if blocker else "",
+        },
+        "balance": balance(db, u.id),
+        "questions_count": db.execute(
+            select(func.count(QuestionLog.id)).where(QuestionLog.user_id == u.id)
+        ).scalar_one() or 0,
+        "births_count": db.execute(
+            select(func.count(BirthProfile.id)).where(BirthProfile.user_id == u.id)
+        ).scalar_one() or 0,
+        "ledger": [{"id": e.id, "delta": e.delta, "kind": e.kind.value,
+                    "note": e.note, "at": when(e.created_at)} for e in ledger],
+        "orders": [{"id": o.id, "sku": o.sku, "title": o.title,
+                    "amount": o.amount_paise // 100, "status": o.status.value,
+                    "provider": o.provider, "fulfilment": o.fulfilment.value,
+                    "at": when(o.paid_at or o.created_at)} for o in orders],
+        "feedback": [{"id": f.id, "category": f.category, "rating": f.rating,
+                      "message": f.message[:200], "status": f.status,
+                      "at": when(f.created_at)} for f in feedback],
+    }
 
 
 @router.post("/admin/users/{user_id}/block")
@@ -1230,10 +1347,26 @@ def admin_block_user(user_id: int, body: UserBlockIn, admin_user: User = Depends
         raise HTTPException(404, "User not found.")
     if target_user.id == admin_user.id:
         raise HTTPException(400, "You cannot block yourself.")
+    if target_user.is_admin:
+        raise HTTPException(
+            400, "Administrators cannot be blocked. Remove their admin access first.")
 
-    target_user.blocked = body.blocked
+    if body.blocked:
+        reason = body.reason.strip()
+        if len(reason) < 3:
+            raise HTTPException(400, "Give a reason for the block (it is kept on the account).")
+        target_user.blocked = True
+        target_user.blocked_reason = reason[:255]
+        target_user.blocked_at = utcnow()
+        target_user.blocked_by = admin_user.id
+    else:
+        target_user.blocked = False
+        target_user.blocked_reason = None
+        target_user.blocked_at = None
+        target_user.blocked_by = None
     db.commit()
-    return {"ok": True, "user_id": user_id, "blocked": target_user.blocked}
+    return {"ok": True, "user_id": user_id, "blocked": target_user.blocked,
+            "blocked_reason": target_user.blocked_reason or ""}
 
 
 @router.get("/admin/questions")

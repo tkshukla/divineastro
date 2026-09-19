@@ -251,7 +251,7 @@ code, .utr, .code {
    [data-theme="light"] input override still beats it. Written as a plain
    `.coupon-form input:not(...)` it outranked that override and painted dark
    input boxes with dark text in light theme. */
-.coupon-form :where(input:not([type=checkbox]):not([type=radio])) {
+:where(.coupon-form, .amodal) :where(input:not([type=checkbox]):not([type=radio])) {
   width: 100%;
   padding: 11px 13px;
   border-radius: 11px;
@@ -292,6 +292,68 @@ code, .utr, .code {
 .row.is-deleted { opacity: 0.72; }
 .row .uses { margin-top: 10px; overflow-x: auto; }
 [data-theme="light"] .chip.on { background: rgba(160, 110, 20, 0.14); border-color: rgba(160, 110, 20, 0.55); }
+
+/* Feedback inbox */
+.fb-stars { color: #f0c674; letter-spacing: 1px; margin-right: 6px; }
+[data-theme="light"] .fb-stars { color: #b07a00; }
+.fb-msg { white-space: pre-wrap; word-break: break-word; margin: 6px 0 8px; line-height: 1.55; }
+.fb-note { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+.fb-note .note { flex: 1 1 220px; min-width: 0; padding: 8px 10px; font-size: 0.85rem; }
+a.as-link {
+  display: inline-flex; align-items: center; text-decoration: none; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; min-height: 32px;
+  font-size: 0.82rem; color: inherit; white-space: nowrap;
+}
+a.as-link:hover { background: rgba(255, 255, 255, 0.06); }
+
+/* User detail panel */
+.amodal-back {
+  position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-start;
+  justify-content: center; padding: 4vh 12px; overflow-y: auto;
+  background: rgba(4, 6, 18, 0.66);
+}
+.amodal-back[hidden] { display: none !important; }
+.amodal {
+  position: relative; width: 100%; max-width: 760px; box-sizing: border-box;
+  background: var(--bg-1, #12152b); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 16px; padding: 22px 22px 26px; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+}
+.amodal:focus { outline: none; }
+/* The panel is outside .apane, so give it the same hidden-attribute guard. */
+.amodal [hidden] { display: none !important; }
+.amodal-close {
+  position: absolute; top: 10px; right: 12px; width: 44px; height: 44px; border: 0;
+  background: none; color: inherit; font-size: 28px; line-height: 1; cursor: pointer; border-radius: 10px;
+}
+.amodal-close:hover { background: rgba(255, 255, 255, 0.08); }
+.um-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin: 0 0 6px; }
+.um-stats > div {
+  border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.um-stats b { font-size: 1.35rem; }
+.um-stats span { font-size: 0.75rem; opacity: 0.65; text-transform: uppercase; letter-spacing: 0.06em; }
+.um-sec { margin-top: 22px; }
+.um-sec h4 { margin: 0 0 10px; font-size: 0.95rem; }
+.um-flash {
+  margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; font-size: 0.9rem;
+  border: 1px solid rgba(125, 219, 160, 0.5); background: rgba(125, 219, 160, 0.12); color: #7ddba0;
+}
+[data-theme="light"] .um-flash { color: #1f7a45; }
+.um-blocked {
+  margin: 0 0 10px; padding: 10px 12px; border-radius: 10px; line-height: 1.6;
+  border: 1px solid rgba(240, 112, 140, 0.5); background: rgba(240, 112, 140, 0.1);
+}
+.um-fb { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; font-size: 0.88rem; }
+.amodal .table-wrap { overflow-x: auto; }
+[data-theme="light"] .amodal-back { background: rgba(20, 25, 60, 0.4); }
+[data-theme="light"] .amodal { box-shadow: 0 24px 60px rgba(20, 30, 70, 0.25); }
+@media (max-width: 640px) {
+  .amodal-back { padding: 0; }
+  .amodal { border-radius: 0; min-height: 100vh; padding: 56px 16px 28px; }
+  /* These buttons grant, block and unblock: give them a real tap target. */
+  .amodal button.sm { min-height: 44px; }
+}
 
 /* An author `display:` rule (e.g. .crow's grid) otherwise beats the hidden attribute. */
 .apane [hidden] { display: none !important; }

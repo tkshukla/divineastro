@@ -26,6 +26,7 @@ from sqlalchemy import select
 
 from . import auth, geo, llm, pdf_report
 from .api_account import router as account_router
+from .api_feedback import router as feedback_router
 from .api_tools import router as tools_router
 from .legal import router as legal_router
 from .chart_service import BirthData, build, solar_return, timing_snapshot, transits, wheel_svg
@@ -53,6 +54,7 @@ app.add_middleware(
 )
 init_db()
 app.include_router(account_router)
+app.include_router(feedback_router)
 app.include_router(tools_router)
 app.include_router(legal_router)
 
@@ -950,6 +952,13 @@ def _page(name: str) -> HTMLResponse:
 @app.get("/")
 def index() -> HTMLResponse:
     return _page("index.html")
+
+
+@app.get("/feedback")
+def feedback_page() -> HTMLResponse:
+    """The page is public; sending feedback needs an account, which the page
+    itself checks (and the API enforces)."""
+    return _page("feedback.html")
 
 
 @app.get("/admin")

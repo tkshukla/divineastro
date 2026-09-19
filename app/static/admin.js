@@ -85,6 +85,7 @@ async function boot() {
   wireCoupons();
   wireManual();
   wireUsers();
+  wireFeedback();
   wireQuestions();
 
   // Load active tab initially and prefetch background queues
@@ -93,6 +94,7 @@ async function boot() {
     loadCoupons(),
     loadUpi(),
     loadManual(),
+    loadFeedback(),
     loadKundalis(),
     loadHealth(),
   ]);
@@ -143,6 +145,7 @@ function wireTabs() {
       if (tab === 'metrics') loadMetrics();
       else if (tab === 'coupons') loadCoupons();
       else if (tab === 'users') loadUsers();
+      else if (tab === 'feedback') loadFeedback();
       else if (tab === 'questions') loadQuestions();
       else if (tab === 'health') loadHealth();
       else if (tab === 'upi') loadUpi();
@@ -521,9 +524,20 @@ function renderCouponsList() {
 
 /* --------------------------------------------------------------- users --- */
 
+let umProducts = null;      // catalogue for the "give a product" picker
+let umLastFocus = null;     // what to re-focus when the panel closes
+let umFlash = '';           // one-shot confirmation shown after an action re-renders the panel
+
 function wireUsers() {
   const search = $('#user-search');
   if (search) search.oninput = debounce(() => loadUsers(), 300);
+
+  const back = $('#user-modal');
+  $('#um-close').onclick = closeUserModal;
+  back.onclick = (ev) => { if (ev.target === back) closeUserModal(); };
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && !back.hidden) closeUserModal();
+  });
 }
 
 async function loadUsers() {
@@ -546,71 +560,340 @@ async function loadUsers() {
             <th>Paid Orders</th>
             <th>Total Spend</th>
             <th>Joined</th>
-            <th>Actions</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           ${users.map((u) => `
-            <tr data-id="${u.id}" data-email="${esc(u.email)}">
+            <tr data-id="${u.id}">
               <td>
                 <b>${esc(u.name || '—')}</b><br>
                 <span class="muted">${esc(u.email || u.provider)}</span>
-                ${u.blocked ? '<span class="pill off" style="margin-left:4px;">blocked</span>' : ''}
+                ${u.blocked ? '<span class="pill st-deleted" style="margin-left:4px;">blocked</span>' : ''}
                 ${u.is_admin ? '<span class="pill delivered" style="margin-left:4px;">admin</span>' : ''}
+                ${u.blocked && u.blocked_reason ? `<div class="muted" style="font-size:0.78rem;">Reason: ${esc(u.blocked_reason)}</div>` : ''}
               </td>
               <td><b>${u.balance}</b></td>
               <td>${u.questions_count}</td>
               <td>${u.orders_count}</td>
               <td><b>${rupees(u.spent_rupees)}</b></td>
               <td><span class="muted">${esc(u.created_at)}</span></td>
-              <td>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                  <button class="ghost sm btn-credit" title="Gift or adjust credits">Adjust Credits</button>
-                  ${!u.is_admin ? `<button class="danger sm btn-block">${u.blocked ? 'Unblock' : 'Block'}</button>` : ''}
-                </div>
-              </td>
+              <td><button class="ghost sm btn-manage" type="button">Manage</button></td>
             </tr>`).join('')}
         </tbody>
       </table>`;
 
     $$('#users-list tr[data-id]').forEach((row) => {
-      const id = Number(row.dataset.id);
-      const email = row.dataset.email;
-
-      row.querySelector('.btn-credit').onclick = async () => {
-        const deltaStr = prompt(`Adjust question credits for ${email} (enter positive number to grant, negative to deduct):`, '5');
-        if (deltaStr === null) return;
-        const delta = parseInt(deltaStr, 10);
-        if (isNaN(delta) || delta === 0) return alert('Please enter a valid non-zero number.');
-        const note = prompt('Reason / audit note (optional):', 'Customer support grant') || '';
-        try {
-          const res = await api(`/api/admin/users/${id}/credits`, {
-            method: 'POST',
-            body: JSON.stringify({ delta, note }),
-          });
-          alert(`Credits updated! New balance: ${res.new_balance}`);
-          await loadUsers();
-        } catch (e) { alert(e.message); }
-      };
-
-      const blockBtn = row.querySelector('.btn-block');
-      if (blockBtn) {
-        blockBtn.onclick = async () => {
-          const isBlocked = blockBtn.textContent === 'Unblock';
-          if (!confirm(`${isBlocked ? 'Unblock' : 'Block'} account for ${email}?`)) return;
-          try {
-            await api(`/api/admin/users/${id}/block`, {
-              method: 'POST',
-              body: JSON.stringify({ blocked: !isBlocked }),
-            });
-            await loadUsers();
-          } catch (e) { alert(e.message); }
-        };
-      }
+      row.querySelector('.btn-manage').onclick = () => openUserModal(Number(row.dataset.id));
     });
   } catch (e) {
     box.innerHTML = `<p class="error">${esc(e.message)}</p>`;
   }
+}
+
+/* ---- the user detail panel ---- */
+
+function closeUserModal() {
+  $('#user-modal').hidden = true;
+  document.body.classList.remove('modal-open');
+  if (umLastFocus && umLastFocus.focus) umLastFocus.focus();
+}
+
+async function openUserModal(id) {
+  umLastFocus = document.activeElement;
+  $('#user-modal').hidden = false;
+  document.body.classList.add('modal-open');
+  $('#um-body').innerHTML = '<p class="empty">Loading…</p>';
+  $('#user-modal .amodal').focus();
+  await refreshUserModal(id);
+}
+
+async function refreshUserModal(id) {
+  try {
+    const d = await api(`/api/admin/users/${id}`);
+    if (!umProducts) umProducts = (await api('/api/products')).products || [];
+    renderUserModal(d);
+  } catch (e) {
+    $('#um-body').innerHTML = `<p class="error">${esc(e.message)}</p>`;
+  }
+}
+
+const LEDGER_KIND = {
+  signup_bonus: 'sign-up gift', purchase: 'purchase', question: 'question asked',
+  refund: 'refund', admin_adjust: 'admin',
+};
+
+function renderUserModal(d) {
+  const u = d.user;
+  const flash = umFlash; umFlash = '';
+
+  const grantSection = `
+    <section class="um-sec">
+      <h4>Give something</h4>
+      <div class="crow">
+        <div class="field">
+          <label for="um-action">What</label>
+          <select id="um-action">
+            <option value="credits">Give question credits</option>
+            <option value="product">Give a product free (complimentary)</option>
+            <option value="deduct">Remove credits (correct a mistake)</option>
+          </select>
+        </div>
+        <div class="field" id="um-credits-row">
+          <label for="um-amount">How many</label>
+          <input id="um-amount" type="number" min="1" max="1000" value="5" inputmode="numeric" />
+        </div>
+        <div class="field" id="um-product-row" hidden>
+          <label for="um-sku">Product</label>
+          <select id="um-sku">${(umProducts || []).map((p) =>
+            `<option value="${esc(p.sku)}">${esc(p.title)}</option>`).join('')}</select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="um-note">Why <span class="opt">required &mdash; kept on the record</span></label>
+        <input id="um-note" maxlength="200" placeholder="e.g. Compensation for the frozen chat on 19 Sep" />
+      </div>
+      <button type="button" class="primary sm" id="um-grant">Apply</button>
+      <p class="pane-help" id="um-grant-hint" style="margin:8px 0 0;">
+        A free product is recorded as a paid ₹0 order, so a kundali goes into the Kundali Queue and a report unlocks &mdash;
+        but it is never counted as a sale.</p>
+      <p class="error" id="um-grant-err" hidden></p>
+    </section>`;
+
+  const blockSection = u.is_admin
+    ? '<section class="um-sec"><h4>Block</h4><p class="pane-help">Administrators cannot be blocked. Remove their admin access first.</p></section>'
+    : u.blocked
+      ? `<section class="um-sec"><h4>Blocked</h4>
+          <p class="um-blocked">Blocked ${esc(u.blocked_at)}${u.blocked_by ? ` by ${esc(u.blocked_by)}` : ''}.<br>
+            <b>Reason:</b> ${esc(u.blocked_reason || '—')}</p>
+          <button type="button" class="primary sm" id="um-unblock">Unblock this account</button>
+          <p class="error" id="um-block-err" hidden></p></section>`
+      : `<section class="um-sec"><h4>Block</h4>
+          <div class="field">
+            <label for="um-reason">Reason <span class="opt">required &mdash; kept on the account</span></label>
+            <input id="um-reason" maxlength="200" placeholder="e.g. Abusive messages to support" />
+          </div>
+          <button type="button" class="danger sm" id="um-block">Block this account</button>
+          <p class="pane-help" style="margin:8px 0 0;">They are signed out and cannot sign in, ask questions or buy until you unblock them.
+            Their purchases and saved charts are kept.</p>
+          <p class="error" id="um-block-err" hidden></p></section>`;
+
+  const ledger = d.ledger.length
+    ? `<table class="admin-table"><thead><tr><th>When</th><th>Change</th><th>Type</th><th>Note</th></tr></thead><tbody>${
+      d.ledger.map((e) => `<tr><td><span class="muted">${esc(e.at)}</span></td>
+        <td><b style="color:${e.delta < 0 ? '#f0708c' : '#7ddba0'}">${e.delta > 0 ? '+' : ''}${e.delta}</b></td>
+        <td>${esc(LEDGER_KIND[e.kind] || e.kind)}</td><td>${esc(e.note)}</td></tr>`).join('')}</tbody></table>`
+    : '<p class="empty">No credit history.</p>';
+
+  const orders = d.orders.length
+    ? `<table class="admin-table"><thead><tr><th>#</th><th>Item</th><th>Paid</th><th>Status</th><th>When</th></tr></thead><tbody>${
+      d.orders.map((o) => `<tr><td>${o.id}</td><td>${esc(o.title)}
+        ${o.provider === 'comp' ? ' <span class="pill st-scheduled">complimentary</span>'
+          : o.provider === 'manual' ? ' <span class="pill off">manual</span>' : ''}</td>
+        <td>${rupees(o.amount)}</td><td><span class="pill ${esc(o.status)}">${esc(o.status.replace('_', ' '))}</span></td>
+        <td><span class="muted">${esc(o.at)}</span></td></tr>`).join('')}</tbody></table>`
+    : '<p class="empty">No orders.</p>';
+
+  const fb = d.feedback.length
+    ? d.feedback.map((f) => `<div class="um-fb"><span class="muted">${esc(f.at)} &middot; ${esc(f.category)}
+        ${f.rating ? ` &middot; ${'★'.repeat(f.rating)}` : ''} &middot; ${esc(f.status)}</span><br>${esc(f.message)}</div>`).join('')
+    : '<p class="empty">No feedback sent.</p>';
+
+  $('#um-body').innerHTML = `
+    <h3 id="um-title" style="margin:0 0 4px;">${esc(u.name || u.email || 'User')}
+      ${u.blocked ? '<span class="pill st-deleted">blocked</span>' : ''}
+      ${u.is_admin ? '<span class="pill delivered">admin</span>' : ''}</h3>
+    <p class="pane-help" style="margin:0 0 14px;">${esc(u.email || '—')}${u.phone ? ` &middot; ${esc(u.phone)}` : ''}
+      &middot; ${esc(u.provider || '—')} &middot; joined ${esc(u.created_at)} &middot; last seen ${esc(u.last_seen_at)}</p>
+    ${flash ? `<p class="um-flash" role="status">${esc(flash)}</p>` : ''}
+    <div class="um-stats">
+      <div><b>${d.balance}</b><span>credits</span></div>
+      <div><b>${d.questions_count}</b><span>questions asked</span></div>
+      <div><b>${d.births_count}</b><span>charts saved</span></div>
+      <div><b>${d.orders.length}</b><span>orders</span></div>
+    </div>
+    ${grantSection}
+    ${blockSection}
+    <section class="um-sec"><h4>Credit history</h4><div class="table-wrap">${ledger}</div></section>
+    <section class="um-sec"><h4>Orders</h4><div class="table-wrap">${orders}</div></section>
+    <section class="um-sec"><h4>Feedback sent</h4>${fb}</section>`;
+
+  /* ---- give / remove ---- */
+  const action = $('#um-action');
+  action.onchange = () => {
+    const isProduct = action.value === 'product';
+    $('#um-credits-row').hidden = isProduct;
+    $('#um-product-row').hidden = !isProduct;
+    $('#um-grant').textContent = action.value === 'deduct' ? 'Remove credits' : 'Apply';
+  };
+  $('#um-grant').onclick = async (ev) => {
+    const btn = ev.currentTarget, err = $('#um-grant-err');
+    err.hidden = true;
+    const note = $('#um-note').value.trim();
+    const fail = (m) => { err.textContent = m; err.hidden = false; };
+    if (note.length < 3) return fail('Add a short note saying why — it is kept on the record.');
+
+    const who = u.email || u.name || `user ${u.id}`;
+    let label, path, payload;
+    if (action.value === 'product') {
+      const p = (umProducts || []).find((x) => x.sku === $('#um-sku').value);
+      label = `Give "${p ? p.title : $('#um-sku').value}" free to ${who}?`;
+      path = `/api/admin/users/${u.id}/grant`;
+      payload = { kind: 'product', sku: $('#um-sku').value, note };
+    } else {
+      const n = Math.abs(parseInt($('#um-amount').value, 10));
+      if (!n) return fail('Enter how many credits.');
+      if (action.value === 'credits') {
+        label = `Give ${n} question credit${n > 1 ? 's' : ''} to ${who}?`;
+        path = `/api/admin/users/${u.id}/grant`;
+        payload = { kind: 'credits', credits: n, note };
+      } else {
+        label = `Remove ${n} credit${n > 1 ? 's' : ''} from ${who}?`;
+        path = `/api/admin/users/${u.id}/credits`;
+        payload = { delta: -n, note };
+      }
+    }
+    if (!confirm(label)) return;
+
+    btn.disabled = true;
+    try {
+      const res = await api(path, { method: 'POST', body: JSON.stringify(payload) });
+      umFlash = action.value === 'product'
+        ? `Done — order #${res.order.id} created. Balance is now ${res.new_balance}.`
+        : `Done — balance is now ${res.new_balance}.`;
+      await refreshUserModal(u.id);
+      loadUsers();
+      if (action.value === 'product') loadKundalis();
+    } catch (e) {
+      fail(e.message);
+      btn.disabled = false;
+    }
+  };
+
+  /* ---- block / unblock ---- */
+  const setBlocked = async (blocked, reason) => {
+    const err = $('#um-block-err');
+    err.hidden = true;
+    try {
+      await api(`/api/admin/users/${u.id}/block`, {
+        method: 'POST', body: JSON.stringify({ blocked, reason }),
+      });
+      umFlash = blocked ? 'Account blocked.' : 'Account unblocked.';
+      await refreshUserModal(u.id);
+      loadUsers();
+    } catch (e) { err.textContent = e.message; err.hidden = false; }
+  };
+  const blockBtn = $('#um-block');
+  if (blockBtn) blockBtn.onclick = () => {
+    const reason = $('#um-reason').value.trim();
+    const err = $('#um-block-err');
+    if (reason.length < 3) { err.textContent = 'Give a reason — it is kept on the account.'; err.hidden = false; return; }
+    if (confirm(`Block ${u.email || u.name}? They will be signed out and unable to use the site.`)) setBlocked(true, reason);
+  };
+  const unblockBtn = $('#um-unblock');
+  if (unblockBtn) unblockBtn.onclick = () => {
+    if (confirm(`Unblock ${u.email || u.name}?`)) setBlocked(false, '');
+  };
+}
+
+/* ------------------------------------------------------------ feedback --- */
+
+const FB_FILTERS = [['new', 'New'], ['read', 'Seen'], ['resolved', 'Resolved'], ['all', 'All']];
+let fbFilter = 'new';
+const FB_CATEGORY = {
+  general: 'General', bug: 'Something not working', answers: 'An answer / reading',
+  payments: 'Payments / order', idea: 'Idea / request', other: 'Something else',
+};
+
+function wireFeedback() {
+  const search = $('#fb-search');
+  if (search) search.oninput = debounce(() => loadFeedback(), 300);
+}
+
+async function loadFeedback() {
+  const q = ($('#fb-search')?.value || '').trim();
+  try {
+    const { items, counts } = await api(
+      `/api/admin/feedback?status=${encodeURIComponent(fbFilter)}&q=${encodeURIComponent(q)}`);
+    setCount('#c-feedback', counts.new);
+    renderFeedbackChips(counts);
+    renderFeedbackList(items, q);
+  } catch (e) {
+    $('#fb-list').innerHTML = `<p class="error">${esc(e.message)}</p>`;
+  }
+}
+
+function renderFeedbackChips(counts) {
+  const box = $('#fb-chips');
+  box.innerHTML = FB_FILTERS.map(([key, label]) =>
+    `<button type="button" class="chip${key === fbFilter ? ' on' : ''}" data-f="${key}"
+      aria-pressed="${key === fbFilter}">${esc(label)} <span class="n">${counts[key] ?? 0}</span></button>`).join('');
+  $$('button', box).forEach((b) => { b.onclick = () => { fbFilter = b.dataset.f; loadFeedback(); }; });
+}
+
+function renderFeedbackList(items, q) {
+  const box = $('#fb-list');
+  if (!items.length) {
+    box.innerHTML = q ? '<p class="empty">No feedback matches your search.</p>'
+      : fbFilter === 'new' ? '<p class="empty">Nothing new. You are all caught up.</p>'
+        : '<p class="empty">Nothing here.</p>';
+    return;
+  }
+
+  box.innerHTML = items.map((f) => `
+    <div class="row" data-id="${f.id}">
+      <div class="row-main">
+        <div class="row-title">
+          ${f.rating ? `<span class="fb-stars" title="${f.rating} of 5">${'★'.repeat(f.rating)}${'☆'.repeat(5 - f.rating)}</span>` : ''}
+          <span class="pill off">${esc(FB_CATEGORY[f.category] || f.category)}</span>
+          <span class="pill ${f.status === 'new' ? 'st-scheduled' : f.status === 'resolved' ? 'st-live' : 'st-paused'}">${esc(f.status === 'read' ? 'seen' : f.status)}</span>
+        </div>
+        <div class="fb-msg">${esc(f.message)}</div>
+        <div class="row-sub">
+          ${esc(f.name || '—')} ${f.email ? `&lt;${esc(f.email)}&gt;` : ''} &middot; ${esc(f.at)}
+          ${f.page ? `&middot; from <code>${esc(f.page)}</code>` : ''}
+          ${f.allow_contact ? '' : '&middot; <span class="warn">asked not to be contacted</span>'}
+          ${f.handled_at ? `<br><span class="muted">handled ${esc(f.handled_at)}</span>` : ''}
+        </div>
+        <div class="fb-note">
+          <input class="note" placeholder="Private note (only you see this)" value="${esc(f.admin_note)}" maxlength="2000" />
+          <button type="button" class="ghost sm" data-act="note">Save note</button>
+          <span class="muted fb-saved" hidden>saved</span>
+        </div>
+      </div>
+      <div class="row-act">
+        ${f.status === 'new' ? '<button class="ghost sm" data-act="read" type="button">Mark seen</button>' : ''}
+        ${f.status !== 'resolved' ? '<button class="primary sm" data-act="resolved" type="button">Resolve</button>'
+          : '<button class="ghost sm" data-act="new" type="button">Reopen</button>'}
+        ${f.email && f.allow_contact
+          ? `<a class="ghost sm as-link" href="mailto:${esc(f.email)}?subject=${encodeURIComponent('Your Divine Astro feedback')}">Reply</a>` : ''}
+        <button class="ghost sm" data-act="user" type="button">User</button>
+      </div>
+    </div>`).join('');
+
+  $$('#fb-list .row').forEach((row) => {
+    const id = Number(row.dataset.id);
+    const f = items.find((x) => x.id === id);
+    const patch = (body) => api(`/api/admin/feedback/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
+    const on = (act, fn) => {
+      const b = row.querySelector(`[data-act="${act}"]`);
+      if (b) b.onclick = async () => {
+        b.disabled = true;
+        try { await fn(); } catch (e) { alert(e.message); }
+        b.disabled = false;
+      };
+    };
+    for (const s of ['read', 'resolved', 'new']) {
+      on(s, async () => { await patch({ status: s }); await loadFeedback(); });
+    }
+    on('note', async () => {
+      await patch({ admin_note: row.querySelector('.note').value });
+      const ok = row.querySelector('.fb-saved');
+      ok.hidden = false;
+      setTimeout(() => { ok.hidden = true; }, 1500);
+    });
+    on('user', async () => openUserModal(f.user_id));
+  });
 }
 
 /* ----------------------------------------------------------- questions --- */
