@@ -920,7 +920,7 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
             8: "Brings repeated severe suffering through life and losses "
                "tied to inheritance; secretive method wins occasional "
                "victories, but worry never fully lifts",
-            9: "Debilitated here — brings real difficulty to fortune's "
+            9: "Brings real difficulty to fortune's "
                "advance, recurring disgrace and disappointment, and few "
                "successes despite considerable suffering",
             10: "Brings difficulty with father or career and repeated "
@@ -943,7 +943,7 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                "disputes — some improvement comes through secretive "
                "method, though inner worry and hardship persist behind an "
                "outwardly prosperous appearance",
-            3: "Debilitated here — weakens courage and sibling comfort "
+            3: "Weakens courage and sibling comfort "
                "and brings a timid disposition; secretive, self-interested "
                "method brings only rare success despite great effort",
             4: "Brings deficiency in home comfort and domestic unease, "
@@ -962,9 +962,9 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
             8: "Brings repeated severe suffering and loss tied to "
                "inheritance; secretive method wins some victories, but "
                "hardship and some lasting illness remain",
-            9: "Exalted here — brings good fortune, righteousness and "
+            9: "Brings good fortune, righteousness and "
                "wealth, though life still brings many changes and "
-               "difficulties even at this strength; the overall character "
+               "difficulties; the overall character "
                "remains happy and righteous",
             10: "Brings real struggle with father, career or business, "
                 "often forcing a change of course — respect and success "
@@ -1409,7 +1409,7 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                "business, resolved only partially through secretive "
                "method; some tendency toward disorders of the "
                "reproductive organs",
-            8: "Debilitated here — brings many difficulties and losses "
+            8: "Brings many difficulties and losses "
                "around longevity, though the native remains courteous "
                "and composed; troubled by hidden worries, relies on "
                "secretive method, and sustains life through distant connections",
@@ -1872,7 +1872,7 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                 "joy and sorrow, though ultimately regarded as fortunate",
         },
         "Rahu": {
-            1: "Exalted here — brings an impressive stature, "
+            1: "Brings an impressive stature, "
                "discernment and self-interest, and real skill in "
                "secretive method and real courage; the native advances "
                "through arduous undertakings and secretive method, "
@@ -2758,7 +2758,7 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
         "Venus": {
             1: "Enemy's sign brings real beauty, elegance and fame, "
                "though some friction with siblings and father; its "
-               "aspect on the 7th (own sign) brings real success "
+               "aspect on the 7th (a friend's sign) brings real success "
                "around a partner and daily business",
             2: "Debilitated here — brings some deficiency in wealth "
                "and family comfort, and some difference with father, "
@@ -2893,7 +2893,7 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                "obstacles to land and property comfort, often forcing "
                "life abroad; the native gathers comfort and endures "
                "crises through courage, secretive method and patience",
-            5: "Debilitated here — brings distress through children "
+            5: "Brings distress through children "
                "and diminished learning; the native tries to conceal "
                "incompetence through cleverness, though lacking in "
                "politeness, refinement and truthfulness, and pursues "
@@ -2944,7 +2944,7 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                "unrest, and limited comfort through land and property, "
                "often forcing life abroad; the native works hard and "
                "relies on secretive method, though remains largely troubled",
-            5: "Exalted here — brings strength through children though "
+            5: "Brings strength through children though "
                "occasional hardship too; despite effort, education "
                "brings limited success, and the native considers "
                "themself wise, though their words carry little real influence",
@@ -3005,7 +3005,7 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                "religious practice",
             4: "Friend's sign brings some deficiency in home comfort, "
                "with both gain and expense through distant connections; "
-               "its aspect on the 10th (own sign) brings some "
+               "its aspect on the 10th (a friend's sign) brings some "
                "dissatisfaction with father, career and business",
             5: "Enemy's sign brings some deficiency in education and "
                "children, and mental strain over expenses; its aspect "
@@ -3450,7 +3450,7 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                "from siblings; the native never loses courage even in "
                "crisis, trusting their own strength of arm, and is "
                "hard-working besides",
-            4: "Exalted here — brings comfort through mother, home and "
+            4: "Brings comfort through mother, home and "
                "property, and a well-appointed domestic life achieved "
                "through real effort, alternating between domestic "
                "crisis and domestic prosperity",
@@ -4351,7 +4351,7 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                "connections",
             7: "Friend's sign brings success with a spouse and in "
                "daily business, along with gain in longevity and "
-               "inheritance; its aspect on the Lagna (own sign) "
+               "inheritance; its aspect on the Lagna (a friend's sign) "
                "brings growth of physical strength and influence, "
                "marking a life lived with pomp and grandeur",
             8: "In its own sign here (Mercury rules the 8th), brings "
@@ -7276,7 +7276,7 @@ BHRIGU_LAGNA_HOUSE_TEXT: dict[str, dict[str, dict[int, str]]] = {
                "patience, cleverness, secretive method and hard "
                "effort, achieving some advancement, undeterred even "
                "by severe crisis; fame, however, stays limited",
-            10: "Exalted in Jupiter's sign, brings comfort through "
+            10: "In Jupiter's sign, brings comfort through "
                 "the father, honour through state affairs, and gain "
                 "through business; the native works hard for "
                 "advancement and relies on secretive method",

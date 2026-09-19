@@ -381,24 +381,44 @@ match.
 
 **Regression test.** `tests/test_delineation.py`, section 2c, walks the whole
 corpus with the same two audits, and also proves the audit *can* fail (it
-feeds in the seven original contradictions and expects seven flags, and
-confirms it ignores aspect clauses and Rahu/Ketu). Run it with
-`C:\Astro\.venv\Scripts\python.exe -m tests.test_delineation`. Confirmed
-against unfixed `main`: it fails with exactly these seven.
+feeds in the seven original contradictions and expects seven flags). Run it
+with `C:\Astro\.venv\Scripts\python.exe -m tests.test_delineation`. Confirmed
+against unfixed `main`: it fails with exactly these seven. It was later
+extended (see "Known limits" 1 and 2) with two more audits — trailing
+aspect-clause dignity claims, and "no Rahu/Ketu entry claims sign dignity" —
+each also proven able to fail on the three / nine original offenders.
+(The two dignity audits above still read only an entry's *leading* clause;
+the aspect audit reads the parenthetical after "aspect on the Nth".)
 
 **Known limits — deliberately not covered, and not fixed here:**
-1. *Trailing aspect-clause dignity claims* such as "its aspect on the 7th
-   (own sign)" are not audited. A scratch check of the 56 that exist found 3
-   wrong: Leo/Venus/1st ("aspect on the 7th (own sign)", but that is Aquarius),
-   Virgo/Sun/4th ("aspect on the 10th (own sign)", but that is Gemini),
-   Scorpio/Mercury/7th ("aspect on the Lagna (own sign)", but that is Scorpio).
-   Their sources have not been read; follow-up.
-2. *Rahu/Ketu* entries: 9 of them open with "Exalted here" / "Debilitated
-   here" (e.g. Aries/Rahu/9th, Gemini/Rahu/1st), which conflicts with the
-   Taurus note above ("written without … dignity framing") and with
-   `vargas.py`'s policy of assigning the nodes no sign dignity (their
-   exaltation signs are disputed three ways). Left alone pending a decision,
-   and excluded from the audit.
+1. ~~*Trailing aspect-clause dignity claims*~~ — **resolved.** A scratch check
+   of the 56 such claims found 3 wrong: Leo/Venus/1st ("aspect on the 7th
+   (own sign)", but that is Aquarius), Virgo/Sun/4th ("aspect on the 10th
+   (own sign)", but that is Gemini), Scorpio/Mercury/7th ("aspect on the
+   Lagna (own sign)", but that is Scorpio). All three sources were read on the
+   rendered page images (PDF pp. 270, 292, 389): in each the printed text calls
+   the aspect a *friendly* aspect (the source's "mitra-drishti" wording), not
+   own-sign — a paraphrase slip, not a source error. Corrected to
+   "(a friend's sign)", the wording the corpus already uses. The audit now also
+   walks every trailing aspect clause (62 own-sign / exalted / debilitated
+   claims) and judges it against the aspecting graha; friend/enemy stances
+   stay unaudited (the source's own).
+2. ~~*Rahu/Ketu* entries claiming sign dignity~~ — **resolved by policy, not by
+   the page.** 9 entries opened with "Exalted here" / "Debilitated here"
+   (Aries/Rahu/9th, Aries/Ketu/3rd, Aries/Ketu/9th, Taurus/Rahu/8th,
+   Gemini/Rahu/1st, Leo/Rahu/5th, Leo/Ketu/5th, Virgo/Ketu/4th,
+   Pisces/Ketu/10th), which conflicted with the other 276 node entries
+   (written without dignity framing) and with `vargas.py`'s policy of
+   assigning the nodes no sign dignity (their exaltation signs are disputed
+   three ways). The dignity label was dropped and each entry's predicted
+   *effect* was kept unchanged, except that two phrases which leaned on the
+   label were adjusted ("even at this strength" removed from Aries/Ketu/9th;
+   "Exalted in Jupiter's sign" became "In Jupiter's sign" for Pisces/Ketu/10th —
+   Jupiter's ownership of that sign is a plain fact). The source pages for
+   these nine were **not** re-read: the decision was to conform to the app's
+   node policy, so what the book says about node dignity is intentionally not
+   surfaced. `tests/test_delineation.py` now fails if any node entry's leading
+   clause claims own-sign / exalted / debilitated.
 3. *Semantic drift against the source is not audited.* A rulership audit can
    only catch contradictions with fixed facts. Entry #1 and #4 above showed
    that clause-level drift from the printed text (reversals, moved clauses)

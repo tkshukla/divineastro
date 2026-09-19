@@ -77,9 +77,17 @@ def chart(asc: str | float = "Aries", **where: str | float) -> dict:
 # tables without consulting any tradition. Friend/enemy claims are deliberately
 # NOT audited: those are the source's own and are reported as it states them,
 # even where they diverge from the BPHS table (docs/sources/bhrigu_samhita_notes.md).
-# Rahu and Ketu are skipped because vargas.py assigns the nodes no sign dignity.
+# Rahu and Ketu are skipped by the dignity check because vargas.py assigns the
+# nodes no sign dignity -- and, for the same reason, a node entry must not CLAIM
+# one (node_bad below).
 _DIGNITY_CLAIM = re.compile(r"\b(own sign|exalted|debilitated)\b", re.IGNORECASE)
 _LEADING_BREAK = re.compile(r"\s—\s|;|\.\s")
+# A dignity claim in a trailing aspect clause: "its aspect on the 7th (own sign)".
+# The parenthetical names the ASPECTED house's sign, judged against the aspecting
+# graha (a friendly / enemy sign is the source's own stance and is not audited).
+_ASPECT_CLAIM = re.compile(
+    r"\baspect on the (Lagna|\d+(?:st|nd|rd|th))\s*\(([^)]*)\)", re.IGNORECASE)
+
 _LORD_CLAIM = re.compile(
     r"\b(Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn) rules the (\d+)(?:st|nd|rd|th)\b")
 _AS_LORD_CLAIM = re.compile(r"\bas (\d+)(?:st|nd|rd|th) lord\b")
@@ -105,13 +113,21 @@ def rulership_audit(corpus: dict) -> dict:
     and any "X rules the Nth" / "as Nth lord" (must name the true lord of the
     Nth house from that Lagna). Returns the counts checked and the violations.
     """
-    dignity_claims = lordship_claims = 0
+    dignity_claims = lordship_claims = aspect_claims = 0
     lagnas_with_claims: set[str] = set()
     dignity_bad: list[str] = []
     lordship_bad: list[str] = []
+    aspect_bad: list[str] = []
+    node_bad: list[str] = []
     for lagna, by_planet in corpus.items():
         for planet, by_house in by_planet.items():
             if planet not in v.GRAHAS:
+                if planet in ("Rahu", "Ketu"):
+                    for house, text in sorted(by_house.items()):
+                        head = leading_clause(text)
+                        if _DIGNITY_CLAIM.search(head):
+                            node_bad.append(f"{lagna} Lagna, {planet} in {house} "
+                                            f"claims sign dignity: {head[:60]!r}")
                 continue
             for house, text in sorted(by_house.items()):
                 where = f"{lagna} Lagna, {planet} in {house}"
@@ -129,6 +145,23 @@ def rulership_audit(corpus: dict) -> dict:
                     if not ok:
                         dignity_bad.append(
                             f"{where} ({sign}) claims {claim!r}: {head[:60]!r}")
+                for m in _ASPECT_CLAIM.finditer(text):
+                    ref = m.group(1)
+                    n = 1 if ref.lower() == "lagna" else int(re.match(r"\d+", ref).group())
+                    aspected = sign_of_house(lagna, n)
+                    for claim in {c.group(1).lower()
+                                  for c in _DIGNITY_CLAIM.finditer(m.group(2))}:
+                        aspect_claims += 1
+                        if claim == "own sign":
+                            ok = aspected in v.OWN_SIGNS[planet]
+                        elif claim == "exalted":
+                            ok = v.EXALTATION[planet] == aspected
+                        else:
+                            ok = v.DEBILITATION[planet] == aspected
+                        if not ok:
+                            aspect_bad.append(
+                                f"{where}: aspect on the {n} ({aspected}) claims "
+                                f"{claim!r}, which {planet} does not have there")
                 for m in _LORD_CLAIM.finditer(text):
                     lordship_claims += 1
                     named, n = m.group(1), int(m.group(2))
@@ -144,7 +177,9 @@ def rulership_audit(corpus: dict) -> dict:
     return {"dignity_claims": dignity_claims, "lordship_claims": lordship_claims,
             "lagnas": lagnas_with_claims, "dignity_bad": dignity_bad,
             "lordship_bad": lordship_bad,
-            "violations": dignity_bad + lordship_bad}
+            "aspect_claims": aspect_claims, "aspect_bad": aspect_bad,
+            "node_bad": node_bad,
+            "violations": dignity_bad + lordship_bad + aspect_bad + node_bad}
 
 
 def main() -> int:
@@ -402,6 +437,44 @@ def main() -> int:
                                      "Ketu": {3: "Exalted here — brings gain"}}})
           ["dignity_claims"] == 0)
 
+    # Trailing aspect-clause claims: the three the source pages contradicted
+    # (pp.270, 292, 389 -- the book calls each one a FRIENDLY aspect), in the
+    # words the corpus used, plus correct claims that must stay quiet.
+    aspect_bad_in = {
+        "Leo": {"Venus": {1: "Enemy's sign brings beauty; its aspect on the 7th "
+                             "(own sign) brings success"}},              # Aquarius
+        "Virgo": {"Sun": {4: "Friend's sign brings a lack; its aspect on the "
+                             "10th (own sign) brings dissatisfaction"}},   # Gemini
+        "Scorpio": {"Mercury": {7: "Friend's sign brings success; its aspect on "
+                                   "the Lagna (own sign) brings strength"}},  # Scorpio
+    }
+    audit = rulership_audit(aspect_bad_in)
+    check("the audit flags each of the three aspect-clause contradictions it "
+          "was extended for", len(audit["aspect_bad"]) == 3
+          and audit["aspect_claims"] == 3, "; ".join(audit["aspect_bad"]))
+    aspect_good_in = {
+        "Leo": {"Venus": {4: "Enemy's sign; its aspect on the 10th (own sign) "
+                             "brings gain"},                              # Taurus
+                "Jupiter": {8: "Own sign; its aspect on the 12th (a friend's "
+                               "sign) brings expense"}},                  # not audited
+        "Cancer": {"Sun": {4: "x; its aspect on the 10th (exalted) brings fame"}},
+        "Scorpio": {"Mercury": {5: "x; its aspect on the 11th (own sign, exalted) "
+                                   "brings income"}},                     # Virgo
+    }
+    audit = rulership_audit(aspect_good_in)
+    check("correct aspect-clause claims pass; friend/enemy stances are not audited",
+          audit["aspect_bad"] == [] and audit["aspect_claims"] == 4,
+          "; ".join(audit["aspect_bad"]) or f"{audit['aspect_claims']} claims")
+
+    # The nodes get no sign dignity (vargas.py), so an entry must not claim one.
+    node_in = {"Aries": {"Rahu": {9: "Debilitated here -- brings loss"},
+                         "Ketu": {3: "Exalted here -- brings gain",
+                                  4: "Brings deficiency in comfort"}},
+               "Pisces": {"Ketu": {10: "Exalted in Jupiter's sign, brings comfort"}}}
+    audit = rulership_audit(node_in)
+    check("the audit flags every node entry that claims sign dignity, and only "
+          "those", len(audit["node_bad"]) == 3, "; ".join(audit["node_bad"]))
+
     real = rulership_audit(d.BHRIGU_LAGNA_HOUSE_TEXT)
     check("every leading own-sign / exalted / debilitated claim in the real "
           "corpus matches the graha's true rulership for that Lagna and house",
@@ -409,6 +482,13 @@ def main() -> int:
     check("every 'X rules the Nth' / 'as Nth lord' claim in the real corpus "
           "names the true lord of that house from that Lagna",
           not real["lordship_bad"], "; ".join(real["lordship_bad"]))
+    check("every own-sign / exalted / debilitated claim in a trailing aspect "
+          "clause names a sign the aspecting graha really has that dignity in",
+          not real["aspect_bad"], "; ".join(real["aspect_bad"]))
+    check("no Rahu or Ketu entry claims a sign dignity (vargas.py gives the "
+          "nodes none)", not real["node_bad"], "; ".join(real["node_bad"]))
+    check("the aspect walk is not vacuous: it read dozens of claims",
+          real["aspect_claims"] > 40, f"{real['aspect_claims']} aspect claims")
     check("the real-corpus walk is not vacuous: it read claims from all "
           "twelve Lagnas, and both claim kinds occur many times over",
           len(real["lagnas"]) == 12 and real["dignity_claims"] > 200
