@@ -23,6 +23,7 @@ const A_I18N = {
     welcome: "Welcome. You have", freeQs: "free questions to start.",
     credits: "questions left", buyMore: "Buy more",
     adminPanel: "Admin panel",
+    feedback: "Send feedback",
     upiTitle: "Pay by UPI",
     upiSub: "Scan the code or pay to the ID below, then tell us the reference number. "
           + "Your questions are added once we've matched it against our bank statement — "
@@ -83,6 +84,7 @@ const A_I18N = {
     welcome: "स्वागत है। आपके पास", freeQs: "निःशुल्क प्रश्न हैं।",
     credits: "प्रश्न शेष", buyMore: "और खरीदें",
     adminPanel: "एडमिन पैनल",
+    feedback: "प्रतिक्रिया भेजें",
     upiTitle: "UPI से भुगतान करें",
     upiSub: "क्यूआर स्कैन करें या नीचे दी गई UPI आईडी पर भुगतान करें, फिर हमें रेफ़रेंस नंबर बताएं। "
           + "बैंक स्टेटमेंट से मिलान होते ही आपके प्रश्न जुड़ जाएंगे — आमतौर पर कुछ घंटों में।",
@@ -246,6 +248,7 @@ function renderAccountBar() {
       <div class="acct-drop" hidden>
         <button data-act="history">${escapeHtml(at("history"))}</button>
         <button data-act="orders">${escapeHtml(at("orders"))}</button>
+        <a class="drop-link" href="/feedback">${escapeHtml(at("feedback"))}</a>
         ${acct.user.is_admin
           ? `<button data-act="coupons">${escapeHtml(at("coupons"))}</button>
              <a class="drop-link" href="/admin">${escapeHtml(at("adminPanel"))}</a>` : ""}

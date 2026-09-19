@@ -69,6 +69,7 @@
     <button class="atab" data-tab="manual">&#10133; Manual Order</button>
     <button class="atab" data-tab="kundali">&#128220; Kundali Queue <span class="count" id="c-kundali"></span></button>
     <button class="atab" data-tab="users">&#128101; Users</button>
+    <button class="atab" data-tab="feedback">&#128233; Feedback <span class="count" id="c-feedback"></span></button>
     <button class="atab" data-tab="questions">&#128172; Questions</button>
     <button class="atab" data-tab="health">&#9889; System Health</button>
   </nav>
@@ -341,11 +342,26 @@
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
         <div>
           <h3 style="margin:0 0 4px;">Registered Users</h3>
-          <p class="pane-help" style="margin-bottom:0;">View customer history, adjust question credits, or manage accounts.</p>
+          <p class="pane-help" style="margin-bottom:0;">Open an account to see its history, give credits or a free product, or block it.</p>
         </div>
         <input id="user-search" placeholder="Search by email or name..." style="padding:8px 12px;font-size:0.85rem;width:240px;" />
       </div>
       <div id="users-list" class="table-wrap"></div>
+    </div>
+  </section>
+
+  <!-- ============ Feedback inbox ============ -->
+  <section class="apane" id="pane-feedback">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <h3 style="margin:0 0 4px;">User Feedback</h3>
+          <p class="pane-help" style="margin-bottom:0;">What users send from the <a href="/feedback" target="_blank" rel="noopener">/feedback</a> page. Mark items seen or resolved and keep a private note.</p>
+        </div>
+        <input id="fb-search" placeholder="Search message, name or email..." style="padding:8px 12px;font-size:0.85rem;width:240px;" />
+      </div>
+      <div id="fb-chips" class="chips" role="group" aria-label="Filter feedback by status"></div>
+      <div id="fb-list" class="rows"></div>
     </div>
   </section>
 
@@ -371,6 +387,14 @@
     </div>
   </section>
 </main>
+
+<!-- ============ User detail (opened from the Users tab) ============ -->
+<div id="user-modal" class="amodal-back" hidden>
+  <div class="amodal" role="dialog" aria-modal="true" aria-labelledby="um-title" tabindex="-1">
+    <button type="button" class="amodal-close" id="um-close" aria-label="Close">&times;</button>
+    <div id="um-body"></div>
+  </div>
+</div>
 
 <script src="/static/admin.js?v=20260829_03"></script>
 </body>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Feedback — Divine Astro</title>
+<meta name="robots" content="noindex" />
+<link rel="stylesheet" href="/static/styles.css" />
+<link rel="icon" href="/static/favicon.ico" />
+<style>
+  /* styles.css locks the body for the app shell; this is an ordinary page. */
+  html, body { height: auto !important; overflow: auto !important; }
+  body { display: block !important; min-height: 100vh; }
+
+  .fb { max-width: 680px; margin: 0 auto; padding: 48px 20px 90px; position: relative; z-index: 1; }
+  .fb .back { display: inline-block; margin-bottom: 22px; color: var(--ink-faint);
+              font-size: 13px; text-decoration: none; }
+  .fb .back:hover { color: var(--gold); }
+  .fb h1 { font-family: var(--serif); font-weight: 400; font-size: 32px;
+           color: var(--gold-soft); margin: 0 0 8px; }
+  .fb .lead { color: var(--ink-dim); font-size: 15px; line-height: 1.7; margin: 0 0 26px; }
+  .fb .toolbar { display: flex; justify-content: flex-end; margin: -6px 0 6px; }
+  .fb .toolbar button { background: none; border: 0; color: var(--cyan); cursor: pointer;
+                        font: inherit; font-size: 13px; padding: 8px 4px; min-height: 36px; }
+
+  .fb .card { border: 1px solid var(--line); border-radius: 16px; padding: 22px 22px 24px;
+              background: var(--bg-card, rgba(8,10,24,0.5)); }
+  .fb .field { margin-bottom: 20px; }
+  .fb label.lbl, .fb legend.lbl { display: block; font-size: 12px; letter-spacing: 0.08em;
+              text-transform: uppercase; color: var(--ink-faint); margin: 0 0 8px; font-weight: 600; }
+  .fb legend.lbl { padding: 0; }
+  .fb fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  .fb .opt { text-transform: none; letter-spacing: 0; font-weight: 400; opacity: 0.75; margin-left: 6px; }
+
+  /* :where() keeps these at low specificity so styles.css's
+     [data-theme="light"] select/textarea override still wins; a plain
+     `.fb select` outranked it and drew a dark box with dark text in light theme. */
+  .fb :where(select, textarea) {
+    width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 11px;
+    border: 1px solid var(--line); background: rgba(8, 10, 24, 0.7); color: var(--ink);
+    font-family: var(--sans); font-size: 16px; line-height: 1.55;
+  }
+  .fb :where(textarea) { min-height: 150px; resize: vertical; }
+  .fb select:focus, .fb textarea:focus {
+    outline: none; border-color: rgba(240, 198, 116, 0.6);
+    box-shadow: 0 0 0 3px rgba(240, 198, 116, 0.13);
+  }
+  .fb .count { text-align: right; font-size: 12px; color: var(--ink-faint); margin-top: 6px; }
+  .fb .count.bad { color: var(--rose, #f0708c); }
+
+  /* Star rating: real radio inputs (keyboard + screen-reader friendly), drawn as stars. */
+  .fb .stars { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+  .fb .stars label { cursor: pointer; }
+  .fb .stars input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .fb .stars .star { display: inline-block; font-size: 34px; line-height: 1; padding: 4px 6px;
+                     color: var(--ink-faint); opacity: 0.55; transition: color .12s, opacity .12s, transform .12s; }
+  .fb .stars .star.on { color: var(--gold); opacity: 1; }
+  .fb .stars label:hover .star { transform: scale(1.12); }
+  .fb .stars input:focus-visible + .star { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 8px; }
+  .fb .stars .clear { background: none; border: 0; color: var(--ink-faint); cursor: pointer;
+                      font: inherit; font-size: 13px; padding: 10px 8px; min-height: 40px; }
+
+  /* styles.css upper-cases every <label>; this one is a sentence, not a caption. */
+  .fb label.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+               color: var(--ink-dim); line-height: 1.5; cursor: pointer;
+               text-transform: none; letter-spacing: 0; font-weight: 400; }
+  .fb .check input { width: 20px; height: 20px; margin: 1px 0 0; flex: 0 0 auto; accent-color: var(--gold); }
+
+  .fb .primary { min-height: 48px; padding: 12px 26px; font-size: 16px; }
+  .fb .error { color: var(--rose, #f0708c); font-size: 14px; margin: 14px 0 0; }
+  .fb .thanks { text-align: center; padding: 18px 6px; }
+  .fb .thanks .big { font-size: 44px; line-height: 1; margin-bottom: 10px; }
+  .fb .thanks h2 { font-family: var(--serif); font-weight: 400; color: var(--gold-soft); margin: 0 0 8px; }
+  .fb .thanks p { color: var(--ink-dim); line-height: 1.7; margin: 0 0 18px; }
+  .fb .linkbtn { background: none; border: 0; color: var(--cyan); cursor: pointer; font: inherit;
+                 text-decoration: underline; padding: 10px 6px; min-height: 40px; }
+
+  .fb .gate { text-align: center; }
+  .fb .gate p { color: var(--ink-dim); line-height: 1.7; }
+  .fb .gate .actions { display: flex; flex-direction: column; gap: 10px; max-width: 320px; margin: 18px auto 0; }
+  .fb .gate a.primary { display: block; text-align: center; text-decoration: none; }
+
+  .fb h3 { font-family: var(--serif); font-weight: 400; color: var(--gold); font-size: 19px; margin: 34px 0 12px; }
+  .fb .mine { list-style: none; margin: 0; padding: 0; }
+  .fb .mine li { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;
+                 font-size: 14px; color: var(--ink-dim); line-height: 1.55; }
+  .fb .mine .meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 4px;
+                    font-size: 12px; color: var(--ink-faint); }
+  .fb .pill { border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; font-size: 11.5px; }
+  .fb .pill.resolved { color: var(--green, #7ddba0); }
+  .fb .pill.read { color: var(--cyan); }
+  .fb .help { margin-top: 30px; font-size: 13.5px; color: var(--ink-faint); line-height: 1.7; }
+  .fb .help a { color: var(--cyan); }
+  .fb [hidden] { display: none !important; }
+
+  @media (max-width: 480px) {
+    .fb { padding: 28px 16px 70px; }
+    .fb .card { padding: 18px 16px 20px; }
+    .fb .stars .star { font-size: 40px; padding: 4px 8px; }
+  }
+</style>
+</head>
+<body>
+<main class="fb">
+  <a class="back" href="/" id="back">&larr; Divine Astro</a>
+  <div class="toolbar"><button type="button" id="lang-toggle" aria-label="Language">हिन्दी</button></div>
+  <h1 id="title">Send us your feedback</h1>
+  <p class="lead" id="lead"></p>
+
+  <!-- Shown when nobody is signed in. -->
+  <section class="card gate" id="gate" hidden>
+    <p id="gate-msg"></p>
+    <div class="actions" id="gate-actions"></div>
+  </section>
+
+  <!-- The form -->
+  <section class="card" id="form-card" hidden>
+    <form id="form" novalidate>
+      <div class="field">
+        <label class="lbl" for="category" id="l-category">About</label>
+        <select id="category"></select>
+      </div>
+
+      <div class="field">
+        <fieldset>
+          <legend class="lbl"><span id="l-rating">How is your experience so far?</span>
+            <span class="opt" id="l-optional">optional</span></legend>
+          <div class="stars" id="stars" role="radiogroup"></div>
+        </fieldset>
+      </div>
+
+      <div class="field">
+        <label class="lbl" for="message" id="l-message">Your message</label>
+        <textarea id="message" maxlength="2000" required></textarea>
+        <div class="count" id="count" aria-live="polite">0 / 2000</div>
+      </div>
+
+      <div class="field">
+        <label class="check"><input type="checkbox" id="allow" checked /> <span id="l-allow"></span></label>
+      </div>
+
+      <button type="submit" class="primary" id="submit"><span id="l-submit">Send feedback</span></button>
+      <p class="error" id="error" role="alert" hidden></p>
+    </form>
+  </section>
+
+  <!-- After sending -->
+  <section class="card thanks" id="thanks" hidden>
+    <div class="big" aria-hidden="true">&#128591;</div>
+    <h2 id="t-title"></h2>
+    <p id="t-text"></p>
+    <a class="primary" href="/" id="t-home" style="display:inline-block;text-decoration:none;"></a>
+    <div><button type="button" class="linkbtn" id="again"></button></div>
+  </section>
+
+  <section id="mine-wrap" hidden>
+    <h3 id="mine-title"></h3>
+    <ul class="mine" id="mine"></ul>
+  </section>
+
+  <p class="help" id="help"></p>
+</main>
+<script src="/static/feedback.js"></script>
+</body>
+</html>
