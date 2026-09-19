@@ -155,7 +155,10 @@ def upsert_user(db: Session, provider: str, claims: dict) -> tuple[User, bool]:
     # Same person, different provider, same verified address → one account.
     if user is None and email and verified:
         user = db.execute(select(User).where(User.email == email)).scalar_one_or_none()
-        if user is not None and not user.provider_sub:
+        # An admin-created "manual" account (a customer paid off-site and was
+        # recorded by hand) is adopted the first time its owner signs in with
+        # the same verified address, so their purchase is waiting for them.
+        if user is not None and (not user.provider_sub or user.provider == "manual"):
             user.provider, user.provider_sub = provider, sub
 
     created = user is None

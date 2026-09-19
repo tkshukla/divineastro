@@ -244,6 +244,45 @@ code, .utr, .code {
 .coupon-form .field { margin-bottom: 12px; }
 .coupon-form select[multiple] { min-height: 92px; }
 
+/* styles.css only styles input[type=text|date|time]; email/tel/number and
+   type-less inputs (the coupon form's too) fell back to browser defaults —
+   19px tall, a poor tap target on a phone. Same look as the base rule. */
+.coupon-form input:not([type=checkbox]):not([type=radio]) {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 11px;
+  border: 1px solid var(--line);
+  background: rgba(8, 10, 24, 0.7);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+}
+
+/* An author `display:` rule (e.g. .crow's grid) otherwise beats the hidden attribute. */
+.apane [hidden] { display: none !important; }
+
+/* Manual order: city picker + confirmation line */
+.coupon-form h3 .opt { font-weight: 400; font-size: 0.8rem; opacity: 0.6; margin-left: 6px; }
+.coupon-form .crow + h3, .coupon-form p + h3, #mo-birth h3 { margin-top: 18px; }
+.mo-results {
+  display: flex; flex-direction: column; margin-top: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px;
+  max-height: 220px; overflow-y: auto;
+}
+.mo-results button {
+  text-align: left; background: none; border: 0; color: inherit; font: inherit;
+  padding: 10px 12px; cursor: pointer; min-height: 40px;
+}
+.mo-results button + button { border-top: 1px solid rgba(255, 255, 255, 0.07); }
+.mo-results button:hover, .mo-results button:focus-visible { background: rgba(255, 255, 255, 0.08); }
+.mo-results .muted { padding: 10px 12px; opacity: 0.65; font-size: 0.85rem; }
+.mo-ok { color: #7ddba0; }
+.mo-ok .warn { color: #f0c674; }
+[data-theme="light"] .mo-results { border-color: rgba(0, 0, 0, 0.15); }
+[data-theme="light"] .mo-results button + button { border-color: rgba(0, 0, 0, 0.08); }
+[data-theme="light"] .mo-results button:hover { background: rgba(0, 0, 0, 0.06); }
+[data-theme="light"] .mo-ok { color: #1f7a45; }
+
 /* ----------------------------------------------------- metrics & grid ----- */
 
 .metrics-grid {
