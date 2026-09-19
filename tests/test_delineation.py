@@ -11,6 +11,7 @@ producer.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -18,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.astro import delineation as d
 from app.astro import vargas as v
-from app.chart_service import SIGNS, dms, sign_of
+from app.chart_service import DOMICILE, SIGNS, dms, sign_of
 
 failures: list[str] = []
 
@@ -68,6 +69,82 @@ def chart(asc: str | float = "Aries", **where: str | float) -> dict:
         "birth": {"name": "Native"},
         "objects": objects,
     }
+
+
+# -- Rulership audit of the Bhrigu per-Lagna corpus ---------------------------
+# Which sign a graha owns, is exalted in or is debilitated in is astronomically
+# fixed, so a corpus entry's dignity claim can be checked against vargas.py's
+# tables without consulting any tradition. Friend/enemy claims are deliberately
+# NOT audited: those are the source's own and are reported as it states them,
+# even where they diverge from the BPHS table (docs/sources/bhrigu_samhita_notes.md).
+# Rahu and Ketu are skipped because vargas.py assigns the nodes no sign dignity.
+_DIGNITY_CLAIM = re.compile(r"\b(own sign|exalted|debilitated)\b", re.IGNORECASE)
+_LEADING_BREAK = re.compile(r"\s—\s|;|\.\s")
+_LORD_CLAIM = re.compile(
+    r"\b(Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn) rules the (\d+)(?:st|nd|rd|th)\b")
+_AS_LORD_CLAIM = re.compile(r"\bas (\d+)(?:st|nd|rd|th) lord\b")
+
+
+def sign_of_house(lagna: str, house: int) -> str:
+    """The sign occupying `house` (1-12) in a whole-sign chart with this Lagna."""
+    return SIGNS[(SIGNS.index(lagna) + house - 1) % 12]
+
+
+def leading_clause(text: str) -> str:
+    """An entry's opening clause: everything before its first em-dash, semicolon
+    or sentence break. That is where the placement's own dignity is stated; the
+    aspect clauses after it talk about other houses' signs, so they are not read."""
+    return _LEADING_BREAK.split(text, maxsplit=1)[0]
+
+
+def rulership_audit(corpus: dict) -> dict:
+    """Check every classical-graha entry's rulership claims against the fixed facts.
+
+    Two kinds of claim are read: a leading "own sign" / "exalted" / "debilitated"
+    (must match where that graha really is in that sign for that Lagna+house),
+    and any "X rules the Nth" / "as Nth lord" (must name the true lord of the
+    Nth house from that Lagna). Returns the counts checked and the violations.
+    """
+    dignity_claims = lordship_claims = 0
+    lagnas_with_claims: set[str] = set()
+    dignity_bad: list[str] = []
+    lordship_bad: list[str] = []
+    for lagna, by_planet in corpus.items():
+        for planet, by_house in by_planet.items():
+            if planet not in v.GRAHAS:
+                continue
+            for house, text in sorted(by_house.items()):
+                where = f"{lagna} Lagna, {planet} in {house}"
+                sign = sign_of_house(lagna, house)
+                head = leading_clause(text)
+                for claim in {m.group(1).lower() for m in _DIGNITY_CLAIM.finditer(head)}:
+                    dignity_claims += 1
+                    lagnas_with_claims.add(lagna)
+                    if claim == "own sign":
+                        ok = sign in v.OWN_SIGNS[planet]
+                    elif claim == "exalted":
+                        ok = v.EXALTATION[planet] == sign
+                    else:
+                        ok = v.DEBILITATION[planet] == sign
+                    if not ok:
+                        dignity_bad.append(
+                            f"{where} ({sign}) claims {claim!r}: {head[:60]!r}")
+                for m in _LORD_CLAIM.finditer(text):
+                    lordship_claims += 1
+                    named, n = m.group(1), int(m.group(2))
+                    if DOMICILE[sign_of_house(lagna, n)] != named:
+                        lordship_bad.append(f"{where}: {m.group(0)!r} but the "
+                                            f"{n}th is {sign_of_house(lagna, n)}")
+                for m in _AS_LORD_CLAIM.finditer(text):
+                    lordship_claims += 1
+                    n = int(m.group(1))
+                    if DOMICILE[sign_of_house(lagna, n)] != planet:
+                        lordship_bad.append(f"{where}: {m.group(0)!r} but the "
+                                            f"{n}th is {sign_of_house(lagna, n)}")
+    return {"dignity_claims": dignity_claims, "lordship_claims": lordship_claims,
+            "lagnas": lagnas_with_claims, "dignity_bad": dignity_bad,
+            "lordship_bad": lordship_bad,
+            "violations": dignity_bad + lordship_bad}
 
 
 def main() -> int:
@@ -277,6 +354,68 @@ def main() -> int:
            "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"})
     check("an unknown Lagna name is simply not found, not an error",
           d.bhrigu_house_text("Nonexistent", "Sun", 1) is None)
+
+    print("\n2c. Bhrigu corpus rulership audit — no entry contradicts fixed "
+          "rulership facts")
+    check("house -> sign mapping is whole-sign and wraps past Pisces",
+          sign_of_house("Aries", 11) == "Aquarius"
+          and sign_of_house("Virgo", 1) == "Virgo"
+          and sign_of_house("Pisces", 1) == "Pisces"
+          and sign_of_house("Pisces", 11) == "Capricorn"
+          and sign_of_house("Pisces", 12) == "Aquarius")
+    # The audit must be able to fail, or a green run proves nothing: feed it
+    # the exact contradictions the first audit found, in the exact words used.
+    known_bad = {
+        "Aries": {"Mars": {11: "Exalted here — grows income"},          # Aquarius
+                  "Jupiter": {6: "Own sign here brings success"}},      # Virgo
+        "Taurus": {"Venus": {11: "In its own sign here, grows income"}},  # Pisces
+        "Leo": {"Saturn": {12: "Debilitated here — brings heavy expense"}},  # Cancer
+        "Virgo": {"Sun": {1: "In its own sign and as Lagna-lord's seat here, "
+                             "brings a frail build"},                   # Virgo
+                  "Jupiter": {6: "Enemy's sign here (Jupiter rules the 6th), "
+                                 "brings humility"}},                   # Saturn's
+        "Pisces": {"Sun": {11: "Enemy's sign here (Sun rules the 11th), "
+                               "brings growth"}},                       # Saturn's
+    }
+    audit = rulership_audit(known_bad)
+    check("the audit flags each of the seven contradictions it was written for",
+          len(audit["violations"]) == 7, "; ".join(audit["violations"]))
+    known_good = {
+        "Aries": {"Mars": {1: "In its own sign here (Mars rules the 8th here), brings vigour",
+                           10: "Exalted here — brings standing"},
+                  "Sun": {1: "Exalted and vitalised — confident"}},
+        "Taurus": {"Venus": {11: "Exalted here — grows income through hard effort"}},
+        "Leo": {"Saturn": {12: "Enemy's sign here (the Moon's) brings heavy expense; "
+                               "its aspect on the 9th (debilitated) makes fortune harder"}},
+        "Virgo": {"Sun": {1: "In Mercury's sign here (the Lagna lord's), brings a frail build"}},
+        "Pisces": {"Sun": {11: "In an enemy's sign here (Saturn rules the 11th), brings growth"}},
+    }
+    audit = rulership_audit(known_good)
+    check("the audit passes correct claims, reads only the leading clause "
+          "(a later aspect clause naming a debilitated sign is not the "
+          "placement's own dignity), and ignores claim-free entries",
+          audit["violations"] == [] and audit["dignity_claims"] == 4,
+          "; ".join(audit["violations"]) or f"{audit['dignity_claims']} claims")
+    check("Rahu and Ketu entries are outside the audit (vargas.py gives the "
+          "nodes no sign dignity)",
+          rulership_audit({"Aries": {"Rahu": {9: "Debilitated here — brings loss"},
+                                     "Ketu": {3: "Exalted here — brings gain"}}})
+          ["dignity_claims"] == 0)
+
+    real = rulership_audit(d.BHRIGU_LAGNA_HOUSE_TEXT)
+    check("every leading own-sign / exalted / debilitated claim in the real "
+          "corpus matches the graha's true rulership for that Lagna and house",
+          not real["dignity_bad"], "; ".join(real["dignity_bad"]))
+    check("every 'X rules the Nth' / 'as Nth lord' claim in the real corpus "
+          "names the true lord of that house from that Lagna",
+          not real["lordship_bad"], "; ".join(real["lordship_bad"]))
+    check("the real-corpus walk is not vacuous: it read claims from all "
+          "twelve Lagnas, and both claim kinds occur many times over",
+          len(real["lagnas"]) == 12 and real["dignity_claims"] > 200
+          and real["lordship_claims"] > 100,
+          f"{real['dignity_claims']} dignity claims, "
+          f"{real['lordship_claims']} lordship claims, "
+          f"{len(real['lagnas'])} Lagnas")
 
     print("\n3. Conjunctions — every pair sharing a sign, and only real pairs")
     conj = d.conjunctions_present(v.chart_view(chart(Sun="Aries", Mercury="Aries")))

@@ -283,7 +283,11 @@ left absent, never guessed at, and flagged if actually noticed.
   dignity call. Corrected to "enemy's sign" (Saturn), which is both the
   astronomically fixed fact and matches this same Lagna's own explicit
   "enemy Saturn" claim for the Sun's 12th house two entries later — a
-  well-grounded fix, not a guess. A few OCR losses of individual
+  well-grounded fix, not a guess. **[Correction, 2026-09-19: this fix was
+  described here but never actually made — the code shipped in the same
+  commit still said "own sign", and the 12th-house entry is the very next
+  one, not two later. It is applied now; see "Rulership audit" at the
+  end of this file.]** A few OCR losses of individual
   aspect-effect clauses (Moon's 9th house; a couple of section-header
   labels elsewhere) were written conservatively, inferring only what
   the surrounding pattern for that Lagna already established, never
@@ -294,13 +298,111 @@ left absent, never guessed at, and flagged if actually noticed.
   debilitated in Virgo; Saturn debilitated in Aries.
 
 **All twelve Lagnas of the Bhrigu per-Lagna corpus (`BHRIGU_LAGNA_HOUSE_TEXT`)
-are now complete** — Aries through Pisces, 1,293 of 1,296 possible
-entries (three genuine, documented scan-page gaps: Aries/Jupiter
-8th-10th, Taurus/Jupiter 3rd, Pisces/Ketu 2nd-4th; one further
-documented internal source contradiction left unresolved rather than
-guessed, Taurus's Jupiter 3rd house). `tests/test_delineation.py`
+are now complete** — Aries through Pisces, 1,289 of 1,296 possible
+entries (three documented gaps covering seven missing entries in all:
+Aries/Jupiter 8th-10th and Pisces/Ketu 2nd-4th are scan-page losses;
+Taurus/Jupiter 3rd is an internal source contradiction, left unresolved
+rather than guessed — so 1,296 − 7 = 1,289; an earlier revision of this
+line said 1,293, an arithmetic slip. Of the 1,289, 1,004 belong to the
+seven classical grahas and 285 to Rahu/Ketu). `tests/test_delineation.py`
 covers every Lagna's completeness (or documented gap) individually,
 and the module falls back cleanly to the Lagna-independent Brihat
 Jataka table (or, for Rahu/Ketu, raises `KeyError` rather than
 guessing) whenever a specific Lagna/planet/house combination isn't
 covered.
+
+## Rulership audit of the per-Lagna corpus (2026-09-19)
+
+**Why.** Which sign a graha owns, is exalted in or is debilitated in is
+astronomically fixed, independent of any tradition, so an entry that opens
+with a dignity claim can be checked mechanically against `vargas.py`'s
+`OWN_SIGNS` / `EXALTATION` / `DEBILITATION`. The house-to-sign step is
+whole-sign: the sign of house *h* from a Lagna is `SIGNS[(lagna_index + h - 1) % 12]`.
+
+**Method.** Every entry for the seven classical grahas (1,004 entries; the
+nodes are excluded, see below) had its *leading clause* — everything before
+the first em-dash, semicolon or sentence break — searched for "own sign",
+"exalted" or "debilitated", and each claim was checked against the real sign.
+Only the leading clause is read because the aspect clauses that follow talk
+about *other* houses' signs. Friend/enemy claims are deliberately not
+audited: they are the source's own and are reported as it states them (the
+policy already recorded under Cancer/Leo above). A second pass checked every
+"X rules the Nth" / "as Nth lord" claim (162 in the corpus) against the true
+lord of that house from that Lagna; it found nothing beyond the entries below.
+253 dignity claims across all twelve Lagnas were checked; **7 entries were wrong.**
+
+**Result — what the printed source actually says for each** (PDF page numbers,
+as in the OCR chunk markers; every one was confirmed on the rendered page
+image, not only the OCR text):
+
+| # | Lagna / graha / house (real sign) | Old text claimed | Source says | Cause | Now reads |
+|---|---|---|---|---|---|
+| 1 | Aries / Mars / 11th (Aquarius) — p. 93 | exalted | Saturn's sign; **no dignity word at all**. "Exalted" belongs to the 10th-house entry (Capricorn), and the wording bled across | paraphrase slip | "In Saturn's sign here…" (no stance invented) |
+| 2 | Aries / Jupiter / 6th (Virgo) — p. 99 | own sign | "its friend's sign", and the source names the friend as Jupiter — a misprint for Mercury, since Virgo is Mercury's. The old text misread "its friend's" as "its own" | paraphrase slip (+ a source misprint of the name) | "Friend's sign here (Mercury's)…" |
+| 3 | Taurus / Venus / 11th (Pisces) — p. 144 | own sign | an **exalted** sign (correct — Venus is exalted in Pisces). The 7th-aspect clause on the 5th correctly notes debilitation (Virgo) | paraphrase slip (own vs exalted) | "Exalted here — …" |
+| 4 | Leo / Saturn / 12th (Cancer) — p. 277 | debilitated | an enemy Moon's sign (correct). "Debilitated" appears only in the 10th-aspect clause on the 9th (Aries — correct), and the old text moved it onto the placement | paraphrase slip | "Enemy's sign here (the Moon's)…" |
+| 5 | Virgo / Sun / 1st (Virgo) — p. 291 | own sign (garbled: "…as Lagna-lord's own dispositor's seat") | Mercury's sign; **the word where a friend/neutral/enemy stance normally sits is just a plain relative pronoun**, so the source gives no stance | paraphrase slip / garbling | "In Mercury's sign here (the Lagna lord's)…" (no stance invented) |
+| 6 | Virgo / Jupiter / 6th (Aquarius) — p. 309 | own sign; "Jupiter rules the 6th" | an enemy Saturn's sign (correct; Saturn is the 6th lord for Virgo) | paraphrase slip | "In an enemy's sign here (Saturn rules the 6th)…" |
+| 7 | Pisces / Sun / 11th (Capricorn) — p. 549 | own sign; "Sun rules the 11th" | **the source itself says own sign** — a genuine rulership error in the book (the Sun owns Leo, the 6th from Pisces; the same book gets Leo right in the 12th-house entry's aspect clause) | **source error, corrected** | "In an enemy's sign here (Saturn rules the 11th)…" |
+
+Six of the seven were paraphrase slips against a source that was right; only #7
+is a defect in the printed source, and it is the only one corrected *against*
+the source under the "correct hard rulership-math errors" policy. "Enemy's
+sign" for #7 (and #6) is supported by the source itself: the same Lagna's
+12th-house Sun entry, and the Virgo Lagna's own Mercury entry, each state
+the relevant enmity/friendship explicitly, and both match the standard table.
+For #2, "friend" is the source's own stance (this book routinely calls Mercury
+a friend of Jupiter, which the BPHS table does not — a divergence reported
+faithfully, not corrected, like the others above).
+
+**#7 and the earlier "fix".** The note under Pisces above says the Sun's 11th
+entry had already been corrected to "enemy's sign". It had not. `git log -S`
+shows the own-sign string entered in the very commit that added Pisces
+(`5ecfeab`) — the same commit that wrote the note — and it was present on
+every branch, in the main checkout (clean) and in the
+`archive/local-main-pre-reconcile-2026-09-06` tag. So the fix was neither
+lost in a later commit nor applied to a different string (the neighbouring
+12th-house entry already said "Enemy's sign", which is correct for
+Aquarius): it was described but never made. The note is now annotated.
+
+**Adjacent fixes made while these entries were open** (not dignity claims —
+flagged so they can be reviewed separately):
+- *Aries / Mars / 11th:* the old text said the 7th aspect on the 5th brings
+  "success in education"; the source says a shortfall in children and
+  education. Reversed clause corrected.
+- *Leo / Saturn / 12th:* beyond the dignity word, several clauses contradicted
+  the page (it said difficulty through foreign connections where the source
+  says some gain; "home comfort" where the source says fortune and religious
+  observance). The entry was rewritten faithfully in independent wording, with
+  the source's closing summary (trouble through spouse/business, poor repute,
+  illness) restored.
+The other five entries' remaining clauses were compared with the page and
+match.
+
+**Regression test.** `tests/test_delineation.py`, section 2c, walks the whole
+corpus with the same two audits, and also proves the audit *can* fail (it
+feeds in the seven original contradictions and expects seven flags, and
+confirms it ignores aspect clauses and Rahu/Ketu). Run it with
+`C:\Astro\.venv\Scripts\python.exe -m tests.test_delineation`. Confirmed
+against unfixed `main`: it fails with exactly these seven.
+
+**Known limits — deliberately not covered, and not fixed here:**
+1. *Trailing aspect-clause dignity claims* such as "its aspect on the 7th
+   (own sign)" are not audited. A scratch check of the 56 that exist found 3
+   wrong: Leo/Venus/1st ("aspect on the 7th (own sign)", but that is Aquarius),
+   Virgo/Sun/4th ("aspect on the 10th (own sign)", but that is Gemini),
+   Scorpio/Mercury/7th ("aspect on the Lagna (own sign)", but that is Scorpio).
+   Their sources have not been read; follow-up.
+2. *Rahu/Ketu* entries: 9 of them open with "Exalted here" / "Debilitated
+   here" (e.g. Aries/Rahu/9th, Gemini/Rahu/1st), which conflicts with the
+   Taurus note above ("written without … dignity framing") and with
+   `vargas.py`'s policy of assigning the nodes no sign dignity (their
+   exaltation signs are disputed three ways). Left alone pending a decision,
+   and excluded from the audit.
+3. *Semantic drift against the source is not audited.* A rulership audit can
+   only catch contradictions with fixed facts. Entry #1 and #4 above showed
+   that clause-level drift from the printed text (reversals, moved clauses)
+   also exists; the other ~1,280 entries have not been re-compared with the
+   pages.
+4. *Deploy.* The corpus is served from `delineation.py`; the corrections reach
+   production only when this change is deployed.
