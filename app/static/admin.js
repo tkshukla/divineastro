@@ -86,6 +86,7 @@ async function boot() {
   wireManual();
   wireUsers();
   wireFeedback();
+  wireTraffic();
   wireQuestions();
 
   // Load active tab initially and prefetch background queues
@@ -95,6 +96,7 @@ async function boot() {
     loadUpi(),
     loadManual(),
     loadFeedback(),
+    loadTraffic(),
     loadKundalis(),
     loadHealth(),
   ]);
@@ -146,6 +148,7 @@ function wireTabs() {
       else if (tab === 'coupons') loadCoupons();
       else if (tab === 'users') loadUsers();
       else if (tab === 'feedback') loadFeedback();
+      else if (tab === 'traffic') loadTraffic();
       else if (tab === 'questions') loadQuestions();
       else if (tab === 'health') loadHealth();
       else if (tab === 'upi') loadUpi();
@@ -1035,6 +1038,289 @@ async function loadUpi() {
       };
     });
   });
+}
+
+/* ------------------------------------------------------------- traffic --- */
+
+// Everything below builds DOM with textContent / setAttribute — never innerHTML.
+// Source names, hosts and campaign tags arrive from outside (referrers, UTM
+// parameters), so they are untrusted text.
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+let trDays = 30;
+let trData = null;
+
+const fmt = (n) => Number(n || 0).toLocaleString('en-IN');
+const pct = (x) => (x == null ? '—' : `${(x * 100).toFixed(1)}%`);
+
+const SOURCE_NAMES = {
+  direct: 'Direct / unknown', unknown: 'Unknown / before tracking', google: 'Google', bing: 'Bing',
+  duckduckgo: 'DuckDuckGo', yahoo: 'Yahoo', yandex: 'Yandex', ecosia: 'Ecosia', facebook: 'Facebook',
+  instagram: 'Instagram', x: 'X (Twitter)', youtube: 'YouTube', whatsapp: 'WhatsApp',
+  telegram: 'Telegram', linkedin: 'LinkedIn', reddit: 'Reddit', pinterest: 'Pinterest', quora: 'Quora',
+  chatgpt: 'ChatGPT', perplexity: 'Perplexity', gemini: 'Gemini', email: 'Email', other: 'Other',
+  dev: 'Dev sign-in', microsoft: 'Microsoft', apple: 'Apple', mobile: 'Mobile', tablet: 'Tablet',
+  desktop: 'Desktop',
+};
+const niceLabel = (k) => SOURCE_NAMES[k] || k;
+
+function svgEl(tag, attrs = {}, text) {
+  const e = document.createElementNS(SVG_NS, tag);
+  Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+/* ---- stat tiles: one headline number each, not a chart ---- */
+
+function tile(label, value, sub, dot) {
+  const t = el('div', 'tile');
+  const l = el('div', 't-label');
+  if (dot) { const d = el('span', `dot dot-${dot}`); d.setAttribute('aria-hidden', 'true'); l.appendChild(d); }
+  l.appendChild(document.createTextNode(label));
+  t.append(l, el('div', 't-value', value), el('div', 't-sub', sub));
+  return t;
+}
+
+/* ---- daily columns (one measure per chart, one axis) ---- */
+
+function drawColumns(host, days, o) {
+  host.textContent = '';
+  const W = Math.max(280, host.clientWidth || 560), H = 232;
+  const m = { l: 44, r: 10, t: 24, b: 30 };
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const vals = days.map((d) => d[o.key]);
+  const peak = Math.max(0, ...vals);
+
+  // Round the top of the axis to a clean number, in whole steps (these are counts).
+  const raw = Math.max(1, Math.ceil(peak / 4));
+  const mag = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 5, 10].map((k) => k * mag).find((v) => v >= raw);
+  const top = step * 4;
+  const y = (v) => m.t + ph - (v / top) * ph;
+
+  const svg = svgEl('svg', {
+    viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img',
+    'aria-label': `${o.title}, last ${days.length} days. Peak ${peak}. A table of the numbers is below.`,
+  });
+  for (let i = 0; i <= 4; i++) {
+    const yy = y(step * i);
+    svg.appendChild(svgEl('line', { x1: m.l, x2: W - m.r, y1: yy, y2: yy, class: i === 0 ? 'viz-axis' : 'viz-grid' }));
+    svg.appendChild(svgEl('text', { x: m.l - 8, y: yy + 4, 'text-anchor': 'end' }, fmt(step * i)));
+  }
+
+  const slot = pw / days.length;
+  // <= 24px thick with 2px of air between; when 90 days are squeezed into a small card the
+  // gap drops to 1px so the bars stay a legible width instead of hairlines.
+  const gap = slot >= 8 ? 2 : 1;
+  const bw = Math.max(2, Math.min(24, slot - gap));
+  const every = Math.max(1, Math.ceil(64 / slot));           // date labels no closer than ~64px
+  const tip = el('div', 'viz-tip');
+  tip.hidden = true;
+  let peakLabelled = false;
+  const hits = [];
+  const showers = [], hiders = [];
+
+  days.forEach((d, i) => {
+    const v = d[o.key], cx = m.l + slot * i + slot / 2, h = (v / top) * ph;
+    let bar = null;
+    if (v > 0) {
+      const x = cx - bw / 2, r = Math.min(4, bw / 2, h), yy = m.t + ph - h;
+      // 4px-rounded data end, square where it meets the baseline.
+      bar = svgEl('path', {
+        d: `M${x},${m.t + ph} V${yy + r} Q${x},${yy} ${x + r},${yy} H${x + bw - r} Q${x + bw},${yy} ${x + bw},${yy + r} V${m.t + ph} Z`,
+        class: `viz-bar ${o.color}`,
+      });
+      svg.appendChild(bar);
+      if (!peakLabelled && v === peak) {                     // label only the peak, nothing else
+        peakLabelled = true;
+        svg.appendChild(svgEl('text', { x: cx, y: yy - 7, 'text-anchor': 'middle', class: 'viz-peak' }, fmt(v)));
+      }
+    }
+    if ((days.length - 1 - i) % every === 0) {
+      svg.appendChild(svgEl('text', { x: cx, y: H - 9, 'text-anchor': 'middle' }, d.label));
+    }
+
+    const noun = v === 1 ? o.one : o.many;
+    // The hit target is the whole day's column, far bigger than the bar itself.
+    const hit = svgEl('rect', {
+      x: m.l + slot * i, y: m.t, width: slot, height: ph, class: 'viz-hit', tabindex: '0',
+      'aria-label': `${d.label}: ${fmt(v)} ${noun}. ${o.detail(d)}`,
+    });
+    const show = () => {
+      tip.textContent = '';
+      tip.append(el('b', null, `${fmt(v)} ${noun}`), el('span', null, `${d.label} · ${o.detail(d)}`));
+      tip.hidden = false;
+      tip.style.left = `${Math.min(Math.max(cx, 70), W - 70)}px`;
+      tip.style.top = `${Math.max(y(v), m.t + 6)}px`;
+      if (bar) bar.classList.add('hot');
+    };
+    const hide = () => { tip.hidden = true; if (bar) bar.classList.remove('hot'); };
+    // Keyboard: each day's column is focusable and shows the same tooltip as a pointer.
+    hit.addEventListener('focus', show);
+    hit.addEventListener('blur', hide);
+    hits.push(hit);
+    showers.push(show);
+    hiders.push(hide);
+  });
+  hits.forEach((h) => svg.appendChild(h));                   // above every bar
+
+  // Pointer/touch: ONE overlay that snaps to the nearest day, so the reader aims at
+  // a date rather than at a column that may be only a few pixels wide on a phone.
+  const cover = svgEl('rect', { x: m.l, y: m.t, width: pw, height: ph, class: 'viz-cover' });
+  let cur = -1;
+  const track = (ev) => {
+    const box = svg.getBoundingClientRect();
+    const x = (ev.clientX - box.left) * (W / box.width) - m.l;
+    const i = Math.max(0, Math.min(days.length - 1, Math.floor(x / slot)));
+    if (i !== cur) { if (cur >= 0) hiders[cur](); cur = i; showers[i](); }
+  };
+  ['pointerenter', 'pointermove', 'pointerdown'].forEach((ev) => cover.addEventListener(ev, track));
+  cover.addEventListener('pointerleave', () => { if (cur >= 0) hiders[cur](); cur = -1; });
+  svg.appendChild(cover);
+
+  if (peak === 0) {
+    svg.appendChild(svgEl('text', { x: m.l + pw / 2, y: m.t + ph / 2, 'text-anchor': 'middle', class: 'viz-empty' },
+      'No data in this period yet'));
+  }
+  host.append(svg, tip);
+}
+
+/* ---- ranked horizontal bars for sources, pages, devices ---- */
+
+function barList(host, rows, o = {}) {
+  host.textContent = '';
+  if (!rows || !rows.length) { host.appendChild(el('p', 'empty', 'Nothing recorded yet.')); return; }
+  const max = Math.max(...rows.map((r) => r.count), 1);
+  const ul = el('ul', `bl${o.color === 'orange' ? ' orange' : ''}`);
+  rows.forEach((r) => {
+    const li = el('li');
+    const top = el('div', 'bl-top');
+    top.append(
+      el('span', o.mono ? 'bl-label mono' : 'bl-label', o.raw ? r.label : niceLabel(r.label)),
+      el('span', 'bl-val', o.value ? o.value(r) : `${fmt(r.count)} · ${pct(r.share)}`));
+    const track = el('div', 'bl-track');
+    const fill = el('div', 'bl-fill');
+    fill.style.width = `${Math.max(2, (r.count / max) * 100).toFixed(1)}%`;
+    track.appendChild(fill);
+    li.append(top, track);
+    ul.appendChild(li);
+  });
+  host.appendChild(ul);
+}
+
+function renderDailyTable(days) {
+  const box = $('#tr-table');
+  box.textContent = '';
+  const t = el('table', 'admin-table');
+  const head = el('tr');
+  ['Date', 'Visitors', 'Page views', 'New users'].forEach((h) => head.appendChild(el('th', null, h)));
+  t.appendChild(el('thead')).appendChild(head);
+  const body = el('tbody');
+  [...days].reverse().forEach((d) => {
+    const tr = el('tr');
+    tr.append(el('td', null, d.date), el('td', null, fmt(d.visitors)),
+      el('td', null, fmt(d.pageviews)), el('td', null, fmt(d.new_users)));
+    body.appendChild(tr);
+  });
+  t.appendChild(body);
+  box.appendChild(t);
+}
+
+function renderTraffic(d) {
+  const tot = d.totals, w = d.windows;
+  const tiles = $('#tr-tiles');
+  tiles.textContent = '';
+  tiles.append(
+    tile('Visitors', fmt(tot.visitors), `today ${fmt(w.today.visitors)}`, 'blue'),
+    tile('Page views', fmt(tot.pageviews),
+      tot.visitors ? `${(tot.pageviews / tot.visitors).toFixed(1)} per visitor` : 'no visits yet'),
+    tile('New users', fmt(tot.new_users), `today ${fmt(w.today.new_users)} · ${fmt(d.users_total)} in all`, 'orange'),
+    tile('Sign-up rate', pct(tot.signup_rate), 'new users ÷ visitors'),
+    tile('On the site now', fmt(d.live_now), 'in the last 5 minutes'));
+
+  const since = d.tracking_since
+    ? `Visit tracking began on ${d.tracking_since}; earlier visits were not recorded (new-user counts go back further, since they come from sign-up dates). `
+    : 'No visits have been recorded yet. Load the public site in a private window to see the first one — your own signed-in visits are never counted. ';
+  $('#tr-note').textContent = `${since}A visitor is counted once per day, so a multi-day total is a sum of daily visitors. ` +
+    'Bots, Do-Not-Track requests and your own visits are excluded; no IP address or browser string is stored. ' +
+    'Only full page loads are counted, not clicks inside the app.';
+
+  const days = d.daily;
+  const visitorsDetail = (x) => `${fmt(x.pageviews)} page views · ${fmt(x.new_users)} new users`;
+  const newDetail = (x) => `${fmt(x.visitors)} visitors`;
+  const draw = () => {
+    drawColumns($('#chart-visitors'), days,
+      { key: 'visitors', color: 'blue', title: 'Visitors per day', one: 'visitor', many: 'visitors', detail: visitorsDetail });
+    drawColumns($('#chart-new'), days,
+      { key: 'new_users', color: 'orange', title: 'New users per day', one: 'new user', many: 'new users', detail: newDetail });
+  };
+  draw();
+  ['#chart-visitors', '#chart-new'].forEach((s) => { $(s)._redraw = draw; });
+
+  barList($('#bl-sources'), d.sources.filter((r) => r.label !== 'internal'));
+  barList($('#bl-signup'), d.signup_sources, { color: 'orange' });
+  barList($('#bl-pages'), d.pages, {
+    raw: true, mono: true,
+    value: (r) => `${fmt(r.count)} views · ${fmt(r.visitors)} visitors`,
+  });
+  barList($('#bl-devices'), d.devices);
+  barList($('#bl-providers'), d.providers, { color: 'orange' });
+  barList($('#bl-campaigns'), d.campaigns, { raw: true });
+  renderDailyTable(days);
+}
+
+function fillOverviewCounters(d) {
+  $('#m-vis-today').textContent = fmt(d.windows.today.visitors);
+  $('#m-new-today').textContent = fmt(d.windows.today.new_users);
+  $('#m-live').textContent = fmt(d.live_now);
+}
+
+async function loadTraffic() {
+  const root = $('#traffic-root');
+  root.classList.add('is-loading');               // hold the frame while refetching — no layout jump
+  try {
+    trData = await api(`/api/admin/traffic?days=${trDays}`);
+    renderTraffic(trData);
+    fillOverviewCounters(trData);
+  } catch (e) {
+    console.error('Failed to load traffic:', e);
+    $('#tr-note').textContent = `Could not load traffic: ${e.message}`;
+  } finally {
+    root.classList.remove('is-loading');
+  }
+}
+
+function wireTraffic() {
+  $$('#tr-range .chip').forEach((b) => {
+    b.onclick = () => {
+      trDays = Number(b.dataset.days);
+      $$('#tr-range .chip').forEach((x) => {
+        x.classList.toggle('on', x === b);
+        x.setAttribute('aria-pressed', String(x === b));
+      });
+      loadTraffic();
+    };
+  });
+  // Charts are drawn at their real pixel width, so redraw when the width changes
+  // (window resize, or the tab becoming visible for the first time).
+  if ('ResizeObserver' in window) {
+    let raf = 0;
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        ['#chart-visitors', '#chart-new'].forEach((s) => { const h = $(s); if (h && h._redraw) h._redraw(); });
+      });
+    });
+    ['#chart-visitors', '#chart-new'].forEach((s) => ro.observe($(s)));
+  }
 }
 
 /* ------------------------------------------------------ manual order ----- */

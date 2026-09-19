@@ -64,6 +64,7 @@
 <main id="panel" hidden>
   <nav class="admin-tabs">
     <button class="atab active" data-tab="metrics">&#128200; Overview</button>
+    <button class="atab" data-tab="traffic">&#127760; Traffic</button>
     <button class="atab" data-tab="coupons">&#127991; Coupons <span class="count" id="c-coupons"></span></button>
     <button class="atab" data-tab="upi">&#128179; UPI Queue <span class="count" id="c-upi"></span></button>
     <button class="atab" data-tab="manual">&#10133; Manual Order</button>
@@ -101,6 +102,18 @@
         <div class="stat-val" id="m-questions">0</div>
         <div class="stat-label">AI Questions</div>
       </div>
+      <div class="stat-card">
+        <div class="stat-val" id="m-vis-today">0</div>
+        <div class="stat-label">Visitors Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="m-new-today">0</div>
+        <div class="stat-label">New Users Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="m-live">0</div>
+        <div class="stat-label">On the site now</div>
+      </div>
     </div>
 
     <div class="admin-section-grid">
@@ -112,6 +125,52 @@
         <h3>Recent Transactions</h3>
         <div id="recent-orders-list" class="table-wrap"></div>
       </div>
+    </div>
+  </section>
+
+  <!-- ============ Traffic ============ -->
+  <section class="apane" id="pane-traffic">
+    <div class="viz" id="traffic-root">
+      <div class="card">
+        <div class="tr-head">
+          <div>
+            <h3 style="margin:0 0 4px;">Traffic &amp; new users</h3>
+            <p class="pane-help" style="margin:0;">Who is visiting, who is signing up, and where they come from.</p>
+          </div>
+          <div class="chips" id="tr-range" role="group" aria-label="Date range">
+            <button type="button" class="chip" data-days="7" aria-pressed="false">Last 7 days</button>
+            <button type="button" class="chip on" data-days="30" aria-pressed="true">Last 30 days</button>
+            <button type="button" class="chip" data-days="90" aria-pressed="false">Last 90 days</button>
+          </div>
+        </div>
+        <div class="tiles" id="tr-tiles"></div>
+        <p class="pane-help" id="tr-note" style="margin:14px 0 0;"></p>
+      </div>
+
+      <div class="tr-grid">
+        <div class="card">
+          <h4 class="tr-title"><span class="dot dot-blue" aria-hidden="true"></span> Visitors per day</h4>
+          <div class="chart" id="chart-visitors"></div>
+        </div>
+        <div class="card">
+          <h4 class="tr-title"><span class="dot dot-orange" aria-hidden="true"></span> New users per day</h4>
+          <div class="chart" id="chart-new"></div>
+        </div>
+      </div>
+
+      <div class="tr-grid">
+        <div class="card"><h4 class="tr-title">Where visitors come from</h4><div id="bl-sources"></div></div>
+        <div class="card"><h4 class="tr-title">Where new users came from</h4><div id="bl-signup"></div></div>
+        <div class="card"><h4 class="tr-title">Top pages</h4><div id="bl-pages"></div></div>
+        <div class="card"><h4 class="tr-title">Devices</h4><div id="bl-devices"></div></div>
+        <div class="card"><h4 class="tr-title">How new users signed in</h4><div id="bl-providers"></div></div>
+        <div class="card"><h4 class="tr-title">Campaigns (tagged links)</h4><div id="bl-campaigns"></div></div>
+      </div>
+
+      <details class="card tr-table">
+        <summary>View the daily numbers as a table</summary>
+        <div class="table-wrap" id="tr-table"></div>
+      </details>
     </div>
   </section>
 
