@@ -1051,7 +1051,9 @@ let trDays = 30;
 let trData = null;
 
 const fmt = (n) => Number(n || 0).toLocaleString('en-IN');
-const pct = (x) => (x == null ? '—' : `${(x * 100).toFixed(1)}%`);
+// A share can't exceed 100%. A sign-up rate can (more sign-ups than TRACKED visitors, e.g. visitors
+// on Do-Not-Track) — say so plainly instead of printing a meaningless 575%.
+const pct = (x) => (x == null ? '—' : x > 1 ? '>100%' : `${(x * 100).toFixed(1)}%`);
 
 const SOURCE_NAMES = {
   direct: 'Direct / unknown', unknown: 'Unknown / before tracking', google: 'Google', bing: 'Bing',
@@ -1243,7 +1245,9 @@ function renderTraffic(d) {
     tile('Page views', fmt(tot.pageviews),
       tot.visitors ? `${(tot.pageviews / tot.visitors).toFixed(1)} per visitor` : 'no visits yet'),
     tile('New users', fmt(tot.new_users), `today ${fmt(w.today.new_users)} · ${fmt(d.users_total)} in all`, 'orange'),
-    tile('Sign-up rate', pct(tot.signup_rate), 'new users ÷ visitors'),
+    tile('Sign-up rate', pct(tot.signup_rate),
+      d.tracking_since && d.tracking_since > d.range.from
+        ? `new users ÷ visitors, since ${d.tracking_since}` : 'new users ÷ visitors'),
     tile('On the site now', fmt(d.live_now), 'in the last 5 minutes'));
 
   const since = d.tracking_since

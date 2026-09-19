@@ -312,12 +312,30 @@ def _top(counter: Counter, k: int = 8) -> list[dict]:
     return rows
 
 
-def _totals(daily: list[dict]) -> dict:
+def signup_rate(daily: list[dict], since: str | None) -> float | None:
+    """New users ÷ visitors, counted ONLY over days that visit tracking covered.
+
+    New-user counts come from sign-up dates and go back as far as the data does,
+    but visitors only exist from the day tracking began. Dividing all of a
+    window's new users by the few days of visitors we have gives nonsense (46 new
+    users over 30 days ÷ 3 visitors = "1533%"), and it would stay wrong for weeks.
+    So both sides are restricted to days on or after `since` (ISO date). None until
+    there is at least one tracked visitor.
+    """
+    if not since:
+        return None
+    covered = [d for d in daily if d["date"] >= since]
+    v = sum(d["visitors"] for d in covered)
+    u = sum(d["new_users"] for d in covered)
+    return round(u / v, 4) if v else None
+
+
+def _totals(daily: list[dict], since: str | None = None) -> dict:
     v = sum(d["visitors"] for d in daily)
     p = sum(d["pageviews"] for d in daily)
     u = sum(d["new_users"] for d in daily)
     return {"visitors": v, "pageviews": p, "new_users": u,
-            "signup_rate": round(u / v, 4) if v else None}
+            "signup_rate": signup_rate(daily, since)}
 
 
 def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict:
@@ -368,6 +386,9 @@ def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict
                 signup_campaigns[camp] += 1
             providers[provider or "unknown"] += 1
 
+    since = db.execute(select(func.min(Visit.ts))).scalar_one()
+    since_day = _local_day(since) if since else None
+
     daily = []
     for i in range(n):
         day = today - dt.timedelta(days=n - 1 - i)
@@ -380,8 +401,12 @@ def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict
         ds = [today - dt.timedelta(days=i) for i in range(k)]
         v, p, u = (sum(len(per_day_visitors.get(d, ())) for d in ds),
                    sum(pageviews.get(d, 0) for d in ds), sum(new_by_day.get(d, 0) for d in ds))
+        # the rate only compares days that tracking covered (see signup_rate)
+        tracked = [d for d in ds if since_day and d >= since_day]
+        cv = sum(len(per_day_visitors.get(d, ())) for d in tracked)
+        cu = sum(new_by_day.get(d, 0) for d in tracked)
         return {"visitors": v, "pageviews": p, "new_users": u,
-                "signup_rate": round(u / v, 4) if v else None}
+                "signup_rate": round(cu / cv, 4) if cv else None}
 
     src_counter: Counter = Counter()
     dev_counter: Counter = Counter()
@@ -396,14 +421,13 @@ def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict
     live_cut = now - dt.timedelta(minutes=5)
     live_now = db.execute(select(func.count(func.distinct(Visit.visitor)))
                           .where(Visit.ts >= live_cut)).scalar_one() or 0
-    since = db.execute(select(func.min(Visit.ts))).scalar_one()
     users_total = db.execute(select(func.count(User.id)).where(
         or_(User.signup_source.is_(None), User.signup_source != "manual"))).scalar_one() or 0
 
     return {
         "range": {"days": n, "from": daily[0]["date"], "to": daily[-1]["date"], "tz": "Asia/Kolkata"},
         "windows": {"today": window(1), "d7": window(7), "d30": window(30)},
-        "totals": _totals(daily),
+        "totals": _totals(daily, since_day.isoformat() if since_day else None),
         "live_now": live_now,
         "daily": daily,
         "sources": _top(src_counter),
@@ -414,6 +438,6 @@ def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict
         "campaigns": _top(camp_counter, 6),
         "pages": [{"label": p, "count": c, "visitors": len(path_visitors[p])}
                   for p, c in path_views.most_common(8)],
-        "tracking_since": _local_day(since).isoformat() if since else None,
+        "tracking_since": since_day.isoformat() if since_day else None,
         "users_total": users_total,
     }
