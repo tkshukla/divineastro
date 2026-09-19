@@ -846,7 +846,8 @@ async function openCouponAdmin() {
           ${c.expires_at ? escapeHtml(c.expires_at.slice(0, 10)) : "—"}
         </div>
         <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-          <input class="ed-value" type="number" min="1" value="${c.value}"
+          <input class="ed-value" type="number" min="1"
+                 value="${c.kind === "flat" ? c.value / 100 : c.value}"
                  style="width:90px;margin-bottom:0" aria-label="${escapeHtml(at("cValue"))}">
           <input class="ed-total" type="number" min="1" value="${c.max_redemptions ?? ""}"
                  placeholder="${escapeHtml(at("cTotalLimit"))}"
@@ -872,7 +873,9 @@ async function openCouponAdmin() {
             const patch = b.dataset.act === "toggle"
               ? { active: !coupon.active }
               : {
-                  value: Number(row.querySelector(".ed-value").value),
+                  value: coupon.kind === "flat"
+                    ? Math.round(Number(row.querySelector(".ed-value").value) * 100)
+                    : Number(row.querySelector(".ed-value").value),
                   max_redemptions: row.querySelector(".ed-total").value === ""
                     ? null : Number(row.querySelector(".ed-total").value),
                 };
@@ -893,6 +896,14 @@ async function openCouponAdmin() {
     return raw === "" ? fallback : Number(raw);
   };
 
+  // Say which unit the number is in — flat is rupees, percent is %, bonus is a count.
+  const ncKind = back.querySelector("#nc-kind");
+  ncKind.onchange = () => {
+    const unit = { percent: " (%)", flat: " (₹)", extra_credits: "" }[ncKind.value] || "";
+    back.querySelector('label[for="nc-value"]').textContent = at("cValue") + unit;
+  };
+  ncKind.onchange();
+
   back.querySelector("#nc-create").onclick = async () => {
     err.hidden = true;
     const maxOff = num("#nc-max");
@@ -900,7 +911,9 @@ async function openCouponAdmin() {
       code: back.querySelector("#nc-code").value.trim().toUpperCase(),
       description: back.querySelector("#nc-desc").value.trim(),
       kind: back.querySelector("#nc-kind").value,
-      value: num("#nc-value", 0),
+      // Flat discounts are held in paise; the field is entered in rupees.
+      value: back.querySelector("#nc-kind").value === "flat"
+        ? Math.round(num("#nc-value", 0) * 100) : num("#nc-value", 0),
       min_amount_paise: Math.round(num("#nc-min", 0) * 100),
       max_discount_paise: maxOff === null ? null : Math.round(maxOff * 100),
       applies_to: back.querySelector("#nc-applies").value,
