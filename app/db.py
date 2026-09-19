@@ -114,6 +114,11 @@ class User(Base):
     blocked_at: Mapped[dt.datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True, default=None)
     blocked_by: Mapped[int | None] = mapped_column(Integer, nullable=True, default=None)
+    # First-touch attribution, stamped once at sign-up from the visitor's
+    # original source (see analytics.py). NULL for accounts that pre-date it;
+    # "manual" for a customer an admin recorded by hand (not a site sign-up).
+    signup_source: Mapped[str | None] = mapped_column(String(60), nullable=True, default=None)
+    signup_campaign: Mapped[str | None] = mapped_column(String(80), nullable=True, default=None)
 
     entries: Mapped[list["CreditEntry"]] = relationship(back_populates="user")
     births: Mapped[list["BirthProfile"]] = relationship(back_populates="user")
@@ -183,6 +188,29 @@ class CreditEntry(Base):
 # --------------------------------------------------------------------------
 # Questions asked (also the source for the PDF export)
 # --------------------------------------------------------------------------
+
+class Visit(Base):
+    """One page load — the raw material for the admin Traffic panel.
+
+    Deliberately holds NO IP address, NO user-agent string and no user id: a
+    visit is a timestamp, a page, where it came from, a device class and a
+    `visitor` hash. The hash is HMAC(secret, date|ip|user-agent) truncated, so
+    the same person is recognised within a day (to count them once) but cannot
+    be linked from one day to the next, and the IP cannot be recovered from it.
+    """
+
+    __tablename__ = "visits"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    ts: Mapped[dt.datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, index=True)
+    path: Mapped[str] = mapped_column(String(200), default="/")
+    source: Mapped[str] = mapped_column(String(60), default="direct")     # google, whatsapp, ...
+    medium: Mapped[str] = mapped_column(String(40), default="")           # utm_medium
+    campaign: Mapped[str] = mapped_column(String(80), default="")         # utm_campaign
+    device: Mapped[str] = mapped_column(String(10), default="desktop")    # mobile|tablet|desktop
+    visitor: Mapped[str] = mapped_column(String(16), default="")
+
 
 FEEDBACK_CATEGORIES = ("general", "bug", "answers", "payments", "idea", "other")
 FEEDBACK_STATUSES = ("new", "read", "resolved")

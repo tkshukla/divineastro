@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from . import auth, billing, coupons, mail
+from . import analytics, auth, billing, coupons, mail
 from .db import (
     BirthProfile, Coupon, CouponKind, CouponRedemption, CreditEntry, EntryKind,
     Feedback, FulfilStatus, Order, OrderStatus, QuestionLog, User, balance, grant,
@@ -142,7 +142,8 @@ def auth_providers() -> dict:
 
 
 @router.post("/auth/dev")
-def dev_login(body: dict, response: Response, db: Session = Depends(get_db)) -> dict:
+def dev_login(body: dict, request: Request, response: Response,
+              db: Session = Depends(get_db)) -> dict:
     """Sign in without a real provider. Only for local development and tests.
 
     Gated behind ASTRO_DEV_LOGIN=1 and refuses to run when cookies are marked
@@ -155,6 +156,8 @@ def dev_login(body: dict, response: Response, db: Session = Depends(get_db)) -> 
         "sub": f"dev:{email}", "email": email, "email_verified": True,
         "name": body.get("name") or email.split("@")[0],
     })
+    if created:
+        analytics.attribute_signup(db, user, request)
     auth.issue_session(response, user)
     return {"user": _user_dict(db, user), "created": created}
 
@@ -182,6 +185,8 @@ async def oauth_callback(provider: str, request: Request,
         claims = await client.parse_id_token(request, token)
 
     user, created = auth.upsert_user(db, provider, dict(claims))
+    if created:
+        analytics.attribute_signup(db, user, request)
     target = request.session.pop("post_login", "/") or "/"
     response = RedirectResponse(url=f"{target}{'&' if '?' in target else '?'}welcome="
                                     f"{'1' if created else '0'}", status_code=303)
@@ -617,7 +622,8 @@ def _manual_customer(db: Session, email: str, name: str, phone: str) -> tuple[Us
         return user, False
 
     user = User(email=email, name=name.strip()[:120], phone=phone,
-                provider="manual", provider_sub=f"manual:{email or phone}")
+                provider="manual", provider_sub=f"manual:{email or phone}",
+                signup_source="manual")      # recorded by an admin, not a site sign-up
     db.add(user)
     db.flush()
     if email:     # same welcome gift upsert_user gives a first sign-in

@@ -14,10 +14,13 @@ from __future__ import annotations
 
 import os
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import HTMLResponse
 
+from . import analytics
+
 router = APIRouter()
+_COUNT = [Depends(analytics.page_visit)]   # count public page loads (see analytics.py)
 
 BRAND = os.environ.get("ASTRO_BRAND", "Divine Astro")
 SITE = os.environ.get("ASTRO_SITE_URL", "https://divineastro.org")
@@ -104,7 +107,7 @@ _SHELL = """<!DOCTYPE html>
   {body}
 </div></body></html>"""
 
-UPDATED = "16 August 2026"
+UPDATED = "20 September 2026"
 
 
 def _page(title: str, body: str) -> HTMLResponse:
@@ -142,7 +145,7 @@ def site_details() -> dict:
     }
 
 
-@router.get("/terms", response_class=HTMLResponse)
+@router.get("/terms", response_class=HTMLResponse, dependencies=_COUNT)
 def terms() -> HTMLResponse:
     return _page("Terms of Service", f"""
 {DISCLAIMER}
@@ -202,7 +205,7 @@ have exclusive jurisdiction.</p>
 {_source_note()}""")
 
 
-@router.get("/privacy", response_class=HTMLResponse)
+@router.get("/privacy", response_class=HTMLResponse, dependencies=_COUNT)
 def privacy() -> HTMLResponse:
     return _page("Privacy Policy", f"""
 <p>This policy explains what {BRAND} collects, why, and what you can ask us to
@@ -224,6 +227,15 @@ do about it. It is written to meet the Digital Personal Data Protection Act,
       UPI or bank details</strong>; those go directly to the payment gateway.</li>
   <li><strong>Basic technical logs</strong> — IP address and browser, kept
       briefly for security and abuse prevention.</li>
+  <li><strong>Anonymous visit statistics</strong> — which public page was
+      opened, where the visitor came from (for example Google or a shared
+      link), and whether it was a phone or a computer. <strong>We do not store
+      your IP address or browser details for this:</strong> a one-way code that
+      changes every day is used only to count you once a day. One small cookie
+      remembers where you first arrived from, so we can tell which sources bring
+      people who sign up. We do not follow you across other websites, we
+      honour Do&nbsp;Not&nbsp;Track and Global&nbsp;Privacy&nbsp;Control, and
+      these statistics are deleted after about 13 months.</li>
 </ul>
 
 <h2>Why we collect it</h2>
@@ -263,7 +275,7 @@ sign-in. We do not use advertising or third-party tracking cookies.</p>
 their data.</p>""")
 
 
-@router.get("/refund", response_class=HTMLResponse)
+@router.get("/refund", response_class=HTMLResponse, dependencies=_COUNT)
 def refund() -> HTMLResponse:
     return _page("Refund &amp; Cancellation Policy", f"""
 <p>We would rather resolve a problem than argue about it. If something has gone
@@ -301,7 +313,7 @@ days</strong> of approval. The gateway may take a further few days to show it on
 your statement.</p>""")
 
 
-@router.get("/contact", response_class=HTMLResponse)
+@router.get("/contact", response_class=HTMLResponse, dependencies=_COUNT)
 def contact() -> HTMLResponse:
     return _page("Contact Us", f"""
 <p>We are a small team and we read everything.</p>
