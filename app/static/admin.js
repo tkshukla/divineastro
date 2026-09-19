@@ -254,10 +254,14 @@ function wireCoupons() {
 
     const skus = $$('#c-skus option:checked').map((o) => o.value);
     const until = $('#c-until').value;
+    const kindVal = $('#c-kind').value;
+    // The server holds a flat discount in paise (like every other amount);
+    // the field is labelled in rupees, so convert — otherwise "100" is ₹1.
+    const rawValue = Number($('#c-value').value);
     const body = {
       code: $('#c-code').value,
-      kind: $('#c-kind').value,
-      value: Number($('#c-value').value),
+      kind: kindVal,
+      value: kindVal === 'flat' ? Math.round(rawValue * 100) : rawValue,
       applies_to: skus.length ? skus.join(',') : 'all',
       max_redemptions: $('#c-max').value ? Number($('#c-max').value) : null,
       max_per_user: Number($('#c-per').value || 1),
