@@ -66,6 +66,7 @@
     <button class="atab active" data-tab="metrics">&#128200; Overview</button>
     <button class="atab" data-tab="coupons">&#127991; Coupons <span class="count" id="c-coupons"></span></button>
     <button class="atab" data-tab="upi">&#128179; UPI Queue <span class="count" id="c-upi"></span></button>
+    <button class="atab" data-tab="manual">&#10133; Manual Order</button>
     <button class="atab" data-tab="kundali">&#128220; Kundali Queue <span class="count" id="c-kundali"></span></button>
     <button class="atab" data-tab="users">&#128101; Users</button>
     <button class="atab" data-tab="questions">&#128172; Questions</button>
@@ -185,6 +186,125 @@
       grants the credits, and nothing else does.
     </p>
     <div id="upi-list" class="rows"></div>
+  </section>
+
+  <!-- ============ Manual orders ============ -->
+  <section class="apane" id="pane-manual">
+    <p class="pane-help">
+      Record a sale that happened <strong>outside the site</strong> &mdash; cash,
+      a UPI transfer to your own handle, a bank deposit. It is saved as a
+      <em>paid</em> order: question credits are added to the customer&rsquo;s
+      account immediately, and a hand-written kundali goes straight into the
+      Kundali Queue. <strong>Only record money you have already received.</strong>
+    </p>
+
+    <form id="mo-form" class="coupon-form card" autocomplete="off">
+      <h3>Customer</h3>
+      <div class="crow">
+        <div class="field">
+          <label for="mo-email">Email <span class="opt">or phone</span></label>
+          <input id="mo-email" type="email" inputmode="email" placeholder="customer@example.com" />
+        </div>
+        <div class="field">
+          <label for="mo-phone">Phone <span class="opt">or email</span></label>
+          <input id="mo-phone" type="tel" inputmode="tel" placeholder="98xxxxxxxx" />
+        </div>
+        <div class="field">
+          <label for="mo-name">Name</label>
+          <input id="mo-name" placeholder="Full name" />
+        </div>
+      </div>
+      <p class="pane-help" id="mo-cust-hint" style="margin:0 0 14px;" hidden></p>
+
+      <h3>Order</h3>
+      <div class="crow">
+        <div class="field">
+          <label for="mo-sku">Product</label>
+          <select id="mo-sku"></select>
+        </div>
+        <div class="field">
+          <label for="mo-amount">Amount received (&#8377;)</label>
+          <input id="mo-amount" type="number" min="0" step="1" inputmode="numeric" required />
+        </div>
+        <div class="field">
+          <label for="mo-method">Paid by</label>
+          <select id="mo-method">
+            <option value="upi">UPI</option>
+            <option value="cash">Cash</option>
+            <option value="bank">Bank transfer</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="crow" id="mo-custom" hidden>
+        <div class="field">
+          <label for="mo-title">What was sold</label>
+          <input id="mo-title" maxlength="160" placeholder="e.g. Muhurat consultation" />
+        </div>
+        <div class="field">
+          <label for="mo-credits">Question credits to add <span class="opt">0 = none</span></label>
+          <input id="mo-credits" type="number" min="0" max="10000" value="0" inputmode="numeric" />
+        </div>
+      </div>
+      <div class="crow">
+        <div class="field">
+          <label for="mo-ref">Reference <span class="opt">UTR tail, receipt no.</span></label>
+          <input id="mo-ref" maxlength="60" />
+        </div>
+        <div class="field">
+          <label for="mo-note">Internal note <span class="opt">optional</span></label>
+          <input id="mo-note" maxlength="200" placeholder="e.g. paid at the shop" />
+        </div>
+      </div>
+
+      <div id="mo-birth" hidden>
+        <h3>Birth details <span class="opt" id="mo-birth-opt">needed for the astrologer</span></h3>
+        <div class="crow">
+          <div class="field">
+            <label for="mo-bname">Name on the chart</label>
+            <input id="mo-bname" placeholder="defaults to the customer name" />
+          </div>
+          <div class="field">
+            <label for="mo-bdate">Date of birth</label>
+            <input id="mo-bdate" type="date" />
+          </div>
+          <div class="field">
+            <label for="mo-btime">Time of birth</label>
+            <input id="mo-btime" type="time" />
+          </div>
+          <div class="field">
+            <label for="mo-bgender">Gender <span class="opt">optional</span></label>
+            <select id="mo-bgender">
+              <option value="">Not stated</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="field mo-place">
+          <label for="mo-place">Birth place</label>
+          <input id="mo-place" placeholder="Start typing a city, then pick it from the list" />
+          <div id="mo-place-results" class="mo-results" hidden></div>
+          <p class="pane-help" id="mo-place-picked" style="margin:6px 0 0;" hidden></p>
+        </div>
+      </div>
+
+      <label class="inline-check" id="mo-force-wrap" hidden>
+        <input type="checkbox" id="mo-force" /> record anyway (this looks like a repeat of an order just entered)
+      </label>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+        <button type="submit" class="primary"><span class="label">Record paid order</span></button>
+        <button type="reset" class="ghost" id="mo-reset">Clear</button>
+      </div>
+      <p id="mo-error" class="error" hidden></p>
+      <p id="mo-ok" class="pane-help mo-ok" hidden></p>
+    </form>
+
+    <div class="card" style="margin-top:16px;">
+      <h3 style="margin:0 0 12px;">Recent manual orders</h3>
+      <div id="mo-list" class="rows"></div>
+    </div>
   </section>
 
   <!-- ============ Kundali fulfilment ============ -->

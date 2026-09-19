@@ -83,6 +83,7 @@ async function boot() {
   $('#panel').hidden = false;
   wireTabs();
   wireCoupons();
+  wireManual();
   wireUsers();
   wireQuestions();
 
@@ -91,6 +92,7 @@ async function boot() {
     loadMetrics(),
     loadCoupons(),
     loadUpi(),
+    loadManual(),
     loadKundalis(),
     loadHealth(),
   ]);
@@ -144,6 +146,7 @@ function wireTabs() {
       else if (tab === 'questions') loadQuestions();
       else if (tab === 'health') loadHealth();
       else if (tab === 'upi') loadUpi();
+      else if (tab === 'manual') loadManual();
       else if (tab === 'kundali') loadKundalis();
     };
   });
@@ -582,6 +585,173 @@ async function loadUpi() {
   });
 }
 
+/* ------------------------------------------------------ manual order ----- */
+
+const MO_BIRTH_KINDS = new Set(['kundali', 'kundali_book', 'single_question', 'custom']);
+let moProducts = {};          // sku -> product, from /api/products
+let moPlace = null;           // the city picked from the search list
+
+const moKind = () => ($('#mo-sku').value === 'custom' ? 'custom'
+  : (moProducts[$('#mo-sku').value] || {}).kind);
+
+function moSyncProduct(resetAmount) {
+  const sku = $('#mo-sku').value;
+  const kind = moKind();
+  $('#mo-custom').hidden = sku !== 'custom';
+  $('#mo-birth').hidden = !MO_BIRTH_KINDS.has(kind);
+  $('#mo-birth-opt').textContent =
+    kind === 'kundali' || kind === 'kundali_book' ? 'needed for the astrologer' : 'optional';
+  // Default the amount to the list price, but never overwrite one typed by hand.
+  if (resetAmount) {
+    const p = moProducts[sku];
+    $('#mo-amount').value = p ? p.rupees : '';
+  }
+}
+
+function moPickPlace(p) {
+  moPlace = p;
+  $('#mo-place').value = p.label;
+  $('#mo-place-results').hidden = true;
+  const picked = $('#mo-place-picked');
+  picked.textContent = `✓ ${p.label} · ${p.latitude.toFixed(2)}, ${p.longitude.toFixed(2)} · ${p.timezone}`;
+  picked.hidden = false;
+}
+
+function wireManual() {
+  const form = $('#mo-form');
+  let amountTouched = false;
+
+  api('/api/products').then(({ products }) => {
+    moProducts = Object.fromEntries((products || []).map((p) => [p.sku, p]));
+    $('#mo-sku').innerHTML = (products || [])
+      .map((p) => `<option value="${esc(p.sku)}">${esc(p.title)} — ${rupees(p.rupees)}</option>`)
+      .join('') + '<option value="custom">Custom / other…</option>';
+    moSyncProduct(true);
+  }).catch(() => {});
+
+  $('#mo-sku').onchange = () => moSyncProduct(!amountTouched);
+  $('#mo-amount').oninput = () => { amountTouched = true; };
+  $('#mo-email').oninput = () => { $('#mo-force-wrap').hidden = true; };
+
+  let timer = null;
+  $('#mo-place').oninput = () => {
+    moPlace = null;
+    $('#mo-place-picked').hidden = true;
+    const q = $('#mo-place').value.trim();
+    clearTimeout(timer);
+    const box = $('#mo-place-results');
+    if (q.length < 2) { box.hidden = true; return; }
+    timer = setTimeout(async () => {
+      try {
+        const { results } = await api(`/api/places?q=${encodeURIComponent(q)}&limit=8`);
+        box.innerHTML = results.length
+          ? results.map((p, i) => `<button type="button" data-i="${i}">${esc(p.label)}</button>`).join('')
+          : '<span class="muted">No matching city.</span>';
+        box.hidden = false;
+        $$('button', box).forEach((b) => { b.onclick = () => moPickPlace(results[Number(b.dataset.i)]); });
+      } catch { box.hidden = true; }
+    }, 250);
+  };
+
+  form.onreset = () => {
+    // reset fires before the fields clear; defer so the defaults are re-derived
+    setTimeout(() => {
+      amountTouched = false; moPlace = null;
+      $('#mo-place-results').hidden = true;
+      $('#mo-place-picked').hidden = true;
+      $('#mo-force-wrap').hidden = true;
+      $('#mo-error').hidden = true;
+      moSyncProduct(true);
+    }, 0);
+  };
+
+  form.onsubmit = async (ev) => {
+    ev.preventDefault();
+    const err = $('#mo-error'), ok = $('#mo-ok'), btn = $('button[type=submit]', form);
+    err.hidden = ok.hidden = true;
+
+    const email = $('#mo-email').value.trim();
+    const phone = $('#mo-phone').value.trim();
+    if (!email && !phone) return showErr('Enter the customer’s email or phone number.');
+    const amount = Math.round(parseFloat($('#mo-amount').value) * 100);
+    if (!Number.isFinite(amount) || amount < 0) return showErr('Enter the amount received.');
+
+    const sku = $('#mo-sku').value;
+    const body = {
+      email, phone, name: $('#mo-name').value.trim(), sku, amount_paise: amount,
+      method: $('#mo-method').value, reference: $('#mo-ref').value.trim(),
+      note: $('#mo-note').value.trim(), force: $('#mo-force').checked,
+    };
+    if (sku === 'custom') {
+      body.title = $('#mo-title').value.trim();
+      body.credits = Number($('#mo-credits').value || 0);
+      if (!body.title) return showErr('Say what was sold.');
+    }
+
+    // Birth details ride along only when the section is shown and filled in.
+    const date = $('#mo-bdate').value, time = $('#mo-btime').value;
+    if (!$('#mo-birth').hidden && (date || time || $('#mo-place').value.trim())) {
+      if (!date) return showErr('Enter the date of birth, or clear the birth section.');
+      if (!moPlace) return showErr('Pick the birth place from the list so it has coordinates.');
+      body.birth = {
+        name: $('#mo-bname').value.trim() || body.name, date,
+        time: time || '12:00', time_known: Boolean(time),
+        gender: $('#mo-bgender').value, place: moPlace.label,
+        latitude: moPlace.latitude, longitude: moPlace.longitude,
+        timezone: moPlace.timezone,
+      };
+    }
+
+    btn.disabled = true;               // a double-click must not record twice
+    try {
+      const r = await api('/api/admin/orders/manual', { method: 'POST', body: JSON.stringify(body) });
+      const c = r.customer;
+      ok.innerHTML =
+        `✓ Order <b>#${r.order.id}</b> recorded &mdash; ${esc(r.order.title)}, ` +
+        `${rupees(r.order.amount)}. ${c.created ? 'New account created for' : 'Added to'} ` +
+        `<b>${esc(c.email || c.name || 'the customer')}</b>; balance now ${c.credits} question(s).` +
+        (r.warnings.length ? `<br /><span class="warn">⚠ ${r.warnings.map(esc).join(' ')}</span>` : '');
+      ok.hidden = false;
+      form.reset();
+      await Promise.all([loadManual(), loadMetrics(), loadKundalis()]);
+    } catch (e) {
+      showErr(e.message);
+      // A refused duplicate is the one error the admin can knowingly override.
+      if (e.status === 409 && /identical manual order/.test(e.message)) $('#mo-force-wrap').hidden = false;
+    } finally {
+      btn.disabled = false;
+    }
+
+    function showErr(msg) { err.textContent = msg; err.hidden = false; }
+  };
+}
+
+async function loadManual() {
+  const box = $('#mo-list');
+  const { orders } = await api('/api/admin/orders/manual?limit=30');
+  if (!orders.length) {
+    box.innerHTML = '<p class="empty">No manual orders yet.</p>';
+    return;
+  }
+  box.innerHTML = orders.map((o) => `
+    <div class="row">
+      <div class="row-main">
+        <div class="row-title">#${o.id} &middot; ${esc(o.title)} &middot; <b>${rupees(o.amount)}</b></div>
+        <div class="row-sub">
+          ${esc(o.customer_name || '')} ${o.customer_email ? `&lt;${esc(o.customer_email)}&gt;` : ''}
+          ${o.customer_phone ? `&middot; ${esc(o.customer_phone)}` : ''}<br />
+          <span class="muted">${esc(o.note)} &middot; ${esc(o.paid_at || o.created_at)}
+          ${o.recorded_by ? `&middot; by ${esc(o.recorded_by)}` : ''}</span>
+        </div>
+      </div>
+      <div class="row-act">
+        ${o.fulfilment !== 'not_applicable'
+          ? `<span class="pill ${esc(o.fulfilment)}">${esc(o.fulfilment.replace('_', ' '))}</span>` : ''}
+        ${o.credits ? `<span class="pill off">+${o.credits} questions</span>` : ''}
+      </div>
+    </div>`).join('');
+}
+
 /* ----------------------------------------------------- kundali queue ----- */
 
 const FULFIL = [
@@ -593,7 +763,7 @@ const FULFIL = [
 async function loadKundalis() {
   const box = $('#kundali-list');
   const all = $('#k-all').checked;
-  const { kundalis } = await api(`/api/admin/kundalis?all=${all ? 1 : 0}`);
+  const { kundalis } = await api(`/api/admin/kundalis?state=${all ? 'all' : 'open'}`);
   setCount('#c-kundali', kundalis.filter((k) => k.fulfilment === 'pending').length);
 
   if (!kundalis.length) {

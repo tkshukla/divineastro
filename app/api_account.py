@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import datetime as dt
 import os
+import re
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import RedirectResponse
@@ -560,6 +561,187 @@ def upi_verify(body: VerifyIn, user: User = Depends(admin),
 
 
 # --------------------------------------------------------------------------
+# Manual orders — a sale that happened outside the site
+# --------------------------------------------------------------------------
+
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+_MANUAL_DUP_WINDOW = dt.timedelta(minutes=2)
+
+
+class ManualOrderIn(BaseModel):
+    email: str = ""
+    name: str = ""
+    phone: str = ""
+    sku: str                          # a catalogue SKU, or "custom"
+    title: str = ""                   # custom orders only
+    amount_paise: int | None = None   # None -> the catalogue list price
+    credits: int = 0                  # custom orders only
+    method: str = "upi"               # upi | cash | bank | other
+    reference: str = ""               # UTR tail, receipt no., ...
+    note: str = ""
+    birth: BirthIn | None = None
+    force: bool = False               # record even if it looks like a repeat
+
+
+def _manual_customer(db: Session, email: str, name: str, phone: str) -> tuple[User, bool]:
+    """Find the customer by email, or create an account for them.
+
+    A created account is `provider="manual"`; when its owner later signs in
+    with Google/etc. on the same verified address, auth.upsert_user adopts it,
+    so they land on the purchase that was recorded for them. A phone-only
+    customer (no email) has nothing to be adopted by — the admin can still
+    fulfil the order, it just stays under that record.
+    """
+    email = email.strip().lower()
+    phone = re.sub(r"[\s\-()]", "", phone or "")[:20]
+    if not email and not phone:
+        raise HTTPException(400, "Enter the customer's email or phone number.")
+    if email and not _EMAIL_RE.match(email):
+        raise HTTPException(400, "That email address does not look right.")
+
+    if email:
+        user = db.execute(select(User).where(func.lower(User.email) == email)
+                          ).scalars().first()
+    else:
+        user = db.execute(select(User).where(
+            User.provider == "manual", User.provider_sub == f"manual:{phone}")
+        ).scalars().first()
+
+    if user is not None:
+        if user.blocked:
+            raise HTTPException(409, "This customer's account is suspended.")
+        if name.strip() and not user.name:
+            user.name = name.strip()[:120]
+        if phone and not user.phone:
+            user.phone = phone
+        return user, False
+
+    user = User(email=email, name=name.strip()[:120], phone=phone,
+                provider="manual", provider_sub=f"manual:{email or phone}")
+    db.add(user)
+    db.flush()
+    if email:     # same welcome gift upsert_user gives a first sign-in
+        grant(db, user.id, billing.FREE_QUESTIONS, EntryKind.signup_bonus,
+              note="Welcome — free questions")
+    return user, True
+
+
+def _manual_birth(db: Session, user: User, b: BirthIn) -> BirthProfile:
+    """Attach the customer's birth data, reusing an identical chart they have.
+
+    Unlike the self-service /births route this ignores the MAX_BIRTHS cap: it
+    is the admin recording something a customer already paid for, and refusing
+    would strand a paid kundali with no birth data.
+    """
+    from . import geo
+
+    try:
+        dt.date.fromisoformat(b.date)
+        dt.datetime.strptime(b.time, "%H:%M")
+    except ValueError:
+        raise HTTPException(400, "Birth date must be YYYY-MM-DD and time HH:MM.")
+    if not b.place.strip():
+        raise HTTPException(400, "Choose the birth place from the list.")
+
+    for row in _my_births(db, user):
+        if _same_birth(row, b):
+            return row
+    profile = BirthProfile(
+        user_id=user.id, label=(b.label or b.name or b.place)[:120],
+        name=b.name, date=b.date, time=b.time, time_known=b.time_known,
+        gender=_gender(b.gender), place=b.place,
+        latitude=b.latitude, longitude=b.longitude,
+        timezone=b.timezone or geo.timezone_for(b.latitude, b.longitude),
+        zodiac="sidereal", ayanamsa="lahiri", house_system="Whole Sign",
+    )
+    db.add(profile)
+    db.flush()
+    return profile
+
+
+def _manual_order_dict(o: Order, u: User | None, admin_email: str = "") -> dict:
+    return {
+        **_order_dict(o),
+        "customer_email": u.email if u else "",
+        "customer_name": u.name if u else "",
+        "customer_phone": u.phone if u else "",
+        "note": o.verify_note,
+        "recorded_by": admin_email,
+    }
+
+
+@router.post("/admin/orders/manual")
+def create_manual_order(body: ManualOrderIn, user: User = Depends(admin),
+                        db: Session = Depends(get_db)) -> dict:
+    """Record an off-site sale as a paid order and deliver what it includes."""
+    is_custom = body.sku == billing.CUSTOM_SKU
+    product = billing.PRODUCTS.get(body.sku)
+    if not is_custom and product is None:
+        raise HTTPException(400, f"Unknown product '{body.sku}'.")
+    amount = body.amount_paise if body.amount_paise is not None else (
+        None if is_custom else product.amount_paise)
+    if amount is None:
+        raise HTTPException(400, "Enter the amount received.")
+
+    try:
+        customer, created = _manual_customer(db, body.email, body.name, body.phone)
+
+        if not body.force:
+            recent = db.execute(select(Order).where(
+                Order.user_id == customer.id, Order.provider == "manual",
+                Order.sku == body.sku, Order.amount_paise == amount,
+                Order.created_at >= utcnow() - _MANUAL_DUP_WINDOW,
+            ).order_by(Order.id.desc())).scalars().first()
+            if recent is not None:
+                raise HTTPException(
+                    409, f"An identical manual order (#{recent.id}) was recorded "
+                         "under two minutes ago. Tick “record anyway” "
+                         "if this is a second sale.")
+
+        birth = _manual_birth(db, customer, body.birth) if body.birth else None
+        order = billing.create_manual_order(
+            db, customer, user, sku=body.sku, amount_paise=amount,
+            title=body.title, credits=body.credits, method=body.method.strip().lower(),
+            reference=body.reference, note=body.note,
+            birth_id=birth.id if birth else None)
+    except ValueError as exc:
+        db.rollback()
+        raise HTTPException(400, str(exc))
+    except HTTPException:
+        db.rollback()          # do not leave a half-made customer behind
+        raise
+
+    warnings = []
+    if product is not None and product.kind == "kundali" and birth is None:
+        warnings.append("No birth details were entered — the astrologer will "
+                        "have nothing to work from until they are added.")
+    return {
+        "ok": True,
+        "order": _manual_order_dict(order, customer, user.email),
+        "customer": {"id": customer.id, "email": customer.email,
+                     "name": customer.name, "created": created,
+                     "credits": balance(db, customer.id)},
+        "birth": _birth_dict(birth) if birth else None,
+        "warnings": warnings,
+    }
+
+
+@router.get("/admin/orders/manual")
+def list_manual_orders(limit: int = 30, _: User = Depends(admin),
+                       db: Session = Depends(get_db)) -> dict:
+    rows = db.execute(
+        select(Order, User).outerjoin(User, User.id == Order.user_id)
+        .where(Order.provider == "manual").order_by(Order.id.desc())
+        .limit(max(1, min(limit, 100)))
+    ).all()
+    admin_ids = {o.verified_by for o, _u in rows if o.verified_by}
+    admins = ({a.id: a.email for a in db.execute(
+        select(User).where(User.id.in_(admin_ids))).scalars()} if admin_ids else {})
+    return {"orders": [_manual_order_dict(o, u, admins.get(o.verified_by, ""))
+                       for o, u in rows]}
+
+
+# --------------------------------------------------------------------------
 # Hand-written kundali fulfilment
 # --------------------------------------------------------------------------
 
@@ -896,8 +1078,18 @@ def admin_metrics(_: User = Depends(admin), db: Session = Depends(get_db)) -> di
     all_paid = db.execute(paid_stmt).scalars().all()
 
     rev_all_paise = sum(o.amount_paise for o in all_paid)
-    rev_today_paise = sum(o.amount_paise for o in all_paid if o.paid_at and o.paid_at >= today_start)
-    rev_month_paise = sum(o.amount_paise for o in all_paid if o.paid_at and o.paid_at >= month_start)
+    def _paid_since(o: Order, since: dt.datetime) -> bool:
+        # SQLite hands timestamps back naive (Postgres returns them aware);
+        # everything is stored UTC, so a naive value is UTC.
+        at = o.paid_at
+        if at is None:
+            return False
+        if at.tzinfo is None:
+            at = at.replace(tzinfo=dt.timezone.utc)
+        return at >= since
+
+    rev_today_paise = sum(o.amount_paise for o in all_paid if _paid_since(o, today_start))
+    rev_month_paise = sum(o.amount_paise for o in all_paid if _paid_since(o, month_start))
 
     # 2. Total counts
     total_users = db.execute(select(func.count(User.id))).scalar_one() or 0

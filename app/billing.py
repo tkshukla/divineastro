@@ -182,6 +182,78 @@ def create_order(db: Session, user, sku: str, birth_id: int | None = None,
     return order, checkout
 
 
+MANUAL_METHODS = ("upi", "cash", "bank", "other")
+MANUAL_MAX_PAISE = 1_000_000_00      # ₹10 lakh — a typo guard, not a business rule
+CUSTOM_SKU = "custom"
+
+
+def create_manual_order(db: Session, user, admin_user, *, sku: str,
+                        amount_paise: int, title: str = "", credits: int = 0,
+                        method: str = "upi", reference: str = "", note: str = "",
+                        birth_id: int | None = None) -> Order:
+    """Record a sale that happened outside the site — cash, a UPI transfer to
+    the personal handle, a bank deposit — as an ordinary PAID order.
+
+    It deliberately goes through `mark_paid`, the same idempotent path every
+    gateway uses, rather than inserting credits directly: the ledger row,
+    revenue totals and the kundali work queue then all behave exactly as they
+    do for an online order, and the admin has already verified the money
+    before typing it in, so there is no claim/verify step to run.
+
+    `sku` is a catalogue SKU or CUSTOM_SKU. A custom order names its own title
+    and credit count (bespoke consultations, discounts done by hand); a
+    catalogue order takes title and credits from the product, and only the
+    amount is the admin's to override.
+    """
+    if amount_paise < 0 or amount_paise > MANUAL_MAX_PAISE:
+        raise ValueError("Amount is out of range.")
+    if method not in MANUAL_METHODS:
+        raise ValueError(f"Payment method must be one of: {', '.join(MANUAL_METHODS)}.")
+
+    if sku == CUSTOM_SKU:
+        title = title.strip()
+        if not title:
+            raise ValueError("A custom order needs a title.")
+        if credits < 0 or credits > 10_000:
+            raise ValueError("Credits must be between 0 and 10,000.")
+        product, kind, list_price = None, "custom", amount_paise
+    else:
+        product = PRODUCTS.get(sku)
+        if product is None:
+            raise ValueError(f"Unknown product '{sku}'")
+        title, credits, kind, list_price = (
+            product.title, product.credits, product.kind, product.amount_paise)
+
+    order = Order(
+        user_id=user.id,
+        sku=sku,
+        title=title[:160],
+        amount_paise=amount_paise,
+        original_amount_paise=list_price,
+        discount_paise=max(0, list_price - amount_paise),
+        credits=credits,
+        birth_id=birth_id,
+        report_topic=sku if kind == "single_question" else None,
+        # Only a hand-written kundali has a delivery step to track; everything
+        # else is complete the moment it is paid.
+        fulfilment=(FulfilStatus.pending if kind == "kundali"
+                    else FulfilStatus.not_applicable),
+        fulfil_note=note.strip()[:2000],
+        provider="manual",
+        verified_by=admin_user.id,
+        verified_at=utcnow(),
+        verify_note=" · ".join(
+            p for p in (f"manual/{method}", reference.strip(), note.strip()) if p)[:255],
+    )
+    db.add(order)
+    db.flush()                                   # need order.id below
+    order.provider_order_id = f"MAN{order.id:06d}"
+    # Per-order, never the admin's free-text reference: provider_payment_id is
+    # UNIQUE with provider, and two cash sales can both say "cash".
+    mark_paid(db, order, f"manual:{order.id}")
+    return order
+
+
 def has_paid_report(db: Session, user, sku: str | None = None,
                     birth_id: int | None = None,
                     topic: str | None = None) -> Order | None:
@@ -213,8 +285,9 @@ def _already_granted(db: Session, order: Order) -> bool:
 def _bonus_credits(order: Order) -> int:
     """Credits on the order beyond the pack's own — an extra_credits coupon."""
     product = PRODUCTS.get(order.sku)
-    base = product.credits if product else 0
-    return max(0, int(order.credits or 0) - base)
+    if product is None:            # a custom manual order has no pack to exceed
+        return 0
+    return max(0, int(order.credits or 0) - product.credits)
 
 
 def mark_paid(db: Session, order: Order, payment_id: str) -> tuple[bool, str]:
