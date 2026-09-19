@@ -239,6 +239,12 @@ class Coupon(Base):
     times_redeemed: Mapped[int] = mapped_column(Integer, default=0)
 
     created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    # Soft delete. A deleted coupon stays in the table so the admin can still
+    # list it and restore it, its code stays reserved (no silent re-use of a
+    # code customers may still hold), and any redemption trail survives. It can
+    # no longer be used at checkout. NULL = not deleted.
+    deleted_at: Mapped[dt.datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None)
 
 
 class CouponRedemption(Base):

@@ -71,7 +71,7 @@ const A_I18N = {
     cUnlimited: "unlimited", cActive: "Active", cInactive: "Inactive",
     cNone: "No coupons yet.", cBlank: "blank = unlimited",
     kPercent: "Percent off", kFlat: "Flat ₹ off", kExtra: "Bonus credits",
-    cConfirmDelete: "Delete this coupon? If it has been used it is only deactivated.",
+    cConfirmDelete: "Delete this coupon? It stops working immediately. It is kept in the Deleted list in the admin panel and can be restored.",
   },
   hi: {
     signIn: "साइन इन", signOut: "साइन आउट",
@@ -130,7 +130,7 @@ const A_I18N = {
     cUnlimited: "असीमित", cActive: "सक्रिय", cInactive: "निष्क्रिय",
     cNone: "अभी कोई कूपन नहीं।", cBlank: "खाली = असीमित",
     kPercent: "प्रतिशत छूट", kFlat: "निश्चित ₹ छूट", kExtra: "बोनस क्रेडिट",
-    cConfirmDelete: "यह कूपन हटाएँ? यदि इसका उपयोग हुआ है तो केवल निष्क्रिय होगा।",
+    cConfirmDelete: "यह कूपन हटाएँ? यह तुरंत काम करना बंद कर देगा। यह एडमिन पैनल की 'Deleted' सूची में रहेगा और वापस लाया जा सकता है।",
   },
 };
 
@@ -823,7 +823,9 @@ async function openCouponAdmin() {
   async function refresh() {
     const res = await fetch("/api/admin/coupons");
     if (!res.ok) { list.innerHTML = `<p class="modal-sub">${escapeHtml(at("couponInvalid"))}</p>`; return; }
-    const { coupons } = await res.json();
+    // Deleted coupons are kept by the server (history, restore) but managed in
+    // the /admin panel's Deleted list — they don't belong in this quick view.
+    const coupons = (await res.json()).coupons.filter((c) => !c.deleted);
     if (!coupons.length) {
       list.innerHTML = `<p class="modal-sub">${escapeHtml(at("cNone"))}</p>`;
       return;

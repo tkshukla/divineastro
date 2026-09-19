@@ -222,67 +222,158 @@ async function loadMetrics() {
 /* ------------------------------------------------------------- coupons --- */
 
 let allCoupons = [];
+let couponFilter = 'current';   // which chip is selected
+let editingCoupon = null;       // the coupon open in the form, or null when creating
+
+// The server holds every amount in paise, including a flat coupon's discount;
+// everything typed into this form is rupees.
+const toPaise = (rupeesValue) => Math.round(Number(rupeesValue) * 100);
+const fromPaise = (paise) => (paise ? paise / 100 : '');
+
+const fmtDate = (iso) => (iso
+  ? new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+  : '');
+
+const STATUS_LABEL = {
+  live: 'live', paused: 'paused', expired: 'expired', scheduled: 'scheduled',
+  used_up: 'used up', deleted: 'deleted',
+};
+
+// [key, chip label, predicate]. "Current" is the default: everything that has
+// not been deleted, so deleted coupons are out of the way but one click from view.
+const COUPON_FILTERS = [
+  ['current', 'Current', (c) => c.status !== 'deleted'],
+  ['live', 'Live', (c) => c.status === 'live'],
+  ['paused', 'Paused', (c) => c.status === 'paused'],
+  ['ended', 'Expired / used up', (c) => c.status === 'expired' || c.status === 'used_up'],
+  ['deleted', 'Deleted', (c) => c.status === 'deleted'],
+  ['all', 'Everything', () => true],
+];
 
 function wireCoupons() {
   const form = $('#coupon-form');
   const btnToggle = $('#btn-toggle-coupon-form');
   const btnCancel = $('#btn-cancel-coupon-form');
   const search = $('#coupon-search');
-
-  btnToggle.onclick = () => { form.hidden = !form.hidden; };
-  btnCancel.onclick = () => { form.hidden = true; };
-
-  search.oninput = () => renderCouponsList();
-
   const kind = $('#c-kind');
-  kind.onchange = () => {
+  const err = $('#coupon-error');
+
+  const syncKind = () => {
     $('#c-value-label').textContent = {
       percent: 'Value (%)', flat: 'Value (₹ off)', extra_credits: 'Extra questions',
     }[kind.value];
+    $('#c-maxoff-field').hidden = kind.value !== 'percent';
+  };
+  kind.onchange = syncKind;
+
+  // One form serves both jobs. With a coupon it edits that coupon (the code is
+  // its identity, so it is read-only); with none it creates a new one.
+  window.openCouponForm = (coupon) => {
+    editingCoupon = coupon || null;
+    form.reset();
+    err.hidden = true;
+    $('#c-form-title').textContent = coupon ? `Edit coupon ${coupon.code}` : 'Create Promotion Code';
+    $('#c-submit-label').textContent = coupon ? 'Save changes' : 'Save & Activate Coupon';
+    $('#c-code').disabled = Boolean(coupon);
+    $('#c-code-note').textContent = coupon ? 'cannot be changed' : '';
+
+    const skuSelect = $('#c-skus');
+    const targets = coupon
+      ? String(coupon.applies_to || 'all').toLowerCase().split(',').map((t) => t.trim()).filter(Boolean)
+      : [];
+    // A target that is no longer in the catalogue must survive a save, not be
+    // silently dropped because it has no option to be selected.
+    const known = new Set($$('option', skuSelect).map((o) => o.value));
+    targets.filter((t) => t !== 'all' && t !== '*' && !known.has(t)).forEach((t) => {
+      const o = document.createElement('option');
+      o.value = t; o.textContent = `${t} (not in the current catalogue)`;
+      skuSelect.appendChild(o);
+    });
+    $$('option', skuSelect).forEach((o) => { o.selected = targets.includes(o.value); });
+
+    if (coupon) {
+      $('#c-code').value = coupon.code;
+      kind.value = coupon.kind;
+      $('#c-value').value = coupon.kind === 'flat' ? coupon.value / 100 : coupon.value;
+      $('#c-max').value = coupon.max_redemptions ?? '';
+      $('#c-per').value = coupon.max_per_user;
+      $('#c-until').value = coupon.expires_at ? coupon.expires_at.slice(0, 10) : '';
+      $('#c-min').value = fromPaise(coupon.min_amount_paise);
+      $('#c-maxoff').value = fromPaise(coupon.max_discount_paise);
+      $('#c-desc').value = coupon.description || '';
+    }
+    syncKind();
+    form.hidden = false;
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  btnToggle.onclick = () => {
+    if (!form.hidden && !editingCoupon) { form.hidden = true; return; }
+    window.openCouponForm(null);
+  };
+  btnCancel.onclick = () => { form.hidden = true; editingCoupon = null; };
+  search.oninput = () => renderCouponsList();
+
+  const skuSelect = $('#c-skus');
   api('/api/products').then(({ products }) => {
-    $('#c-skus').innerHTML = (products || [])
-      .map((p) => `<option value="${esc(p.sku)}">${esc(p.title)} — ${rupees(p.rupees)}</option>`)
-      .join('');
+    skuSelect.innerHTML =
+      '<option value="questions">All question packs</option>' +
+      '<option value="kundali">All hand-written kundalis</option>' +
+      (products || []).map((p) =>
+        `<option value="${esc(p.sku)}">${esc(p.title)} — ${rupees(p.rupees)}</option>`).join('');
   }).catch(() => {});
 
   form.onsubmit = async (ev) => {
     ev.preventDefault();
-    const err = $('#coupon-error');
     err.hidden = true;
+    const btn = $('button[type=submit]', form);
 
+    const k = kind.value;
+    const raw = Number($('#c-value').value);
     const skus = $$('#c-skus option:checked').map((o) => o.value);
     const until = $('#c-until').value;
-    const kindVal = $('#c-kind').value;
-    // The server holds a flat discount in paise (like every other amount);
-    // the field is labelled in rupees, so convert — otherwise "100" is ₹1.
-    const rawValue = Number($('#c-value').value);
     const body = {
-      code: $('#c-code').value,
-      kind: kindVal,
-      value: kindVal === 'flat' ? Math.round(rawValue * 100) : rawValue,
+      kind: k,
+      value: k === 'flat' ? toPaise(raw) : raw,     // flat: rupees typed -> paise stored
       applies_to: skus.length ? skus.join(',') : 'all',
       max_redemptions: $('#c-max').value ? Number($('#c-max').value) : null,
       max_per_user: Number($('#c-per').value || 1),
-      expires_at: until ? `${until}T23:59:59` : null,
+      min_amount_paise: $('#c-min').value ? toPaise($('#c-min').value) : 0,
+      max_discount_paise: k === 'percent' && $('#c-maxoff').value ? toPaise($('#c-maxoff').value) : null,
+      description: $('#c-desc').value.trim(),
     };
 
+    btn.disabled = true;
     try {
-      await api('/api/admin/coupons', { method: 'POST', body: JSON.stringify(body) });
-      form.reset();
+      if (editingCoupon) {
+        // Only re-send the expiry if the date was actually changed, so a coupon
+        // whose expiry carries a time is not rewritten to 23:59:59 by a save.
+        const was = editingCoupon.expires_at ? editingCoupon.expires_at.slice(0, 10) : '';
+        if (until !== was) body.expires_at = until ? `${until}T23:59:59` : null;
+        await api(`/api/admin/coupons/${editingCoupon.id}`,
+          { method: 'PATCH', body: JSON.stringify(body) });
+      } else {
+        body.code = $('#c-code').value;
+        body.expires_at = until ? `${until}T23:59:59` : null;
+        await api('/api/admin/coupons', { method: 'POST', body: JSON.stringify(body) });
+        couponFilter = 'current';
+      }
       form.hidden = true;
-      kind.onchange();
+      editingCoupon = null;
       await loadCoupons();
     } catch (e) {
       err.textContent = e.message;
       err.hidden = false;
+    } finally {
+      btn.disabled = false;
     }
   };
 }
 
 function describe(c) {
-  if (c.kind === 'percent') return `${c.value}% off`;
+  if (c.kind === 'percent') {
+    return `${c.value}% off` + (c.max_discount_paise ? ` (max ${rupees(c.max_discount_paise / 100)})` : '');
+  }
   if (c.kind === 'flat') return `${rupees(c.value / 100)} off`;
   return `+${c.value} free questions`;
 }
@@ -291,77 +382,140 @@ async function loadCoupons() {
   try {
     const { coupons } = await api('/api/admin/coupons');
     allCoupons = coupons || [];
-    setCount('#c-coupons', allCoupons.filter((c) => c.active).length);
+    // The sidebar count is what a customer could use right now.
+    setCount('#c-coupons', allCoupons.filter((c) => c.status === 'live').length);
     renderCouponsList();
   } catch (e) {
     console.error('Failed to load coupons:', e);
   }
 }
 
+function renderCouponChips() {
+  const box = $('#coupon-chips');
+  box.innerHTML = COUPON_FILTERS.map(([key, label, test]) => {
+    const n = allCoupons.filter(test).length;
+    return `<button type="button" class="chip${key === couponFilter ? ' on' : ''}" data-f="${key}"
+      aria-pressed="${key === couponFilter}">${esc(label)} <span class="n">${n}</span></button>`;
+  }).join('');
+  $$('button', box).forEach((b) => {
+    b.onclick = () => { couponFilter = b.dataset.f; renderCouponsList(); };
+  });
+}
+
+function couponUsesTable(rows) {
+  if (!rows.length) return '<p class="empty" style="margin:8px 0 0;">Not used yet.</p>';
+  return `<table class="admin-table" style="margin-top:8px;">
+    <thead><tr><th>Customer</th><th>Order</th><th>Discount</th><th>Order status</th><th>When</th></tr></thead>
+    <tbody>${rows.map((r) => `<tr>
+      <td>${esc(r.email || '—')}</td><td>#${r.order_id} <span class="muted">${esc(r.sku)}</span></td>
+      <td>${rupees(r.discount_paise / 100)}</td>
+      <td><span class="pill ${esc(r.order_status)}">${esc(r.order_status.replace('_', ' '))}</span></td>
+      <td><span class="muted">${esc(r.at)}</span></td></tr>`).join('')}</tbody></table>`;
+}
+
 function renderCouponsList() {
+  renderCouponChips();
   const box = $('#coupon-list');
   const query = ($('#coupon-search')?.value || '').trim().toLowerCase();
+  const test = (COUPON_FILTERS.find(([k]) => k === couponFilter) || COUPON_FILTERS[0])[2];
 
-  const filtered = allCoupons.filter((c) => 
-    !query || c.code.toLowerCase().includes(query) || (c.applies_to && c.applies_to.toLowerCase().includes(query))
-  );
+  const filtered = allCoupons.filter((c) => test(c) && (!query
+    || c.code.toLowerCase().includes(query)
+    || (c.applies_to && c.applies_to.toLowerCase().includes(query))
+    || (c.description && c.description.toLowerCase().includes(query))));
 
   if (!filtered.length) {
     box.innerHTML = query
       ? '<p class="empty">No coupons match your filter.</p>'
-      : '<p class="empty">No coupons created yet. Click "+ Create New Coupon" above.</p>';
+      : couponFilter === 'deleted'
+        ? '<p class="empty">Nothing has been deleted.</p>'
+        : allCoupons.length
+          ? '<p class="empty">No coupons in this view.</p>'
+          : '<p class="empty">No coupons created yet. Click "+ Create New Coupon" above.</p>';
     return;
   }
 
-  box.innerHTML = filtered.map((c) => `
-    <div class="row" data-id="${c.id}">
+  box.innerHTML = filtered.map((c) => {
+    const deleted = c.status === 'deleted';
+    const bits = [
+      `Target: <code>${esc(c.applies_to === 'all' ? 'All Products' : c.applies_to)}</code>`,
+      `Uses: <b>${c.redemptions}${c.max_redemptions ? ` / ${c.max_redemptions}` : ' (unlimited)'}</b>`,
+      `Per customer: ${c.max_per_user || '∞'}`,
+      c.min_amount_paise ? `Min order: ${rupees(c.min_amount_paise / 100)}` : '',
+      c.starts_at ? `Starts: <b>${esc(fmtDate(c.starts_at))}</b>` : '',
+      c.expires_at ? `Expires: <b>${esc(fmtDate(c.expires_at))}</b>` : 'No expiry',
+    ].filter(Boolean).join(' &middot; ');
+    const trail = [
+      `Created ${esc(fmtDate(c.created_at))}`,
+      deleted ? `<span class="warn">Deleted ${esc(fmtDate(c.deleted_at))}</span>` : '',
+      c.description ? `Note: ${esc(c.description)}` : '',
+      c.total_discount_paise ? `Customer savings given: ${rupees(c.total_discount_paise / 100)}` : '',
+    ].filter(Boolean).join(' &middot; ');
+
+    return `
+    <div class="row${deleted ? ' is-deleted' : ''}" data-id="${c.id}">
       <div class="row-main">
         <div class="row-title">
           <code class="code">${esc(c.code)}</code>
           <button class="ghost sm btn-copy" data-code="${esc(c.code)}" title="Copy code" style="padding:2px 7px;font-size:0.75rem;margin-left:6px;">&#128203; Copy</button>
-          <span class="pill ${c.active ? 'delivered' : 'off'}" style="margin-left:6px;">${c.active ? 'live' : 'paused'}</span>
+          <span class="pill st-${esc(c.status)}" style="margin-left:6px;">${esc(STATUS_LABEL[c.status] || c.status)}</span>
           &middot; <b>${esc(describe(c))}</b>
         </div>
-        <div class="row-sub">
-          Target: <code>${esc(c.applies_to === 'all' ? 'All Products' : c.applies_to)}</code>
-          &middot; Redemptions: <b>${c.redemptions}${c.max_redemptions ? ` / ${c.max_redemptions}` : ' (unlimited)'}</b>
-          &middot; Max per user: ${c.max_per_user || '∞'}
-          ${c.expires_at ? `&middot; Expires: <b>${esc(c.expires_at.slice(0, 10))}</b>` : '&middot; No expiry'}
-          ${c.total_discount_paise ? `<br><span class="muted">Total customer savings given: ${rupees(c.total_discount_paise / 100)}</span>` : ''}
-        </div>
+        <div class="row-sub">${bits}<br /><span class="muted">${trail}</span></div>
+        <div class="uses" hidden></div>
       </div>
       <div class="row-act">
-        <button class="ghost sm" data-act="toggle">${c.active ? 'Pause' : 'Resume'}</button>
-        <button class="danger sm" data-act="delete">Delete</button>
+        ${deleted
+          ? '<button class="primary sm" data-act="restore">Restore</button>'
+          : `<button class="ghost sm" data-act="edit">Edit</button>
+             <button class="ghost sm" data-act="toggle">${c.active ? 'Pause' : 'Resume'}</button>
+             <button class="danger sm" data-act="delete">Delete</button>`}
+        <button class="ghost sm" data-act="uses">Uses (${c.redemptions})</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   $$('#coupon-list .row').forEach((row) => {
     const id = Number(row.dataset.id);
     const c = allCoupons.find((x) => x.id === id);
+    const fail = (e) => alert(e.message);
 
     row.querySelector('.btn-copy').onclick = (ev) => {
-      const code = ev.currentTarget.dataset.code;
-      navigator.clipboard.writeText(code).then(() => {
-        ev.currentTarget.textContent = 'Copied!';
-        setTimeout(() => { ev.currentTarget.textContent = '📋 Copy'; }, 1500);
+      const btn = ev.currentTarget;
+      navigator.clipboard.writeText(btn.dataset.code).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = '📋 Copy'; }, 1500);
       });
     };
 
-    row.querySelector('[data-act="toggle"]').onclick = async () => {
-      await api(`/api/admin/coupons/${id}`, {
-        method: 'PATCH', body: JSON.stringify({ active: !c.active }),
-      });
-      await loadCoupons();
+    const on = (act, fn) => {
+      const b = row.querySelector(`[data-act="${act}"]`);
+      if (b) b.onclick = async () => { b.disabled = true; try { await fn(b); } catch (e) { fail(e); } b.disabled = false; };
     };
 
-    row.querySelector('[data-act="delete"]').onclick = async () => {
-      if (!confirm(`Delete ${c.code}? Coupons that have been used are paused instead, so redemption records survive.`)) return;
-      try {
-        await api(`/api/admin/coupons/${id}`, { method: 'DELETE' });
-      } catch (e) { alert(e.message); }
+    on('edit', async () => window.openCouponForm(c));
+    on('toggle', async () => {
+      await api(`/api/admin/coupons/${id}`, { method: 'PATCH', body: JSON.stringify({ active: !c.active }) });
       await loadCoupons();
-    };
+    });
+    on('delete', async () => {
+      if (!confirm(`Delete coupon ${c.code}?\n\nCustomers will no longer be able to use it. ` +
+        'It stays in the Deleted list, and you can restore it later.')) return;
+      await api(`/api/admin/coupons/${id}`, { method: 'DELETE' });
+      await loadCoupons();
+    });
+    on('restore', async () => {
+      await api(`/api/admin/coupons/${id}/restore`, { method: 'POST' });
+      couponFilter = 'paused';      // it comes back paused — show where it went
+      await loadCoupons();
+    });
+    on('uses', async () => {
+      const panel = row.querySelector('.uses');
+      if (!panel.hidden) { panel.hidden = true; return; }
+      const { redemptions } = await api(`/api/admin/coupons/${id}/redemptions`);
+      panel.innerHTML = couponUsesTable(redemptions);
+      panel.hidden = false;
+    });
   });
 }
 

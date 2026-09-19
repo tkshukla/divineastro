@@ -908,7 +908,12 @@ def admin_create_coupon(body: CouponIn, _: User = Depends(admin),
     code = coupons.normalise(body.code)
     if not code:
         raise HTTPException(400, "A code is required.")
-    if coupons.find(db, code) is not None:
+    existing = coupons.find(db, code)
+    if existing is not None:
+        if existing.deleted_at is not None:
+            raise HTTPException(
+                409, f"Coupon '{code}' was deleted earlier. Restore it from the "
+                     "Deleted list, or choose a different code.")
         raise HTTPException(409, f"Coupon '{code}' already exists.")
 
     kind = _coupon_kind(body.kind)
@@ -940,6 +945,8 @@ def admin_update_coupon(coupon_id: int, body: CouponPatch,
     coupon = db.get(Coupon, coupon_id)
     if coupon is None:
         raise HTTPException(404, "Coupon not found.")
+    if coupon.deleted_at is not None:
+        raise HTTPException(409, "This coupon is deleted. Restore it before editing.")
 
     fields = body.model_dump(exclude_unset=True)
     if "kind" in fields and fields["kind"] is not None:
@@ -976,23 +983,39 @@ def admin_update_coupon(coupon_id: int, body: CouponPatch,
 @router.delete("/admin/coupons/{coupon_id}")
 def admin_delete_coupon(coupon_id: int, _: User = Depends(admin),
                         db: Session = Depends(get_db)) -> dict:
-    """Soft-delete once it has been used — the redemption trail must survive."""
+    """Delete = hide and disable, never destroy.
+
+    The row stays so the admin can still list it (the Deleted filter) and
+    restore it, its code stays reserved, and any redemption trail survives.
+    Idempotent: deleting an already-deleted coupon changes nothing.
+    """
     coupon = db.get(Coupon, coupon_id)
     if coupon is None:
         raise HTTPException(404, "Coupon not found.")
 
-    used = db.execute(
-        select(CouponRedemption.id).where(CouponRedemption.coupon_id == coupon.id)
-    ).first() is not None
-    if used:
+    if coupon.deleted_at is None:
+        coupon.deleted_at = utcnow()
         coupon.active = False
         db.commit()
-        return {"ok": True, "deleted": False, "deactivated": True,
-                "coupon": coupons.to_dict(db, coupon)}
+    return {"ok": True, "deleted": True, "coupon": coupons.to_dict(db, coupon)}
 
-    db.delete(coupon)
-    db.commit()
-    return {"ok": True, "deleted": True, "deactivated": False}
+
+@router.post("/admin/coupons/{coupon_id}/restore")
+def admin_restore_coupon(coupon_id: int, _: User = Depends(admin),
+                         db: Session = Depends(get_db)) -> dict:
+    """Bring a deleted coupon back — as PAUSED, not live.
+
+    A coupon someone chose to delete should not start discounting orders again
+    the instant it is restored; the admin resumes it deliberately.
+    """
+    coupon = db.get(Coupon, coupon_id)
+    if coupon is None:
+        raise HTTPException(404, "Coupon not found.")
+    if coupon.deleted_at is not None:
+        coupon.deleted_at = None
+        coupon.active = False
+        db.commit()
+    return {"ok": True, "coupon": coupons.to_dict(db, coupon)}
 
 
 @router.get("/admin/coupons/{coupon_id}/redemptions")
