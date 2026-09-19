@@ -91,6 +91,50 @@ def part1() -> None:
           an.visitor_hash("1.1.1.1", CHROME, late) != an.visitor_hash("1.1.1.1", CHROME, now))
 
 
+    print("\n3b. The sign-up rate only compares days that tracking covered")
+    days = [{"date": f"2026-09-{d:02d}", "visitors": 0, "pageviews": 0, "new_users": 5} for d in range(1, 7)]
+    days += [{"date": f"2026-09-{d:02d}", "visitors": 10, "pageviews": 15, "new_users": 1} for d in range(7, 11)]
+    check("new users from before tracking are left out (4 ÷ 40, not 34 ÷ 40)",
+          an.signup_rate(days, "2026-09-07") == 0.1, str(an.signup_rate(days, "2026-09-07")))
+    check("the ratio that would have been shown without the fix is wildly wrong (0.85 = 85%)",
+          round(sum(d["new_users"] for d in days) / sum(d["visitors"] for d in days), 2) == 0.85)
+    check("no tracking yet -> no rate", an.signup_rate(days, None) is None)
+    check("tracked days but no visitors -> no rate, not a divide-by-zero",
+          an.signup_rate([{"date": "2026-09-10", "visitors": 0, "pageviews": 0, "new_users": 2}], "2026-09-10") is None)
+    check("full coverage behaves as a plain ratio", an.signup_rate(days, "2026-09-01") == round(34 / 40, 4))
+
+
+    print("\n3c. The production case: many older users, tracking started today")
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import Session
+
+    from app.db import Base, User, Visit
+    eng = create_engine("sqlite://")
+    Base.metadata.create_all(eng)
+    now_ = an.utcnow()
+    with Session(eng) as db:
+        for i in range(46):                                    # signed up over the past 25 days
+            db.add(User(email=f"old{i}@example.com", provider="google", provider_sub=f"g{i}",
+                        created_at=now_ - dt.timedelta(days=1 + i % 25)))
+        for i in range(3):                                     # tracking began today
+            db.add(Visit(ts=now_, path="/", source="google", device="mobile", visitor=f"v{i:015d}"))
+        db.commit()
+        s0 = an.summary(db, 30)
+        check("the 46 older sign-ups are still counted as new users in the window",
+              s0["windows"]["d30"]["new_users"] == 46, str(s0["windows"]["d30"]["new_users"]))
+        check("but the sign-up rate is NOT 46 ÷ 3 = 1533% — no tracked-day sign-ups, so 0%",
+              s0["windows"]["d30"]["signup_rate"] == 0 and s0["totals"]["signup_rate"] == 0,
+              str((s0["windows"]["d30"]["signup_rate"], s0["totals"]["signup_rate"])))
+        db.add(User(email="today@example.com", provider="google", provider_sub="gt", created_at=now_))
+        db.commit()
+        s1 = an.summary(db, 30)
+        check("one sign-up on a tracked day out of 3 visitors -> 33.3%",
+              abs(s1["windows"]["d30"]["signup_rate"] - 1 / 3) < 1e-3, str(s1["windows"]["d30"]["signup_rate"]))
+        check("and the rate can never exceed 100% just because history is longer",
+              all((w["signup_rate"] or 0) <= 1 for w in s1["windows"].values()))
+    eng.dispose()
+
+
 # --------------------------------------------------------------------------
 # Part 2 — the running app
 # --------------------------------------------------------------------------
