@@ -724,14 +724,25 @@ async function loadUpi() {
     row.querySelectorAll('button[data-act]').forEach((btn) => {
       btn.onclick = async () => {
         const id = Number(row.dataset.id);
-        const act = btn.dataset.act;
+        const approve = btn.dataset.act === 'approve';
         const note = row.querySelector('.note').value;
+        const o = pending.find((x) => x.id === id);
+        // Approving is what grants the credits, so make it a deliberate click.
+        if (approve && o && !confirm(
+          `Approve ${rupees(o.expected_amount)} from ${o.buyer_email || 'this buyer'} ` +
+          `(UTR ends in ${o.utr_last5 || '—'})?\n\nOnly do this if that exact amount is in ` +
+          'your bank / UPI app. It grants the credits straight away.')) return;
         btn.disabled = true;
         try {
-          await api(`/api/admin/upi/${act}`, {
+          // One endpoint decides both ways: /verify takes approve true|false.
+          // (This used to POST to /upi/approve and /upi/reject, which do not exist.)
+          const res = await api('/api/admin/upi/verify', {
             method: 'POST',
-            body: JSON.stringify({ order_id: id, note }),
+            body: JSON.stringify({ order_id: id, approve, note }),
           });
+          if (approve && res && res.granted === false) {
+            alert(res.message || 'This order was already approved earlier; nothing more was granted.');
+          }
           await loadUpi();
           await loadMetrics();
         } catch (e) {
