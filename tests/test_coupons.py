@@ -308,13 +308,84 @@ def main() -> int:
     p = preview(buyer, code("EDITME"), "q50")
     check("deactivated coupon stops working", p["valid"] is False, p["message"])
 
+    def listed(cid: int) -> dict | None:
+        rows = admin.get(f"{BASE}/api/admin/coupons").json()["coupons"]
+        return next((c for c in rows if c["id"] == cid), None)
+
+    check("before deleting, the paused coupon reports status 'paused'",
+          listed(target["id"])["status"] == "paused", str(listed(target["id"])["status"]))
     gone = admin.delete(f"{BASE}/api/admin/coupons/{target['id']}").json()
-    check("unused coupon is hard-deleted", gone.get("deleted") is True, str(gone))
+    check("delete reports deleted", gone.get("deleted") is True, str(gone)[:120])
+    row = listed(target["id"])
+    check("a deleted coupon is NOT destroyed — it is still listed, flagged "
+          "deleted, with a deletion time (so 'previously created' is visible)",
+          row is not None and row["deleted"] is True and row["status"] == "deleted"
+          and row["deleted_at"], str(row)[:160])
+    check("a deleted coupon is unusable and reads as unknown to a customer",
+          preview(buyer, code("EDITME"), "q50")["valid"] is False
+          and "not found" in preview(buyer, code("EDITME"), "q50")["message"])
+    check("deleting twice is harmless",
+          admin.delete(f"{BASE}/api/admin/coupons/{target['id']}").status_code == 200)
+    edit_deleted = admin.patch(f"{BASE}/api/admin/coupons/{target['id']}", json={"value": 5})
+    check("a deleted coupon cannot be edited until restored (409)",
+          edit_deleted.status_code == 409, str(edit_deleted.status_code))
+    reuse = admin.post(f"{BASE}/api/admin/coupons",
+                       json={"code": code("EDITME"), "kind": "percent", "value": 10})
+    check("its code stays reserved: re-creating it is refused and says why",
+          reuse.status_code == 409 and "deleted earlier" in reuse.text, reuse.text[:140])
+    back = admin.post(f"{BASE}/api/admin/coupons/{target['id']}/restore").json()
+    check("restore brings it back PAUSED, not live",
+          back["coupon"]["status"] == "paused" and back["coupon"]["deleted"] is False,
+          str(back["coupon"]["status"]))
+    check("still unusable until resumed on purpose",
+          preview(buyer, code("EDITME"), "q50")["valid"] is False)
+    admin.patch(f"{BASE}/api/admin/coupons/{target['id']}", json={"active": True})
+    p = preview(buyer, code("EDITME"), "q50")
+    check("resumed, it works again with the edits it had before",
+          p["valid"] is True and p["discount"] == Q50 * 35 // 100, str(p.get("discount")))
+
     used = admin.delete(f"{BASE}/api/admin/coupons/{once['id']}").json()
-    check("used coupon is only deactivated", used.get("deactivated") is True, str(used))
+    check("a used coupon is deleted the same way", used.get("deleted") is True, str(used)[:120])
     check("its redemption history survives",
           len(admin.get(f"{BASE}/api/admin/coupons/{once['id']}/redemptions"
                         ).json()["redemptions"]) == 1)
+
+    print("\n16b. A coupon limited to several products applies to each of them")
+    multi = make(admin, code=code("MULTI"), kind="flat", value=1000,
+                 applies_to="q10,k3", max_per_user=9)
+    check("it applies to the first listed product",
+          preview(buyer, code("MULTI"), "q10")["valid"] is True,
+          preview(buyer, code("MULTI"), "q10")["message"])
+    check("it applies to the second listed product",
+          preview(buyer, code("MULTI"), "k3")["valid"] is True,
+          preview(buyer, code("MULTI"), "k3")["message"])
+    check("it still refuses a product that is not listed",
+          preview(buyer, code("MULTI"), "q50")["valid"] is False)
+    kinds = make(admin, code=code("KINDS"), kind="flat", value=1000,
+                 applies_to="kundali, q100", max_per_user=9)
+    check("a list may mix a product kind and a sku (whitespace tolerated)",
+          preview(buyer, code("KINDS"), "k5")["valid"] is True
+          and preview(buyer, code("KINDS"), "q100")["valid"] is True
+          and preview(buyer, code("KINDS"), "q10")["valid"] is False)
+
+    print("\n16c. The list carries a status the admin UI can filter on")
+    past = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=2)).isoformat()
+    soon = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(days=9)).isoformat()
+    expired = make(admin, code=code("OLD"), kind="percent", value=5, expires_at=past)
+    later = make(admin, code=code("LATER"), kind="percent", value=5, starts_at=soon)
+    one_use = make(admin, code=code("ONEUSE"), kind="percent", value=5, max_redemptions=1)
+    live = make(admin, code=code("LIVE"), kind="percent", value=5)
+    check("live / expired / scheduled report the right status",
+          (live["status"], expired["status"], later["status"])
+          == ("live", "expired", "scheduled"),
+          str((live["status"], expired["status"], later["status"])))
+    order = buy(buyer, "q10", code("ONEUSE")).json()["order"]
+    from app import billing as _billing
+    from app.db import Order, session as _session
+    with _session() as _db:
+        _billing.mark_paid(_db, _db.get(Order, order["id"]), f"c16c-{RUN}")
+    check("a coupon whose total limit is reached reports 'used_up'",
+          listed(one_use["id"])["status"] == "used_up", str(listed(one_use["id"])["status"]))
 
     print("\n17. Buying without a coupon is unaffected")
     plain = buy(buyer, "q10").json()["order"]

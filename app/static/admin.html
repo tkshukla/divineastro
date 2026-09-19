@@ -125,10 +125,10 @@
     </div>
 
     <form id="coupon-form" class="coupon-form card" hidden style="margin-top:16px;">
-      <h3>Create Promotion Code</h3>
+      <h3 id="c-form-title">Create Promotion Code</h3>
       <div class="crow">
         <div class="field">
-          <label for="c-code">Code</label>
+          <label for="c-code">Code <span class="opt" id="c-code-note"></span></label>
           <input id="c-code" placeholder="DIWALI50" required />
         </div>
         <div class="field">
@@ -158,12 +158,26 @@
           <input id="c-until" type="date" />
         </div>
       </div>
+      <div class="crow">
+        <div class="field">
+          <label for="c-min">Minimum order (&#8377;) <span class="opt">optional</span></label>
+          <input id="c-min" type="number" min="0" step="1" placeholder="0" />
+        </div>
+        <div class="field" id="c-maxoff-field">
+          <label for="c-maxoff">Max discount (&#8377;) <span class="opt">% coupons, blank = no cap</span></label>
+          <input id="c-maxoff" type="number" min="1" step="1" placeholder="no cap" />
+        </div>
+        <div class="field">
+          <label for="c-desc">Note to yourself <span class="opt">optional</span></label>
+          <input id="c-desc" maxlength="255" placeholder="e.g. Diwali campaign" />
+        </div>
+      </div>
       <div class="field">
-        <label for="c-skus">Limit to products <span class="opt">blank = all</span></label>
-        <select id="c-skus" multiple size="4"></select>
+        <label for="c-skus">Limit to products <span class="opt">blank = all &middot; Ctrl/Cmd-click to pick several</span></label>
+        <select id="c-skus" multiple size="6"></select>
       </div>
       <div style="display:flex;gap:10px;align-items:center;">
-        <button type="submit" class="primary"><span class="label">Save &amp; Activate Coupon</span></button>
+        <button type="submit" class="primary"><span class="label" id="c-submit-label">Save &amp; Activate Coupon</span></button>
         <button type="button" class="ghost" id="btn-cancel-coupon-form">Cancel</button>
       </div>
       <p id="coupon-error" class="error" hidden></p>
@@ -171,9 +185,10 @@
 
     <div class="card" style="margin-top:16px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
-        <h3 style="margin:0;">Active &amp; Past Coupons</h3>
+        <h3 style="margin:0;">All coupons</h3>
         <input id="coupon-search" placeholder="Filter coupon code..." style="padding:6px 10px;font-size:0.85rem;width:200px;" />
       </div>
+      <div id="coupon-chips" class="chips" role="group" aria-label="Filter coupons by status"></div>
       <div id="coupon-list" class="rows"></div>
     </div>
   </section>

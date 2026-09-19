@@ -247,7 +247,11 @@ code, .utr, .code {
 /* styles.css only styles input[type=text|date|time]; email/tel/number and
    type-less inputs (the coupon form's too) fell back to browser defaults —
    19px tall, a poor tap target on a phone. Same look as the base rule. */
-.coupon-form input:not([type=checkbox]):not([type=radio]) {
+/* :where() keeps this rule's specificity at zero-ish, so styles.css's
+   [data-theme="light"] input override still beats it. Written as a plain
+   `.coupon-form input:not(...)` it outranked that override and painted dark
+   input boxes with dark text in light theme. */
+.coupon-form :where(input:not([type=checkbox]):not([type=radio])) {
   width: 100%;
   padding: 11px 13px;
   border-radius: 11px;
@@ -257,6 +261,37 @@ code, .utr, .code {
   font-family: var(--sans);
   font-size: 15px;
 }
+
+/* Coupon list: status pills, filter chips, deleted rows */
+.pill.st-live      { color: #7ddba0; }
+.pill.st-paused    { color: #9b93b5; }
+.pill.st-expired   { color: #f0c674; }
+.pill.st-used_up   { color: #f0c674; }
+.pill.st-scheduled { color: #56d4dd; }
+.pill.st-deleted   { color: #f0708c; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.chip {
+  border: 1px solid var(--line); background: transparent; color: inherit;
+  border-radius: 999px; padding: 7px 14px; font: inherit; font-size: 0.85rem;
+  cursor: pointer; min-height: 36px;
+}
+.chip .n { opacity: 0.6; margin-left: 4px; }
+.chip.on { background: rgba(240, 198, 116, 0.16); border-color: rgba(240, 198, 116, 0.6); }
+.chip:focus-visible { outline: 2px solid rgba(240, 198, 116, 0.7); outline-offset: 2px; }
+/* styles.css defines button.ghost as a fixed 34x34px ICON button. In the admin
+   panes ghost buttons carry text ("Edit", "Pause", "Cancel"...), so they were
+   squashed into that square, overflowed and overlapped their neighbours. Size
+   them to their label here; the icon-only header buttons live outside .apane. */
+.apane button.ghost {
+  width: auto; height: auto; min-height: 34px; padding: 8px 13px; font-size: 0.82rem;
+}
+.apane button.ghost.sm { padding: 6px 12px; min-height: 32px; }
+/* And keep any button on one line: a narrow row wraps WHOLE buttons instead. */
+.row-act button, .row-title button { white-space: nowrap; flex: 0 0 auto; }
+.row-act { justify-content: flex-start; }
+.row.is-deleted { opacity: 0.72; }
+.row .uses { margin-top: 10px; overflow-x: auto; }
+[data-theme="light"] .chip.on { background: rgba(160, 110, 20, 0.14); border-color: rgba(160, 110, 20, 0.55); }
 
 /* An author `display:` rule (e.g. .crow's grid) otherwise beats the hidden attribute. */
 .apane [hidden] { display: none !important; }

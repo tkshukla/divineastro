@@ -49,11 +49,15 @@ def find(db: Session, code: str) -> Coupon | None:
 
 
 def _applies(coupon: Coupon, product) -> bool:
-    """`applies_to` is 'all', a product kind ('questions'/'kundali'), or a sku."""
-    target = (coupon.applies_to or "all").strip().lower()
-    if target in ("", "all", "*"):
+    """`applies_to` is 'all', or a comma-separated list of product kinds
+    ('questions'/'kundali') and/or skus. The admin form's multi-select saves
+    several products as "k3,k5", so the list must be split — comparing the whole
+    string to one sku matched nothing, silently."""
+    targets = {t.strip() for t in (coupon.applies_to or "all").lower().split(",")}
+    targets.discard("")
+    if not targets or targets & {"all", "*"}:
         return True
-    return target == product.kind or target == product.sku
+    return product.kind in targets or product.sku in targets
 
 
 def _user_redemptions(db: Session, coupon: Coupon, user_id: int) -> int:
@@ -126,7 +130,8 @@ def validate(db: Session, code: str, user, product
         return None, "Enter a coupon code.", 0, 0
 
     coupon = find(db, code)
-    if coupon is None:
+    # A deleted coupon reads as unknown to a customer — no hint it ever existed.
+    if coupon is None or coupon.deleted_at is not None:
         return None, f"Coupon '{code}' was not found.", 0, 0
     if not coupon.active:
         return None, "This coupon is no longer active.", 0, 0
@@ -234,6 +239,25 @@ def _iso(value: dt.datetime | None) -> str | None:
     return value.isoformat() if value else None
 
 
+def status(coupon: Coupon, redemptions: int, now: dt.datetime | None = None) -> str:
+    """One word for the admin list: deleted | paused | expired | scheduled |
+    used_up | live. Deleted wins over everything, then the reasons a customer
+    could not use it right now, in the order validate() checks them."""
+    now = now or utcnow()
+    if coupon.deleted_at is not None:
+        return "deleted"
+    if not coupon.active:
+        return "paused"
+    starts_at, expires_at = aware(coupon.starts_at), aware(coupon.expires_at)
+    if expires_at is not None and now > expires_at:
+        return "expired"
+    if starts_at is not None and now < starts_at:
+        return "scheduled"
+    if coupon.max_redemptions is not None and redemptions >= int(coupon.max_redemptions):
+        return "used_up"
+    return "live"
+
+
 def to_dict(db: Session, coupon: Coupon) -> dict:
     used = _global_redemptions(db, coupon)
     saved = int(db.execute(
@@ -258,6 +282,9 @@ def to_dict(db: Session, coupon: Coupon) -> dict:
         "redemptions": used,
         "total_discount_paise": saved,
         "created_at": _iso(coupon.created_at),
+        "deleted_at": _iso(coupon.deleted_at),
+        "deleted": coupon.deleted_at is not None,
+        "status": status(coupon, max(int(coupon.times_redeemed or 0), used)),
     }
 
 
