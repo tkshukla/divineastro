@@ -19,6 +19,18 @@
     try { const v = t(k); return v && v !== k ? v : fallback; } catch { return fallback; }
   };
 
+  // Read a response as JSON WITHOUT surfacing the browser's own parse error. When the
+  // server fails with a plain-text "Internal Server Error", `await res.json()` used to
+  // throw `Unexpected token 'I', "Internal S"... is not valid JSON` straight into the
+  // page. A failed request now yields a readable message instead; a *successful*
+  // response that isn't JSON is a genuine fault and throws.
+  async function readJson(res) {
+    const text = await res.text();
+    try { return text ? JSON.parse(text) : {}; } catch { /* not JSON */ }
+    if (res.ok) throw new Error('The server sent a reply this page could not read. Please try again.');
+    return { detail: `The server ran into a problem (error ${res.status}). Please try again in a moment.` };
+  }
+
   /* ---------------------------------------------------------- place picker */
   function placePicker(input, list, chosenEl) {
     let chosen = null;
@@ -120,7 +132,7 @@
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
+      const data = await readJson(res);
       if (!res.ok) throw new Error(data.detail || 'Could not match those charts.');
       renderMilan(data);
     } catch (ex) {
@@ -206,7 +218,7 @@
 
     try {
       const res = await fetch(`/api/panchang?${params}`);
-      const data = await res.json();
+      const data = await readJson(res);
       if (!res.ok) throw new Error(data.detail || 'Could not compute the panchang.');
       renderPanchang(data, place.label);
     } catch (ex) {
@@ -308,7 +320,7 @@
     btn.disabled = true; btn.classList.add('busy');
     try {
       const res = await fetch(`/api/muhurat?${params}`);
-      const data = await res.json();
+      const data = await readJson(res);
       if (!res.ok) throw new Error(data.detail || 'Could not calculate muhurat.');
       renderMuhurat(data, place.label);
     } catch (ex) {
@@ -425,7 +437,7 @@
     btn.disabled = true; btn.classList.add('busy');
     try {
       const res = await fetch(`/api/choghadiya?${params}`);
-      const data = await res.json();
+      const data = await readJson(res);
       if (!res.ok) throw new Error(data.detail || 'Could not calculate Choghadiya.');
       renderChoghadiya(data, place.label, lang);
     } catch (ex) {

@@ -114,6 +114,9 @@ YONI_HI = {
     "Tiger": "व्याघ्र (बाघ)", "Deer": "मृग (हिरण)", "Monkey": "वानर (बंदर)",
     "Mongoose": "नकुल (नेवला)", "Lion": "सिंह (शेर)"
 }
+# The seven natural-enemy pairs, which score 0 and between them account for all
+# fourteen yonis. This is the one part of Yoni every source agrees on, so the
+# grid below is checked against it at import rather than trusted.
 YONI_ENEMIES = (
     ("Horse", "Buffalo"),
     ("Elephant", "Lion"),
@@ -123,24 +126,42 @@ YONI_ENEMIES = (
     ("Cat", "Rat"),
     ("Cow", "Tiger"),
 )
-YONI_TABLE = {
-    "Horse":    (4, 2, 2, 3, 2, 2, 2, 1, 0, 1, 3, 3, 2, 1),
-    "Elephant": (2, 4, 3, 3, 2, 2, 2, 2, 3, 1, 2, 3, 2, 0),
-    "Sheep":    (2, 3, 4, 2, 1, 2, 1, 3, 3, 1, 2, 0, 2, 1),
-    "Serpent":  (3, 3, 2, 4, 2, 1, 1, 1, 1, 2, 2, 2, 0, 2),
-    "Dog":      (2, 2, 1, 2, 4, 2, 1, 2, 2, 1, 0, 2, 1, 1),
-    "Cat":      (2, 2, 2, 1, 2, 4, 0, 2, 2, 1, 3, 3, 2, 1),
-    "Rat":      (2, 2, 1, 1, 1, 0, 4, 2, 2, 2, 2, 2, 1, 2),
-    "Cow":      (1, 2, 3, 1, 2, 2, 2, 4, 3, 0, 3, 2, 2, 1),
-    "Buffalo":  (0, 3, 3, 1, 2, 2, 2, 3, 4, 1, 2, 2, 2, 1),
-    "Tiger":    (1, 1, 1, 2, 1, 1, 2, 0, 1, 4, 1, 1, 2, 1),
-    "Deer":     (3, 2, 2, 2, 0, 3, 2, 3, 2, 1, 4, 2, 2, 2),
-    "Monkey":   (3, 3, 0, 2, 2, 3, 2, 2, 2, 1, 2, 4, 2, 1),
-    "Mongoose": (2, 2, 2, 0, 1, 2, 1, 2, 2, 2, 2, 2, 4, 2),
-    "Lion":     (1, 0, 1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 4),
-}
+
+# The 14x14 grid, points out of 4: 4 same yoni, 3 friendly, 2 neutral,
+# 1 unfriendly, 0 natural enemy. Transcribed from the table PVR Narasimha Rao
+# implements in Jagannatha Hora, which is also what saravali.github.io and
+# findyourfate print.
+#
+# A second, systematically more generous grid circulates (many 2s appearing as
+# 3s, and Tiger/Lion at 3 rather than 1). It has far less support and is not
+# used. Two widely copied pages render Horse/Deer and Buffalo/Lion
+# asymmetrically; that is a transcription defect propagating between sites, not
+# a directional rule — the table is symmetric, and _check_yoni_table() below
+# enforces that so a future edit cannot quietly break it.
+#
+# One cell stayed genuinely unresolved across sources: Horse/Deer, printed as 1
+# here and as 3 elsewhere. It is worth at most two points out of thirty-six.
+YONI_TABLE = (
+    #  Ho El Sh Se Do Ca Ra Cw Bu Ti De Mo Mg Li
+    (4, 2, 2, 3, 2, 2, 2, 1, 0, 1, 1, 3, 2, 1),   # Horse
+    (2, 4, 3, 3, 2, 2, 2, 2, 3, 1, 2, 3, 2, 0),   # Elephant
+    (2, 3, 4, 2, 1, 2, 1, 3, 3, 1, 2, 0, 3, 1),   # Sheep
+    (3, 3, 2, 4, 2, 1, 1, 1, 1, 2, 2, 2, 0, 2),   # Serpent
+    (2, 2, 1, 2, 4, 2, 1, 2, 2, 1, 0, 2, 1, 1),   # Dog
+    (2, 2, 2, 1, 2, 4, 0, 2, 2, 1, 3, 3, 2, 1),   # Cat
+    (2, 2, 1, 1, 1, 0, 4, 2, 2, 2, 2, 2, 1, 2),   # Rat
+    (1, 2, 3, 1, 2, 2, 2, 4, 3, 0, 3, 2, 2, 1),   # Cow
+    (0, 3, 3, 1, 2, 2, 2, 3, 4, 1, 2, 2, 2, 1),   # Buffalo
+    (1, 1, 1, 2, 1, 1, 2, 0, 1, 4, 1, 1, 2, 1),   # Tiger
+    (1, 2, 2, 2, 0, 3, 2, 3, 2, 1, 4, 2, 2, 1),   # Deer
+    (3, 3, 0, 2, 2, 3, 2, 2, 2, 1, 2, 4, 3, 2),   # Monkey
+    (2, 2, 3, 0, 1, 2, 1, 2, 2, 2, 2, 3, 4, 2),   # Mongoose
+    (1, 0, 1, 2, 1, 1, 2, 1, 1, 1, 1, 2, 2, 4),   # Lion
+)
 
 # -- Graha Maitri (5 points) -----------------------------------------------
+# Naisargika (natural) planetary friendship, BPHS ch. 3. Asymmetric on purpose:
+# Mercury counts the Sun a friend while the Sun counts Mercury only neutral.
 NAISARGIKA_FRIENDS = {
     "Sun":     {"Moon", "Mars", "Jupiter"},
     "Moon":    {"Sun", "Mercury"},
@@ -159,6 +180,8 @@ NAISARGIKA_ENEMIES = {
     "Venus":   {"Sun", "Moon"},
     "Saturn":  {"Sun", "Moon", "Mars"},
 }
+# Keyed by the unordered pair of relations, since the classical rule reads
+# "friend and enemy" without caring which side is which.
 MAITRI_POINTS = {
     frozenset(("friend", "friend")):   5.0,
     frozenset(("friend", "neutral")):  4.0,
@@ -184,10 +207,25 @@ GANA_OF_NAKSHATRA = {
     "Purva Bhadrapada": "Manushya", "Uttara Bhadrapada": "Manushya",
     "Revati": "Deva",
 }
+# Rows the groom's gana, columns the bride's. This is the most contested table
+# in the whole method. Every source agrees on the diagonal (6) and that a
+# Deva/Rakshasa pairing is the worst; they disagree on two things:
+#
+#   * Deva–Manushya. Taken here as asymmetric — 6 when the groom is the higher
+#     gana, 5 when the bride is — on the same principle Varna runs on. Several
+#     published tables print 5 in both directions instead.
+#   * Which of Deva–Rakshasa and Manushya–Rakshasa gets the leftover 1 point.
+#     Taken here as 0 for Deva–Rakshasa (cosmic opposites) and 1 for
+#     Manushya–Rakshasa. A substantial minority of sources swap these.
+#
+# The disagreement is worth at most one point out of thirty-six, and every
+# reading calls both combinations bad; the table is a module constant so a
+# lineage that reads it differently can substitute its own.
 GANA_TABLE = {
-    "Deva":     (6.0, 5.0, 1.0),
-    "Manushya": (5.0, 6.0, 0.0),
-    "Rakshasa": (1.0, 0.0, 6.0),
+    #            Deva  Manushya  Rakshasa   <- bride
+    "Deva":      (6.0, 6.0, 0.0),
+    "Manushya":  (5.0, 6.0, 1.0),
+    "Rakshasa":  (0.0, 1.0, 6.0),
 }
 
 # -- Bhakoot (7 points) ----------------------------------------------------
@@ -269,14 +307,21 @@ class MatchingError(ValueError):
 
 
 def _check_yoni_table() -> None:
+    """Guard the transcribed grid against the two ways it can silently rot.
+
+    A mis-keyed digit in a 196-cell table is invisible on review, but it cannot
+    stay both symmetric and consistent with the enemy list, so those two
+    properties are asserted at import.
+    """
     size = len(YONI_ORDER)
     for i in range(size):
         for j in range(size):
-            if YONI_TABLE[YONI_ORDER[i]][j] != YONI_TABLE[YONI_ORDER[j]][i]:
-                raise AssertionError(f"Yoni table asymmetric at {YONI_ORDER[i]}/{YONI_ORDER[j]}")
+            if YONI_TABLE[i][j] != YONI_TABLE[j][i]:
+                raise AssertionError(
+                    f"Yoni table asymmetric at {YONI_ORDER[i]}/{YONI_ORDER[j]}")
     zeros = {
         frozenset((YONI_ORDER[i], YONI_ORDER[j]))
-        for i in range(size) for j in range(size) if YONI_TABLE[YONI_ORDER[i]][j] == 0
+        for i in range(size) for j in range(size) if YONI_TABLE[i][j] == 0
     }
     if zeros != {frozenset(p) for p in YONI_ENEMIES}:
         raise AssertionError("Yoni zero cells do not match the enemy-pair list")
@@ -286,6 +331,14 @@ _check_yoni_table()
 
 
 def yoni_points(a: str, b: str) -> float:
+    """Points out of 4 between two animal yonis.
+
+    Same yoni scores 4 even when both natives hold the male (or female)
+    nakshatra of that pair; the gender split within a yoni is a separate
+    tradition that some lineages use to drop it to 3, and it is not applied.
+    Sources do not even agree on the gender of about a third of the nakshatras,
+    which is a further reason to keep it out of the score.
+    """
     return float(YONI_TABLE[YONI_ORDER.index(a)][YONI_ORDER.index(b)])
 
 

@@ -109,6 +109,28 @@ def main() -> int:
         for i in range(14) for j in range(14)))
     check("yoni grid has exactly 7 enemy pairs",
           sum(1 for r in m.YONI_TABLE for c in r if c == 0) == 14)
+    # PROVENANCE PIN. Yoni and Gana are the two most contested tables in Ashtakoot,
+    # and matching.py cites the sources it followed for each (Jagannatha Hora's
+    # Yoni grid; a directional Gana table, with the alternative readings recorded in
+    # the comments). On 29 Aug a "Hindi localization" commit swapped in different,
+    # unsourced numbers for both and deleted those citations — nothing noticed, and
+    # every match request then 500'd. So these are pinned: changing either table must
+    # be a deliberate decision (update the pin AND the citation), never a side effect.
+    import hashlib
+    check("Gana table is the documented DIRECTIONAL one (Deva groom/Manushya bride 6, "
+          "the reverse 5; Deva-Rakshasa 0; Manushya-Rakshasa 1)",
+          m.GANA_TABLE == {"Deva": (6.0, 6.0, 0.0),
+                           "Manushya": (5.0, 6.0, 1.0),
+                           "Rakshasa": (0.0, 1.0, 6.0)}, str(m.GANA_TABLE))
+    o = m.YONI_ORDER
+    cells = {("Horse", "Deer"): 1, ("Deer", "Lion"): 1, ("Monkey", "Lion"): 2,
+             ("Sheep", "Mongoose"): 3, ("Monkey", "Mongoose"): 3}
+    check("the five Yoni cells that were silently changed hold their sourced values "
+          "(Horse/Deer 1 is the one documented as unresolved between sources)",
+          all(m.YONI_TABLE[o.index(a)][o.index(b)] == v == m.YONI_TABLE[o.index(b)][o.index(a)]
+              for (a, b), v in cells.items()))
+    fp = hashlib.sha256(repr(m.YONI_TABLE).encode()).hexdigest()[:16]
+    check("the whole 14x14 Yoni grid is exactly the sourced one", fp == "b886857086f43c67", fp)
     check("every rashi has a varna and a vashya group",
           all(s in m.VARNA_OF_RASHI for s in SIGNS)
           and all(m._vashya_group(s, 5.0) in m.VASHYA_GROUPS for s in SIGNS))
