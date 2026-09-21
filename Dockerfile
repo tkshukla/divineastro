@@ -69,4 +69,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
 # One worker: chart sessions live in process memory, so a second worker would
 # serve requests that cannot see them. Scale by adding a shared session store
 # first, not by raising this number.
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips", "*"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips", "*", "--no-access-log"]

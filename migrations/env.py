@@ -26,7 +26,11 @@ config = context.config
 config.set_main_option("sqlalchemy.url", os.environ.get("ASTRO_DATABASE_URL") or DB_URL)
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # disable_existing_loggers=False is essential: the default (True) silently switches
+    # OFF every logger that already exists — uvicorn's error logger and every module's
+    # own — and init_db() runs this at every start-up. Production could then log neither
+    # a traceback nor a warning. See tests/test_logging.py.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 
