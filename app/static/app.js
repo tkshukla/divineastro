@@ -1081,6 +1081,7 @@ function renderFreeBadge() {
   $("#free-badge-main").textContent = t(signedIn ? "freeBadgeIn" : "freeBadge").replace("{n}", n);
   $("#free-badge-sub").textContent = signedIn ? "" : t("freeBadgeSub");
   $("#free-badge-sub").hidden = signedIn;
+  box.classList.toggle("promo", !signedIn);     // festival lights are for the sign-up promise only
   box.hidden = false;
 }
 
