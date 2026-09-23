@@ -31,6 +31,10 @@
     return { detail: `The server ran into a problem (error ${res.status}). Please try again in a moment.` };
   }
 
+  // The server labels an unnamed person "—", which is truthy, so `name || 'Groom'`
+  // never fell back and the Mangal section read "—: Not Manglik".
+  const named = (n) => (n && n.trim() && n.trim() !== '—' ? n.trim() : '');
+
   /* ---------------------------------------------------------- place picker */
   function placePicker(input, list, chosenEl) {
     let chosen = null;
@@ -182,8 +186,8 @@
       <div class="card milan-extra">
         <h3>${esc(tr('mangalTitle', 'Mangal Dosha Analysis'))}</h3>
         <ul style="line-height: 1.6; font-size: 13.5px; padding-left: 18px; margin: 10px 0;">
-          ${manglik(ak.groom.name || 'Groom (वर)', d.mangal.groom)}
-          ${manglik(ak.bride.name || 'Bride (कन्या)', d.mangal.bride)}
+          ${manglik(named(ak.groom.name) || 'Groom (वर)', d.mangal.groom)}
+          ${manglik(named(ak.bride.name) || 'Bride (कन्या)', d.mangal.bride)}
         </ul>
         ${d.mangal.pair?.note ? `<p style="margin-top: 10px; color: var(--gold);">${esc(d.mangal.pair.note)}</p>` : ''}
         ${d.mangal.pair?.tradition_note ? `<p class="muted-line" style="margin-top: 6px; font-size: 12px;">${esc(d.mangal.pair.tradition_note)}</p>` : ''}
@@ -342,16 +346,16 @@
       <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
         <td style="padding: 10px 8px; white-space: nowrap;">
           <b>${esc(d.date)}</b><br/>
-          <span style="font-size: 11.5px; color: var(--ink-dim);">${esc(d.vara)}</span>
+          <span style="font-size: 12px; color: var(--ink-dim);">${esc(d.vara)}</span>
         </td>
         <td style="padding: 10px 8px;">
-          <span class="badge ${esc(d.badge)}" style="font-size: 11px;">${esc(d.verdict)}</span>
+          <span class="badge ${esc(d.badge)}" style="font-size: 12px;">${esc(d.verdict)}</span>
         </td>
         <td style="padding: 10px 8px; font-size: 12.5px;">
           <b>${esc(d.tithi)}</b> · ${esc(d.nakshatra)}<br/>
-          <span style="font-size: 11.5px; color: var(--ink-dim);">${esc(d.yoga)}</span>
+          <span style="font-size: 12px; color: var(--ink-dim);">${esc(d.yoga)}</span>
         </td>
-        <td style="padding: 10px 8px; font-size: 11.5px; color: var(--gold);">
+        <td style="padding: 10px 8px; font-size: 12px; color: var(--gold);">
           ${d.abhijit ? `Abhijit: ${esc(d.abhijit)}` : '—'}
         </td>
         <td style="padding: 10px 8px; font-size: 12px;">
@@ -389,42 +393,35 @@
   // Choghadiya
   // --------------------------------------------------------------------------
 
-  let choPlace = null;
   const choPlaceInput = q('#cho-place');
   const choResults = q('#cho-results');
   const choChosen = q('#cho-chosen');
 
+  // These three lines used to call show(), suggest() and window.APP_STATE, none of
+  // which exist: the home-page card did nothing (ReferenceError), typing a place
+  // threw on every keystroke, and Hindi users always got English. Found by the
+  // browser audit in tests/e2e/test_mobile_screens.py.
   q('#open-choghadiya')?.addEventListener('click', () => {
-    show('stage-choghadiya');
+    showStage('stage-choghadiya');
     if (!q('#cho-date').value) {
       q('#cho-date').value = new Date().toISOString().slice(0, 10);
     }
   });
 
-  if (choPlaceInput) {
-    choPlaceInput.addEventListener('input', () => {
-      suggest(choPlaceInput.value, choResults, (p) => {
-        choPlace = p;
-        choPlaceInput.value = p.label;
-        choChosen.textContent = p.label;
-        choChosen.hidden = false;
-        choResults.hidden = true;
-      });
-    });
-  }
+  const getChoPlace = choPlaceInput ? placePicker(choPlaceInput, choResults, choChosen) : () => null;
 
   q('#choghadiya-go')?.addEventListener('click', async () => {
     const err = q('#choghadiya-error');
     err.hidden = true; err.textContent = '';
     const btn = q('#choghadiya-go');
     const targetDate = q('#cho-date').value || new Date().toISOString().slice(0, 10);
-    const place = choPlace || {
+    const place = getChoPlace() || {
       label: 'New Delhi, India',
       latitude: 28.6139,
       longitude: 77.2090,
       timezone: 'Asia/Kolkata',
     };
-    const lang = (window.APP_STATE && window.APP_STATE.lang) || 'en';
+    const lang = (typeof state !== 'undefined' && state.lang) ? state.lang : 'en';
 
     const params = new URLSearchParams({
       date: targetDate,
@@ -451,9 +448,9 @@
     const isHi = lang === 'hi';
     const act = data.active_slot;
     const badgeColor = {
-      auspicious: '#22c55e',
-      neutral: '#eab308',
-      inauspicious: '#ef4444',
+      auspicious: 'var(--green)',
+      neutral: 'var(--gold)',
+      inauspicious: 'var(--rose)',
     };
 
     function renderSlots(slots) {
@@ -464,14 +461,14 @@
           <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); ${bg}">
             <td style="padding: 10px 8px; font-weight: bold;">
               ${esc(s.start)} – ${esc(s.end)}
-              ${s.is_current ? `<span style="margin-left: 6px; font-size: 10px; color: var(--gold); border: 1px solid var(--gold); border-radius: 4px; padding: 1px 4px;">${isHi ? 'वर्तमान' : 'NOW'}</span>` : ''}
+              ${s.is_current ? `<span style="margin-left: 6px; font-size: 12px; color: var(--gold); border: 1px solid var(--gold); border-radius: 4px; padding: 1px 4px;">${isHi ? 'वर्तमान' : 'NOW'}</span>` : ''}
             </td>
             <td style="padding: 10px 8px;">
               <b>${esc(s.name_label)}</b><br/>
-              <span style="font-size: 11px; color: var(--ink-dim);">${isHi ? 'स्वामी: ' : 'Lord: '}${esc(s.ruler_label)}</span>
+              <span style="font-size: 12px; color: var(--ink-dim);">${isHi ? 'स्वामी: ' : 'Lord: '}${esc(s.ruler_label)}</span>
             </td>
             <td style="padding: 10px 8px;">
-              <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; color: ${dotColor};">
+              <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: ${dotColor};">
                 <span style="width: 8px; height: 8px; border-radius: 50%; background: ${dotColor};"></span>
                 ${esc(s.quality_label)}
               </span>
@@ -497,7 +494,7 @@
           </div>
           ${act ? `
             <div style="padding: 8px 14px; border-radius: 8px; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold); text-align: right;">
-              <span style="font-size: 11px; color: var(--gold); text-transform: uppercase;">${isHi ? 'वर्तमान सक्रिय मुहूर्त' : 'Active Muhurta Now'}</span>
+              <span style="font-size: 12px; color: var(--gold); text-transform: uppercase;">${isHi ? 'वर्तमान सक्रिय मुहूर्त' : 'Active Muhurta Now'}</span>
               <div style="font-size: 16px; font-weight: bold; color: var(--ink);">
                 ${esc(act.name_label)} (${esc(act.start)} – ${esc(act.end)})
               </div>

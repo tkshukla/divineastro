@@ -1,0 +1,9 @@
+# Development-only dependencies. NOT installed in the production image (the
+# Dockerfile installs requirements.txt only), so the site does not carry a
+# browser it never uses.
+#
+#   .venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+#   .venv\Scripts\python.exe -m playwright install chromium
+#
+# Browser (end-to-end) tests live in tests/e2e/ — see tests/e2e/harness.py.
+playwright==1.63.0     # drives a real Chromium; the only way to see CSP blocks and phone layouts

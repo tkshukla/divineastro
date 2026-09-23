@@ -56,6 +56,10 @@ const I18N = {
     footnote: "Nothing leaves this computer. Birth data is held in memory only.",
     pickPlace: "Pick a birth place from the suggestions so the coordinates and timezone are exact.",
     narration: "Narration",
+    copyAns: "Copy", shareAns: "Share", copiedMsg: "Copied",
+    jumpLatest: "Latest", textSize: "Text size", chartDetails: "Chart details",
+    hidePanel: "Show or hide the chart",
+    midnightHint: "⚠️ Born between midnight and sunrise? Use the next calendar date (e.g. night of 25th is technically early hours of 26th).",
     chartStyle: "Chart style",
     styleNorth: "North Indian", styleSouth: "South Indian", styleWheel: "Western wheel",
     styleNorthFull: "North Indian (Vedic diamond)",
@@ -71,7 +75,7 @@ const I18N = {
     noDasha: "Vimshottari dasha needs a sidereal (Vedic) chart. Recast with the sidereal zodiac to see mahadashas and antardashas.",
     moonAt: "Moon at",
     placements: "Placements", houses: "Houses", vargas: "Vargas", ashtakavarga: "Ashtakavarga", jaimini: "Jaimini", sudarshana: "Sudarshana", aspects: "Aspects", now: "Now",
-    askPh: "Ask about career, money, love, health, timing…",
+    askPh: "Ask about career, love, money…",
     reading: "Reading the chart…", writing: "Writing it out…",
     responseTruncated: "The response may have been cut short — ask a follow-up to continue it.",
     responseStopped: "Stopped.",
@@ -218,6 +222,10 @@ const I18N = {
     footnote: "कोई भी जानकारी इस कंप्यूटर से बाहर नहीं जाती। जन्म-विवरण केवल मेमोरी में रहता है।",
     pickPlace: "सुझावों में से जन्म स्थान चुनें ताकि अक्षांश-देशांतर और समय-क्षेत्र सही रहें।",
     narration: "वर्णन",
+    copyAns: "कॉपी", shareAns: "शेयर", copiedMsg: "कॉपी हो गया",
+    jumpLatest: "नवीनतम", textSize: "अक्षर का आकार", chartDetails: "कुंडली विवरण",
+    hidePanel: "कुंडली दिखाएँ या छिपाएँ",
+    midnightHint: "⚠️ मध्यरात्रि और सूर्योदय के बीच जन्म? अगली कैलेंडर तिथि दर्ज करें (जैसे 25 तारीख की रात तकनीकी रूप से 26 तारीख की भोर है)।",
     chartStyle: "कुंडली शैली",
     styleNorth: "उत्तर भारतीय", styleSouth: "दक्षिण भारतीय", styleWheel: "पाश्चात्य चक्र",
     styleNorthFull: "उत्तर भारतीय (वैदिक)",
@@ -233,7 +241,7 @@ const I18N = {
     noDasha: "विंशोत्तरी दशा के लिए निरयन (वैदिक) कुंडली आवश्यक है। महादशा और अंतर्दशा देखने हेतु निरयन राशि पद्धति चुनकर कुंडली दोबारा बनाएँ।",
     moonAt: "चंद्र",
     placements: "ग्रह स्थिति", houses: "भाव", vargas: "वर्ग (D1-D60)", ashtakavarga: "अष्टकवर्ग", jaimini: "जैमिनी कारक", sudarshana: "सुदर्शन चक्र", aspects: "दृष्टि", now: "वर्तमान",
-    askPh: "करियर, धन, विवाह, स्वास्थ्य, समय — कुछ भी पूछें…",
+    askPh: "करियर, विवाह, धन — कुछ भी पूछें…",
     reading: "कुंडली पढ़ी जा रही है…", writing: "उत्तर लिखा जा रहा है…",
     responseTruncated: "उत्तर अधूरा रह गया हो सकता है — जारी रखने के लिए अगला प्रश्न पूछें।",
     responseStopped: "रोक दिया गया।",
@@ -977,6 +985,15 @@ function applyLanguage() {
   ph("#f-name", t("namePh"));
   ph("#f-place", t("pobPh"));
   ph("#q", t("askPh"));
+  set("#fs-label", t("textSize"));
+  set("#time-hint", t("midnightHint"));
+  set("#jump-latest-label", t("jumpLatest"));
+  $("#chips-toggle")?.setAttribute("title", t("chartDetails"));
+  $("#chips-toggle")?.setAttribute("aria-label", t("chartDetails"));
+  $("#panel-toggle")?.setAttribute("title", t("hidePanel"));
+  $("#panel-toggle")?.setAttribute("aria-label", t("hidePanel"));
+  $$(".msg-actions [data-act='copy']").forEach((b) => { b.textContent = t("copyAns"); });
+  $$(".msg-actions [data-act='share']").forEach((b) => { b.textContent = t("shareAns"); });
 
   // Dashboard screen elements
   set("#dash-download-pdf-label", t("dashDownloadPdf"));
@@ -1544,7 +1561,12 @@ function renderReading(data) {
   // preventScroll matters: the composer sits at the bottom of a full-height
   // shell, so a plain focus() scrolls the body to reveal it and drags the site
   // header up off the top of the screen.
-  $("#q").focus({ preventScroll: true });
+  // On a phone, focusing here opens the keyboard the moment a chart is cast,
+  // covering the very reading the visitor came for. Only a keyboard-and-mouse
+  // device auto-focuses.
+  if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    $("#q").focus({ preventScroll: true });
+  }
   updateSaveButton();
 }
 
@@ -1711,7 +1733,7 @@ async function renderVargas(sessionId) {
       const isHi = state.lang === "hi";
       const selectHtml = `
         <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-          <label style="font-size: 11.5px; color: var(--gold); font-weight: bold;">${isHi ? 'वर्ग चयन:' : 'Select Varga:'}</label>
+          <label style="font-size: 12px; color: var(--gold); font-weight: bold;">${isHi ? 'वर्ग चयन:' : 'Select Varga:'}</label>
           <select id="varga-select" style="padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.06); color: var(--ink); border: 1px solid var(--line);">
             ${codes.map(c => `<option value="${c}" ${c === code ? 'selected' : ''}>${c}: ${escapeHtml(vargas[c].title)}</option>`).join('')}
           </select>
@@ -1721,7 +1743,7 @@ async function renderVargas(sessionId) {
       const headerHtml = `
         <div style="padding: 8px 10px; border-radius: 6px; background: rgba(212, 175, 55, 0.08); border: 1px solid var(--line); margin-bottom: 12px;">
           <div style="font-weight: bold; color: var(--gold); font-size: 13px;">${escapeHtml(v.title)} (${v.code})</div>
-          <div style="font-size: 11px; color: var(--ink-dim);">${escapeHtml(v.purpose)} · ${isHi ? 'लग्न:' : 'Ascendant:'} <b>${escapeHtml(v.ascendant_label)}</b></div>
+          <div style="font-size: 12px; color: var(--ink-dim);">${escapeHtml(v.purpose)} · ${isHi ? 'लग्न:' : 'Ascendant:'} <b>${escapeHtml(v.ascendant_label)}</b></div>
         </div>
       `;
 
@@ -1764,9 +1786,9 @@ async function renderAshtakavarga(sessionId) {
     const note = data.financial_note;
     const rows = (tbl.rows || []).map(r => {
       const savScore = Number(r[r.length - 1]);
-      let colorClass = '#22c55e'; // Strong >= 28
-      if (savScore < 25) colorClass = '#ef4444';
-      else if (savScore < 28) colorClass = '#eab308';
+      let colorClass = 'var(--green)'; // Strong >= 28
+      if (savScore < 25) colorClass = 'var(--rose)';
+      else if (savScore < 28) colorClass = 'var(--gold)';
 
       const cells = r.map((c, idx) => {
         if (idx === 0) return `<td style="padding: 6px 4px; font-weight: bold;">${escapeHtml(String(c))}</td>`;
@@ -1777,22 +1799,22 @@ async function renderAshtakavarga(sessionId) {
     }).join('');
 
     const headers = (tbl.headers || []).map((h, idx) => `
-      <th style="padding: 6px 3px; font-size: 11px; text-align: ${idx === 0 ? 'left' : 'center'}; color: var(--gold);">${escapeHtml(h)}</th>
+      <th style="padding: 6px 3px; font-size: 12px; text-align: ${idx === 0 ? 'left' : 'center'}; color: var(--gold);">${escapeHtml(h)}</th>
     `).join('');
 
     pane.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
         <span style="font-size: 12px; font-weight: bold; color: var(--gold);">${isHi ? 'सर्वाष्टकवर्ग (कुल 337 बिंदु)' : 'Sarvashtakavarga (337 Bindus)'}</span>
-        <span style="font-size: 11px; color: var(--ink-dim);">${isHi ? 'उच्च बल: ≥28 | सामान्य: 25-27' : 'Strong: ≥28 | Avg: 25-27'}</span>
+        <span style="font-size: 12px; color: var(--ink-dim);">${isHi ? 'उच्च बल: ≥28 | सामान्य: 25-27' : 'Strong: ≥28 | Avg: 25-27'}</span>
       </div>
       <div style="overflow-x: auto; margin-bottom: 12px;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 11.5px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
           <thead><tr style="border-bottom: 1px solid var(--line);">${headers}</tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
       ${note ? `
-        <div style="padding: 8px 10px; border-radius: 6px; background: rgba(212, 175, 55, 0.08); border-left: 3px solid var(--gold); font-size: 11.5px; color: var(--ink-dim); line-height: 1.4;">
+        <div style="padding: 8px 10px; border-radius: 6px; background: rgba(212, 175, 55, 0.08); border-left: 3px solid var(--gold); font-size: 12px; color: var(--ink-dim); line-height: 1.4;">
           ${escapeHtml(note)}
         </div>
       ` : ''}
@@ -1818,27 +1840,27 @@ async function renderJaimini(sessionId) {
 
     const karakaRows = karakas.map(k => `
       <li>
-        <span class="glyph" style="font-size:10px; font-weight:bold; color:var(--gold);">${escapeHtml(k.code)}</span>
+        <span class="glyph" style="font-size: 12px; font-weight:bold; color:var(--gold);">${escapeHtml(k.code)}</span>
         <span class="name">
           <b>${escapeHtml(k.planet_label)}</b> <em>${escapeHtml(k.sign_label)} (${k.degree})</em>
-          <div style="font-size:10px; color:var(--ink-dim);">${escapeHtml(k.title)} · ${escapeHtml(k.role)}</div>
+          <div style="font-size: 12px; color:var(--ink-dim);">${escapeHtml(k.title)} · ${escapeHtml(k.role)}</div>
         </span>
-        <span class="pos" style="font-size:11px;">D9: ${escapeHtml(k.navamsha_label)}</span>
+        <span class="pos" style="font-size: 12px;">D9: ${escapeHtml(k.navamsha_label)}</span>
       </li>
     `).join('');
 
     const arudhaRows = arudhas.map(a => `
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.03); font-size:11.5px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.03); font-size: 12px;">
         <div>
           <b>${escapeHtml(a.code)} (${escapeHtml(a.title)})</b>: ${escapeHtml(a.sign_label)}
-          <div style="font-size:10px; color:var(--ink-dim);">${escapeHtml(a.area)}</div>
+          <div style="font-size: 12px; color:var(--ink-dim);">${escapeHtml(a.area)}</div>
         </div>
-        <span class="badge neutral" style="font-size:10px;">${isHi ? 'भाव ' + a.arudha_house : 'H' + a.arudha_house}</span>
+        <span class="badge neutral" style="font-size: 12px;">${isHi ? 'भाव ' + a.arudha_house : 'H' + a.arudha_house}</span>
       </div>
     `).join('');
 
     pane.innerHTML = `
-      <div style="padding: 8px 10px; border-radius: 6px; background: rgba(212, 175, 55, 0.08); border-left: 3px solid var(--gold); margin-bottom: 12px; font-size: 11.5px; line-height: 1.4;">
+      <div style="padding: 8px 10px; border-radius: 6px; background: rgba(212, 175, 55, 0.08); border-left: 3px solid var(--gold); margin-bottom: 12px; font-size: 12px; line-height: 1.4;">
         <b>${isHi ? 'कारकांश लग्न:' : 'Karakamsha Lagna:'}</b> ${escapeHtml(kl.sign_label)} (${escapeHtml(kl.atmakaraka_label)})<br/>
         ${escapeHtml(kl.summary)}
       </div>
@@ -1869,22 +1891,22 @@ async function renderSudarshana(sessionId) {
     const lagnaHeader = `
       <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:12px; text-align:center;">
         <div style="padding:6px; border-radius:6px; background:rgba(255,255,255,0.03); border:1px solid var(--line);">
-          <div style="font-size:10px; color:var(--ink-dim);">${isHi ? 'तनु (लग्न)' : 'Janma Lagna'}</div>
+          <div style="font-size: 12px; color:var(--ink-dim);">${isHi ? 'तनु (लग्न)' : 'Janma Lagna'}</div>
           <div style="font-weight:bold; color:var(--gold); font-size:12px;">${escapeHtml(lagnas.janma.sign_label)}</div>
         </div>
         <div style="padding:6px; border-radius:6px; background:rgba(255,255,255,0.03); border:1px solid var(--line);">
-          <div style="font-size:10px; color:var(--ink-dim);">${isHi ? 'चंद्र लग्न' : 'Chandra Lagna'}</div>
+          <div style="font-size: 12px; color:var(--ink-dim);">${isHi ? 'चंद्र लग्न' : 'Chandra Lagna'}</div>
           <div style="font-weight:bold; color:#56d4dd; font-size:12px;">${escapeHtml(lagnas.chandra.sign_label)}</div>
         </div>
         <div style="padding:6px; border-radius:6px; background:rgba(255,255,255,0.03); border:1px solid var(--line);">
-          <div style="font-size:10px; color:var(--ink-dim);">${isHi ? 'सूर्य लग्न' : 'Surya Lagna'}</div>
+          <div style="font-size: 12px; color:var(--ink-dim);">${isHi ? 'सूर्य लग्न' : 'Surya Lagna'}</div>
           <div style="font-weight:bold; color:#f0c674; font-size:12px;">${escapeHtml(lagnas.surya.sign_label)}</div>
         </div>
       </div>
     `;
 
     const highlightHtml = highlights.length ? `
-      <div style="padding: 8px 10px; border-radius: 6px; background: rgba(34, 197, 94, 0.08); border-left: 3px solid #22c55e; margin-bottom: 12px; font-size: 11.5px; line-height: 1.4;">
+      <div style="padding: 8px 10px; border-radius: 6px; background: rgba(34, 197, 94, 0.08); border-left: 3px solid #22c55e; margin-bottom: 12px; font-size: 12px; line-height: 1.4;">
         <b>${isHi ? 'त्रि-लग्न शुभ योग:' : 'Tri-Lagna Convergence:'}</b><br/>
         ${highlights.map(h => `<div>• ${escapeHtml(h)}</div>`).join('')}
       </div>
@@ -1985,6 +2007,7 @@ function addBot(md, result, withReasoning = true) {
   bubble.innerHTML = verdictHtml(result) + markdown(md) +
     (withReasoning ? reasoningHtml(result) : "");
   el.append(bubble);
+  el.append(answerActions(bubble));
   $("#thread").append(el);
   scrollThread(true);
   return bubble;
@@ -2009,6 +2032,127 @@ function scrollThread(force = false) {
   const t = $("#thread");
   const nearBottom = t.scrollHeight - t.scrollTop - t.clientHeight < 80;
   if (force || nearBottom) t.scrollTop = t.scrollHeight;
+  // Reader has scrolled up while a long answer keeps arriving: offer a way back.
+  $("#jump-latest").hidden = force || nearBottom;
+}
+
+/* ------------------------------------------------------------
+   Reading-screen ergonomics (DIVASTRO-73/74): a question box that grows,
+   a phone keyboard that does not cover the answer, text size, copy/share.
+   ------------------------------------------------------------ */
+const qBox = $("#q");
+const hasKeyboardAndMouse = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+function autosizeQ() {
+  qBox.style.height = "auto";
+  // CSS max-height clamps this; beyond it the box scrolls inside itself.
+  qBox.style.height = `${qBox.scrollHeight + 2}px`;
+}
+qBox.addEventListener("input", autosizeQ);
+
+// Keyboard and mouse: Enter sends, Shift+Enter is a new line. Touch keyboards:
+// Enter is a new line (nobody wants half a thought sent) and the button sends.
+qBox.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey && !e.isComposing && hasKeyboardAndMouse.matches) {
+    e.preventDefault();
+    $("#ask-form").requestSubmit();
+  }
+});
+
+// While typing on a phone the chrome steps aside (see body.kbd in styles.css).
+qBox.addEventListener("focus", () => {
+  if (!hasKeyboardAndMouse.matches) document.body.classList.add("kbd");
+});
+qBox.addEventListener("blur", () => document.body.classList.remove("kbd"));
+
+// Track the visible area so the question box stays above an on-screen keyboard
+// (Chrome on Android no longer resizes the page for it; iOS never did).
+if (window.visualViewport) {
+  const fit = () => {
+    const reading = document.body.classList.contains("in-reading");
+    document.documentElement.style.setProperty(
+      "--app-h", reading && !hasKeyboardAndMouse.matches
+        ? `${Math.round(window.visualViewport.height)}px` : "");
+    if (reading && document.activeElement === qBox) scrollThread(true);
+  };
+  window.visualViewport.addEventListener("resize", fit);
+  window.visualViewport.addEventListener("scroll", fit);
+}
+
+$("#jump-latest").addEventListener("click", () => scrollThread(true));
+$("#thread").addEventListener("scroll", () => {
+  const t = $("#thread");
+  if (t.scrollHeight - t.scrollTop - t.clientHeight < 80) $("#jump-latest").hidden = true;
+}, { passive: true });
+
+// Chart chips (phone) and chart panel (wide screens) fold away on request.
+$("#chips-toggle").addEventListener("click", () => {
+  const open = $("#chips").classList.toggle("open");
+  $("#chips-toggle").setAttribute("aria-expanded", String(open));
+});
+(() => {
+  const ws = $(".workspace"), btn = $("#panel-toggle");
+  let hidden = false;
+  try { hidden = localStorage.getItem("da_panel_hidden") === "1"; } catch { /* private mode */ }
+  const apply = () => {
+    ws.classList.toggle("panel-hidden", hidden);
+    btn.setAttribute("aria-expanded", String(!hidden));
+  };
+  apply();
+  btn.addEventListener("click", () => {
+    hidden = !hidden;
+    try { localStorage.setItem("da_panel_hidden", hidden ? "1" : "0"); } catch { /* ignore */ }
+    apply();
+  });
+})();
+
+// Text size for the answers: A- / A+, remembered.
+(() => {
+  const STEPS = [0.9, 1, 1.1, 1.2, 1.35];
+  let i = 1;
+  try {
+    const saved = parseFloat(localStorage.getItem("da_read_scale") || "1");
+    if (STEPS.includes(saved)) i = STEPS.indexOf(saved);
+  } catch { /* private mode */ }
+  const apply = () => {
+    document.documentElement.style.setProperty("--read-scale", String(STEPS[i]));
+    try { localStorage.setItem("da_read_scale", String(STEPS[i])); } catch { /* ignore */ }
+    $("#fs-down").disabled = i === 0;
+    $("#fs-up").disabled = i === STEPS.length - 1;
+  };
+  $("#fs-down").addEventListener("click", () => { i = Math.max(0, i - 1); apply(); });
+  $("#fs-up").addEventListener("click", () => { i = Math.min(STEPS.length - 1, i + 1); apply(); });
+  apply();
+})();
+
+// Copy / Share under each answer. Share uses the phone's own share sheet when
+// there is one (WhatsApp is right there); otherwise it opens WhatsApp directly.
+function answerActions(bubble) {
+  const row = document.createElement("div");
+  row.className = "msg-actions";
+  row.innerHTML =
+    `<button type="button" data-act="copy">${escapeHtml(t("copyAns"))}</button>` +
+    `<button type="button" data-act="share">${escapeHtml(t("shareAns"))}</button>`;
+  const text = () => `${bubble.innerText.trim()}\n\n— Divine Astro · divineastro.org`;
+  row.querySelector("[data-act=copy]").onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(text());
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = text(); document.body.append(ta); ta.select();
+      try { document.execCommand("copy"); } catch { /* nothing more to try */ }
+      ta.remove();
+    }
+    if (typeof toast === "function") toast(t("copiedMsg"));
+  };
+  row.querySelector("[data-act=share]").onclick = () => {
+    // Long readings are trimmed for the URL form; the share sheet takes it all.
+    const full = text();
+    if (navigator.share) { navigator.share({ text: full }).catch(() => {}); return; }
+    const short = full.length > 1400 ? `${full.slice(0, 1400)}…\n\n— Divine Astro · divineastro.org` : full;
+    window.open(`https://wa.me/?text=${encodeURIComponent(short)}`, "_blank", "noopener");
+  };
+  return row;
 }
 
 /* Streams the reading: the engine's verdict lands immediately, then the
@@ -2035,6 +2179,7 @@ $("#ask-form").addEventListener("submit", async (e) => {
   // thread and the composer for the rest of the session.
   $("#starters").hidden = true;
   input.value = "";
+  autosizeQ();
   addUser(question);
   const pending = addThinking();
 
@@ -2423,7 +2568,7 @@ $("#dash-nav-doshas")?.addEventListener("click", async () => {
                   <td style="padding: 8px 4px;">${ph.start ? ph.start.slice(0, 10) : '—'}</td>
                   <td style="padding: 8px 4px;">${ph.end ? ph.end.slice(0, 10) : '—'}</td>
                   <td style="padding: 8px 4px;">
-                    <span class="badge ${ph.status === 'current' ? 'caution' : (ph.status === 'past' ? 'excellent' : 'neutral')}" style="padding: 2px 6px; font-size: 9px;">
+                    <span class="badge ${ph.status === 'current' ? 'caution' : (ph.status === 'past' ? 'excellent' : 'neutral')}" style="padding: 2px 6px; font-size: 12px;">
                       ${ph.status}
                     </span>
                   </td>

@@ -21,7 +21,7 @@ const A_I18N = {
     noProviders: "Sign-in is not configured yet. Add OAuth credentials to enable it.",
     devLogin: "Developer sign-in",
     welcome: "Welcome. You have", freeQs: "free questions to start.",
-    credits: "questions left", buyMore: "Buy more",
+    credits: "questions left", creditsShort: "left", themeToggle: "Light / dark", buyMore: "Buy more",
     adminPanel: "Admin panel",
     feedback: "Send feedback",
     upiTitle: "Pay by UPI",
@@ -82,7 +82,7 @@ const A_I18N = {
     noProviders: "साइन-इन अभी कॉन्फ़िगर नहीं है।",
     devLogin: "डेवलपर साइन-इन",
     welcome: "स्वागत है। आपके पास", freeQs: "निःशुल्क प्रश्न हैं।",
-    credits: "प्रश्न शेष", buyMore: "और खरीदें",
+    credits: "प्रश्न शेष", creditsShort: "शेष", themeToggle: "हल्का / गहरा रंग", buyMore: "और खरीदें",
     adminPanel: "एडमिन पैनल",
     feedback: "प्रतिक्रिया भेजें",
     upiTitle: "UPI से भुगतान करें",
@@ -252,6 +252,7 @@ async function resumePayuReturn() {
 function renderAccountBar() {
   const bar = document.querySelector("#account-bar");
   if (!bar) return;
+  document.body.classList.toggle("signed-in", !!acct.user);
   if (!acct.user) {
     bar.innerHTML = `<button class="ghost-btn" id="btn-signin">${escapeHtml(at("signIn"))}</button>`;
     bar.querySelector("#btn-signin").onclick = () => openSignIn();
@@ -259,8 +260,10 @@ function renderAccountBar() {
   }
   const c = acct.user.credits;
   bar.innerHTML = `
-    <button class="credit-pill${c <= 2 ? " low" : ""}" id="btn-credits">
-      <b>${c}</b> ${escapeHtml(at("credits"))}
+    <button class="credit-pill${c <= 2 ? " low" : ""}" id="btn-credits"
+            aria-label="${c} ${escapeHtml(at("credits"))}">
+      <b>${c}</b>
+      <span class="pl-full">${escapeHtml(at("credits"))}</span><span class="pl-short">${escapeHtml(at("creditsShort"))}</span>
     </button>
     <button class="ghost-btn" id="btn-buy">${escapeHtml(at("buyMore"))}</button>
     <div class="acct-menu">
@@ -275,6 +278,8 @@ function renderAccountBar() {
         ${acct.user.is_admin
           ? `<button data-act="coupons">${escapeHtml(at("coupons"))}</button>
              <a class="drop-link" href="/admin">${escapeHtml(at("adminPanel"))}</a>` : ""}
+        <button class="only-narrow" data-act="lang">${state.lang === "hi" ? "English" : "हिन्दी"}</button>
+        <button class="only-narrow" data-act="theme">${escapeHtml(at("themeToggle"))}</button>
         <button data-act="logout">${escapeHtml(at("signOut"))}</button>
       </div>
     </div>`;
@@ -305,7 +310,12 @@ function renderAccountBar() {
         // a chart they no longer have an account for. Always land on home.
         closeModal();
         if (typeof showStage === "function") showStage("stage-home");
-      } else if (b.dataset.act === "history") { openHistory(); }
+      } else if (b.dataset.act === "lang") {
+        // On a 320px phone the header has no room for the switches; the same
+        // controls live here and simply press the real ones.
+        document.querySelector(`.lang[data-lang="${state.lang === "hi" ? "en" : "hi"}"]`)?.click();
+      } else if (b.dataset.act === "theme") { document.querySelector("#theme-toggle")?.click(); }
+      else if (b.dataset.act === "history") { openHistory(); }
       else if (b.dataset.act === "coupons") { openCouponAdmin(); }
       else { openOrders(); }
     };

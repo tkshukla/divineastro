@@ -226,7 +226,7 @@ body.admin-body {
 
 .acct-menu { position: relative; }
 .ghost-btn.has-menu { display: inline-flex; align-items: center; gap: 6px; }
-.caret { font-size: 9px; opacity: 0.7; line-height: 1; }
+.caret { font-size: 12px; opacity: 0.7; line-height: 1; }
 .acct-drop {
   position: absolute; top: calc(100% + 6px); left: 0;
   background: #12142c; border: 1px solid var(--line); border-radius: 12px;
@@ -338,7 +338,7 @@ body.admin-body {
   background: rgba(86,212,221,0.12); border-color: rgba(86,212,221,0.4);
   color: var(--cyan); font-weight: 600;
 }
-.legal-line { font-size: 11.5px; color: var(--ink-faint); margin: 16px 0 0; text-align: center; }
+.legal-line { font-size: 12px; color: var(--ink-faint); margin: 16px 0 0; text-align: center; }
 .legal-line a { color: var(--ink-dim); }
 .test-banner {
   background: rgba(240,198,116,0.1); border: 1px solid rgba(240,198,116,0.3);
@@ -375,13 +375,13 @@ body.admin-body {
 .pack-flag {
   position: absolute; top: -10px; left: 16px;
   background: linear-gradient(100deg, var(--gold), #e8a94f);
-  color: #241a04; font-size: 10px; font-weight: 800;
+  color: #241a04; font-size: 12px; font-weight: 800;
   letter-spacing: 0.09em; text-transform: uppercase;
   padding: 3px 10px; border-radius: 999px;
 }
 .pack h4 { margin: 0 0 6px; font-size: 14.5px; font-weight: 600; color: var(--ink); }
 .pack-price { font-family: var(--serif); font-size: 32px; color: var(--gold); line-height: 1.1; }
-.pack-unit { font-size: 11.5px; color: var(--ink-faint); font-family: var(--mono); margin-bottom: 10px; }
+.pack-unit { font-size: 12px; color: var(--ink-faint); font-family: var(--mono); margin-bottom: 10px; }
 .pack-blurb { font-size: 12.5px; color: var(--ink-dim); margin: 0 0 16px; flex: 1; line-height: 1.5; }
 .pack .primary { padding: 10px; font-size: 13.5px; }
 
@@ -389,7 +389,7 @@ body.admin-body {
 .hist { max-height: 60vh; overflow-y: auto; }
 .hist-row { padding: 12px 0; border-bottom: 1px solid rgba(160,170,220,0.09); }
 .hist-q { font-size: 14px; color: var(--ink); margin-bottom: 3px; }
-.hist-meta { font-size: 11.5px; color: var(--ink-faint); font-family: var(--mono); }
+.hist-meta { font-size: 12px; color: var(--ink-faint); font-family: var(--mono); }
 
 /* ---------- toast ---------- */
 .toast {
@@ -470,7 +470,7 @@ body.admin-body {
 .engine-pop select { font-size: 13.5px; padding: 8px 10px; }
 .engine-note {
   margin: 9px 0 0;
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--ink-faint);
   line-height: 1.45;
 }
@@ -480,7 +480,7 @@ body.admin-body {
 /* the local-model badge on a polished answer */
 .polish-tag {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--cyan); font-weight: 700; margin-bottom: 10px;
 }
 .polish-tag::before {
@@ -493,7 +493,7 @@ body.admin-body {
 
 details.original { margin-top: 14px; }
 details.original summary {
-  cursor: pointer; font-size: 11.5px; letter-spacing: 0.09em;
+  cursor: pointer; font-size: 12px; letter-spacing: 0.09em;
   text-transform: uppercase; color: var(--ink-faint); font-weight: 700;
 }
 details.original summary:hover { color: var(--gold); }
@@ -742,7 +742,7 @@ button.primary.busy .spinner { display: inline-block; }
   font-family: var(--serif); font-size: 21px; font-weight: 400;
   letter-spacing: 0.05em; margin: 0;
 }
-.saved-count { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); white-space: nowrap; }
+.saved-count { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); white-space: nowrap; }
 .saved-count.full { color: var(--gold); }
 .saved-sub { color: var(--ink-dim); font-size: 13.5px; margin: 4px 0 12px; }
 
@@ -760,7 +760,7 @@ button.primary.busy .spinner { display: inline-block; }
 .saved-open:hover { background: rgba(139, 123, 240, 0.18); }
 .saved-name, .saved-meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .saved-name { font-size: 15px; }
-.saved-meta { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); }
+.saved-meta { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); }
 .saved-row .ghost-btn { padding: 6px 12px; font-size: 12px; }
 
 /* ---------- public footer ---------- */
@@ -783,7 +783,7 @@ button.primary.busy .spinner { display: inline-block; }
 .site-footer nav a:hover { color: var(--gold); border-bottom-color: var(--gold); }
 .site-footer .legal-entity,
 .site-footer .disclaimer {
-  color: var(--ink-faint); font-size: 11.5px; line-height: 1.6; margin: 0 0 8px;
+  color: var(--ink-faint); font-size: 12px; line-height: 1.6; margin: 0 0 8px;
 }
 .site-footer .legal-entity a { color: var(--ink-faint); }
 .site-footer .disclaimer { font-style: italic; }
@@ -821,7 +821,7 @@ button.ghost:hover { background: rgba(139, 123, 240, 0.16); color: var(--ink); }
 
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .chip {
-  font-size: 11.5px; padding: 5px 11px; border-radius: 999px;
+  font-size: 12px; padding: 5px 11px; border-radius: 999px;
   border: 1px solid var(--line); background: rgba(139, 123, 240, 0.1);
   color: var(--ink-dim); font-family: var(--mono); white-space: nowrap;
 }
@@ -866,7 +866,7 @@ button.ghost:hover { background: rgba(139, 123, 240, 0.16); color: var(--ink); }
   background: transparent;
   color: var(--ink-faint);
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.05em;
   font-weight: 600;
   padding: 7px 4px;
@@ -879,7 +879,7 @@ button.ghost:hover { background: rgba(139, 123, 240, 0.16); color: var(--ink); }
 
 .chart-note {
   margin: 0 16px 10px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ink-faint);
   text-align: center;
   line-height: 1.4;
@@ -911,7 +911,7 @@ button.ghost:hover { background: rgba(139, 123, 240, 0.16); color: var(--ink); }
 .tabs { display: flex; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .tab {
   flex: 1; padding: 10px 4px; background: transparent; border: none; cursor: pointer;
-  color: var(--ink-faint); font-family: var(--sans); font-size: 11.5px;
+  color: var(--ink-faint); font-family: var(--sans); font-size: 12px;
   letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600;
   border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s;
 }
@@ -931,12 +931,12 @@ button.ghost:hover { background: rgba(139, 123, 240, 0.16); color: var(--ink); }
 }
 .plist .glyph { color: var(--gold); font-size: 15px; text-align: center; }
 .plist .name { color: var(--ink); }
-.plist .name em { color: var(--ink-faint); font-style: normal; font-size: 11.5px; margin-left: 6px; }
+.plist .name em { color: var(--ink-faint); font-style: normal; font-size: 12px; margin-left: 6px; }
 .plist .pos { font-family: var(--mono); font-size: 12px; color: var(--ink-dim); white-space: nowrap; }
 .plist .rx { color: var(--rose); }
 
 .mini-title {
-  font-size: 11px; letter-spacing: 0.11em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase;
   color: var(--ink-faint); font-weight: 700; margin: 16px 0 8px;
 }
 .mini-title:first-child { margin-top: 0; }
@@ -947,7 +947,7 @@ button.ghost:hover { background: rgba(139, 123, 240, 0.16); color: var(--ink); }
 .bar span { display: block; height: 100%; border-radius: 3px; }
 
 .note-line { color: var(--ink-faint); font-size: 12.5px; line-height: 1.5; }
-.hint-line { color: var(--ink-faint); font-size: 11.5px; margin-top: 10px; }
+.hint-line { color: var(--ink-faint); font-size: 12px; margin-top: 10px; }
 
 /* ---------- Vimshottari mahadasha / antardasha table ---------- */
 .dasha { border-top: 1px solid var(--line); }
@@ -960,7 +960,7 @@ button.ghost:hover { background: rgba(139, 123, 240, 0.16); color: var(--ink); }
   align-items: baseline;
 }
 .dasha-head {
-  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--ink-faint); font-weight: 700;
   padding: 7px 8px;
 }
@@ -982,15 +982,15 @@ button.ghost:hover { background: rgba(139, 123, 240, 0.16); color: var(--ink); }
 .dasha .d-lord { color: var(--ink); font-weight: 600; }
 .dasha .d-lord em {
   color: var(--ink-faint); font-style: normal; font-weight: 400;
-  font-size: 11px; margin-left: 6px;
+  font-size: 12px; margin-left: 6px;
 }
 .dasha .d-date {
-  font-family: var(--mono); font-size: 11.5px; color: var(--ink-dim);
+  font-family: var(--mono); font-size: 12px; color: var(--ink-dim);
   white-space: nowrap; text-align: right; min-width: 68px;
 }
 .dasha .d-now {
   grid-column: 1 / -1;
-  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--green); font-weight: 700; margin-top: 2px;
 }
 
@@ -1001,7 +1001,7 @@ button.ghost:hover { background: rgba(139, 123, 240, 0.16); color: var(--ink); }
 .dasha .maha.current > summary .d-lord { color: var(--green); }
 
 .antar-title {
-  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--ink-faint); font-weight: 700; margin: 8px 0 4px 12px;
 }
 .dasha .antars { margin: 0 0 10px 12px; border-left: 1px solid var(--line); }
@@ -1066,7 +1066,7 @@ button.ghost:hover { background: rgba(139, 123, 240, 0.16); color: var(--ink); }
 }
 
 .verdict-tag {
-  display: inline-block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  display: inline-block; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
   font-weight: 700; padding: 3px 10px; border-radius: 999px; margin-bottom: 12px;
 }
 .v-pos { background: rgba(111,211,154,0.16); color: var(--green); border: 1px solid rgba(111,211,154,0.35); }
@@ -1075,7 +1075,7 @@ button.ghost:hover { background: rgba(139, 123, 240, 0.16); color: var(--ink); }
 
 details.reasoning { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
 details.reasoning summary {
-  cursor: pointer; font-size: 11.5px; letter-spacing: 0.09em; text-transform: uppercase;
+  cursor: pointer; font-size: 12px; letter-spacing: 0.09em; text-transform: uppercase;
   color: var(--ink-faint); font-weight: 700;
 }
 details.reasoning summary:hover { color: var(--gold); }
@@ -1084,8 +1084,8 @@ details.reasoning summary:hover { color: var(--gold); }
   padding: 7px 0; border-bottom: 1px solid rgba(160,170,220,0.07); font-size: 12.5px;
 }
 .factor .f-name { color: var(--ink-dim); }
-.factor .f-detail { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); }
-.factor .f-score { font-family: var(--mono); font-size: 11.5px; font-weight: 700; min-width: 44px; text-align: right; }
+.factor .f-detail { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); }
+.factor .f-score { font-family: var(--mono); font-size: 12px; font-weight: 700; min-width: 44px; text-align: right; }
 .f-plus { color: var(--green); }
 .f-minus { color: var(--rose); }
 .f-zero { color: var(--ink-faint); }
@@ -1277,7 +1277,7 @@ details.reasoning summary:hover { color: var(--gold); }
 .badge {
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1557,7 +1557,7 @@ details.reasoning summary:hover { color: var(--gold); }
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--ink-dim);
   text-align: center;
@@ -1577,7 +1577,7 @@ details.reasoning summary:hover { color: var(--gold); }
 }
 
 .timeline-block .block-years {
-  font-size: 9px;
+  font-size: 12px;
   opacity: 0.7;
 }
 
@@ -1785,4 +1785,281 @@ details.reasoning summary:hover { color: var(--gold); }
 [data-theme="light"] .modal-content {
   background: #ffffff;
   color: var(--ink);
+}
+
+/* ============================================================
+   Mobile-first UI and reading comfort — DIVASTRO-73 / DIVASTRO-74
+   Kept as one block at the end so every override is easy to find
+   and remove. Measured baseline on a 375x812 phone: header 160px,
+   chart topbar 311px, suggestion chips 324px -> answers got 34px and
+   the question box sat below the screen. tests/e2e/test_chat_layout.py
+   holds the numbers this block has to keep.
+   ============================================================ */
+
+/* ---- 1. Surfaces that were hard-coded dark and ignored the theme -------
+   On a phone in light mode "Sign in", "Buy more" and the language pill were
+   dark text on a dark pill, and the store cards were dark grey. */
+[data-theme="light"] .ghost-btn,
+[data-theme="light"] .lang-switch { background: rgba(255, 255, 255, 0.94); }
+[data-theme="light"] .ghost-btn:hover { background: rgba(92, 71, 214, 0.1); }
+[data-theme="light"] .lang.active { background: rgba(154, 99, 0, 0.14); }
+[data-theme="light"] .pack { background: rgba(20, 30, 80, 0.045); }
+[data-theme="light"] .pack.featured { background: rgba(154, 99, 0, 0.08); }
+[data-theme="light"] .engine-pop,
+[data-theme="light"] .chart-switch { background: #ffffff; }
+[data-theme="light"] .view-switch { background: rgba(255, 255, 255, 0.75); }
+[data-theme="light"] .composer { background: rgba(255, 255, 255, 0.92); }
+
+/* ---- 2. A real style for plain secondary buttons -----------------------
+   "Download Kundali PDF" used class="btn", which had no rule at all, so it
+   rendered as the browser's default grey button. */
+.btn {
+  font-family: var(--sans); font-weight: 600; cursor: pointer;
+  border-radius: 12px; border: 1px solid rgba(240, 198, 116, 0.45);
+  background: rgba(240, 198, 116, 0.12); color: var(--gold);
+  transition: background 0.16s;
+}
+.btn:hover { background: rgba(240, 198, 116, 0.22); }
+
+/* ---- 3. The reading screen fills the *visible* screen ------------------
+   100vh includes the space under a phone's collapsing URL bar and the on-screen
+   keyboard, which pushed the question box off the bottom. dvh is the visible
+   height; --app-h (set from visualViewport in app.js) also tracks the keyboard. */
+@supports (height: 100dvh) {
+  body.in-reading { height: var(--app-h, 100dvh); max-height: none; }
+}
+.chat { position: relative; }
+
+.thread { padding: 22px 26px 8px; overscroll-behavior: contain; }
+.msg { max-width: 800px; }
+.msg.bot .bubble { font-size: calc(16px * var(--read-scale, 1)); line-height: 1.7; }
+.msg.user .bubble { font-size: calc(15.5px * var(--read-scale, 1)); }
+.bubble > p:last-child { margin-bottom: 0; }
+
+/* Copy / Share under every answer — WhatsApp is how this audience passes a
+   reading on. */
+.msg-actions { display: flex; gap: 8px; margin: 8px 0 0 2px; flex-wrap: wrap; }
+.msg-actions button {
+  font-family: var(--sans); font-size: 13px; font-weight: 600; cursor: pointer;
+  padding: 6px 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: transparent; color: var(--ink-dim);
+}
+.msg-actions button:hover { color: var(--gold); border-color: rgba(240, 198, 116, 0.45); }
+
+/* Appears only while a long answer streams in and the reader has scrolled up.
+   Zero net height in the flow (the negative margin lifts it over the thread). */
+.jump-latest {
+  position: relative; z-index: 5; align-self: flex-end;
+  height: 40px; margin: -52px 18px 12px 0; padding: 0 16px;
+  border-radius: 999px; border: 1px solid rgba(240, 198, 116, 0.5);
+  background: var(--glass-strong); color: var(--gold);
+  font-family: var(--sans); font-size: 13px; font-weight: 600; cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.jump-latest[hidden] { display: none; }
+
+/* Suggested questions: ONE scrollable row, not a wall of wrapped chips (it was
+   324px tall on a phone and 124px on a laptop). The fade at the edges says
+   "there is more". */
+.starters {
+  flex-wrap: nowrap; overflow-x: auto; gap: 8px; padding: 4px 26px 10px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 30px), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 30px), transparent 100%);
+}
+.starters::-webkit-scrollbar { display: none; }
+.starter { flex: none; white-space: nowrap; font-size: 13.5px; padding: 8px 15px; }
+
+/* The question box: grows with what is typed (autosizeQ in app.js). */
+.composer {
+  align-items: flex-end; gap: 10px;
+  padding: 10px 26px calc(14px + env(safe-area-inset-bottom, 0px));
+}
+.composer textarea {
+  flex: 1; min-width: 0; resize: none; overflow-y: auto;
+  padding: 12px 18px; border-radius: 24px;
+  background: rgba(8, 10, 24, 0.85); border: 1px solid var(--line); color: var(--ink);
+  font-family: inherit; font-size: 16px; line-height: 1.45;
+  min-height: 46px; max-height: min(40vh, 220px);
+}
+.composer textarea:focus { outline: none; border-color: rgba(240, 198, 116, 0.55); }
+.composer textarea:disabled { opacity: 0.6; }
+[data-theme="light"] .composer textarea { background: #ffffff; color: var(--ink); }
+
+/* Chart panel: on a wide screen it can be folded away so the reading gets the width. */
+.chips-toggle, .panel-toggle { display: none; }
+@media (min-width: 981px) {
+  .panel-toggle { display: inline-grid; place-items: center; }
+  .workspace.panel-hidden { grid-template-columns: 0 1fr; }
+  .workspace.panel-hidden .panel { display: none; }
+  .topbar { padding: 8px 22px; gap: 14px; }
+  .chips { flex: 1; justify-content: flex-end; }
+}
+
+/* Text-size control in the narration popover. */
+.fs-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.fs-label { flex: 1; font-size: 12.5px; color: var(--ink-faint); }
+.fs-btn {
+  min-width: 44px; min-height: 40px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--line); background: transparent; color: var(--ink);
+  font-family: var(--sans); font-weight: 700; font-size: 14px;
+}
+
+/* ---- 4. Tablets and phones: the chart chips fold behind one button ------ */
+@media (max-width: 980px) {
+  .chips-toggle { display: inline-grid; place-items: center; }
+  #chips { display: none; flex-basis: 100%; }
+  #chips.open { display: flex; }
+  .topbar-logo, .topbar-logo.ok { display: none; }
+}
+
+/* ---- 5. Phones -------------------------------------------------------- */
+@media (max-width: 700px) {
+  /* One-row header. It was two rows and 160px before any content. */
+  .site-header {
+    flex-wrap: nowrap; gap: 8px;
+    padding: 3px 10px; padding-top: calc(3px + env(safe-area-inset-top, 0px));
+  }
+  .brand { flex: none; padding: 0; }
+  .brand-word { display: none; }
+  .header-right { flex-wrap: nowrap; gap: 6px; margin-left: auto; min-width: 0; }
+  .account-bar { flex-wrap: nowrap; gap: 6px; min-width: 0; }
+  #btn-buy { display: none; }                 /* the credits pill opens the store too */
+  .pl-full { display: none; }
+  .ghost-btn.has-menu { max-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lang { padding: 0 6px; }
+  .l-full { display: none; }                  /* "EN" / "हि" instead of the full names */
+  .l-short { display: inline; }
+
+  /* Chart topbar: name + a few buttons, chips folded away. */
+  .topbar { padding: 6px 12px; gap: 6px; flex-wrap: wrap; }
+  .who { width: 100%; gap: 6px; }
+  .who > div:not(.engine-pop) { min-width: 0; flex: 1; }
+  .who h2 { font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .who p { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chips { gap: 6px; padding: 2px 0 4px; }
+  .chip { font-size: 13px; padding: 6px 12px; }
+
+  .view-switch { padding: 3px 12px; }
+  .view-switch button { font-size: 13.5px; }
+
+  .thread { padding: 14px 12px 6px; }
+  .msg { margin-bottom: 18px; }
+  .msg.bot .bubble { padding: 14px 15px; border-radius: 4px 14px 14px 14px; }
+  .msg.user .bubble { max-width: 88%; }
+  .starters { padding: 2px 12px 4px; }
+  .composer { padding: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px)); gap: 8px; }
+
+  /* Typing on a phone: the keyboard takes half the screen, so the chrome steps
+     aside and the question and the answer share what is left. */
+  body.kbd .site-header,
+  body.kbd .topbar,
+  body.kbd .view-switch,
+  body.kbd .starters { display: none; }
+
+  /* Modals become bottom sheets: reachable by thumb, full width. */
+  .modal-backdrop { align-items: end; padding: 0; }
+  .modal { width: 100%; max-height: 92vh; max-height: 92dvh; border-radius: 22px 22px 0 0; animation: sheet 0.28s ease both; }
+  @keyframes sheet { from { transform: translateY(28px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .packs { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Home: the logo no longer pushes the main button below the fold. */
+  .home-logo { width: min(150px, 42vw); margin-bottom: 10px; }
+  .home-inner { padding-top: 14px; }
+  .home-blurb { margin-bottom: 18px; }
+  .home-cta { width: 100%; min-width: 0; margin-bottom: 20px; }
+  #stage-home .tool-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+  #stage-home .tool-card { padding: 13px 14px; }
+  #stage-home .tool-name { font-size: 14.5px; }
+  #stage-home .tool-sub { font-size: 13px; }
+}
+
+/* ---- 6. Anything a thumb has to hit is at least 44px -------------------- */
+@media (pointer: coarse), (max-width: 700px) {
+  button.ghost, .ghost-btn, .credit-pill, .theme-toggle, .lang, .vview, .cstyle,
+  .tab, .starter, .engine-settings > summary, .modal-x, .btn, .new-chart-toggle,
+  .link-btn, .msg-actions button, .fs-btn { min-height: 44px; }
+  button.ghost, .theme-toggle, .lang, .engine-settings > summary, .modal-x { min-width: 44px; }
+  .ghost-btn, .credit-pill { display: inline-flex; align-items: center; justify-content: center; }
+  .starter { font-size: 14px; }
+}
+
+/* Header credits pill: the full label on wide screens, "N left" on phones. */
+.pl-short { display: none; }
+@media (max-width: 700px) { .pl-short { display: inline; margin-left: 4px; } }
+
+/* A grid item's minimum width is its content width, so the no-wrap suggestion
+   strip stretched the whole chat column to ~1600px and pushed the Send button
+   off the right edge of a 412px phone. minmax(0, 1fr) + min-width: 0 lets the
+   column be the width of the screen and the strip scroll inside itself. */
+.workspace { grid-template-columns: 380px minmax(0, 1fr); }
+@media (max-width: 980px) { .workspace { grid-template-columns: minmax(0, 1fr); } }
+@media (min-width: 981px) { .workspace.panel-hidden { grid-template-columns: 0 minmax(0, 1fr); } }
+.chat, .thread, .starters, .composer { min-width: 0; }
+
+.composer textarea::placeholder { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+@media (min-width: 701px) { .l-short { display: none; } }
+
+/* Status badges: the bright greens/ambers/reds are for dark backgrounds; on the
+   light theme they measured 1.6:1 (unreadable). Darker text on a tinted pill. */
+[data-theme="light"] .badge.excellent { background: rgba(22, 163, 74, 0.14); color: #166534; border-color: rgba(22, 163, 74, 0.4); }
+[data-theme="light"] .badge.neutral   { background: rgba(202, 138, 4, 0.16); color: #854d0e; border-color: rgba(202, 138, 4, 0.45); }
+[data-theme="light"] .badge.caution   { background: rgba(220, 38, 38, 0.12); color: #991b1b; border-color: rgba(220, 38, 38, 0.4); }
+
+/* The brand mark in the header is a button too. */
+.brand { min-width: 44px; min-height: 44px; justify-content: center; }
+.caret { font-size: 12px; }
+
+@media (pointer: coarse), (max-width: 700px) {
+  button.primary, select, input[type=text], input[type=date], input[type=time] { min-height: 44px; }
+}
+[data-theme="light"] .dash-list li.warning-item span { color: #b91c1c; }
+[data-theme="light"] .dosha-list-items li { color: #166534; background: rgba(22, 163, 74, 0.1); border-color: rgba(22, 163, 74, 0.3); }
+
+/* The narration popover hangs off the gear, which sits at the right of the
+   topbar on narrower screens: anchor it to the right so it opens inward. */
+@media (max-width: 980px) {
+  .engine-pop { left: auto; right: 0; width: min(320px, calc(100vw - 24px)); }
+}
+
+/* Phones: the Dasha timeline scrolls sideways instead of crushing nine labels into 320px. */
+@media (max-width: 700px) {
+  .timeline-visual-container { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
+  .timeline-row { min-width: 760px; }
+  .timeline-block { overflow: hidden; }
+  .intro h1 { font-size: 34px; letter-spacing: 0.06em; }
+}
+
+/* Full-width note under the date and time fields (it used to be squeezed into the time column). */
+.time-hint { margin: -4px 0 14px; font-size: 13px; line-height: 1.4; color: var(--ink-dim); }
+
+/* Manual UPI on a phone: nobody can scan a QR shown on the phone they are holding,
+   so the "open your UPI app" button leads and the QR steps back. */
+@media (max-width: 700px) {
+  .upi-box { flex-direction: column; align-items: stretch; }
+  .upi-meta { order: -1; flex-basis: auto; }
+  .upi-qr { align-self: center; width: 148px; height: 148px; }
+  .upi-app {
+    display: block; text-align: center; padding: 14px; font-size: 15px; font-weight: 700;
+    background: linear-gradient(120deg, var(--gold), #e8a94f); color: #241a04; border: none; border-radius: 12px;
+  }
+  .upi-app:hover { filter: brightness(1.06); background: linear-gradient(120deg, var(--gold), #e8a94f); }
+}
+
+/* Narrowest phones (<= 360px): brand + theme + language + credits + account cannot
+   share one row — at 320px the page was 347px wide and the browser zoomed it out.
+   Signed in, the theme and language switches move into the account menu. */
+.only-narrow { display: none; }
+@media (max-width: 360px) {
+  body.signed-in .theme-toggle,
+  body.signed-in .lang-switch { display: none; }
+  .acct-drop .only-narrow { display: block; }
+}
+
+/* Very short phones (<= 600px tall, e.g. 320x568): header + title row + view switch
+   + question box are ~235px, so a 50px suggestion strip would leave answers under
+   half the screen. Suggestions are an accelerator, not essential — typing still works. */
+@media (max-width: 700px) and (max-height: 600px) {
+  .starters { display: none; }
 }
