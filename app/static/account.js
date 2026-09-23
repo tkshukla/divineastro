@@ -196,6 +196,7 @@ async function loadAccount() {
   }
 
   await resumeHostedCheckout();
+  await resumePayuReturn();
   return acct.user;
 }
 
@@ -224,6 +225,28 @@ async function resumeHostedCheckout() {
   } catch (ex) {
     toast(ex.message || "We could not confirm that payment yet.");
   }
+}
+
+/* PayU's return is a real browser POST that the server already verified and
+   acted on (see /api/payu/return) before redirecting here — unlike
+   resumeHostedCheckout() above, there is nothing left to confirm, only the
+   result to reflect. */
+async function resumePayuReturn() {
+  const params = new URLSearchParams(location.search);
+  if (!params.has("payu")) return;
+  const ok = params.get("payu") === "ok";
+
+  params.delete("payu"); params.delete("order");
+  history.replaceState({}, "", location.pathname +
+    (params.toString() ? `?${params}` : ""));
+
+  if (!ok) { toast(at("payFailed") || "Payment could not be confirmed.", true); return; }
+
+  try {
+    const fresh = await (await fetch("/api/me")).json();
+    if (fresh.user) { acct.user = fresh.user; renderAccountBar(); }
+  } catch { /* the credit will still show on the next normal load */ }
+  toast(`${at("paid")} ✓`);
 }
 
 function renderAccountBar() {
@@ -549,6 +572,12 @@ async function startCheckout(sku, back) {
       await openCashfree(data.order.id, c);
     } else if (c.mode === "paytm") {
       await openPaytm(data.order.id, c);
+    } else if (c.mode === "payu") {
+      // A real hosted form POST — the whole site is left. PayU's own return
+      // POST is verified and acted on server-side (see /api/payu/return);
+      // resumePayuReturn() in loadAccount() picks the result back up.
+      openPayu(c);
+      return;
     } else if (c.mode === "instamojo") {
       // Hosted page: leave the site entirely. resumeHostedCheckout() picks the
       // thread back up when Instamojo redirects the customer home.
@@ -670,6 +699,23 @@ async function openPaytm(orderId, c) {
   throw new Error(
     "Paytm checkout needs live MID credentials to mint a transaction token. " +
     "Add PAYTM_MID and PAYTM_MERCHANT_KEY, or use Cashfree/Razorpay.");
+}
+
+/* PayU's classic hosted checkout: a real HTML form auto-submitted to their
+   payment page, not a fetch. This navigates the whole page away, exactly
+   like the Instamojo branch above — nothing here returns. */
+function openPayu(c) {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = c.action;
+  form.style.display = "none";
+  for (const [name, value] of Object.entries(c.fields)) {
+    const input = document.createElement("input");
+    input.type = "hidden"; input.name = name; input.value = value ?? "";
+    form.append(input);
+  }
+  document.body.append(form);
+  form.submit();
 }
 
 async function confirmPayment(orderId, payload) {
