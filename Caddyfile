@@ -11,16 +11,36 @@ divineastro.org, www.divineastro.org {
 	# may be selected — and nothing else. Anything added later must be listed
 	# here deliberately.
 	#
-	# Instamojo, the live gateway, needs no entry: it is a plain top-level
-	# redirect rather than an embedded SDK or iframe, and CSP does not govern
-	# `location.assign` to another origin. form-action does not apply either.
+	# Instamojo needs no entry: it is a plain top-level redirect rather than an
+	# embedded SDK or iframe, and CSP does not govern `location.assign` to
+	# another origin.
+	#
+	# PayU is different and DOES need one: its hosted checkout is a real
+	# <form method=POST> submitted by the page (see openPayu() in
+	# account.js), and that IS governed by form-action — without PayU's
+	# domains listed there, the browser silently drops the navigation with no
+	# catchable JS error, which is exactly what happened the first time this
+	# went live (nothing appeared to happen on "Buy").
+	#
+	# A single https://secure.payu.in entry is NOT enough, and this bit twice:
+	# secure.payu.in/_payment 302-redirects to a DIFFERENT origin,
+	# api.payu.in, to actually render the checkout page — confirmed by
+	# tracing the redirect chain directly (curl, no browser). Chrome's
+	# form-action enforcement checks that redirect hop too, not just the
+	# form's own action URL, so api.payu.in needs to be allowed as well, and
+	# the failure mode is identical: silent, no console error a user would
+	# think to look for. Using https://*.payu.in instead of naming each
+	# subdomain individually, since PayU's own checkout flow is what decides
+	# how many hops and which subdomains are involved, not us, and chasing
+	# that one domain at a time every time PayU changes something is not a
+	# fight worth re-fighting.
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 		X-Content-Type-Options    "nosniff"
 		X-Frame-Options           "SAMEORIGIN"
 		Referrer-Policy           "strict-origin-when-cross-origin"
 		Permissions-Policy        "geolocation=(), microphone=(), camera=(), payment=(self)"
-		Content-Security-Policy   "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.cashfree.com https://checkout.razorpay.com https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://sdk.cashfree.com https://api.cashfree.com; frame-src https://sdk.cashfree.com https://api.cashfree.com https://checkout.razorpay.com https://accounts.google.com; base-uri 'self'; form-action 'self' https://accounts.google.com; frame-ancestors 'self'"
+		Content-Security-Policy   "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.cashfree.com https://checkout.razorpay.com https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://sdk.cashfree.com https://api.cashfree.com; frame-src https://sdk.cashfree.com https://api.cashfree.com https://checkout.razorpay.com https://accounts.google.com; base-uri 'self'; form-action 'self' https://accounts.google.com https://*.payu.in; frame-ancestors 'self'"
 		-Server
 	}
 
