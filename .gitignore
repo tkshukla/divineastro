@@ -48,3 +48,4 @@ assets/logo-master.png
 .DS_Store
 Thumbs.db
 *.metadata.json
+tests/e2e/shots/

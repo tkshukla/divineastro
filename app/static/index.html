@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Divine Astro — Vedic kundali readings</title>
 <meta name="description" content="Your Vedic kundali cast to Swiss-Ephemeris precision, with dashas, North and South Indian charts, and answers to your questions in Hindi or English." />
 <meta property="og:title" content="Divine Astro — Vedic kundali readings" />
@@ -24,7 +24,7 @@
      off-centre. A single header in flow cannot collide with anything. -->
 <header class="site-header">
   <button type="button" class="brand" id="go-home" aria-label="Divine Astro — home">
-    <img class="brand-mark" src="/static/logo.png" alt=""
+    <img class="brand-mark" src="/static/logo.webp" alt=""
          onload="this.classList.add('ok');" onerror="this.remove();" />
     <span class="brand-word">Divine Astro</span>
   </button>
@@ -34,8 +34,8 @@
       <span class="theme-icon">☀️</span>
     </button>
     <div class="lang-switch" role="group" aria-label="Language">
-      <button class="lang active" data-lang="en">English</button>
-      <button class="lang" data-lang="hi">हिन्दी</button>
+      <button class="lang active" data-lang="en" aria-label="English"><span class="l-full">English</span><span class="l-short">EN</span></button>
+      <button class="lang" data-lang="hi" aria-label="हिन्दी"><span class="l-full">हिन्दी</span><span class="l-short">हि</span></button>
     </div>
     <!-- Account, credits and store -->
     <div id="account-bar" class="account-bar"></div>
@@ -47,7 +47,7 @@
      mark in the header above, and nothing is layered over anything. -->
 <section id="stage-home" class="stage active">
   <div class="home-inner">
-    <img id="home-logo" class="home-logo" src="/static/logo.png" alt="Divine Astro"
+    <img id="home-logo" class="home-logo" src="/static/logo.webp" alt="Divine Astro"
          onload="this.classList.add('ok');" onerror="this.remove();" />
     <h1 id="home-title">Divine Astro</h1>
     <p class="home-tagline" id="home-tagline">
@@ -185,7 +185,7 @@
     <!-- Dasha Visual Timeline -->
     <div class="card timeline-card" style="margin-top: 20px;">
       <h3 id="dash-timeline-title" style="margin-bottom: 4px;">Dasha Visual Timeline</h3>
-      <p id="dash-timeline-desc" style="font-size: 11px; color: var(--ink-dim); margin-bottom: 16px;">
+      <p id="dash-timeline-desc" style="font-size: 12px; color: var(--ink-dim); margin-bottom: 16px;">
         Interactive mapping of your Vimshottari Mahadasha and Antardasha sequence. Active period is highlighted.
       </p>
       <div class="timeline-visual-container" id="timeline-visual">
@@ -476,11 +476,11 @@
       <div class="field">
         <label for="f-time">Time of birth</label>
         <input id="f-time" name="time" type="time" value="12:00" required />
-        <span class="hint" style="display: block; margin-top: 4px; font-size: 11px; line-height: 1.3; color: var(--ink-dim);">
-          ⚠️ Born between midnight and sunrise? Use the next calendar date (e.g. night of 25th is technically early hours of 26th).
-        </span>
       </div>
     </div>
+    <p class="time-hint" id="time-hint">
+      ⚠️ Born between midnight and sunrise? Use the next calendar date (e.g. night of 25th is technically early hours of 26th).
+    </p>
 
     <div class="field">
       <label for="f-gender" data-i18n="gender">Gender <span class="opt">optional</span></label>
@@ -552,6 +552,14 @@
         <p id="who-detail">—</p>
       </div>
       <button id="save-chart-btn" class="ghost" title="Save Chart" aria-label="Save Chart" style="display: none;">&#9734;</button>
+      <!-- Phone: the six chart chips are folded away behind this. Desktop: the
+           chart panel can be folded away instead, so the reading gets the width. -->
+      <button id="chips-toggle" class="ghost chips-toggle" type="button"
+              aria-expanded="false" aria-controls="chips"
+              title="Chart details" aria-label="Chart details">&#9432;</button>
+      <button id="panel-toggle" class="ghost panel-toggle" type="button"
+              aria-expanded="true" aria-controls="chart-panel"
+              title="Show or hide the chart" aria-label="Show or hide the chart">&#9776;</button>
 
       <!-- Narration engine — deliberately tucked away in the reading screen.
            The landing page must stay free of any model picker. -->
@@ -561,6 +569,11 @@
           <label for="f-provider" data-i18n="narration">Narration</label>
           <select id="f-provider"></select>
           <p id="engine-note" class="engine-note"></p>
+          <div class="fs-row" role="group" aria-label="Text size">
+            <span class="fs-label" id="fs-label">Text size</span>
+            <button type="button" class="fs-btn" id="fs-down" aria-label="Smaller text">A&#8722;</button>
+            <button type="button" class="fs-btn" id="fs-up" aria-label="Larger text">A+</button>
+          </div>
         </div>
       </details>
     </div>
@@ -575,7 +588,7 @@
   </nav>
 
   <div class="workspace" data-view="chat">
-    <aside class="panel">
+    <aside class="panel" id="chart-panel">
       <div class="chart-switch" id="chart-switch" role="group" aria-label="Chart style">
         <button type="button" class="cstyle" data-style="north">North Indian</button>
         <button type="button" class="cstyle" data-style="south">South Indian</button>
@@ -607,9 +620,14 @@
 
     <main class="chat">
       <div id="thread" class="thread"></div>
+      <button type="button" id="jump-latest" class="jump-latest" hidden>&#8595; <span id="jump-latest-label">Latest</span></button>
       <div id="starters" class="starters"></div>
       <form id="ask-form" class="composer">
-        <input id="q" type="text" placeholder="Ask about career, money, love, health, timing…" autocomplete="off" />
+        <!-- A textarea that grows with the question (see autosizeQ in app.js). A
+             single-line input hid everything but the last few words of a long
+             question. 16px text is deliberate: smaller and iOS zooms the page on focus. -->
+        <textarea id="q" rows="1" enterkeyhint="send" autocomplete="off"
+                  placeholder="Ask about career, money, love, health, timing…"></textarea>
         <button type="button" id="stop" aria-label="Stop" hidden>
           <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
         </button>

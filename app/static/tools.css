@@ -105,7 +105,7 @@
   gap: 14px; margin-top: 18px;
 }
 .pa-limbs h4 {
-  margin: 0 0 6px; font-size: 11px; letter-spacing: 0.12em;
+  margin: 0 0 6px; font-size: 12px; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--ink-faint); font-weight: 600;
 }
 .limb-line { font-size: 13.5px; margin-bottom: 3px; }
@@ -128,4 +128,17 @@
   .kt-name { width: auto; white-space: normal; }
   .koota-table td { padding: 9px 6px; }
   .pa-sun { text-align: left; }
+}
+
+/* Choghadiya: a four-column table does not fit a phone, and scrolling sideways
+   hid the advice column with no sign it was there. Each slot becomes a card. */
+@media (max-width: 700px) {
+  #choghadiya-result thead { display: none; }
+  #choghadiya-result table,
+  #choghadiya-result tbody,
+  #choghadiya-result tr,
+  #choghadiya-result td { display: block; width: 100%; }
+  #choghadiya-result tr { padding: 10px 6px; }
+  #choghadiya-result td { padding: 2px 4px !important; }
+  #choghadiya-result td:first-child { font-size: 15px; }
 }
