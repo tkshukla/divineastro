@@ -9,6 +9,7 @@ and onboarding rules change. Nothing above this file knows which one is active.
     paytm       Paytm Payment Gateway (checksum-signed, JS Checkout)
     cashfree    Cashfree (clean API, but restricts astrology)
     razorpay    Razorpay
+    payu        PayU (classic hosted checkout, key+salt SHA-512 hash)
     upi_manual  direct UPI, settled by a human against the bank statement
 
 Every adapter implements three things:
@@ -397,6 +398,89 @@ class InstamojoGateway:
 
 
 # --------------------------------------------------------------------------
+# PayU
+# --------------------------------------------------------------------------
+
+class PayUGateway:
+    """PayU India's classic hosted checkout: a browser form POST to /_payment.
+
+    Unlike every other adapter here, `create()`'s result is not opened by a JS
+    SDK or a redirect — the customer's browser is meant to auto-submit a real
+    HTML form to PayU, and PayU auto-submits it right back to `surl`/`furl` as
+    another real POST (not a webhook fetch, not a GET query string). That
+    return needs its own form-decoding route (see /api/payu/return in
+    api_account.py); it cannot reuse the JSON `/api/orders/confirm` path the
+    other gateways share.
+
+    Hash sequence taken from PayU's own docs (docs.payu.in, "Generate Hash —
+    Merchant Hosted"), SHA-512 throughout:
+
+        request: key|txnid|amount|productinfo|firstname|email|||||||||||SALT
+                 (five empty udf1-5 slots, six pipes before SALT)
+        reverse: SALT|status||||||email|firstname|productinfo|amount|txnid|key
+                 (same five empty slots, read back to front)
+
+    `parse_webhook` is deliberately always-False: PayU's S2S webhook JSON
+    shape was not confirmed against real traffic before this shipped, so it
+    would either reject everything (safe, just inert) or — if the field names
+    were guessed wrong — accept something unverified (not safe). The signed
+    browser return is the only path that grants credit until this is checked
+    against a real webhook payload and filled in for real.
+    """
+
+    key, label = "payu", "PayU"
+
+    def __init__(self) -> None:
+        self.merchant_key = os.environ.get("PAYU_MERCHANT_KEY", "")
+        self.salt = os.environ.get("PAYU_SALT", "")
+        self.sandbox = os.environ.get("PAYU_SANDBOX", "1") == "1"
+        self.action = "https://test.payu.in/_payment" if self.sandbox else "https://secure.payu.in/_payment"
+        self.surl = os.environ.get("PAYU_SURL", "")
+        self.furl = os.environ.get("PAYU_FURL", "")
+
+    def configured(self) -> bool:
+        return bool(self.merchant_key and self.salt)
+
+    def _hash(self, txnid: str, amount: str, productinfo: str, firstname: str, email: str) -> str:
+        seq = f"{self.merchant_key}|{txnid}|{amount}|{productinfo}|{firstname}|{email}|||||||||||{self.salt}"
+        return hashlib.sha512(seq.encode()).hexdigest()
+
+    def _reverse_hash(self, status: str, productinfo: str, firstname: str, email: str,
+                       amount: str, txnid: str) -> str:
+        seq = f"{self.salt}|{status}||||||{email}|{firstname}|{productinfo}|{amount}|{txnid}|{self.merchant_key}"
+        return hashlib.sha512(seq.encode()).hexdigest()
+
+    def create(self, order, user) -> dict:
+        order.provider_order_id = f"GD{order.id:08d}"
+        amount = f"{order.amount_paise / 100:.2f}"
+        productinfo = (order.title or "Divine Astro")[:100]
+        firstname = (user.name or "Customer")[:60]
+        email = user.email or "noreply@example.com"
+        hash_ = self._hash(order.provider_order_id, amount, productinfo, firstname, email)
+        return {
+            "mode": "payu", "action": self.action, "sandbox": self.sandbox,
+            "fields": {
+                "key": self.merchant_key, "txnid": order.provider_order_id,
+                "amount": amount, "productinfo": productinfo,
+                "firstname": firstname, "email": email,
+                "phone": user.phone or "", "surl": self.surl, "furl": self.furl,
+                "hash": hash_,
+            },
+        }
+
+    def verify_return(self, payload: dict) -> bool:
+        status = str(payload.get("status", ""))
+        expected = self._reverse_hash(
+            status, payload.get("productinfo", ""), payload.get("firstname", ""),
+            payload.get("email", ""), payload.get("amount", ""), payload.get("txnid", ""),
+        )
+        return status.lower() == "success" and hmac.compare_digest(expected, payload.get("hash", ""))
+
+    def parse_webhook(self, body: bytes, headers) -> tuple[bool, str, str]:
+        return False, "", ""    # not implemented — see the class docstring
+
+
+# --------------------------------------------------------------------------
 # Razorpay
 # --------------------------------------------------------------------------
 
@@ -454,7 +538,7 @@ class RazorpayGateway:
 # preferred over manual UPI, because manual costs you human time per order.
 _ALL = {g.key: g for g in (
     InstamojoGateway(), PaytmGateway(), CashfreeGateway(), RazorpayGateway(),
-    UpiManualGateway(),
+    PayUGateway(), UpiManualGateway(),
 )}
 _TEST = TestGateway()
 

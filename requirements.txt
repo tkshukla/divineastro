@@ -38,6 +38,12 @@ pycryptodome==3.23.0        # Paytm's AES-128-CBC checksum (gateways.py) —
                             # ASTRO_GATEWAY=paytm would have crashed the same
                             # way. Not currently active in production, but
                             # fixed alongside the confirmed instance of this.
+python-multipart==0.0.20    # Starlette's Request.form() needs this to parse
+                            # PayU's return POST (/api/payu/return) — a real
+                            # application/x-www-form-urlencoded browser POST,
+                            # unlike every other gateway's JSON callback.
+                            # Without it every PayU payment 500s silently on
+                            # return; caught by tests.test_payu, not by hand.
 
 # ---------------------------------------------------------------- documents
 typst==0.15.0               # PDF rendering (ships with stellium; pinned here

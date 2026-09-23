@@ -427,6 +427,36 @@ def confirm_order(body: ConfirmIn, user: User = Depends(me),
     }
 
 
+@router.post("/payu/return")
+async def payu_return(request: Request, db: Session = Depends(get_db)) -> Response:
+    """PayU's surl/furl target: a real browser POST from PayU's own domain,
+    not a fetch — there is no session guarantee here, so (like the webhook)
+    this trusts nothing except a hash that only PayU's salt can produce.
+    """
+    form = await request.form()
+    payload = {k: str(v) for k, v in form.items()}
+
+    from . import gateways
+
+    gw = gateways.active()
+    order = None
+    txnid = payload.get("txnid", "")
+    if txnid:
+        order = db.execute(
+            select(Order).where(Order.provider_order_id == txnid)
+        ).scalar_one_or_none()
+
+    granted = False
+    if order is not None and gw.key == "payu" and gw.verify_return(payload):
+        granted, _ = billing.mark_paid(
+            db, order, payload.get("mihpayid", "") or payload.get("payuMoneyId", ""))
+
+    dest = f"/?payu={'ok' if granted else 'failed'}"
+    if order is not None:
+        dest += f"&order={order.id}"
+    return RedirectResponse(dest, status_code=303)
+
+
 class UtrIn(BaseModel):
     order_id: int
     utr_last5: str
