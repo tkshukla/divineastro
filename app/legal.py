@@ -97,9 +97,9 @@ _SHELL = """<!DOCTYPE html>
                   font-size: 13px; text-decoration: none; }}
   .legal .back:hover {{ color: var(--gold); }}
   .legal .box {{ border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px;
-                 background: rgba(8,10,24,0.5); margin: 20px 0; }}
+                 background: var(--inset-bg); margin: 20px 0; }}
 </style></head>
-<body>
+<body class="sacred">
 <div class="legal">
   <a class="back" href="/">&larr; {brand}</a>
   <h1>{title}</h1>

@@ -25,7 +25,7 @@ SHOTS = Path(__file__).resolve().parent / "shots"
 
 MIN_TARGET = 44
 MIN_TEXT = 12            # px — nothing a person is meant to read is smaller
-SEVERE_CONTRAST = 3.0    # below this it is effectively unreadable
+SEVERE_CONTRAST = 4.5    # WCAG AA for body text (DIVASTRO-70); gradients/images are skipped, see CONTRAST_JS
 AA = 4.5
 
 # Contrast: walk up to the first opaque background, blend back down, compare with
@@ -104,7 +104,7 @@ OVERFLOW_JS = """
   for (const el of document.querySelectorAll('body *')) {
     const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (r.width === 0 || r.height === 0 || cs.visibility === 'hidden' || cs.position === 'fixed' ||
-        el.closest('[hidden], canvas, svg, .glow')) continue;
+        el.closest('[hidden], canvas, svg, .glow, [aria-hidden="true"]')) continue;   // decoration is allowed to bleed off-screen
     if (r.right <= vw + 1) continue;
     let scroller = false;
     for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
@@ -239,8 +239,6 @@ def audit(profile: str, theme: str, ctx_args: dict, base: str, browser, shots: b
         severe = [w for w in weak if w["cr"] < SEVERE_CONTRAST]
         check(f"{label}: text contrast is readable (>= {SEVERE_CONTRAST}:1)", not severe,
               "; ".join(f"{w['sel'][:36]} '{w['text']}' {w['cr']}:1" for w in severe[:3]) + (f" (+{len(severe) - 3})" if len(severe) > 3 else ""))
-        if weak and not severe:
-            print(f"      note: {len(weak)} text spots under WCAG AA {AA}:1 (tracked in DIVASTRO-70)")
     check(f"{profile}/{theme}: no console errors", not pg.console_errors, "; ".join(pg.console_errors[:2]))
     check(f"{profile}/{theme}: no CSP violations", not pg.csp_violations(), str(pg.csp_violations()[:2]))
     ctx.close()

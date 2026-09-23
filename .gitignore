@@ -49,3 +49,4 @@ assets/logo-master.png
 Thumbs.db
 *.metadata.json
 tests/e2e/shots/
+docs/design/shots/
