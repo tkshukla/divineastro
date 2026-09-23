@@ -84,6 +84,45 @@ def run_profile(p, browser, base: str, name: str, args: dict, expect_n: int) -> 
     ctx.close()
 
 
+BADGE_ANIMS = "(() => document.getAnimations({subtree: true}).filter(a => a.effect.target && a.effect.target.closest && a.effect.target.closest('#free-badge'))"
+
+
+def festival_lights(p, browser, base: str) -> None:
+    """The lights must catch the eye without hurting anyone: nothing fast, only the
+    sign-up promise gets them, and 'reduce motion' turns them off."""
+    print("\n[festival lights]")
+    ctx = browser.new_context(viewport={"width": 412, "height": 915})
+    pg = Page(ctx.new_page(), base)
+    pg.open_home()
+    pg.page.wait_for_selector("#free-badge.promo", timeout=8000)
+    durs = pg.page.evaluate(BADGE_ANIMS + ".map(a => a.effect.getTiming().duration))()")
+    check("the promise is animated (ring, glow, bulbs, shimmer, flame)", len(durs) >= 5, f"{len(durs)} animations")
+    fastest = min(durs) if durs else 0
+    check("nothing is fast: every animation cycle is >= 1.9s (photosensitivity: < 3 flashes a second)",
+          fastest >= 1900, f"fastest cycle {fastest:.0f}ms")
+    bulbs = pg.page.evaluate("getComputedStyle(document.querySelector('#free-badge .lights'), '::before').animationName")
+    check("the bulb string exists", "bulbs" in bulbs, bulbs)
+    ctx.close()
+
+    ctx = browser.new_context(viewport={"width": 412, "height": 915}, reduced_motion="reduce")
+    pg = Page(ctx.new_page(), base)
+    pg.open_home()
+    pg.page.wait_for_selector("#free-badge.promo", timeout=8000)
+    n = pg.page.evaluate(BADGE_ANIMS + ".length)()")
+    check("with 'reduce motion' on, nothing animates", n == 0, f"{n} running")
+    check("...but the badge is still fully visible", pg.page.is_visible("#free-badge-main"))
+    ctx.close()
+
+    ctx = browser.new_context(viewport={"width": 412, "height": 915})
+    pg = Page(ctx.new_page(), base)
+    pg.sign_in()
+    pg.open_home()
+    pg.page.wait_for_selector("#free-badge:not([hidden])", timeout=8000)
+    check("a signed-in person's balance box has no lights", not pg.page.evaluate("document.querySelector('#free-badge').classList.contains('promo')")
+          and pg.page.evaluate(BADGE_ANIMS + ".length)()") == 0)
+    ctx.close()
+
+
 def never_wrong(p, browser, base: str) -> None:
     """The badge must stay hidden until /api/me has answered, and if it never
     answers, must stay hidden — not fall back to a number the page made up."""
@@ -129,6 +168,7 @@ def main() -> int:
                 for name, args in phones.items():
                     run_profile(p, browser, base, name, args, expect_n=10)
                 never_wrong(p, browser, base)
+                festival_lights(p, browser, base)
             # A server configured for 25: the page must say 25 — proof it is not hard-coded.
             with server({"ASTRO_FREE_QUESTIONS": "25"}) as base:
                 run_profile(p, browser, base, "server says 25 (pixel7)", phones["pixel7_412x915"], expect_n=25)
