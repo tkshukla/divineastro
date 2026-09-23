@@ -1824,9 +1824,10 @@ details.reasoning summary:hover { color: var(--gold); }
 /* ---- 3. The reading screen fills the *visible* screen ------------------
    100vh includes the space under a phone's collapsing URL bar and the on-screen
    keyboard, which pushed the question box off the bottom. dvh is the visible
-   height; --app-h (set from visualViewport in app.js) also tracks the keyboard. */
+   height, and the viewport meta asks the browser to resize the page for the
+   keyboard (interactive-widget=resizes-content), so the box rides above it. */
 @supports (height: 100dvh) {
-  body.in-reading { height: var(--app-h, 100dvh); max-height: none; }
+  body.in-reading { height: 100dvh; max-height: none; }
 }
 .chat { position: relative; }
 

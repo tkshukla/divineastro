@@ -2065,19 +2065,17 @@ qBox.addEventListener("focus", () => {
 });
 qBox.addEventListener("blur", () => document.body.classList.remove("kbd"));
 
-// Track the visible area so the question box stays above an on-screen keyboard
-// (Chrome on Android no longer resizes the page for it; iOS never did).
-if (window.visualViewport) {
-  const fit = () => {
-    const reading = document.body.classList.contains("in-reading");
-    document.documentElement.style.setProperty(
-      "--app-h", reading && !hasKeyboardAndMouse.matches
-        ? `${Math.round(window.visualViewport.height)}px` : "");
-    if (reading && document.activeElement === qBox) scrollThread(true);
-  };
-  window.visualViewport.addEventListener("resize", fit);
-  window.visualViewport.addEventListener("scroll", fit);
-}
+// The on-screen keyboard: the page is told to RESIZE for it (interactive-widget=
+// resizes-content in the viewport meta tag), so 100dvh is the visible height and
+// the question box simply sits above the keyboard. An earlier version of this
+// resized the page from visualViewport as well; on Android Chrome the browser had
+// already scrolled the visible window down to show the box, and shrinking the page
+// on top of that moved the box back OUT of that window - what was typed vanished
+// behind the keyboard until it was dismissed. One mechanism only.
+qBox.addEventListener("focus", () => {
+  // Once the keyboard has finished opening, keep the latest answer in view.
+  setTimeout(() => scrollThread(true), 350);
+});
 
 $("#jump-latest").addEventListener("click", () => scrollThread(true));
 $("#thread").addEventListener("scroll", () => {
