@@ -64,6 +64,21 @@ def run_profile(p, browser, base: str, name: str, args: dict, expect_n: int) -> 
     check("signed in, the badge shows the questions they have left", "left" in signed and str(expect_n) in signed, repr(signed))
     check("signed in, the sign-up promise line is gone", not pg.page.is_visible("#free-badge-sub"))
 
+    # Sign out ON THE PAGE, without a reload: the promise must come straight back.
+    # (It did not: the server only sent the free-question number to signed-out
+    # visitors, so a page that loaded signed in never knew it. Found when the
+    # owner signed out on a phone and the box was missing.)
+    me = pg.page.evaluate("fetch('/api/me').then(r => r.json())")
+    check("/api/me carries the free-question number when signed in too",
+          me.get("free_questions") == expect_n, str(me.get("free_questions")))
+    pg.page.click("#btn-acct")
+    pg.page.click('.acct-drop [data-act="logout"]')
+    pg.page.wait_for_function(
+        "!document.querySelector('#free-badge').hidden && document.querySelector('#free-badge-main').textContent.includes('FREE')",
+        timeout=8000)
+    check("after signing out on the page, the FREE badge appears without a reload",
+          str(expect_n) in pg.page.inner_text("#free-badge-main"), repr(pg.page.inner_text("#free-badge-main")))
+
     check("no console errors", not pg.console_errors, "; ".join(pg.console_errors[:2]))
     check("no CSP violations", not pg.csp_violations())
     ctx.close()

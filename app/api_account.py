@@ -204,9 +204,13 @@ def logout(response: Response) -> dict:
 @router.get("/me")
 def whoami(request: Request, db: Session = Depends(get_db)) -> dict:
     user = auth.current_user(request, db)
+    # free_questions goes out with EVERY reply, not only to signed-out visitors: a page
+    # that loaded signed in and is then signed out (no reload) has to be able to show
+    # the "first N questions free" promise straight away. It was missing here, so the
+    # home page's badge stayed blank after signing out until the next reload.
     if user is None:
         return {"user": None, "free_questions": billing.FREE_QUESTIONS}
-    return {"user": _user_dict(db, user)}
+    return {"user": _user_dict(db, user), "free_questions": billing.FREE_QUESTIONS}
 
 
 @router.post("/me")
