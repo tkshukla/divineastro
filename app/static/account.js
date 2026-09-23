@@ -161,6 +161,7 @@ async function loadAccount() {
     const data = await (await fetch("/api/me")).json();
     acct.user = data.user;
     acct.freeQuestions = data.free_questions ?? acct.freeQuestions;
+    acct.freeKnown = typeof data.free_questions === "number";
   } catch { acct.user = null; }
 
   try {
@@ -253,6 +254,7 @@ function renderAccountBar() {
   const bar = document.querySelector("#account-bar");
   if (!bar) return;
   document.body.classList.toggle("signed-in", !!acct.user);
+  if (typeof renderFreeBadge === "function") renderFreeBadge();
   if (!acct.user) {
     bar.innerHTML = `<button class="ghost-btn" id="btn-signin">${escapeHtml(at("signIn"))}</button>`;
     bar.querySelector("#btn-signin").onclick = () => openSignIn();

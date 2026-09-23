@@ -1,0 +1,107 @@
+/* MOCKUP ONLY — Direction A "Temple saffron". Not loaded by the app.
+   Applied on top of the real screens by build_mockups.py so the picture shows
+   real content. Palette: ivory/sandal ground, kumkum-maroon header, saffron
+   actions, turmeric-gold rules. Fonts here are system fonts; the build would
+   self-host an OFL serif that covers Devanagari. */
+
+:root, [data-theme="light"], [data-theme="dark"] {
+  --bg-0: #fff5e1; --bg-1: #fffdf8;
+  --bg-card: rgba(255, 253, 247, .97); --bg-card-hover: #fff8ea;
+  --ink: #3a1410; --ink-dim: #6a3b2b; --ink-faint: #85543f;
+  --gold: #9a5b00; --gold-soft: #8c1c13;
+  --violet: #c2410c; --cyan: #0e7490; --rose: #b3172f; --green: #166534;
+  --line: rgba(154, 91, 0, .28);
+  --glass: rgba(255, 253, 247, .95); --glass-strong: #fffdf7;
+  --shadow: 0 10px 28px rgba(120, 60, 10, .14);
+  --serif: "Palatino Linotype", "Book Antiqua", Georgia, "Nirmala UI", serif;
+}
+html, body { background: linear-gradient(180deg, #fff1d6 0%, #fff8ea 38%, #fff3dc 100%) !important; color: #3a1410; }
+#sky, .glow { display: none !important; }
+
+/* ---- header: kumkum maroon with a gold rule ---- */
+.site-header { background: linear-gradient(90deg, #6f111d, #9c1b2c 55%, #7b1420) !important;
+  border-bottom: 3px solid #d4a017 !important; box-shadow: 0 4px 14px rgba(90, 15, 25, .35); }
+.site-header .brand-mark { border-radius: 50%; border: 2px solid #f0c25a; }
+.ghost-btn, .lang-switch, .theme-toggle { background: #fff3d6 !important; border: 1px solid #e0b040 !important; color: #6f111d !important; }
+.lang { color: #7b1420 !important; } .lang.active { background: #f5c76a !important; color: #4a0a12 !important; }
+.credit-pill { background: #fff3d6 !important; border: 1px solid #e0b040 !important; color: #14532d !important; }
+.credit-pill b { color: #14532d; }
+
+/* ---- primary action: saffron with a gold edge ---- */
+button.primary, .home-cta { background: linear-gradient(180deg, #e0670e 0%, #bd430a 100%) !important; color: #fff !important;
+  border: 1px solid #f0b840 !important; letter-spacing: .04em;
+  box-shadow: 0 8px 18px rgba(189, 67, 10, .38), inset 0 1px 0 rgba(255, 255, 255, .35) !important; }
+
+/* ---- cards: double gold frame ---- */
+.card, .tool-card, .dash-card, .milan-card, .pack, .forecast-card {
+  background: #fffdf7 !important; border: 1px solid rgba(184, 134, 11, .55) !important; border-radius: 18px !important;
+  box-shadow: 0 8px 22px rgba(120, 60, 10, .12), inset 0 0 0 4px #fffdf7, inset 0 0 0 5px rgba(184, 134, 11, .28) !important; }
+.tool-name, .modal-title, h1, h2, h3 { color: #8c1c13 !important; }
+.tool-sub { color: #85543f !important; }
+.tool-card .tool-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
+  background: radial-gradient(circle, #fff3d6, #ffe0a0); border: 1px solid #d4a017; }
+
+/* ---- home ---- */
+.home-inner { position: relative; }
+#home-logo { width: 132px !important; border-radius: 50% !important; border: 3px solid #d4a017;
+  box-shadow: 0 0 0 6px #fff3d6, 0 0 0 8px #d4a017, 0 12px 28px rgba(120, 60, 10, .35) !important; filter: none !important; }
+#home-title { color: #8c1c13 !important; font-size: 40px !important; letter-spacing: .05em !important; margin-bottom: 0 !important; }
+.deva-sub { font-family: "Nirmala UI", "Noto Sans Devanagari", serif; color: #9a5b00; font-size: 18px; letter-spacing: .06em; margin: 0 0 10px; }
+.home-tagline { color: #4a2418 !important; font-size: 17px !important; }
+.home-blurb { color: #6a3b2b !important; }
+.home-points li::before { content: "\1FAB7"; opacity: 1 !important; }
+.home-points { color: #6a3b2b !important; }
+.mandala-bg { position: absolute; left: 50%; top: -60px; width: 460px; height: 460px; transform: translateX(-50%);
+  opacity: .16; z-index: 0; pointer-events: none; }
+.home-inner > *:not(.mandala-bg) { position: relative; z-index: 1; }
+.toran { width: 100%; height: 44px; display: block; margin-top: -1px; }
+.om { font-family: "Nirmala UI", serif; color: #b8860b; font-size: 26px; line-height: 1; margin: 6px 0 4px; }
+
+/* the free-questions hook */
+.free-badge { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; margin: 4px auto 14px; padding: 10px 22px;
+  background: linear-gradient(180deg, #fff0c2, #ffe08a); color: #6f111d; border-radius: 14px;
+  border: 1px solid #b8860b; box-shadow: 0 0 0 3px #fff3d6, 0 0 0 4px #d4a017, 0 8px 18px rgba(154, 91, 0, .28); }
+.free-badge b { font-size: 16px; letter-spacing: .02em; }
+.free-badge small { font-size: 13px; color: #7a2a10; }
+.lotus-div { text-align: center; color: #b8860b; letter-spacing: .6em; margin: 22px 0 14px; font-size: 18px; }
+.lotus-div::before, .lotus-div::after { content: ""; display: inline-block; width: 26%; height: 1px; background: linear-gradient(90deg, transparent, #b8860b, transparent); vertical-align: middle; margin: 0 8px; }
+.feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0 4px; text-align: left; }
+.feat { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 14px; background: #fffdf7;
+  border: 1px solid rgba(184, 134, 11, .45); font-size: 13.5px; color: #4a2418; line-height: 1.3; }
+.feat i { font-style: normal; display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 50%;
+  background: radial-gradient(circle, #fff3d6, #ffe0a0); border: 1px solid #d4a017; font-size: 17px; }
+
+/* ---- reading screen ---- */
+.topbar, .view-switch, .composer { background: #fff0d0 !important; border-color: rgba(154, 91, 0, .3) !important; }
+.who h2 { color: #8c1c13 !important; } .who p { color: #85543f !important; }
+button.ghost { background: #fffdf7 !important; border: 1px solid #d4a017 !important; color: #7b1420 !important; }
+.vview { color: #7b1420 !important; border-color: #d9b45a !important; } .vview.active { background: #f5c76a !important; color: #4a0a12 !important; border-color: #b8860b !important; }
+.msg.bot .bubble { background: #fffdf7 !important; border: 1px solid rgba(184, 134, 11, .5) !important; border-left: 5px solid #b3172f !important;
+  box-shadow: 0 6px 18px rgba(120, 60, 10, .12) !important; color: #3a1410 !important; }
+.msg.user .bubble { background: linear-gradient(120deg, #ffe3b8, #ffd08a) !important; border: 1px solid #e0a13a !important; color: #3a1410 !important; }
+.bubble strong { color: #b3172f !important; } .bubble h3 { color: #8c1c13 !important; } .bubble em { color: #6a3b2b !important; }
+.bubble li::marker { color: #c2410c !important; }
+.starter, .msg-actions button { background: #fff3d6 !important; border: 1px solid #e0b040 !important; color: #7b1420 !important; }
+.composer textarea { background: #fffdf7 !important; border: 1px solid #d4a017 !important; color: #3a1410 !important; }
+.composer button { background: linear-gradient(180deg, #e0670e, #bd430a) !important; box-shadow: 0 6px 14px rgba(189, 67, 10, .4) !important; }
+.composer button svg { fill: #fff !important; }
+.thinking { color: #85543f !important; }
+
+/* ---- dark variant: deep maroon night, same ornament ---- */
+html.a-dark, html.a-dark body { background: linear-gradient(180deg, #1c0a10 0%, #2a0f16 45%, #180a0e 100%) !important; color: #fbeed5; }
+html.a-dark { --ink: #fbeed5; --ink-dim: #e8cfa8; --ink-faint: #c9a67a; --gold: #f2c66d; --gold-soft: #ffd98a; }
+html.a-dark .card, html.a-dark .tool-card, html.a-dark .feat, html.a-dark .pack {
+  background: #2b1219 !important; border-color: rgba(242, 198, 109, .5) !important;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .4), inset 0 0 0 4px #2b1219, inset 0 0 0 5px rgba(242, 198, 109, .25) !important; }
+html.a-dark .tool-name, html.a-dark h1, html.a-dark h2, html.a-dark h3, html.a-dark #home-title { color: #ffd98a !important; }
+html.a-dark .tool-sub, html.a-dark .home-blurb, html.a-dark .home-points, html.a-dark .feat { color: #e8cfa8 !important; }
+html.a-dark .home-tagline { color: #fbeed5 !important; }
+html.a-dark .deva-sub { color: #f2c66d; }
+html.a-dark .free-badge { background: linear-gradient(180deg, #4a1d24, #3a141b); color: #ffe6a8; border-color: #f2c66d;
+  box-shadow: 0 0 0 3px #2b1219, 0 0 0 4px #f2c66d, 0 8px 22px rgba(0, 0, 0, .5); }
+html.a-dark .free-badge small { color: #f2c66d; }
+html.a-dark .mandala-bg { opacity: .22; }
+html.a-dark .toran { filter: saturate(.9); }
+html.a-dark #home-logo { box-shadow: 0 0 0 6px #2b1219, 0 0 0 8px #f2c66d, 0 12px 28px rgba(0, 0, 0, .6) !important; border-color: #f2c66d; }
+
+.msg.user, .msg.bot { background: transparent !important; box-shadow: none !important; }

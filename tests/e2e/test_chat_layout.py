@@ -138,6 +138,20 @@ def phone_checks(p, browser, base: str, name: str, spec: dict) -> None:
           f"bottom {mk['composer']['bottom']:.0f} of {kvh}")
     pg.page.set_viewport_size({"width": m["vw"], "height": vh})
 
+    # The real Android keyboard cannot be emulated, but the cause of the "what I
+    # type disappears behind the keyboard" bug can be pinned: the browser must be
+    # told to resize the page for the keyboard, and the page must NOT also resize
+    # itself (that second adjustment moved the box out of the window Chrome had
+    # just scrolled to).
+    meta = pg.page.evaluate("document.querySelector('meta[name=viewport]').content")
+    check("the viewport asks the browser to resize the page for the keyboard",
+          "interactive-widget=resizes-content" in meta, meta)
+    self_resized = pg.page.evaluate(
+        "document.documentElement.style.getPropertyValue('--app-h') "
+        "|| document.body.style.height || ''")
+    check("the page does not resize itself as well (no double adjustment)", self_resized == "",
+          repr(self_resized))
+
     # Thumb-sized targets and readable text.
     for sel, label in TOUCH_TARGETS:
         boxes = visible_boxes(pg, sel)

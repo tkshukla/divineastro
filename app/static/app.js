@@ -91,10 +91,16 @@ const I18N = {
     savedTitle: "Your saved charts", savedSlots: "saved",
     savedSub: "Open one with a tap, or cast a new chart below.",
     castAnother: "+ Cast a new chart",
-    homeCta: "Get my kundali reading",
-    homeBlurb: "Your kundali cast to the exact minute, with dashas, North and "
-             + "South Indian charts, and straight answers to your questions in "
-             + "Hindi or English.",
+    homeHeadline: "Know your kundali. Ask anything.",
+    homeCta: "Get my free kundali reading",
+    homeBlurb: "Your birth chart, cast to the exact minute — with answers in Hindi or English, "
+             + "drawn from your own planets and dashas.",
+    freeBadge: "First {n} questions FREE",
+    freeBadgeSub: "No card needed · sign up in one tap",
+    freeBadgeIn: "{n} questions left — ask away",
+    feat1: "Kundali cast to the exact minute", feat2: "Ask in Hindi or English",
+    feat3: "Dasha timelines & transits", feat4: "Kundali Milan — 36 gun match",
+    feat5: "Remedies & gemstones", feat6: "Downloadable PDF reports",
     birthTitle: "Your birth details",
     birthSub: "Exact time and place — the chart is only as good as these.",
     point1: "Swiss Ephemeris — the same data professional astrologers use",
@@ -257,9 +263,16 @@ const I18N = {
     savedTitle: "आपकी सहेजी कुंडलियाँ", savedSlots: "सहेजी गईं",
     savedSub: "किसी पर क्लिक करके पढ़ें, या नीचे नई कुंडली बनाएँ।",
     castAnother: "+ नई कुंडली बनाएँ",
-    homeCta: "मेरी कुंडली पढ़ें",
-    homeBlurb: "आपकी कुंडली सटीक मिनट पर बनाई जाती है — दशाएँ, उत्तर और दक्षिण "
-             + "भारतीय चार्ट, और आपके प्रश्नों के सीधे उत्तर, हिन्दी या अंग्रेज़ी में।",
+    homeHeadline: "अपनी कुंडली जानें। कुछ भी पूछें।",
+    homeCta: "मेरी निःशुल्क कुंडली देखें",
+    homeBlurb: "सटीक समय पर बनी आपकी जन्म कुंडली — आपके अपने ग्रहों और दशाओं पर आधारित उत्तर, "
+             + "हिंदी या अंग्रेज़ी में।",
+    freeBadge: "पहले {n} प्रश्न बिल्कुल मुफ़्त",
+    freeBadgeSub: "कार्ड की ज़रूरत नहीं · एक टैप में साइन-अप",
+    freeBadgeIn: "{n} प्रश्न शेष — पूछिए",
+    feat1: "सटीक समय की कुंडली", feat2: "हिंदी या अंग्रेज़ी में पूछें",
+    feat3: "दशा और गोचर", feat4: "कुंडली मिलान — 36 गुण",
+    feat5: "उपाय और रत्न", feat6: "PDF रिपोर्ट डाउनलोड",
     birthTitle: "आपका जन्म विवरण",
     birthSub: "सटीक समय और स्थान — कुंडली इन्हीं पर निर्भर करती है।",
     point1: "स्विस एफ़ेमेरिस — वही गणना जो पेशेवर ज्योतिषी उपयोग करते हैं",
@@ -917,13 +930,11 @@ function applyLanguage() {
   const ph = (sel, text) => { const el = $(sel); if (el) el.placeholder = text; };
 
   // Home screen
-  set("#home-tagline", t("tagline"));
+  set("#home-tagline", t("homeHeadline"));
   set("#home-blurb", t("homeBlurb"));
   set("#home-cta", t("homeCta"));
-  const pts = $$("#home-points li");
-  [t("point1"), t("point2"), t("point3")].forEach((txt, i) => {
-    if (pts[i]) pts[i].textContent = txt;
-  });
+  for (let i = 1; i <= 6; i++) set(`#feat-${i}`, t(`feat${i}`));
+  renderFreeBadge();
 
   // Tools buttons
   set("#tool-milan-name", t("toolMilanName"));
@@ -1052,6 +1063,25 @@ function applyLanguage() {
   if (state.sessionId) {
     loadAndShowDashboard();
   }
+}
+
+/* The "first N questions FREE" badge. N is what the server says (ASTRO_FREE_QUESTIONS,
+   via /api/me) — never a number typed into the page. Until /api/me has answered, the
+   badge stays hidden, so it can never claim something the server has not confirmed.
+   Signed in, it shows what the person actually has left instead. */
+function renderFreeBadge() {
+  const box = $("#free-badge");
+  if (!box) return;
+  // Known = the server has told us: either the free allowance (signed out) or this
+  // person's own balance (signed in). Anything else stays hidden.
+  if (typeof acct === "undefined" || !(acct.user || acct.freeKnown)) { box.hidden = true; return; }
+  const signedIn = !!acct.user;
+  if (signedIn && !(acct.user.credits > 0)) { box.hidden = true; return; }
+  const n = signedIn ? acct.user.credits : acct.freeQuestions;
+  $("#free-badge-main").textContent = t(signedIn ? "freeBadgeIn" : "freeBadge").replace("{n}", n);
+  $("#free-badge-sub").textContent = signedIn ? "" : t("freeBadgeSub");
+  $("#free-badge-sub").hidden = signedIn;
+  box.hidden = false;
 }
 
 function initTheme() {
@@ -2065,19 +2095,17 @@ qBox.addEventListener("focus", () => {
 });
 qBox.addEventListener("blur", () => document.body.classList.remove("kbd"));
 
-// Track the visible area so the question box stays above an on-screen keyboard
-// (Chrome on Android no longer resizes the page for it; iOS never did).
-if (window.visualViewport) {
-  const fit = () => {
-    const reading = document.body.classList.contains("in-reading");
-    document.documentElement.style.setProperty(
-      "--app-h", reading && !hasKeyboardAndMouse.matches
-        ? `${Math.round(window.visualViewport.height)}px` : "");
-    if (reading && document.activeElement === qBox) scrollThread(true);
-  };
-  window.visualViewport.addEventListener("resize", fit);
-  window.visualViewport.addEventListener("scroll", fit);
-}
+// The on-screen keyboard: the page is told to RESIZE for it (interactive-widget=
+// resizes-content in the viewport meta tag), so 100dvh is the visible height and
+// the question box simply sits above the keyboard. An earlier version of this
+// resized the page from visualViewport as well; on Android Chrome the browser had
+// already scrolled the visible window down to show the box, and shrinking the page
+// on top of that moved the box back OUT of that window - what was typed vanished
+// behind the keyboard until it was dismissed. One mechanism only.
+qBox.addEventListener("focus", () => {
+  // Once the keyboard has finished opening, keep the latest answer in view.
+  setTimeout(() => scrollThread(true), 350);
+});
 
 $("#jump-latest").addEventListener("click", () => scrollThread(true));
 $("#thread").addEventListener("scroll", () => {

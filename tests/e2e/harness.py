@@ -65,7 +65,7 @@ def _free_port() -> int:
 
 
 @contextlib.contextmanager
-def server():
+def server(extra_env: dict | None = None):
     """Run the app for the duration of the block; yields its base URL."""
     port = _free_port()
     tmp = tempfile.mkdtemp(prefix="astro_e2e_")
@@ -77,6 +77,7 @@ def server():
         "ASTRO_ADMIN_EMAILS": "admin@e2e.test",
         "PYTHONIOENCODING": "utf-8",
     })
+    env.update(extra_env or {})
     log = open(Path(tmp) / "server.log", "w", encoding="utf-8")
     proc = subprocess.Popen(
         [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1",
