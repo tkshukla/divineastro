@@ -61,9 +61,24 @@ def check(label: str, ok: bool, detail: str = "") -> None:
 
 def reverse_hash(status: str, productinfo: str, firstname: str, email: str,
                   amount: str, txnid: str, salt: str = SALT, key: str = MERCHANT_KEY) -> str:
-    """The exact formula from docs.payu.in, independent of gateways.py."""
-    seq = f"{salt}|{status}||||||{email}|{firstname}|{productinfo}|{amount}|{txnid}|{key}"
-    return hashlib.sha512(seq.encode()).hexdigest()
+    """Transcribed literally from docs.payu.in's reverse-hash sequence:
+
+        SALT|status||||||udf5|udf4|udf3|udf2|udf1|email|firstname|productinfo|amount|txnid|key
+
+    udf1..udf10 are always empty here (create() in gateways.py never
+    populates them), but every one of the 10 slots is still spelled out by
+    name below so this can't silently drop a field — which is exactly how
+    the real bug shipped: gateways.py's first version had 5 empty slots
+    instead of 10, this test used the SAME wrong count independently
+    (copied the assumption, not just the code), and both sides agreed with
+    each other while disagreeing with PayU. It surfaced only when a real
+    payment succeeded on PayU's side and still never matched here — the
+    scenario check 3 below exists specifically to catch again.
+    """
+    udf10 = udf9 = udf8 = udf7 = udf6 = udf5 = udf4 = udf3 = udf2 = udf1 = ""
+    fields = [salt, status, udf10, udf9, udf8, udf7, udf6, udf5, udf4, udf3, udf2, udf1,
+              email, firstname, productinfo, amount, txnid, key]
+    return hashlib.sha512("|".join(fields).encode()).hexdigest()
 
 
 def sign_in() -> tuple[TestClient, str]:

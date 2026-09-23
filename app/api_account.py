@@ -7,6 +7,7 @@ money path can be read and audited on its own.
 from __future__ import annotations
 
 import datetime as dt
+import logging
 import os
 import re
 
@@ -447,9 +448,20 @@ async def payu_return(request: Request, db: Session = Depends(get_db)) -> Respon
         ).scalar_one_or_none()
 
     granted = False
-    if order is not None and gw.key == "payu" and gw.verify_return(payload):
+    verified = order is not None and gw.key == "payu" and gw.verify_return(payload)
+    if verified:
         granted, _ = billing.mark_paid(
             db, order, payload.get("mihpayid", "") or payload.get("payuMoneyId", ""))
+
+    if not granted:
+        # A hash mismatch here means real money changed hands on PayU's side
+        # with nothing to show for it on ours — the exact failure mode this
+        # logging exists to catch fast instead of by chance. Nothing in
+        # `payload` is secret (it's what the customer's own browser POSTed);
+        # the hash is a one-way digest and reveals nothing about the salt.
+        logging.getLogger(__name__).warning(
+            "PayU return did not grant: order=%s verified=%s payload=%s",
+            order.id if order else None, verified, payload)
 
     dest = f"/?payu={'ok' if granted else 'failed'}"
     if order is not None:

@@ -413,12 +413,17 @@ class PayUGateway:
     other gateways share.
 
     Hash sequence taken from PayU's own docs (docs.payu.in, "Generate Hash —
-    Merchant Hosted"), SHA-512 throughout:
-
-        request: key|txnid|amount|productinfo|firstname|email|||||||||||SALT
-                 (five empty udf1-5 slots, six pipes before SALT)
-        reverse: SALT|status||||||email|firstname|productinfo|amount|txnid|key
-                 (same five empty slots, read back to front)
+    Merchant Hosted"), SHA-512 throughout — 10 empty udf1..udf10 slots between
+    email and SALT on the way out, and the same 10 empty slots between status
+    and email on the way back (the reverse is the forward sequence read back
+    to front, with `status` inserted after SALT since it only exists on the
+    return trip). `_hash`/`_reverse_hash` build this as an explicit list with
+    `[""] * _UDF_SLOTS` rather than a hand-counted string of pipes — a hand
+    count is exactly how this went wrong the first time: an earlier version
+    had 5 empty slots instead of 10, invisibly, and only surfaced when a real
+    payment succeeded on PayU's side and this side still refused to match,
+    silently. See tests.test_payu, which independently re-derives the field
+    count from PayU's own docs rather than importing it from here.
 
     `parse_webhook` is deliberately always-False: PayU's S2S webhook JSON
     shape was not confirmed against real traffic before this shipped, so it
@@ -441,14 +446,20 @@ class PayUGateway:
     def configured(self) -> bool:
         return bool(self.merchant_key and self.salt)
 
+    _UDF_SLOTS = 10   # udf1..udf10 — always empty here, never populated in create()
+
     def _hash(self, txnid: str, amount: str, productinfo: str, firstname: str, email: str) -> str:
-        seq = f"{self.merchant_key}|{txnid}|{amount}|{productinfo}|{firstname}|{email}|||||||||||{self.salt}"
-        return hashlib.sha512(seq.encode()).hexdigest()
+        fields = [self.merchant_key, txnid, amount, productinfo, firstname, email]
+        fields += [""] * self._UDF_SLOTS
+        fields += [self.salt]
+        return hashlib.sha512("|".join(fields).encode()).hexdigest()
 
     def _reverse_hash(self, status: str, productinfo: str, firstname: str, email: str,
                        amount: str, txnid: str) -> str:
-        seq = f"{self.salt}|{status}||||||{email}|{firstname}|{productinfo}|{amount}|{txnid}|{self.merchant_key}"
-        return hashlib.sha512(seq.encode()).hexdigest()
+        fields = [self.salt, status]
+        fields += [""] * self._UDF_SLOTS
+        fields += [email, firstname, productinfo, amount, txnid, self.merchant_key]
+        return hashlib.sha512("|".join(fields).encode()).hexdigest()
 
     def create(self, order, user) -> dict:
         order.provider_order_id = f"GD{order.id:08d}"
