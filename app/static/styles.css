@@ -2309,3 +2309,13 @@ body.sacred { background: linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 10
 }
 /* the layers only exist for the promo */
 .free-badge:not(.promo) .lights, .free-badge:not(.promo) .sheen { display: none; }
+
+/* The free-questions box is a button (sign in / go to the chat): give it button behaviour. */
+button.free-badge { font: inherit; text-align: center; cursor: pointer; appearance: none; -webkit-appearance: none; -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease; }
+button.free-badge:active { transform: scale(0.98); }
+button.free-badge:focus-visible { outline: 3px solid var(--gold); outline-offset: 6px; }
+.free-badge .go { font-size: 1.25em; line-height: 1; margin-left: 2px; display: inline-block; }
+.free-badge.promo .go { animation: nudge 2.4s ease-in-out infinite; }
+@keyframes nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
+@media (prefers-reduced-motion: reduce) { .free-badge.promo .go { animation: none; } }
