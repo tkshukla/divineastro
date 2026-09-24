@@ -62,7 +62,9 @@ def run_profile(p, browser, base: str, name: str, args: dict, expect_n: int) -> 
     pg.page.wait_for_selector("#free-badge:not([hidden])", timeout=10000)
     signed = pg.page.inner_text("#free-badge-main")
     check("signed in, the badge shows the questions they have left", "left" in signed and str(expect_n) in signed, repr(signed))
-    check("signed in, the sign-up promise line is gone", not pg.page.is_visible("#free-badge-sub"))
+    sub = pg.page.inner_text("#free-badge-sub")
+    check("signed in, the second line says a tap opens the chat (not 'sign up')",
+          "ask" in sub.lower() and "sign up" not in sub.lower(), repr(sub))
 
     # Sign out ON THE PAGE, without a reload: the promise must come straight back.
     # (It did not: the server only sent the free-question number to signed-out
@@ -123,6 +125,71 @@ def festival_lights(p, browser, base: str) -> None:
     ctx.close()
 
 
+def tappable(p, browser, base: str) -> None:
+    """The box is a button. Signed out it is the sign-up button; signed in it goes
+    straight to the AI chat (owner request)."""
+    print("\n[the box is tappable]")
+    from tests.e2e.harness import BIRTH
+
+    # signed out -> sign-in
+    ctx = browser.new_context(viewport={"width": 412, "height": 915}, is_mobile=True, has_touch=True)
+    pg = Page(ctx.new_page(), base)
+    pg.open_home()
+    pg.page.wait_for_selector("#free-badge:not([hidden])", timeout=10000)
+    tag = pg.page.evaluate("document.querySelector('#free-badge').tagName")
+    check("the box is a real button (keyboard and screen-reader friendly)", tag == "BUTTON", tag)
+    label = pg.page.get_attribute("#free-badge", "aria-label") or ""
+    check("a screen reader hears the whole message", "FREE" in label and "sign up" in label, label)
+    box = pg.rect("#free-badge")
+    check("it is big enough to tap (>= 44px tall)", box["height"] >= 44, f"{box['height']:.0f}px")
+    pg.page.tap("#free-badge")
+    pg.page.wait_for_selector(".modal .oauth-btn", timeout=5000)
+    check("signed out: tapping it opens sign-in", True)
+    pg.page.evaluate("closeModal()")
+    pg.page.focus("#free-badge")
+    pg.page.keyboard.press("Enter")
+    pg.page.wait_for_selector(".modal .oauth-btn", timeout=5000)
+    check("...and it works from the keyboard (Enter)", True)
+    ctx.close()
+
+    # signed in, no chart yet -> the birth form (a reading needs a chart first)
+    ctx = browser.new_context(viewport={"width": 412, "height": 915}, is_mobile=True, has_touch=True)
+    pg = Page(ctx.new_page(), base)
+    pg.sign_in("newcomer@example.com", "New Comer")
+    pg.open_home()
+    pg.page.wait_for_selector("#free-badge:not([hidden])", timeout=10000)
+    pg.page.tap("#free-badge")
+    pg.page.wait_for_selector("#stage-birth.active", timeout=5000)
+    check("signed in with no chart: tapping it opens the birth form", True)
+    ctx.close()
+
+    # signed in with a saved chart -> straight into the chat, and it STAYS there
+    ctx = browser.new_context(viewport={"width": 412, "height": 915}, is_mobile=True, has_touch=True)
+    pg = Page(ctx.new_page(), base)
+    pg.sign_in("regular@example.com", "Regular")
+    pg.open_home()
+    pg.page.evaluate("async (b) => { await castChart(b); await saveBirth(b); }", BIRTH)
+    pg.open_home()                                            # a fresh visit: nothing open
+    pg.page.wait_for_selector("#free-badge:not([hidden])", timeout=10000)
+    check("the home screen is showing", pg.page.evaluate("document.querySelector('#stage-home').classList.contains('active')"))
+    pg.page.tap("#free-badge")
+    pg.page.wait_for_selector("#stage-chat.active", timeout=15000)
+    pg.page.wait_for_timeout(2500)                            # the dashboard used to take over a moment later
+    still = pg.page.evaluate("document.querySelector('#stage-chat').classList.contains('active')")
+    check("signed in with a saved chart: tapping it opens the AI chat and it stays there", still)
+    check("the question box is ready", pg.page.is_visible("#q") and pg.page.is_enabled("#q"))
+    check("the reading is loaded (opening answer is on screen)", pg.page.locator("#thread .msg.bot").count() >= 1)
+
+    # and with a chart already open, straight back to the chat
+    pg.page.evaluate("showStage('stage-home')")
+    pg.page.tap("#free-badge")
+    pg.page.wait_for_selector("#stage-chat.active", timeout=5000)
+    check("with a chart already open, one tap returns to the chat", True)
+    check("no console errors", not pg.console_errors, "; ".join(pg.console_errors[:2]))
+    check("no CSP violations", not pg.csp_violations())
+    ctx.close()
+
+
 def never_wrong(p, browser, base: str) -> None:
     """The badge must stay hidden until /api/me has answered, and if it never
     answers, must stay hidden — not fall back to a number the page made up."""
@@ -168,6 +235,7 @@ def main() -> int:
                 for name, args in phones.items():
                     run_profile(p, browser, base, name, args, expect_n=10)
                 never_wrong(p, browser, base)
+                tappable(p, browser, base)
                 festival_lights(p, browser, base)
             # A server configured for 25: the page must say 25 — proof it is not hard-coded.
             with server({"ASTRO_FREE_QUESTIONS": "25"}) as base:

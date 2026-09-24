@@ -71,12 +71,13 @@
     </p>
 
     <!-- The number comes from the server (ASTRO_FREE_QUESTIONS) via /api/me — never
-         hard-coded here, and hidden until it is known, so it can never be wrong. -->
-    <div class="free-badge" id="free-badge" hidden>
+         hard-coded here, and hidden until it is known, so it can never be wrong.
+         It is a button: signed out it opens sign-in, signed in it opens the AI chat. -->
+    <button type="button" class="free-badge" id="free-badge" hidden>
       <span class="lights" aria-hidden="true"></span><span class="sheen" aria-hidden="true"></span>
-      <b><svg class="ico" aria-hidden="true"><use href="#i-diya"/></svg> <span id="free-badge-main"></span></b>
+      <b><svg class="ico" aria-hidden="true"><use href="#i-diya"/></svg> <span id="free-badge-main"></span> <span class="go" aria-hidden="true">&rsaquo;</span></b>
       <small id="free-badge-sub"></small>
-    </div>
+    </button>
 
     <button type="button" class="primary home-cta" id="home-cta">
       Get my kundali reading

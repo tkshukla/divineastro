@@ -96,7 +96,8 @@ const I18N = {
     homeBlurb: "Your birth chart, cast to the exact minute — with answers in Hindi or English, "
              + "drawn from your own planets and dashas.",
     freeBadge: "First {n} questions FREE",
-    freeBadgeSub: "No card needed · sign up in one tap",
+    freeBadgeSub: "No card needed · tap to sign up",
+    freeBadgeInSub: "Tap to ask the AI astrologer",
     freeBadgeIn: "{n} questions left — ask away",
     feat1: "Kundali cast to the exact minute", feat2: "Ask in Hindi or English",
     feat3: "Dasha timelines & transits", feat4: "Kundali Milan — 36 gun match",
@@ -268,7 +269,8 @@ const I18N = {
     homeBlurb: "सटीक समय पर बनी आपकी जन्म कुंडली — आपके अपने ग्रहों और दशाओं पर आधारित उत्तर, "
              + "हिंदी या अंग्रेज़ी में।",
     freeBadge: "पहले {n} प्रश्न बिल्कुल मुफ़्त",
-    freeBadgeSub: "कार्ड की ज़रूरत नहीं · एक टैप में साइन-अप",
+    freeBadgeSub: "कार्ड की ज़रूरत नहीं · साइन-अप के लिए टैप करें",
+    freeBadgeInSub: "एआई ज्योतिषी से पूछने के लिए टैप करें",
     freeBadgeIn: "{n} प्रश्न शेष — पूछिए",
     feat1: "सटीक समय की कुंडली", feat2: "हिंदी या अंग्रेज़ी में पूछें",
     feat3: "दशा और गोचर", feat4: "कुंडली मिलान — 36 गुण",
@@ -1079,11 +1081,29 @@ function renderFreeBadge() {
   if (signedIn && !(acct.user.credits > 0)) { box.hidden = true; return; }
   const n = signedIn ? acct.user.credits : acct.freeQuestions;
   $("#free-badge-main").textContent = t(signedIn ? "freeBadgeIn" : "freeBadge").replace("{n}", n);
-  $("#free-badge-sub").textContent = signedIn ? "" : t("freeBadgeSub");
-  $("#free-badge-sub").hidden = signedIn;
+  $("#free-badge-sub").textContent = t(signedIn ? "freeBadgeInSub" : "freeBadgeSub");
+  // A button needs a name a screen reader can say: the whole message, not just the number.
+  box.setAttribute("aria-label", `${$("#free-badge-main").textContent}. ${$("#free-badge-sub").textContent}`);
   box.classList.toggle("promo", !signedIn);     // festival lights are for the sign-up promise only
   box.hidden = false;
 }
+
+/* Tapping the box. Signed out, it is the sign-up button. Signed in, it takes the person
+   straight to the AI chat: the chart they already have open, else their first saved
+   chart, else the birth form (a reading needs a chart before anything can be asked). */
+async function goToChat() {
+  if (state.sessionId && state.chart) { showStage("stage-chat"); return; }
+  const first = (state.births || [])[0];
+  if (first) {
+    await openSavedChart(first);          // casts the chart; that ends on the dashboard...
+    if (state.sessionId) { showStage("stage-chat"); return; }   // ...so put the chat back in front
+  }
+  showStage("stage-birth");
+}
+$("#free-badge")?.addEventListener("click", () => {
+  if (typeof acct !== "undefined" && acct.user) goToChat();
+  else if (typeof openSignIn === "function") openSignIn();
+});
 
 function initTheme() {
   const saved = localStorage.getItem("astro.theme");
