@@ -2319,3 +2319,22 @@ button.free-badge:focus-visible { outline: 3px solid var(--gold); outline-offset
 .free-badge.promo .go { animation: nudge 2.4s ease-in-out infinite; }
 @keyframes nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
 @media (prefers-reduced-motion: reduce) { .free-badge.promo .go { animation: none; } }
+
+/* Landscape phones (and any short touch screen). The header, topbar, view switch
+   and suggestion chips took ~290px of a 360px screen and left the answer 30px.
+   Compact them, and let the chrome step aside while typing exactly as portrait
+   does (that rule lives in the 700px block, which a wide-but-short screen misses). */
+@media (pointer: coarse) and (max-height: 520px) {
+  .starters { display: none; }
+  .site-header { padding: 2px 10px; }
+  .site-header .brand img, .site-header .brand .logo { max-height: 34px; width: auto; }
+  .brand-word { display: none; }
+  .topbar { padding: 3px 12px; gap: 6px; }
+  .who p { display: none; }
+  .view-switch { padding: 2px 12px; }
+  .view-switch .vview { min-height: 34px; }
+  .composer { padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px)); }
+  body.kbd .site-header,
+  body.kbd .topbar,
+  body.kbd .view-switch { display: none; }
+}

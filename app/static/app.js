@@ -1410,6 +1410,11 @@ function showStage(id) {
     if (el) el.classList.toggle("active", s === id);
   });
   document.body.classList.toggle("in-reading", id === "stage-chat");
+  // On a phone the reading and the chart share one screen, switched by the
+  // Reading / Chart & Dashas buttons. Arriving at the chat always means "ask a
+  // question", so never inherit the chart side from an earlier visit: it has no
+  // question box at all.
+  if (id === "stage-chat") setWorkspaceView("chat");
   window.scrollTo({ top: 0, behavior: "instant" });
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
@@ -2376,15 +2381,15 @@ $("#back").addEventListener("click", () => {
 /* ------------------------------------------------------------
    Mobile view switch — chart and reading share the screen below 980px.
    ------------------------------------------------------------ */
+function setWorkspaceView(view) {
+  $(".workspace").dataset.view = view;
+  $$(".vview").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
+  // A chart drawn while its pane was hidden has no box to size against,
+  // so redraw it once it is actually on screen.
+  if (view === "chart" && state.chart) paintChart();
+}
 $$(".vview").forEach((btn) => {
-  btn.onclick = () => {
-    const view = btn.dataset.view;
-    $(".workspace").dataset.view = view;
-    $$(".vview").forEach((b) => b.classList.toggle("active", b === btn));
-    // A chart drawn while its pane was hidden has no box to size against,
-    // so redraw it once it is actually on screen.
-    if (view === "chart" && state.chart) paintChart();
-  };
+  btn.onclick = () => setWorkspaceView(btn.dataset.view);
 });
 
 /* sensible default date so the picker does not open in 2026 */
