@@ -488,11 +488,9 @@
       </select>
     </div>
 
-    <div class="field">
-      <label for="f-name">Name <span class="opt">optional</span></label>
-      <input id="f-name" name="name" type="text" placeholder="Who is this chart for?" />
-    </div>
-
+    <!-- The three things a reading needs come first (date, time, place), so on a
+         phone they are all on screen without scrolling. Name and gender are
+         optional and sit below the place. -->
     <div class="row">
       <div class="field">
         <label for="f-date">Date of birth</label>
@@ -503,26 +501,16 @@
         <input id="f-time" name="time" type="time" value="12:00" required />
       </div>
     </div>
-    <p class="time-hint" id="time-hint">
-      ⚠️ Born between midnight and sunrise? Use the next calendar date (e.g. night of 25th is technically early hours of 26th).
-    </p>
-
-    <div class="field">
-      <label for="f-gender" data-i18n="gender">Gender <span class="opt">optional</span></label>
-      <select id="f-gender">
-        <option value="">Prefer not to say</option>
-        <option value="female">Female</option>
-        <option value="male">Male</option>
-        <option value="other">Other</option>
-      </select>
-    </div>
-
     <div class="field checkbox">
       <input id="f-unknown" type="checkbox" />
       <label for="f-unknown">I don't know the exact time
         <span class="hint">— houses and the ascendant become unreliable; noon is used</span>
       </label>
     </div>
+    <!-- Only relevant for a night/early-morning birth: shown by updateTimeHint(). -->
+    <p class="time-hint" id="time-hint" hidden>
+      ⚠️ Born between midnight and sunrise? Use the next calendar date (e.g. night of 25th is technically early hours of 26th).
+    </p>
 
     <div class="field place">
       <label for="f-place">Place of birth</label>
@@ -531,9 +519,24 @@
       <p id="place-chosen" class="chosen" hidden></p>
     </div>
 
+    <div class="row">
+      <div class="field">
+        <label for="f-name">Name <span class="opt">optional</span></label>
+        <input id="f-name" name="name" type="text" placeholder="Who is this chart for?" />
+      </div>
+      <div class="field">
+        <label for="f-gender" data-i18n="gender">Gender <span class="opt">optional</span></label>
+        <select id="f-gender">
+          <option value="">Prefer not to say</option>
+          <option value="female">Female</option>
+          <option value="male">Male</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
 
     <button type="submit" class="primary" id="cast">
-      <span class="label">Cast the chart</span>
+      <span class="label">Show my reading</span>
       <span class="spinner" aria-hidden="true"></span>
     </button>
     <p id="birth-error" class="error" hidden></p>

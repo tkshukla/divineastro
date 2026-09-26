@@ -2338,3 +2338,16 @@ button.free-badge:focus-visible { outline: 3px solid var(--gold); outline-offset
   body.kbd .topbar,
   body.kbd .view-switch { display: none; }
 }
+
+/* Birth form on a phone: the reading's three essentials (date, time, place) must be
+   on screen without scrolling even on a 320x568 handset. The big title, the
+   tagline and the generous padding were pushing the place field under the fold. */
+@media (max-width: 700px) {
+  #stage-birth.active { padding: 12px 14px 24px; gap: 12px; }
+  #stage-birth .intro h1 { font-size: 26px; letter-spacing: 0.04em; }
+  #stage-birth .tagline { font-size: 14px; margin-top: 4px; }
+  #birth-form { padding: 18px 16px 18px; }
+}
+@media (max-width: 700px) and (max-height: 620px) {
+  #stage-birth .tagline { display: none; }        /* a short screen needs the room more than the sentence */
+}

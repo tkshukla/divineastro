@@ -183,7 +183,7 @@ async function loadAccount() {
   // Rescue a chart cast before signing in, THEN list. Order matters: claiming
   // calls loadSavedCharts itself on success, so the panel shows it immediately
   // rather than only on the visit after.
-  claimPendingBirth().finally(loadSavedCharts);
+  const chartsReady = claimPendingBirth().finally(loadSavedCharts);
 
   // A fresh OAuth round-trip lands back here with ?welcome=1
   const params = new URLSearchParams(location.search);
@@ -191,6 +191,8 @@ async function loadAccount() {
     if (params.get("welcome") === "1" && acct.user) {
       toast(`${at("welcome")} ${acct.user.credits} ${at("freeQs")}`);
     }
+    // Just signed in: take them where they were going, not to a blank home page.
+    if (acct.user && typeof resumeAfterSignIn === "function") chartsReady.then(resumeAfterSignIn);
     params.delete("welcome");
     history.replaceState({}, "", location.pathname +
       (params.toString() ? `?${params}` : ""));
@@ -1010,7 +1012,12 @@ function toast(message, bad = false) {
 /* Called by app.js when /api/ask returns 401 or 402. */
 function handleAskRejection(status, detail, question) {
   acct.pendingQuestion = question;
-  if (status === 401) { openSignIn(); return true; }
+  if (status === 401) {
+    // Sign-in reloads the page; keep the question so it is asked when they are back.
+    if (typeof parkQuestion === "function") parkQuestion(question);
+    openSignIn();
+    return true;
+  }
   if (status === 402) {
     if (acct.user) acct.user.credits = 0;
     renderAccountBar();
