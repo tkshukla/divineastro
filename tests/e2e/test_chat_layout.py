@@ -240,6 +240,79 @@ def desktop_checks(p, browser, base: str, name: str, spec: dict) -> None:
     ctx.close()
 
 
+def box_on_screen(pg: Page) -> tuple[bool, str]:
+    """Is the question box really inside the visible screen? (Not merely 'has a
+    size' - a box on the hidden chart side or below the fold both fail this.)"""
+    r = pg.rect("#q")
+    vh = pg.page.evaluate("window.innerHeight")
+    if r is None or r["height"] < 20:
+        return False, "not rendered"
+    return (r["top"] >= 0 and r["bottom"] <= vh + 0.5), f"top {r['top']:.0f}, bottom {r['bottom']:.0f}, screen {vh}"
+
+
+def every_way_in(p, browser, base: str) -> None:
+    """The question box must be there however the person got to the chat.
+
+    Regression (owner, 2026-09-24): tapping 'Chart & Dashas' once left the phone
+    on the chart side for good; the next trip to the chat, including the new
+    one-tap route from the home box, showed a screen with NO question box."""
+    print("\n[the question box, however you arrive]")
+    spec = {"viewport": {"width": 412, "height": 839}, "is_mobile": True,
+            "has_touch": True, "device_scale_factor": 2}
+    from tests.e2e.harness import BIRTH
+
+    ctx = browser.new_context(**spec)
+    pg = Page(ctx.new_page(), base)
+    pg.open_chat()
+    ok, d = box_on_screen(pg)
+    check("fresh chat: the box is on screen", ok, d)
+
+    pg.page.tap('.vview[data-view="chart"]')
+    pg.page.wait_for_timeout(200)
+    check("(sanity) the chart side has no question box, by design", not box_on_screen(pg)[0])
+    pg.page.evaluate("showStage('stage-home')")
+    pg.page.wait_for_selector("#free-badge:not([hidden])")
+    pg.page.tap("#free-badge")
+    pg.page.wait_for_selector("#stage-chat.active")
+    pg.page.wait_for_timeout(400)
+    ok, d = box_on_screen(pg)
+    check("after peeking at the chart, then tapping the home box: the box is on screen", ok, d)
+    check("...and the Reading tab is the one highlighted",
+          pg.page.evaluate("document.querySelector('.vview.active').dataset.view") == "chat")
+
+    pg.page.tap('.vview[data-view="chart"]')
+    pg.page.evaluate("async (b) => { await castChart(b); showStage('stage-chat'); }", BIRTH)
+    pg.page.wait_for_selector("#thread .msg.bot", timeout=30000)
+    pg.page.wait_for_timeout(400)
+    ok, d = box_on_screen(pg)
+    check("after peeking at the chart, then opening a chart afresh: the box is on screen", ok, d)
+    check("no console errors", not pg.console_errors, "; ".join(pg.console_errors[:3]))
+    ctx.close()
+
+    # Situations a phone really is in.
+    situations = [
+        ("landscape phone 800x360", 800, 360, False, 120),
+        ("landscape phone 915x412", 915, 412, False, 150),
+        ("landscape phone 640x360", 640, 360, False, 120),
+        ("portrait, keyboard open 360x330", 360, 330, True, 150),
+        ("landscape, keyboard open 800x200", 800, 200, True, 100),
+        ("tablet 600x960", 600, 960, False, 400),
+    ]
+    for label, w, h, kbd, min_thread in situations:
+        ctx = browser.new_context(viewport={"width": w, "height": h}, is_mobile=True,
+                                  has_touch=True, device_scale_factor=2)
+        pg = Page(ctx.new_page(), base)
+        pg.open_chat()
+        if kbd:
+            pg.page.evaluate("document.body.classList.add('kbd')")   # what focusing the box does
+            pg.page.wait_for_timeout(200)
+        ok, d = box_on_screen(pg)
+        th = pg.rect("#thread")["height"]
+        check(f"{label}: the box is on screen", ok, d)
+        check(f"{label}: the answer still gets >= {min_thread}px", th >= min_thread, f"{th:.0f}px")
+        ctx.close()
+
+
 def main() -> int:
     only = set(sys.argv[1:])         # optional: profile names, for a quick run
     with server() as base, sync_playwright() as p:
@@ -251,6 +324,8 @@ def main() -> int:
             for name, spec in DESKTOPS.items():
                 if not only or name in only:
                     desktop_checks(p, browser, base, name, spec)
+            if not only:
+                every_way_in(p, browser, base)
         finally:
             browser.close()
     return check.finish("chat layout")
