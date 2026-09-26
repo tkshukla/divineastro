@@ -52,7 +52,7 @@ const I18N = {
     pob: "Place of birth", pobPh: "Start typing a city…",
     advanced: "Advanced settings", zodiac: "Zodiac", houseSystem: "House system",
     tropical: "Tropical (Western)", sidereal: "Sidereal (Vedic / Jyotish)",
-    ayanamsa: "Ayanamsa", cast: "Cast the chart", casting: "Consulting the ephemeris…",
+    ayanamsa: "Ayanamsa", cast: "Show my reading", casting: "Consulting the ephemeris…",
     footnote: "Nothing leaves this computer. Birth data is held in memory only.",
     pickPlace: "Pick a birth place from the suggestions so the coordinates and timezone are exact.",
     narration: "Narration",
@@ -225,7 +225,7 @@ const I18N = {
     pob: "जन्म स्थान", pobPh: "शहर का नाम लिखना शुरू करें…",
     advanced: "विस्तृत सेटिंग्स", zodiac: "राशि पद्धति", houseSystem: "भाव पद्धति",
     tropical: "सायन (पाश्चात्य)", sidereal: "निरयन (वैदिक / ज्योतिष)",
-    ayanamsa: "अयनांश", cast: "कुंडली बनाएँ", casting: "पंचांग देखा जा रहा है…",
+    ayanamsa: "अयनांश", cast: "मेरी कुंडली देखें", casting: "पंचांग देखा जा रहा है…",
     footnote: "कोई भी जानकारी इस कंप्यूटर से बाहर नहीं जाती। जन्म-विवरण केवल मेमोरी में रहता है।",
     pickPlace: "सुझावों में से जन्म स्थान चुनें ताकि अक्षांश-देशांतर और समय-क्षेत्र सही रहें।",
     narration: "वर्णन",
@@ -1261,6 +1261,17 @@ function choosePlace(p) {
   hideSuggestions();
 }
 
+/* The "born after midnight" note only matters for a night or early-morning birth,
+   so it appears only then (it used to sit between the fields for everyone). */
+function updateTimeHint() {
+  const v = $("#f-time").value;                 // "HH:MM", empty while being edited
+  const early = /^\d{2}:\d{2}$/.test(v) && v < "06:00" && !$("#f-unknown").checked;
+  $("#time-hint").hidden = !early;
+}
+$("#f-time").addEventListener("input", updateTimeHint);
+$("#f-time").addEventListener("change", updateTimeHint);
+$("#f-unknown").addEventListener("change", updateTimeHint);
+
 $("#f-unknown").addEventListener("change", (e) => {
   const t = $("#f-time");
   t.disabled = e.target.checked;
@@ -1363,6 +1374,48 @@ async function saveBirth(payload) {
     }
     if (res.ok) loadSavedCharts();
   } catch { /* nothing worth interrupting the reading for */ }
+}
+
+/* The same problem for the QUESTION. Signing in is a full-page redirect to the
+   provider and back, so a question typed before the sign-in wall used to vanish
+   with the page: the newcomer came back to a blank home screen at the exact moment
+   they had decided to ask. Park it (with a time limit, so an old one is never asked
+   out of the blue) and ask it for them when they return. */
+const PENDING_QUESTION = "astro.pendingQuestion";
+const PENDING_QUESTION_TTL_MS = 2 * 60 * 60 * 1000;
+
+function parkQuestion(question) {
+  try {
+    localStorage.setItem(PENDING_QUESTION, JSON.stringify({ q: String(question || "").slice(0, 600), at: Date.now() }));
+  } catch { /* private mode: the question is simply not remembered */ }
+}
+
+function takeParkedQuestion() {
+  let out = "";
+  try {
+    const raw = localStorage.getItem(PENDING_QUESTION);
+    localStorage.removeItem(PENDING_QUESTION);          // one shot, whatever happens next
+    const v = raw ? JSON.parse(raw) : null;
+    if (v && typeof v.q === "string" && Date.now() - Number(v.at) < PENDING_QUESTION_TTL_MS) out = v.q.trim();
+  } catch { /* unreadable: nothing to ask */ }
+  return out;
+}
+
+/* Where a person lands right after signing in (the OAuth redirect reloads the
+   page, so nothing is on screen). A returning or just-claimed chart goes straight
+   into the reading, with the question they were about to ask; someone with no chart
+   yet goes to the birth form, not the plain home page. Called from account.js once
+   the account and saved charts are loaded. */
+async function resumeAfterSignIn() {
+  if (typeof acct === "undefined" || !acct.user) return;
+  const question = takeParkedQuestion();
+  if (!(state.births || []).length) { showStage("stage-birth"); return; }
+  await goToChat();
+  if (question && state.sessionId && $("#stage-chat").classList.contains("active")) {
+    qBox.value = question;
+    autosizeQ();
+    $("#ask-form").requestSubmit();
+  }
 }
 
 /* Called once an account exists. Rescues the chart cast before signing in. */
@@ -1568,6 +1621,7 @@ $("#f-quick-saved")?.addEventListener("change", (e) => {
   }
   $("#f-gender").value = b.gender || "";
   $("#f-unknown").checked = !b.time_known;
+  updateTimeHint();
   $("#f-time").disabled = !b.time_known;
 
   choosePlace({
