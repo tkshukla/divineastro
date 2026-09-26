@@ -76,6 +76,45 @@ def part1() -> None:
     check("a real desktop browser is not a bot", not an.is_bot(CHROME))
     check("a real phone browser is not a bot", not an.is_bot(IPHONE))
 
+    print("\n2b. Fake browsers seen on the live server (2026-09-27)")
+    fake_iphone = ("Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 "
+                   "(KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1")
+    for label, ua in (("the fixed iOS 13.2.3 iPhone (~100 cloud IPs)", fake_iphone),
+                      ("any other iPhone OS <= 13", fake_iphone.replace("13_2_3", "12_4_1")),
+                      ("a bare 'Google Chrome' UA", "Google Chrome"),
+                      ("a two-letter UA", "XY"),
+                      ("the typo'd '(HTML, like Gecko' UA",
+                       "Mozilla/5.0 (Linux; Android 7.0;) AppleWebKit/537.36 (HTML, like Gecko) Mobile Safari/537.36"),
+                      ("a scraper that avoids the word bot", "Mozilla/5.0 (compatible; CBZeroScraper/1.0)")):
+        check(f"counted as a bot: {label}", an.is_bot(ua))
+    for label, ua in (("iPhone on iOS 14", fake_iphone.replace("13_2_3", "14_8")),
+                      ("iPhone on iOS 15", fake_iphone.replace("13_2_3", "15_7")),
+                      ("iPhone on iOS 17", IPHONE),
+                      ("Android Chrome", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 "
+                                         "(KHTML, like Gecko) Chrome/153.0.0.0 Mobile Safari/537.36"),
+                      ("Windows Chrome", CHROME)):
+        check(f"still counted as a person: {label}", not an.is_bot(ua))
+
+    print("\n2c. Cloud networks nobody browses from")
+    for label, ip in (("Tencent Cloud 43.157.x", "43.157.38.228"), ("Tencent Cloud 49.51.x", "49.51.166.228"),
+                      ("Tencent Cloud 162.62.x", "162.62.213.10"), ("Huawei Cloud 114.119.129.x", "114.119.129.25"),
+                      ("Google Cloud 34.96.x", "34.96.40.48")):
+        check(f"cloud address is filtered: {label}", an.is_cloud_ip(ip))
+    for label, ip in (("Jio residential 49.37.x (49.51 must not bleed into 49.37)", "49.37.248.16"),
+                      ("Airtel-style 223.233.x", "223.233.65.10"), ("a documentation address", "203.0.113.9"),
+                      ("IPv6 residential", "2401:4900:1c00::1"), ("empty", ""), ("garbage", "not-an-ip")):
+        check(f"person's address is kept: {label}", not an.is_cloud_ip(ip))
+    import os as _os
+    _os.environ["ASTRO_BOT_NETS"] = "203.0.113.0/24, bad-entry"
+    try:
+        an._CLOUD_NETS = an._cloud_networks()
+        check("ASTRO_BOT_NETS adds ranges without a code change", an.is_cloud_ip("203.0.113.9"))
+        check("a bad ASTRO_BOT_NETS entry is ignored, not fatal", an.is_cloud_ip("43.157.38.228"))
+    finally:
+        _os.environ.pop("ASTRO_BOT_NETS", None)
+        an._CLOUD_NETS = an._cloud_networks()
+    check("the override is gone again afterwards", not an.is_cloud_ip("203.0.113.9"))
+
     print("\n3. The visitor hash is anonymous and day-scoped")
     now = dt.datetime(2026, 9, 20, 12, 0, tzinfo=dt.timezone.utc)
     h = an.visitor_hash("203.0.113.9", CHROME, now)
@@ -209,9 +248,16 @@ def part2() -> None:
         ("Global-Privacy-Control", dict(headers={"Sec-GPC": "1"})),
         ("a browser prefetch", dict(headers={"Sec-Purpose": "prefetch"})),
         ("no user-agent at all", dict(ua="")),
+        ("the fake iOS 13.2.3 iPhone", dict(ua="Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) "
+                                              "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1")),
+        ("a real-looking browser arriving from a Tencent Cloud address", dict(headers={"X-Forwarded-For": "43.157.38.228"})),
+        ("a real-looking browser arriving from a Google Cloud address", dict(headers={"X-Forwarded-For": "34.96.40.48"})),
     ]:
         get("/", **kwargs)
         check(f"{label} is not counted", count_visits() == n, f"{n} -> {count_visits()}")
+    get("/", ua=CHROME + " home", headers={"X-Forwarded-For": "49.37.248.16"})
+    check("a real person on a home connection IS still counted", count_visits() == n + 1, f"{n} -> {count_visits()}")
+    n = count_visits()
     for path in ("/api/health", "/static/app.js", "/admin", "/?welcome=1"):
         get(path)
         check(f"{path} is not counted", count_visits() == n, f"{n} -> {count_visits()}")

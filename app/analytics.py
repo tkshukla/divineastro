@@ -28,6 +28,7 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import hmac
+import ipaddress
 import logging
 import os
 import random
@@ -101,8 +102,62 @@ def clean(value: str | None, limit: int = 60) -> str:
     return _CLEAN_RE.sub("", (value or "").strip().lower())[:limit]
 
 
+# Automated visitors that dress up as browsers (measured on the live server log,
+# 2026-09-27: ~45% of what the Traffic panel showed as "visitors" was these).
+#  - "iPhone OS 13_2_3": one fixed, long-obsolete iOS string sent from ~100 cloud
+#    IPs. No real iPhone is on iOS 12 or earlier in 2026, and 13.x is vanishingly
+#    rare, so any iPhone OS <= 13 is treated as automation.
+#  - "(HTML, like Gecko": a typo'd copy of the real "(KHTML, like Gecko" token.
+#  - scrapers that announce themselves without the word "bot".
+_BOT_UA_EXTRA = re.compile(r"\(HTML, like Gecko|scraper|zeroscraper", re.IGNORECASE)
+_OLD_IOS = re.compile(r"(?:iPhone|CPU) OS (\d+)_", re.IGNORECASE)
+_MIN_REAL_UA_LEN = 20                     # "XY", "Google Chrome": no real browser is this terse
+
+# Cloud networks nobody browses from. Every range below was seen sending the
+# fake-browser traffic above and its owner confirmed by lookup on 2026-09-27
+# (Tencent Cloud AS132203, Huawei Cloud AS136907, Google Cloud AS396982). The IP is
+# only compared here in memory: it is never stored (see the module docstring).
+# More ranges can be added without a code change via ASTRO_BOT_NETS (comma-separated CIDRs).
+_CLOUD_NETS_DEFAULT = (
+    "43.130.0.0/16", "43.134.0.0/16", "43.135.0.0/16", "43.153.0.0/16", "43.157.0.0/16",
+    "43.164.0.0/16", "43.165.0.0/16", "43.166.0.0/16", "49.51.0.0/16", "162.62.0.0/16",
+    "170.106.0.0/16",                                  # Tencent Cloud
+    "114.119.128.0/17",                                # Huawei Cloud
+    "34.96.0.0/16",                                    # Google Cloud
+)
+
+
+def _cloud_networks() -> list:
+    raw = list(_CLOUD_NETS_DEFAULT) + [
+        c.strip() for c in os.environ.get("ASTRO_BOT_NETS", "").split(",") if c.strip()]
+    nets = []
+    for cidr in raw:
+        try:
+            nets.append(ipaddress.ip_network(cidr, strict=False))
+        except ValueError:
+            log.warning("ignoring bad ASTRO_BOT_NETS entry %r", cidr)
+    return nets
+
+
+_CLOUD_NETS = _cloud_networks()
+
+
+def is_cloud_ip(ip: str) -> bool:
+    """True for an address inside a cloud network no person browses from."""
+    try:
+        addr = ipaddress.ip_address(ip)
+    except ValueError:
+        return False
+    return any(addr in net for net in _CLOUD_NETS if net.version == addr.version)
+
+
 def is_bot(user_agent: str) -> bool:
-    return not user_agent or bool(_BOT_RE.search(user_agent))
+    if not user_agent or len(user_agent.strip()) < _MIN_REAL_UA_LEN:
+        return True
+    if _BOT_RE.search(user_agent) or _BOT_UA_EXTRA.search(user_agent):
+        return True
+    m = _OLD_IOS.search(user_agent)
+    return bool(m and int(m.group(1)) <= 13)
 
 
 def device_class(user_agent: str) -> str:
@@ -198,6 +253,8 @@ def _trackable(request: Request) -> tuple[str, str] | None:
     if is_bot(ua):
         return None
     ip = request.client.host if request.client else ""
+    if is_cloud_ip(ip):
+        return None
     return ua, ip
 
 
