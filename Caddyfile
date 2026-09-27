@@ -73,6 +73,19 @@ divineastro.org, www.divineastro.org {
 		reverse_proxy app:8000
 	}
 
+	# Marketing image hosting for the social-media campaign. Deliberately NOT
+	# served through the app container: a new post image should never need an
+	# app rebuild/redeploy (and the brief app restart that comes with one) —
+	# just drop a file in the bind-mounted directory. Filenames are content-
+	# addressed (a hash) by whatever writes them, so a long max-age is safe:
+	# a changed image gets a new name, never the same URL with new bytes.
+	@marketing path /marketing/*
+	handle @marketing {
+		header Cache-Control "public, max-age=31536000, immutable"
+		root * /srv/marketing
+		file_server
+	}
+
 	handle {
 		reverse_proxy app:8000 {
 			transport http {
