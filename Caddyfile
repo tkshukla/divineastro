@@ -79,8 +79,7 @@ divineastro.org, www.divineastro.org {
 	# just drop a file in the bind-mounted directory. Filenames are content-
 	# addressed (a hash) by whatever writes them, so a long max-age is safe:
 	# a changed image gets a new name, never the same URL with new bytes.
-	@marketing path /marketing/*
-	handle @marketing {
+	handle_path /marketing/* {
 		header Cache-Control "public, max-age=31536000, immutable"
 		root * /srv/marketing
 		file_server
