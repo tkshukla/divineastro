@@ -51,7 +51,9 @@ Thumbs.db
 tests/e2e/shots/
 docs/design/shots/
 
-# Marketing images are uploaded straight to the server, not committed (see deploy/marketing/README.md)
+# Marketing images are uploaded straight to the server, not committed (see deploy/marketing/README.md).
+# The generator script itself IS committed.
 /deploy/marketing/*
 !/deploy/marketing/README.md
 !/deploy/marketing/.gitkeep
+!/deploy/marketing/make_card.py
