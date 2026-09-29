@@ -34,13 +34,21 @@ divineastro.org, www.divineastro.org {
 	# how many hops and which subdomains are involved, not us, and chasing
 	# that one domain at a time every time PayU changes something is not a
 	# fight worth re-fighting.
+	#
+	# Google AdSense (loaded only by index.html) needs script, frame and
+	# connect access to its ad-serving domains. `*.google.com` also covers
+	# the old accounts.google.com entries; google.co.in is listed because Google
+	# serves Indian visitors some ad calls from the country domain, and CSP has
+	# no way to wildcard a TLD. fundingchoicesmessages.google.com is the
+	# consent (GDPR) message AdSense shows to EU/UK visitors. As with PayU, a
+	# missing entry here fails silently: a blank ad slot and a console warning.
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 		X-Content-Type-Options    "nosniff"
 		X-Frame-Options           "SAMEORIGIN"
 		Referrer-Policy           "strict-origin-when-cross-origin"
 		Permissions-Policy        "geolocation=(), microphone=(), camera=(), payment=(self)"
-		Content-Security-Policy   "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.cashfree.com https://checkout.razorpay.com https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://sdk.cashfree.com https://api.cashfree.com; frame-src https://sdk.cashfree.com https://api.cashfree.com https://checkout.razorpay.com https://accounts.google.com; base-uri 'self'; form-action 'self' https://accounts.google.com https://*.payu.in; frame-ancestors 'self'"
+		Content-Security-Policy   "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.cashfree.com https://checkout.razorpay.com https://*.gstatic.com https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.google.co.in https://*.googleadservices.com https://*.adtrafficquality.google https://fundingchoicesmessages.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://sdk.cashfree.com https://api.cashfree.com https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.google.co.in https://*.googleadservices.com https://*.adtrafficquality.google https://fundingchoicesmessages.google.com; frame-src https://sdk.cashfree.com https://api.cashfree.com https://checkout.razorpay.com https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.google.co.in https://*.googleadservices.com https://*.adtrafficquality.google https://fundingchoicesmessages.google.com; base-uri 'self'; form-action 'self' https://accounts.google.com https://*.payu.in; frame-ancestors 'self'"
 		-Server
 	}
 

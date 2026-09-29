@@ -19,7 +19,7 @@ from pathlib import Path
 from starlette.middleware.sessions import SessionMiddleware
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
-from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sqlalchemy import select
@@ -956,6 +956,17 @@ def _page(name: str) -> HTMLResponse:
 @app.get("/", dependencies=[Depends(analytics.page_visit)])
 def index() -> HTMLResponse:
     return _page("index.html")
+
+
+ADSENSE_PUBLISHER = "pub-1593974697916149"
+
+
+@app.get("/ads.txt")
+def ads_txt() -> PlainTextResponse:
+    """Authorised Digital Sellers file. Google expects it at the site root and
+    limits ad serving when it is missing; f08c47fec0942fa0 is Google's own
+    certification-authority ID, the same for every AdSense publisher."""
+    return PlainTextResponse(f"google.com, {ADSENSE_PUBLISHER}, DIRECT, f08c47fec0942fa0\n")
 
 
 @app.get("/feedback", dependencies=[Depends(analytics.page_visit)])

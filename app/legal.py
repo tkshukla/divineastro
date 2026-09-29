@@ -249,6 +249,10 @@ obligations.</p>
   <li><strong>{ASTROLOGER}</strong>, who receives the birth details needed to
       write a hand-written kundali you have ordered — and nothing more.</li>
   <li><strong>Our hosting provider</strong>, which stores the data on our behalf.</li>
+  <li><strong>Google AdSense</strong>, which shows advertisements on our home
+      page. Google receives the usual technical details any website visit
+      sends (such as your IP address and browser). It never receives your birth
+      details, questions, answers or account information.</li>
 </ul>
 <p>If you enable AI-assisted narration, the text of your reading is sent to the
 selected provider to be rewritten. You choose whether to use it; local-only
@@ -268,7 +272,18 @@ days. You can delete an individual saved birth profile yourself at any time.</p>
 
 <h2>Cookies</h2>
 <p>We use one cookie to keep you signed in and one short-lived cookie during
-sign-in. We do not use advertising or third-party tracking cookies.</p>
+sign-in.</p>
+<p><strong>Advertising.</strong> We show ads served by Google AdSense. Google and
+its partners use cookies to serve ads based on your previous visits to this and
+other websites; Google's advertising cookies let it and its partners show you
+ads based on those visits. You can turn off personalised advertising in
+<a href="https://adssettings.google.com" rel="noopener">Google's Ad Settings</a>,
+or opt out of third-party vendors' cookies at
+<a href="https://www.aboutads.info/choices/" rel="noopener">aboutads.info</a>.
+See <a href="https://policies.google.com/technologies/partner-sites"
+rel="noopener">how Google uses information from sites that use its services</a>.
+Visitors in the European Economic Area, the UK and Switzerland are asked for
+consent before any advertising cookies are set.</p>
 
 <h2>Children</h2>
 <p>{BRAND} is not intended for anyone under 18 and we do not knowingly collect
