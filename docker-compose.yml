@@ -4,6 +4,12 @@
 #            first boot and renews it. No certbot cron, no manual renewal.
 #   app    : the FastAPI service. Never exposed to the internet directly.
 #   db     : Postgres. Not published on a host port — only the app can reach it.
+#   ollama : optional local-model fallback for narration when Anthropic is
+#            unreachable or out of billing (see app/llm.py). Same no-published-
+#            port posture as db — Ollama has no auth of its own, so exposing
+#            11434 to the internet would let anyone run inference (and rack up
+#            your CPU bill) for free. mem_limit keeps a large model from
+#            starving the other apps on this shared box.
 #
 #   docker compose up -d --build
 
@@ -43,6 +49,25 @@ services:
     expose:
       - "8000"
 
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    # No `ports:` — same reasoning as db above. The app reaches it at
+    # http://ollama:11434 on the compose network; nothing external can.
+    expose:
+      - "11434"
+    volumes:
+      - ollamadata:/root/.ollama
+    mem_limit: 7g              # leaves headroom for app/db/caddy + the other
+                                # docker projects on this box (9.3GB was free
+                                # when sized, 2026-09-29)
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -62,3 +87,4 @@ volumes:
   appdata:
   caddydata:
   caddyconfig:
+  ollamadata:
