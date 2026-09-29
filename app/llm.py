@@ -30,6 +30,8 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass
 
+from .astro.vargas import DEBILITATION, EXALTATION
+
 log = logging.getLogger("astro.llm")
 
 OLLAMA_URL = os.environ.get("ASTRO_OLLAMA_URL", "http://127.0.0.1:11434")
@@ -607,6 +609,62 @@ def _audit_dates(meta: dict | None, prompt: str, produced_text: str) -> None:
             "narration printed dates not in the allowed set: %s", violations)
 
 
+# Confirmed failure mode (DIVASTRO-96, testing a local model as a cost-saving
+# fallback): it called Mars's own exaltation sign (Capricorn) an "enemy
+# sign" - the exact reverse - and separately contradicted itself about
+# Venus's sign within one paragraph. The prompt never spells "exalted"/
+# "enemy sign" in words (see _build_prompt: evidence only gives bare
+# positions like "Mars Capricorn 28°39'"); dignity language is expected to
+# come from the model's own astrological knowledge, so this checks that
+# knowledge against the canonical EXALTATION/DEBILITATION tables rather than
+# against the prompt's wording.
+_DIGNITY_CLAIM_RE = re.compile(
+    r"\b(Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn)\b[^.]{0,80}?"
+    r"\b(exalted|debilitated|enemy sign|friendly sign)\b", re.I)
+_EVIDENCE_POSITION_RE = re.compile(
+    r"\b(Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn)\s+"
+    r"(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b")
+
+
+def _audit_dignity(meta: dict | None, analysis: dict, produced_text: str) -> None:
+    """Log-only check that the model did not reverse a planet's dignity.
+
+    Only checks the sharpest, least ambiguous kind of error - calling a
+    planet's own known exaltation sign "debilitated"/"enemy", or its own
+    debilitation sign "exalted"/"friendly" - not the full friendship-table
+    nuance of own/neutral/friendly signs, where a false positive is far more
+    likely and the stakes of missing one are lower.
+    """
+    if meta is None:
+        return
+    sign_of: dict[str, str] = {}
+    for e in analysis.get("evidence", []) or []:
+        m = _EVIDENCE_POSITION_RE.search(e.get("detail", "") or "")
+        if m:
+            sign_of.setdefault(m.group(1), m.group(2))
+
+    violations = []
+    for planet, word in _DIGNITY_CLAIM_RE.findall(produced_text):
+        planet, word = planet.title(), word.lower()
+        sign = sign_of.get(planet)
+        if not sign:
+            continue
+        really_exalted = EXALTATION.get(planet) == sign
+        really_debilitated = DEBILITATION.get(planet) == sign
+        if "exalt" in word and not really_exalted:
+            violations.append(f"{planet} in {sign} called 'exalted' - it is not")
+        elif "debilit" in word and not really_debilitated:
+            violations.append(f"{planet} in {sign} called 'debilitated' - it is not")
+        elif "enemy" in word and really_exalted:
+            violations.append(f"{planet} in {sign} called 'enemy sign' - it is actually exalted")
+        elif "friendly" in word and really_debilitated:
+            violations.append(f"{planet} in {sign} called 'friendly sign' - it is actually debilitated")
+    if violations:
+        meta["dignity_violations"] = violations
+        logging.getLogger(__name__).warning(
+            "narration got a planet's dignity backwards: %s", violations)
+
+
 def stream_polish(analysis: dict, language: str, provider: str, question: str,
                    history: list[dict] | None = None, meta: dict | None = None):
     """Yield the rewritten answer in chunks. Raises on failure — caller decides.
@@ -650,6 +708,7 @@ def stream_polish(analysis: dict, language: str, provider: str, question: str,
                     if meta is not None and event.get("done_reason") == "length":
                         meta["truncated"] = True
                     _audit_dates(meta, prompt, "".join(produced))
+                    _audit_dignity(meta, analysis, "".join(produced))
                     return
 
     elif kind == "anthropic":
@@ -686,6 +745,7 @@ def stream_polish(analysis: dict, language: str, provider: str, question: str,
                 if stop_reason == "max_tokens" and meta is not None:
                     meta["truncated"] = True
                 _audit_dates(meta, prompt, "".join(produced))
+                _audit_dignity(meta, analysis, "".join(produced))
         except Exception as exc:
             # Fall back to the local model ONLY if Anthropic failed before any
             # text reached the visitor (billing exhausted, key revoked, the API
