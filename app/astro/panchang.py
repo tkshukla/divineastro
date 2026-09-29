@@ -497,6 +497,114 @@ def panchang_at(
                           elevation=elevation, **kwargs)
 
 
+# --------------------------------------------------------------------------
+# Festival dating rules that are NOT sunrise-based (DIVASTRO-90)
+# --------------------------------------------------------------------------
+#
+# `daily_panchang` reports the tithi prevailing at SUNRISE, which is the right
+# rule for a festival like Navratri's start (Shukla Pratipada) but the WRONG
+# rule for Vijayadashami/Dussehra and Diwali/Lakshmi Puja, which classical
+# sources tie to a specific later part of the day instead:
+#
+#   Vijayadashami is aparahna-vyapini: kept on whichever civil date's Aparahna
+#   Kaal (the 4th of the day's five equal daytime divisions - Pratah, Sangava,
+#   Madhyahna, Aparahna, Sayahna) the Dashami tithi is present through.
+#   Confirmed 2026-09-28 against a real case (Delhi, 20 Oct 2026): Dashami
+#   begins 12:52 PM, that day's Aparahna runs ~1:14-3:30 PM, so Dashami covers
+#   it and Vijayadashami falls on the 20th, not a sunrise-ruled 19th or 21st.
+#
+#   Diwali/Lakshmi Puja is pradosh-vyapini: kept on whichever civil date's
+#   Pradosh Kaal (sunset to ~96 minutes after) the Amavasya tithi is present
+#   through - and if Amavasya touches Pradosh on two consecutive evenings,
+#   purva-vyapini (the earlier day) wins, which scanning forward and
+#   returning the first match already gives for free.
+#
+# Sources (WebSearch, 2026-09-28): drikpanchang.com's own stated Aparahna
+# window for Delhi 20 Oct 2026; multiple independent Diwali-dating
+# explainers agreeing on the pradosh-vyapini/purva-vyapini rule and the
+# ~96-minute Pradosh Kaal duration. Both cross-checked against the verified
+# 2026 dates (Vijayadashami 20 Oct, Diwali 8 Nov) in DIVASTRO-90 - see
+# tests/test_panchang.py for the regression test.
+
+def _tithi_covering(jd_start: float, jd_end: float, ayanamsa: str = DEFAULT_AYANAMSA) -> list[dict]:
+    """The tithi segment(s) overlapping [jd_start, jd_end), each with the real
+    (possibly-earlier) start `_limb_run` finds by searching backwards."""
+    _ephemeris()
+
+    def elongation(jd: float) -> float:
+        return (_tropical(jd, swe.MOON) - _tropical(jd, swe.SUN)) % 360.0
+
+    out = []
+    for index, start, end in _limb_run(elongation, 30, jd_start, jd_end):
+        name, paksha, number = _tithi_label(index)
+        out.append({"name": name, "paksha": paksha, "number": number,
+                    "start": start, "end": end})
+    return out
+
+
+def _festival_date(
+    target_paksha: str, target_number: int,
+    start_date: dt.date, latitude: float, longitude: float, timezone: str,
+    window: str, *, search_days: int = 10, elevation: float = 0.0,
+    ayanamsa: str = DEFAULT_AYANAMSA,
+) -> dt.date | None:
+    """Shared scan for the two vyapini rules below. `window` is 'aparahna' or
+    'pradosh'. Scans forward from `start_date`; the first civil date whose
+    window the target tithi covers wins (this is what makes the Diwali rule's
+    purva-vyapini tie-break correct for free - see the module note above).
+    Returns None if not found within `search_days` (a very short-duration
+    "kshaya" tithi could in principle never touch the window at all - reported
+    honestly rather than guessed).
+    """
+    _ephemeris()
+    tz = ZoneInfo(timezone)
+    geopos = (float(longitude), float(latitude), float(elevation))
+    for offset in range(search_days):
+        d = start_date + dt.timedelta(days=offset)
+        midnight = dt.datetime(d.year, d.month, d.day, tzinfo=tz)
+        sunrise = _rise_or_set(_to_jd(midnight), swe.SUN, geopos, True, 1.5)
+        if sunrise is None:
+            continue
+        sunset = _rise_or_set(sunrise, swe.SUN, geopos, False, 1.5)
+        if sunset is None:
+            continue
+        if window == "aparahna":
+            span = sunset - sunrise
+            w_start, w_end = sunrise + span * 3 / 5, sunrise + span * 4 / 5
+        else:
+            w_start, w_end = sunset, sunset + 96.0 / 1440.0
+        segments = _tithi_covering(w_start, w_end, ayanamsa)
+        if any(s["paksha"] == target_paksha and s["number"] == target_number
+              for s in segments):
+            return d
+    return None
+
+
+def aparahna_vyapini_date(
+    target_paksha: str, target_number: int,
+    start_date: dt.date, latitude: float, longitude: float, timezone: str,
+    **kwargs,
+) -> dt.date | None:
+    """The civil date whose Aparahna Kaal the given tithi covers - the rule
+    for Vijayadashami/Dussehra (Shukla Dashami) and similar aparahna-vyapini
+    festivals. `start_date` should be a day at or shortly before the tithi is
+    expected (e.g. from a rough sunrise-based estimate)."""
+    return _festival_date(target_paksha, target_number, start_date,
+                          latitude, longitude, timezone, "aparahna", **kwargs)
+
+
+def pradosh_vyapini_date(
+    target_paksha: str, target_number: int,
+    start_date: dt.date, latitude: float, longitude: float, timezone: str,
+    **kwargs,
+) -> dt.date | None:
+    """The civil date whose Pradosh Kaal the given tithi covers - the rule for
+    Diwali/Lakshmi Puja (Krishna/Amavasya, paksha='Krishna', number=15) and
+    similar pradosh-vyapini festivals."""
+    return _festival_date(target_paksha, target_number, start_date,
+                          latitude, longitude, timezone, "pradosh", **kwargs)
+
+
 def _tithi_entry(index: int, start: float, end: float, tz: ZoneInfo) -> dict:
     name, paksha, number = _tithi_label(index)
     entry = _named_entry(name, index, start, end, tz)
