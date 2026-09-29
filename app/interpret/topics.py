@@ -41,7 +41,12 @@ TOPICS: tuple[Topic, ...] = (
                          "promote", "workplace",
                          "boss", "employer", "resign", "quit my job", "appraisal", "layoff",
                          "business", "startup", "entrepreneur", "self employed", "freelance"),
-        keywords=("work", "office", "company", "role", "position", "salary hike", "interview",
+        # Bare "work" is deliberately excluded: "workplace" above already
+        # carries the real signal, and "work" alone collides with idioms that
+        # have nothing to do with a job ("work out" meaning succeed/resolve,
+        # "workout" meaning exercise) - the same collision class as "art"
+        # matching "article" in the children topic below.
+        keywords=("office", "company", "role", "position", "salary hike", "interview",
                   "government job", "corporate", "manager", "success", "ambition", "reputation"),
         blurb="the 10th house of standing and the 6th of daily work",
     ),
@@ -64,12 +69,16 @@ TOPICS: tuple[Topic, ...] = (
         primary_houses=(7, 5),
         support_houses=(11, 8, 1),
         significators=("Venus", "Mars", "Moon", "Jupiter"),
+        # "relationship" is deliberately weak, not strong: it is real signal
+        # for romance ("is my relationship going to work out") but just as
+        # often describes a non-romantic bond ("my relationship with my
+        # mother"), where an explicit family/friends word should win instead.
         strong_keywords=("love", "marriage", "marry", "spouse", "husband", "wife", "partner",
-                         "relationship", "girlfriend", "boyfriend", "dating", "romance",
-                         "divorce", "separation", "breakup", "engagement", "soulmate",
+                         "girlfriend", "boyfriend", "dating", "romance",
+                         "divorce", "separation", "breakup", "engagement", "engaged", "soulmate",
                          "arranged marriage", "love marriage"),
         keywords=("date", "crush", "affair", "commitment", "compatible", "compatibility",
-                  "single", "attract", "intimacy"),
+                  "single", "attract", "intimacy", "relationship"),
         timing_movers=("Jupiter", "Saturn", "Uranus", "Pluto"),
         blurb="the 7th house of partnership and the 5th of romance",
     ),
@@ -79,11 +88,16 @@ TOPICS: tuple[Topic, ...] = (
         primary_houses=(4,),
         support_houses=(3, 10, 12),
         significators=("Moon", "Saturn", "Sun", "Venus"),
-        strong_keywords=("family", "home", "mother", "father", "parents", "house purchase",
-                         "property", "real estate", "relocate", "moving house", "ancestral",
-                         "sibling", "brother", "sister", "buy a house", "buying a house",
-                         "own a house", "own home", "new home", "own place"),
-        keywords=("roots", "land", "flat", "apartment", "domestic", "household", "hometown"),
+        # "relocate" is deliberately weak, not strong: bare, it is as much
+        # about moving country (the travel topic) as moving house, and a
+        # sentence naming both ("relocating overseas") should let travel's
+        # more specific "overseas"/"abroad" win rather than tie on word count.
+        strong_keywords=("family", "home", "house", "mother", "father", "parents",
+                         "house purchase", "property", "real estate", "moving house",
+                         "ancestral", "sibling", "brother", "sister", "buy a house",
+                         "buying a house", "own a house", "own home", "new home", "own place"),
+        keywords=("roots", "land", "flat", "apartment", "domestic", "household", "hometown",
+                  "relocate"),
         blurb="the 4th house of home and roots",
     ),
     Topic(
@@ -107,7 +121,10 @@ TOPICS: tuple[Topic, ...] = (
         primary_houses=(6, 1),
         support_houses=(8, 12),
         significators=("Mars", "Saturn", "Moon", "Sun"),
-        strong_keywords=("health", "illness", "disease", "sick", "surgery", "hospital",
+        # "ill" is spelled out separately from "illness": _stem only strips
+        # one trailing y/e, which cannot bridge the two ("ill" is too short to
+        # stem at all), so "am I falling ill" matched nothing without it.
+        strong_keywords=("health", "ill", "illness", "disease", "sick", "surgery", "hospital",
                          "diagnosis", "recovery", "chronic", "injury", "medical", "fitness",
                          "mental health", "anxiety", "depression", "stress"),
         keywords=("body", "energy", "sleep", "diet", "exercise", "wellbeing", "pain", "immunity"),
@@ -142,8 +159,14 @@ TOPICS: tuple[Topic, ...] = (
         primary_houses=(12, 9),
         support_houses=(8, 4),
         significators=("Jupiter", "Neptune", "Saturn", "Moon"),
-        strong_keywords=("spiritual", "spirituality", "meditation", "god", "faith", "religion",
-                         "dharma", "karma", "purpose in life", "moksha", "enlightenment",
+        # "meditate" is spelled out alongside "meditation": _stem strips only
+        # one trailing y/e, not enough to bridge "meditation" down to the
+        # shared "meditat" root, so "should I start meditating" matched
+        # nothing without it. Same reasoning for "life's purpose" alongside
+        # "purpose in life" — a different word order, not a different word.
+        strong_keywords=("spiritual", "spirituality", "meditate", "meditation", "god", "faith",
+                         "religion", "dharma", "karma", "purpose in life", "life's purpose",
+                         "my purpose", "true purpose", "moksha", "enlightenment",
                          "past life", "soul"),
         keywords=("meaning", "belief", "practice", "retreat", "solitude", "mystical"),
         blurb="the 12th house of the inner life and the 9th of belief",
