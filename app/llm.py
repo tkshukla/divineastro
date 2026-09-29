@@ -669,22 +669,42 @@ def stream_polish(analysis: dict, language: str, provider: str, question: str,
             extra["betas"] = ["server-side-fallback-2026-07-01"]
             extra["fallbacks"] = "default"
 
-        with client.beta.messages.stream(
-            model=CLAUDE_MODEL,
-            max_tokens=CLAUDE_MAX_TOKENS,
-            system=system,
-            messages=[{"role": "user", "content": prompt}],
-            **extra,
-        ) as stream:
-            for text in stream.text_stream:
-                produced.append(text)
-                yield text
-            stop_reason = stream.get_final_message().stop_reason
-            if stop_reason == "refusal":
-                raise RuntimeError("Claude declined to rewrite this reading.")
-            if stop_reason == "max_tokens" and meta is not None:
-                meta["truncated"] = True
-            _audit_dates(meta, prompt, "".join(produced))
+        try:
+            with client.beta.messages.stream(
+                model=CLAUDE_MODEL,
+                max_tokens=CLAUDE_MAX_TOKENS,
+                system=system,
+                messages=[{"role": "user", "content": prompt}],
+                **extra,
+            ) as stream:
+                for text in stream.text_stream:
+                    produced.append(text)
+                    yield text
+                stop_reason = stream.get_final_message().stop_reason
+                if stop_reason == "refusal":
+                    raise RuntimeError("Claude declined to rewrite this reading.")
+                if stop_reason == "max_tokens" and meta is not None:
+                    meta["truncated"] = True
+                _audit_dates(meta, prompt, "".join(produced))
+        except Exception as exc:
+            # Fall back to the local model ONLY if Anthropic failed before any
+            # text reached the visitor (billing exhausted, key revoked, the API
+            # down — the case this exists for). A failure partway through a
+            # stream means the visitor already has half an answer in one voice;
+            # restarting it in a different model's voice would read as broken,
+            # not as graceful degradation, so that case still raises as before
+            # and polish()/the caller falls back to the engine's own wording.
+            available = _ollama_models() if not produced else []
+            if produced or not available:
+                raise
+            fallback_model = OLLAMA_MODEL if OLLAMA_MODEL in available else available[0]
+            log.warning("Anthropic narration failed (%s); falling back to local model %r",
+                        exc, fallback_model)
+            if meta is not None:
+                meta["anthropic_failed"] = f"{type(exc).__name__}: {exc}"
+                meta["fallback_provider"] = f"ollama:{fallback_model}"
+            yield from stream_polish(analysis, language, f"ollama:{fallback_model}",
+                                      question, history, meta)
     else:
         raise ValueError(f"Unknown provider '{provider}'")
 
