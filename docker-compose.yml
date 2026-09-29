@@ -52,10 +52,12 @@ services:
   ollama:
     image: ollama/ollama:latest
     restart: unless-stopped
-    # No `ports:` — same reasoning as db above. The app reaches it at
-    # http://ollama:11434 on the compose network; nothing external can.
-    expose:
-      - "11434"
+    # Bound to the SERVER's own loopback only, not published to the internet —
+    # same reasoning as db above (Ollama has no auth of its own). This lets an
+    # admin reach it for testing via `ssh -L 11434:127.0.0.1:11434 ...`; the
+    # app itself uses http://ollama:11434 on the compose network either way.
+    ports:
+      - "127.0.0.1:11434:11434"
     volumes:
       - ollamadata:/root/.ollama
     mem_limit: 7g              # leaves headroom for app/db/caddy + the other
