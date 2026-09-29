@@ -39,6 +39,28 @@ Run the test sweep:
 .\.venv\Scripts\python.exe -m tests.test_sweep
 ```
 
+### Continuous integration
+
+Every push and pull request runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml),
+which wires up the suites in `tests/` exactly as documented in each file's own
+docstring — nothing CI-specific, the same commands you'd run locally:
+
+| Job | What | Needs |
+|---|---|---|
+| `unit-tests` | 28 suites with no server (import `app.*` directly) | nothing |
+| `integration-tests-default-gateway` | 10 suites that hit a live server over HTTP | `ASTRO_GATEWAY=test`, `ASTRO_DEV_LOGIN=1`, `ASTRO_ADMIN_EMAILS` |
+| `integration-tests-upi-gateway` | `test_upi` (asserts the active gateway *is* `upi_manual`, so it can't share a server with the pass above) | `ASTRO_GATEWAY=upi_manual`, `ASTRO_UPI_VPA` |
+| `e2e-tests` | the Playwright suites in `tests/e2e/` (DIVASTRO-72) | `playwright install chromium` — each test starts its own throwaway server, no shared state |
+
+`tests/test_sweep.py` (the 1200-check robustness sweep) is **not** part of the
+default run — it took ~87 CPU-minutes in the one measured run, unworkable as a
+per-PR gate. Run it on demand from the Actions tab (`workflow_dispatch`, tick
+"Also run tests.test_sweep") or locally as above.
+
+A real PayU payment cannot be automated safely, so any release that touches
+payments still needs one manual check — see
+[`docs/manual-uat-checklist.md`](docs/manual-uat-checklist.md).
+
 ---
 
 ## What computes what
