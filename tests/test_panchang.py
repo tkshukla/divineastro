@@ -34,8 +34,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.astro.panchang import (            # noqa: E402
     GULIKA_SEGMENT, KAAL_SARP_TYPES, MOVABLE_KARANAS, NAKSHATRAS, RAHU_SEGMENT,
     SIGNS, TITHI_NAMES, YAMAGANDA_SEGMENT, YOGA_NAMES,
-    daily_panchang, kaal_sarp, kaal_sarp_from_longitudes, panchang_at,
-    sade_sati, sade_sati_for_moon_sign,
+    aparahna_vyapini_date, daily_panchang, kaal_sarp, kaal_sarp_from_longitudes,
+    panchang_at, pradosh_vyapini_date, sade_sati, sade_sati_for_moon_sign,
 )
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -532,6 +532,33 @@ def main() -> int:
           isinstance(payload["panchang"]["sun"]["rise"], str))
     check("SIGNS is the shared table, not a private copy",
           SIGNS[0] == "Aries" and len(SIGNS) == 12)
+
+    print("\nN. Aparahna/pradosh-vyapini festival dating (DIVASTRO-90)")
+    print("   daily_panchang's sunrise rule is wrong for Vijayadashami and Diwali - two")
+    print("   independent years, incl. 2025's real Oct-1-or-2 controversy, resolved correctly.")
+    lat, lon, tz = DELHI
+    d = aparahna_vyapini_date("Shukla", 10, dt.date(2026, 10, 15), lat, lon, tz)
+    check("Vijayadashami 2026 (Delhi) = 20 Oct, not the sunrise rule's 21st",
+          d == dt.date(2026, 10, 20), str(d))
+    d = pradosh_vyapini_date("Krishna", 15, dt.date(2026, 11, 3), lat, lon, tz)
+    check("Diwali 2026 (Delhi) = 8 Nov, not the sunrise rule's 9th",
+          d == dt.date(2026, 11, 8), str(d))
+    d = aparahna_vyapini_date("Shukla", 10, dt.date(2025, 9, 27), lat, lon, tz)
+    check("Vijayadashami 2025 (Delhi) = 2 Oct (the publicly-disputed 1-vs-2 case, resolved)",
+          d == dt.date(2025, 10, 2), str(d))
+    d = pradosh_vyapini_date("Krishna", 15, dt.date(2025, 10, 16), lat, lon, tz)
+    check("Diwali 2025 (Delhi) = 20 Oct", d == dt.date(2025, 10, 20), str(d))
+    # A tithi/paksha combination that (for this date range) never occurs must
+    # report None rather than silently returning some unrelated date.
+    d = aparahna_vyapini_date("Shukla", 10, dt.date(2026, 1, 1), lat, lon, tz, search_days=3)
+    check("no match within search_days reports None, not a wrong guess", d is None, str(d))
+    # The old sunrise-based reading really is different from the new rule -
+    # proves this is a genuinely separate code path, not the same number twice.
+    sunrise_tithi = daily_panchang("2026-10-20", *DELHI)["tithi"][0]
+    check("sunrise-ruled reading of the SAME civil date differs from the vyapini result "
+          "(the bug this exists to avoid)",
+          not (sunrise_tithi["paksha"] == "Shukla" and sunrise_tithi["number"] == 10),
+          f"sunrise tithi on 2026-10-20 was {sunrise_tithi['paksha']} {sunrise_tithi['number']}")
 
     print("\n" + "=" * 60)
     if failures:
