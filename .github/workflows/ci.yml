@@ -181,6 +181,15 @@ jobs:
       - name: Fetch the offline city database
         run: python tools/fetch_data.py
       - run: python -m playwright install --with-deps chromium
+      - name: TEMP diagnostic round 2 (DIVASTRO-72 investigation)
+        run: python -u tests/e2e/_diag_layout.py
+      - name: Upload diagnostic screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diag-topbar-screenshot
+          path: /tmp/topbar_ci.png
+          if-no-files-found: ignore
       - name: Run e2e suites
         # Each of these starts its own server on a free port with a
         # throwaway SQLite database (see tests/e2e/harness.py) — no shared
