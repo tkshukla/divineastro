@@ -181,6 +181,8 @@ jobs:
       - name: Fetch the offline city database
         run: python tools/fetch_data.py
       - run: python -m playwright install --with-deps chromium
+      - name: TEMP diagnostic - layout breakdown (DIVASTRO-72 investigation)
+        run: python -u tests/e2e/_diag_layout.py
       - name: Run e2e suites
         # Each of these starts its own server on a free port with a
         # throwaway SQLite database (see tests/e2e/harness.py) — no shared
