@@ -74,6 +74,15 @@ class Rig:
         for name, body in (("curl", FAKE_CURL), ("docker", FAKE_DOCKER)):
             f = self.fake / name
             f.write_text(body, encoding="utf-8", newline="\n")
+            # The executable bit is ignored by Windows/MSYS bash but strictly
+            # enforced by real Linux — without it, every "$CURL"/"$DOCKER" call
+            # in the script under test silently fails with "Permission denied"
+            # (invisible here since Rig.run() discards stderr), so every check
+            # looks like a failure and no fake ever gets invoked. Found via the
+            # GitHub Actions run of DIVASTRO-72's CI workflow — this test had
+            # never actually run on real Linux before, which is where the real
+            # watchdog script runs in production.
+            f.chmod(0o755)
         self.set(public="ok", app="ok", running="true", heal_works="no")
 
     def set(self, **kw) -> None:

@@ -78,6 +78,8 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
       - run: pip install -r requirements.txt
+      - name: Fetch the offline city database
+        run: python tools/fetch_data.py
       - name: Start the app server
         run: |
           python -u -m uvicorn app.main:app --host 127.0.0.1 --port 8600 \
@@ -128,6 +130,8 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
       - run: pip install -r requirements.txt
+      - name: Fetch the offline city database
+        run: python tools/fetch_data.py
       - name: Start the app server
         run: |
           python -u -m uvicorn app.main:app --host 127.0.0.1 --port 8600 \
@@ -163,6 +167,8 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
       - run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Fetch the offline city database
+        run: python tools/fetch_data.py
       - run: python -m playwright install --with-deps chromium
       - name: Run e2e suites
         # Each of these starts its own server on a free port with a
