@@ -78,6 +78,10 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
       - run: pip install -r requirements.txt
+      - name: Install the same fonts the production image ships (Dockerfile)
+        # test_pdf.py asserts a Hindi PDF actually has Devanagari glyphs, not
+        # empty boxes — needs the fonts, same package names as the Dockerfile.
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends fontconfig fonts-noto-core fonts-deva
       - name: Fetch the offline city database
         run: python tools/fetch_data.py
       - name: Start the app server
@@ -167,6 +171,13 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
       - run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Install the same fonts the production image ships (Dockerfile)
+        # Without a real sans-serif font installed, headless Chromium falls
+        # back to whatever generic font this bare image ships (different
+        # metrics/line-height than any real user's browser), which was
+        # enough to tip the laptop_1366x768 "answer area >= 60% of screen"
+        # layout assertion by about a percentage point — not a real app bug.
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends fontconfig fonts-noto-core fonts-deva
       - name: Fetch the offline city database
         run: python tools/fetch_data.py
       - run: python -m playwright install --with-deps chromium
