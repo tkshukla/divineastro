@@ -24,7 +24,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from . import auth, geo, llm, pdf_report
+from . import auth, billing, geo, llm, pdf_report
 from .api_account import router as account_router
 from .api_feedback import router as feedback_router
 from .api_traffic import router as traffic_router
