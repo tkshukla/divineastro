@@ -163,6 +163,31 @@ def dev_login(body: dict, request: Request, response: Response,
     return {"user": _user_dict(db, user), "created": created}
 
 
+class PasswordAuthIn(BaseModel):
+    username: str
+    password: str
+
+
+@router.post("/auth/register")
+def register(body: PasswordAuthIn, request: Request, response: Response,
+            db: Session = Depends(get_db)) -> dict:
+    """Create a username/password account — no email, no real name required."""
+    user = auth.register_password_user(db, body.username, body.password)
+    analytics.attribute_signup(db, user, request)
+    auth.issue_session(response, user)
+    return {"user": _user_dict(db, user), "created": True}
+
+
+@router.post("/auth/login")
+def login(body: PasswordAuthIn, response: Response,
+         db: Session = Depends(get_db)) -> dict:
+    user = auth.verify_password_login(db, body.username, body.password)
+    if user is None:
+        raise HTTPException(401, "Invalid username or password.")
+    auth.issue_session(response, user)
+    return {"user": _user_dict(db, user), "created": False}
+
+
 @router.get("/auth/{provider}/start")
 async def oauth_start(provider: str, request: Request, next: str = "/"):
     client = auth.client(provider)

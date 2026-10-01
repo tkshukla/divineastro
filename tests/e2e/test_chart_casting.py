@@ -117,14 +117,47 @@ def unknown_birth_time(p, browser, base: str) -> None:
     ctx.close()
 
 
+def name_field_is_optional(p, browser, base: str) -> None:
+    print("\n[the Name field is genuinely optional, with a sensible fallback display]")
+    ctx = browser.new_context(**DESKTOPS["desktop_1440x800"])
+    pg = Page(ctx.new_page(), base)
+    open_birth_form(pg)
+
+    check("the Name field has no native required attribute",
+          pg.page.eval_on_selector("#f-name", "e => e.required") is False)
+    check("the label already tells the visitor it's optional",
+          "optional" in pg.page.inner_text('label[for="f-name"]').lower())
+
+    pg.page.fill("#f-date", "1990-03-12")
+    pg.page.fill("#f-time", "09:30")
+    # Deliberately leave #f-name blank.
+    pg.page.fill("#f-place", "Kolkata")
+    pg.page.wait_for_selector("#place-results li", timeout=10000)
+    pg.page.locator("#place-results li").first.click()
+
+    pg.page.click("#cast")
+    pg.page.wait_for_selector("#stage-dashboard, #stage-chat", state="visible", timeout=15000)
+    check("a chart with no name still casts successfully",
+          not pg.page.locator("#birth-form").is_visible())
+
+    who_name = pg.page.inner_text("#who-name").strip()
+    check("a real, non-blank fallback displays instead of an empty name",
+          who_name not in ("", "—"), repr(who_name))
+
+    check("no console errors", not pg.console_errors, "; ".join(pg.console_errors[:3]))
+    check("no CSP violations", not pg.csp_violations(), str(pg.csp_violations()[:2]))
+    ctx.close()
+
+
 def main() -> int:
     with server() as base, sync_playwright() as p:
         browser = p.chromium.launch()
         validation_without_a_place(p, browser, base)
         place_search_and_cast(p, browser, base)
         unknown_birth_time(p, browser, base)
+        name_field_is_optional(p, browser, base)
         browser.close()
-    return check.finish("chart casting (place search, unknown time, validation)")
+    return check.finish("chart casting (place search, unknown time, validation, optional name)")
 
 
 if __name__ == "__main__":

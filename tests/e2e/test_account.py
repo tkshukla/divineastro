@@ -104,13 +104,66 @@ def blocked_user_message(p, browser, base: str) -> None:
     ctx.close()
 
 
+def username_password_signup_and_login(p, browser, base: str) -> None:
+    print("\n[username/password: create an account with no email, sign out, log back in]")
+    ctx = browser.new_context(**DESKTOPS["desktop_1440x800"])
+    pg = Page(ctx.new_page(), base)
+    pg.open_home()
+    pg.page.wait_for_selector("#btn-signin", timeout=10000)
+
+    pg.page.click("#btn-signin")
+    pg.page.wait_for_selector("#toggle-password-auth", timeout=10000)
+    pg.page.click("#toggle-password-auth")
+    pg.page.wait_for_selector("#password-auth:not([hidden])", timeout=5000)
+    check("defaults to 'Create account' mode", "Create" in pg.page.inner_text("#pa-submit"))
+    check("the no-recovery trade-off is stated up front, not hidden",
+          "recover" in pg.page.inner_text("#pa-note").lower())
+
+    username = "e2e_pw_user"
+    pg.page.fill("#pa-username", username)
+    pg.page.fill("#pa-password", "correcthorse123")
+    pg.page.click("#pa-submit")
+    pg.page.wait_for_selector("#btn-credits", timeout=10000)
+    check("signed in immediately after creating the account",
+          pg.page.locator("#btn-credits").count() > 0)
+
+    me = pg.page.context.request.get(f"{base}/api/me").json()
+    check("the account really has no email attached", me["user"]["email"] == "", str(me["user"]))
+    check("the account displays by the chosen username",
+          me["user"]["name"] == username, me["user"]["name"])
+
+    pg.page.click("#btn-acct")
+    acct_label = pg.page.inner_text("#btn-acct")
+    check("the account button shows the real username, not a generic 'Account' fallback",
+          username in acct_label, acct_label)
+    pg.page.click('.acct-drop button[data-act="logout"]')
+    pg.page.wait_for_selector("#btn-signin", timeout=10000)
+
+    pg.page.click("#btn-signin")
+    pg.page.click("#toggle-password-auth")
+    pg.page.wait_for_selector("#password-auth:not([hidden])", timeout=5000)
+    pg.page.click("#pa-mode-toggle")
+    check("mode toggle switches the submit button to 'Log in'",
+          "Log in" in pg.page.inner_text("#pa-submit"))
+    pg.page.fill("#pa-username", username)
+    pg.page.fill("#pa-password", "correcthorse123")
+    pg.page.click("#pa-submit")
+    pg.page.wait_for_selector("#btn-credits", timeout=10000)
+    check("logging back in with the same credentials works", True)
+
+    check("no console errors", not pg.console_errors, "; ".join(pg.console_errors[:3]))
+    check("no CSP violations", not pg.csp_violations(), str(pg.csp_violations()[:2]))
+    ctx.close()
+
+
 def main() -> int:
     with server() as base, sync_playwright() as p:
         browser = p.chromium.launch()
         sign_in_and_out(p, browser, base)
         blocked_user_message(p, browser, base)
+        username_password_signup_and_login(p, browser, base)
         browser.close()
-    return check.finish("account (sign in/out, blocked user)")
+    return check.finish("account (sign in/out, blocked user, username/password)")
 
 
 if __name__ == "__main__":
