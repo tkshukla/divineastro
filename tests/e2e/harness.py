@@ -149,9 +149,14 @@ class Page:
         self.page.goto(self.base + "/", wait_until="domcontentloaded")
         self.page.wait_for_function("typeof showStage === 'function'")
 
-    def open_chat(self) -> None:
-        """Signed in, chart cast, on the chat screen with the opening reading."""
-        self.sign_in()
+    def open_chat(self, email: str = "e2e@example.com", name: str = "E2E Tester") -> None:
+        """Signed in, chart cast, on the chat screen with the opening reading.
+
+        Pass a distinct email for any test that needs its own credit balance
+        (e.g. a paywall test) rather than sharing the default account with
+        every other test run against the same server().
+        """
+        self.sign_in(email=email, name=name)
         self.open_home()
         self.page.evaluate("async (b) => { await castChart(b); showStage('stage-chat'); }", BIRTH)
         self.page.wait_for_selector("#thread .msg.bot", timeout=30000)

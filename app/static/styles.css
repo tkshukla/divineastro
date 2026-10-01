@@ -950,10 +950,26 @@ button.ghost:hover { background: rgba(var(--accent-rgb), 0.16); color: var(--ink
   font-family: "Nirmala UI", "Noto Sans Devanagari", "Mangal", var(--sans);
 }
 
-.tabs { display: flex; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+/* overflow-x: auto (not flex-wrap, not shrinking .tab below its content) is
+   unconditional, not just under the 980px media query below — the chart
+   panel column stays a narrow, roughly-fixed-width sidebar at every desktop
+   size, not just on phones, and flex: 1 alone does NOT stop a flex item
+   from overflowing its container (a flex item's default min-width is auto,
+   its own content width) without an explicit min-width: 0 or nowrap+scroll
+   treatment. Without this, the row of 8 uppercase tab labels (e.g.
+   "SUDARSHANA" alone needs ~100px) overflows the panel at every desktop
+   width tested, bleeding into the chat column where #thread silently
+   swallows clicks meant for the later tabs — found via DIVASTRO-72's e2e
+   coverage, not visible in a screenshot since nothing is visually broken,
+   only the hit-testing is wrong. */
+.tabs {
+  display: flex; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
 .tab {
-  flex: 1; padding: 10px 4px; background: transparent; border: none; cursor: pointer;
-  color: var(--ink-faint); font-family: var(--sans); font-size: 12px;
+  flex: 0 0 auto; padding: 10px 12px; background: transparent; border: none; cursor: pointer;
+  color: var(--ink-faint); font-family: var(--sans); font-size: 12px; white-space: nowrap;
   letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600;
   border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s;
 }
@@ -1225,20 +1241,11 @@ details.reasoning summary:hover { color: var(--gold); }
   .workspace[data-view="chart"] .panel { display: flex; }
   .workspace[data-view="chart"] .chat  { display: none; }
 
-  /* 8 tabs (Placements/Houses/Vargas/Ashtakavarga/Jaimini/Sudarshana/
-     Aspects/Now) at equal flex:1 width can't compress below their own
-     uppercase text — "Ashtakavarga" and "Sudarshana" alone need ~100px
-     each. That forced the whole row to ~558px wide, which (via .panel's
-     old missing min-width: 0) blew the entire chart panel past a 375px
-     phone's viewport. Scrolling the row horizontally at each tab's
-     natural width fixes it without hiding or renaming anything. */
-  .tabs {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab { flex: 0 0 auto; padding: 10px 12px; white-space: nowrap; }
+  /* .tabs/.tab's horizontal-scroll treatment is unconditional now (see the
+     base rule above) — it originally lived only here, gated to narrow
+     screens, until DIVASTRO-72's e2e coverage found the same overflow
+     happening at every desktop width too, since the chart panel column
+     stays narrow regardless of viewport width. */
 
   /* The chart needs room to be legible on a small screen. */
   .wheel svg { max-height: none; }

@@ -163,7 +163,7 @@ jobs:
   e2e-tests:
     name: End-to-end browser tests (DIVASTRO-72)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -184,10 +184,17 @@ jobs:
       - name: Run e2e suites
         # Each of these starts its own server on a free port with a
         # throwaway SQLite database (see tests/e2e/harness.py) — no shared
-        # server needed here, unlike the integration-tests jobs above.
+        # server needed here, unlike the integration-tests jobs above. Some
+        # (test_feedback_admin, test_store) start more than one server with
+        # different ASTRO_GATEWAY/PAYU_* env internally, via server()'s own
+        # extra_env — nothing extra needed at the workflow level for that.
         run: |
           set -e
-          for m in test_chat_layout test_first_run test_home test_mobile_screens; do
+          for m in \
+            test_account test_ask_question test_chart_casting test_chart_panel \
+            test_chat_layout test_dashboard_widgets test_feedback_admin \
+            test_first_run test_home test_milan test_mobile_screens \
+            test_panchang_tools test_pdfs_and_account test_site_chrome test_store; do
             echo "::group::$m"
             python -u -m tests.e2e.$m
             echo "::endgroup::"
