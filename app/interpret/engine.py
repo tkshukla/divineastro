@@ -273,7 +273,155 @@ def aspect_evidence(session: ChartSession, names: list[str], weight: float,
     return out
 
 
-def gather(session: ChartSession, topic: Topic) -> list[Evidence]:
+# --------------------------------------------------------------------------
+# Vedic factors (DIVASTRO-92): yogas, the current dasha lord, Sade Sati
+# --------------------------------------------------------------------------
+# Folded into the score itself, not just the prose (`_vedic_block()` in
+# llm.py) — before this, a chart could score "Strongly supported" on Western
+# dignity alone while carrying a Raja Yoga or a badly afflicted dasha lord
+# that would classically shift the reading. Scoped narrow and deliberately:
+# only a yoga/dasha-lord/Sade-Sati factor that touches a planet `gather()`
+# already treats as relevant to this topic (a house ruler or significator —
+# the same `key_planets` list `aspect_evidence` uses) is counted, so a
+# generic Raja Yoga elsewhere in the chart cannot inflate an unrelated
+# question's score. Weights sit below the primary-house weight (1.0) and
+# first significator (0.9) throughout: modifiers on the Western-dignity
+# core, not a replacement for it.
+
+_YOGA_STRENGTH_MULT = {
+    # The classical ordering vargas.py's own yoga builders already encode
+    # (exchange > conjunction / mutual aspect > one-way aspect) — reused
+    # here rather than inventing a second number for the same judgement.
+    "strong (parivartana)": 1.0,
+    "moderate (conjunction)": 0.75,
+    "moderate (mutual aspect)": 0.75,
+    "weak (one-way aspect)": 0.5,
+}
+# key -> (score, weight) at full strength. Keyed by vargas.py's own stable
+# `key` field, not `group` (a display label with inconsistent casing).
+# neecha_bhanga_raja is the stronger variant where the cancelled debilitation
+# also lands in a kendra/trikona — vargas.py's own note calls this "why the
+# cancellation is given the name Raja Yoga", so it gets Raja Yoga's weight.
+_YOGA_BASE = {
+    "raja": (2.0, 1.0),
+    "neecha_bhanga_raja": (2.0, 1.0),
+    "dhana": (1.5, 0.8),
+    "neecha_bhanga": (1.5, 0.8),
+}
+_CHANDRA_YOGA_BASE = (1.0, 0.5)   # Gaja Kesari and anything else in that group
+
+_DASHA_LORD_LABEL = {"mahadasha": "Mahadasha", "antardasha": "Antardasha"}
+
+# Sade Sati's classical domain is narrower than "every topic" — capped to
+# where it's actually read, so it can't swing an unrelated question.
+_SADE_SATI_TOPICS = frozenset({"career", "money", "health", "obstacles"})
+
+
+def vedic_factor_evidence(session: ChartSession, topic: Topic,
+                          key_planets: list[str],
+                          as_of: dt.datetime | None = None) -> list[Evidence]:
+    """Best-effort: a failure here must never cost someone a reading, so each
+    source is independently wrapped and skipped on error, mirroring
+    `main.py`'s `_vedic_context()`.
+
+    `as_of` is the dasha/Sade-Sati reference point, not necessarily today — a
+    review question about a past date ("how was my career in 2016?") must be
+    judged by *that* period's dasha lord, not today's; `gather()`'s caller
+    already resolves this as `reference`. Defaults to now for any other
+    caller (tests included).
+    """
+    out: list[Evidence] = []
+    key_set = set(key_planets)
+    now = as_of or dt.datetime.now(dt.timezone.utc)
+
+    try:
+        from ..astro import vargas
+        for y in vargas.yogas(session).get("yogas", []):
+            involved = sorted(set(y.get("planets", [])) & key_set)
+            if not involved:
+                continue
+            base = _YOGA_BASE.get(y.get("key", ""))
+            if base is None and y.get("group") == "Chandra yoga":
+                base = _CHANDRA_YOGA_BASE
+            if base is None:
+                continue
+            mult = _YOGA_STRENGTH_MULT.get(y.get("strength") or "", 1.0)
+            out.append(Evidence(
+                text=(
+                    f"**{y['name']}** is formed in your chart, involving "
+                    f"{' and '.join(involved)} — already judged relevant to "
+                    f"{topic.label} here. {y.get('note', '')}"
+                ),
+                score=base[0] * mult,
+                weight=base[1] * mult,
+                factor=y["name"],
+                detail=f"{y['name']}: {', '.join(y.get('planets', []))}",
+            ))
+    except Exception as exc:
+        _log.warning("yoga evidence unavailable: %s", exc)
+
+    try:
+        from ..chart_service import vimshottari
+        from ..astro.vargas import DEBILITATION, EXALTATION
+        periods = vimshottari(session, now)
+        for period_key, label in _DASHA_LORD_LABEL.items():
+            period = periods.get(period_key)
+            if not period or period["lord"] not in key_set:
+                continue
+            lord = period["lord"]
+            lord_obj = session.obj(lord)
+            if not lord_obj:
+                continue
+            sign = lord_obj["sign"]
+            if EXALTATION.get(lord) == sign:
+                out.append(Evidence(
+                    text=(f"**{lord}**, your current {label.lower()} lord, is "
+                          f"exalted in {sign} — a strong period for whatever "
+                          f"{lord} governs here."),
+                    score=1.5, weight=0.7, factor=f"{label} lord dignity",
+                    detail=f"{lord} {sign} ({label.lower()} lord, exalted)",
+                ))
+            elif DEBILITATION.get(lord) == sign:
+                out.append(Evidence(
+                    text=(f"**{lord}**, your current {label.lower()} lord, is "
+                          f"debilitated in {sign} — a harder period for "
+                          f"whatever {lord} governs here."),
+                    score=-1.5, weight=0.7, factor=f"{label} lord dignity",
+                    detail=f"{lord} {sign} ({label.lower()} lord, debilitated)",
+                ))
+    except Exception as exc:
+        _log.warning("dasha-lord evidence unavailable: %s", exc)
+
+    if topic.key in _SADE_SATI_TOPICS:
+        try:
+            from ..astro import panchang
+            ss = panchang.sade_sati(session, as_of=now)
+            phase = ss.get("phase") if ss.get("running") else None
+            name = phase.get("name") if phase else None
+            if name == "Peak":
+                out.append(Evidence(
+                    text=("Saturn is transiting **over your natal Moon** right "
+                          "now (Sade Sati, peak phase) — traditionally the "
+                          "heaviest of the three phases."),
+                    score=-1.0, weight=0.5, factor="Sade Sati (peak)",
+                    detail="Sade Sati peak phase",
+                ))
+            elif name in ("Rising", "Setting"):
+                out.append(Evidence(
+                    text=(f"Saturn is in the **{name.lower()} phase** of Sade "
+                          f"Sati right now — milder than the peak, still worth "
+                          f"weighing in."),
+                    score=-0.5, weight=0.3, factor=f"Sade Sati ({name.lower()})",
+                    detail=f"Sade Sati {name.lower()} phase",
+                ))
+        except Exception as exc:
+            _log.warning("sade sati evidence unavailable: %s", exc)
+
+    return out
+
+
+def gather(session: ChartSession, topic: Topic,
+          as_of: dt.datetime | None = None) -> list[Evidence]:
     evidence: list[Evidence] = []
     for i, h in enumerate(topic.primary_houses):
         evidence += house_evidence(session, h, weight=1.0 if i == 0 else 0.7)
@@ -291,6 +439,7 @@ def gather(session: ChartSession, topic: Topic) -> list[Evidence]:
             key_planets.append(sig)
 
     evidence += aspect_evidence(session, key_planets, weight=0.6)
+    evidence += vedic_factor_evidence(session, topic, key_planets, as_of=as_of)
     return evidence
 
 
@@ -1229,7 +1378,7 @@ def analyse(session: ChartSession, question: str,
     if intent == "review" and not period_label:
         period_label = reference.strftime("%B %Y")
 
-    evidence = gather(session, topic)
+    evidence = gather(session, topic, as_of=reference)
     score = score_of(evidence)
 
     deep = intent in ("timing", "forecast", "review") or topic.key == "timing"
