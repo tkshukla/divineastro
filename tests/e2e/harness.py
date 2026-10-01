@@ -125,7 +125,14 @@ class Page:
         self.failed_requests: list[str] = []
         page.add_init_script(_WATCH)
         page.on("console", lambda m: self.console_errors.append(m.text)
-                if m.type == "error" else None)
+                if m.type == "error" and "report-only" not in m.text else None)
+        # A report-only CSP directive logs to console as an "error" by design but
+        # blocks nothing ("no further action has been taken") — e.g. Google's own
+        # ad-serving pages ship their own report-only frame-ancestors header, which
+        # fires as noise whenever an iframe they serve (AdSense) is embedded
+        # anywhere. The site's own *enforced* CSP is already checked properly via
+        # csp_violations()/window.__csp below; this generic error check should only
+        # catch real app errors, not another origin's own diagnostic logging.
         page.on("pageerror", lambda e: self.console_errors.append(f"pageerror: {e}"))
         page.on("response", lambda r: self.failed_requests.append(f"{r.status} {r.url}")
                 if r.status >= 500 and r.url.startswith(base) else None)

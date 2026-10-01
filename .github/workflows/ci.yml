@@ -1,0 +1,215 @@
+name: CI
+
+# DIVASTRO-72 (Phase 4): wires the existing script-style test suites into
+# GitHub Actions. Every suite here already runs locally as documented in its
+# own docstring (`python -m tests.<name>`) — this workflow just runs the same
+# commands on every push/PR instead of relying on someone remembering to.
+#
+# `test_sweep` is deliberately excluded from the default run: it is an
+# 880+/1200-check robustness sweep that took ~87 CPU-minutes in the one
+# measured run (DIVASTRO-97), which is unworkable as a per-PR gate. It stays
+# available on demand via workflow_dispatch below.
+#
+# `-u` (unbuffered stdout) on every test invocation is a direct fix for the
+# same DIVASTRO-97 finding: a fully-buffered long script prints nothing until
+# it exits, which in a CI log looks identical to a hang.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      run_sweep:
+        description: "Also run tests.test_sweep (slow, ~90 min)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  unit-tests:
+    name: Unit tests (no server)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Run unit suites
+        run: |
+          set -e
+          for m in \
+            test_admin_api test_ashtakavarga test_api_dashboard test_choghadiya \
+            test_dashboard test_delineation test_frontend_routes test_jaimini \
+            test_life_book test_llm_date_audit test_llm_dignity_audit \
+            test_llm_ollama_fallback test_logging test_mail test_match_api \
+            test_matching test_muhurat test_panchang test_payu test_pdf_direct \
+            test_remedies_doshas test_single_question test_sudarshana \
+            test_topic_routing test_varga_svg test_vargas test_watchdog \
+            test_yogini_dasha; do
+            echo "::group::$m"
+            python -u -m tests.$m
+            echo "::endgroup::"
+          done
+
+  integration-tests-default-gateway:
+    name: Integration tests (server, ASTRO_GATEWAY=test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ASTRO_GATEWAY: test
+      ASTRO_DEV_LOGIN: "1"
+      ASTRO_ADMIN_EMAILS: owner@divineastro.org
+      ASTRO_SECRET_KEY: ci-not-a-real-secret
+      ASTRO_DATABASE_URL: sqlite:///${{ github.workspace }}/ci_pass1.db
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Install the same fonts the production image ships (Dockerfile)
+        # test_pdf.py asserts a Hindi PDF actually has Devanagari glyphs, not
+        # empty boxes — needs the fonts, same package names as the Dockerfile.
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends fontconfig fonts-noto-core fonts-deva
+      - name: Fetch the offline city database
+        run: python tools/fetch_data.py
+      - name: Start the app server
+        run: |
+          python -u -m uvicorn app.main:app --host 127.0.0.1 --port 8600 \
+            > server.log 2>&1 &
+          echo $! > server.pid
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8600/api/health > /dev/null; then
+              echo "server is up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "server never became healthy"; cat server.log; exit 1
+      - name: Run integration suites
+        run: |
+          set -e
+          # Every one of these hits the live server at 127.0.0.1:8600 (see
+          # each file's own docstring) rather than importing app code directly.
+          for m in \
+            test_admin test_admin_users test_births test_coupons \
+            test_feedback test_manual_order test_money_path test_pdf \
+            test_session_isolation test_traffic; do
+            echo "::group::$m"
+            python -u -m tests.$m
+            echo "::endgroup::"
+          done
+      - name: Server log
+        if: always()
+        run: cat server.log || true
+      - name: Stop the app server
+        if: always()
+        run: kill "$(cat server.pid)" 2>/dev/null || true
+
+  integration-tests-upi-gateway:
+    name: Integration tests (server, ASTRO_GATEWAY=upi_manual)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ASTRO_GATEWAY: upi_manual
+      ASTRO_UPI_VPA: ci-test@upi
+      ASTRO_DEV_LOGIN: "1"
+      ASTRO_SECRET_KEY: ci-not-a-real-secret
+      ASTRO_DATABASE_URL: sqlite:///${{ github.workspace }}/ci_pass2.db
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Fetch the offline city database
+        run: python tools/fetch_data.py
+      - name: Start the app server
+        run: |
+          python -u -m uvicorn app.main:app --host 127.0.0.1 --port 8600 \
+            > server.log 2>&1 &
+          echo $! > server.pid
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8600/api/health > /dev/null; then
+              echo "server is up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "server never became healthy"; cat server.log; exit 1
+      - name: Run integration suites
+        # test_upi.py asserts the active gateway is upi_manual — it cannot
+        # share a server with the default-gateway pass above.
+        run: python -u -m tests.test_upi
+      - name: Server log
+        if: always()
+        run: cat server.log || true
+      - name: Stop the app server
+        if: always()
+        run: kill "$(cat server.pid)" 2>/dev/null || true
+
+  e2e-tests:
+    name: End-to-end browser tests (DIVASTRO-72)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Install the same fonts the production image ships (Dockerfile)
+        # Without a real sans-serif font installed, headless Chromium falls
+        # back to whatever generic font this bare image ships (different
+        # metrics/line-height than any real user's browser), which was
+        # enough to tip the laptop_1366x768 "answer area >= 60% of screen"
+        # layout assertion by about a percentage point — not a real app bug.
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends fontconfig fonts-noto-core fonts-deva
+      - name: Fetch the offline city database
+        run: python tools/fetch_data.py
+      - run: python -m playwright install --with-deps chromium
+      - name: Run e2e suites
+        # Each of these starts its own server on a free port with a
+        # throwaway SQLite database (see tests/e2e/harness.py) — no shared
+        # server needed here, unlike the integration-tests jobs above.
+        run: |
+          set -e
+          for m in test_chat_layout test_first_run test_home test_mobile_screens; do
+            echo "::group::$m"
+            python -u -m tests.e2e.$m
+            echo "::endgroup::"
+          done
+      - name: Upload traces/screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-failure-artifacts
+          path: tests/e2e/shots/
+          if-no-files-found: ignore
+
+  sweep:
+    name: Full robustness sweep (test_sweep, manual only)
+    if: github.event_name == 'workflow_dispatch' && inputs.run_sweep
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -u -m tests.test_sweep
