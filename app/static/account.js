@@ -73,6 +73,14 @@ const A_I18N = {
     cNone: "No coupons yet.", cBlank: "blank = unlimited",
     kPercent: "Percent off", kFlat: "Flat ₹ off", kExtra: "Bonus credits",
     cConfirmDelete: "Delete this coupon? It stops working immediately. It is kept in the Deleted list in the admin panel and can be restored.",
+    orUsername: "Or use a username instead",
+    usernameLabel: "Username", passwordLabel: "Password",
+    createAccount: "Create account", logIn: "Log in",
+    haveAccount: "Already have an account? Log in",
+    needAccount: "Need an account? Create one",
+    noRecoveryNote: "No email is attached to this account, so there is no way "
+                   + "to recover it if you forget your password — write it down somewhere safe.",
+    backToProviders: "Back",
   },
   hi: {
     signIn: "साइन इन", signOut: "साइन आउट",
@@ -133,6 +141,14 @@ const A_I18N = {
     cNone: "अभी कोई कूपन नहीं।", cBlank: "खाली = असीमित",
     kPercent: "प्रतिशत छूट", kFlat: "निश्चित ₹ छूट", kExtra: "बोनस क्रेडिट",
     cConfirmDelete: "यह कूपन हटाएँ? यह तुरंत काम करना बंद कर देगा। यह एडमिन पैनल की 'Deleted' सूची में रहेगा और वापस लाया जा सकता है।",
+    orUsername: "या इसके बजाय यूज़रनेम इस्तेमाल करें",
+    usernameLabel: "यूज़रनेम", passwordLabel: "पासवर्ड",
+    createAccount: "खाता बनाएँ", logIn: "लॉग इन करें",
+    haveAccount: "पहले से खाता है? लॉग इन करें",
+    needAccount: "खाता नहीं है? एक बनाएँ",
+    noRecoveryNote: "इस खाते से कोई ईमेल जुड़ा नहीं है, इसलिए पासवर्ड भूलने पर इसे वापस पाने "
+                   + "का कोई तरीका नहीं है — इसे कहीं सुरक्षित लिख लें।",
+    backToProviders: "वापस",
   },
 };
 
@@ -351,10 +367,25 @@ function openSignIn(onDone) {
   const back = modal(`
     <h2 class="modal-title">${escapeHtml(at("signInTitle"))}</h2>
     <p class="modal-sub">${escapeHtml(at("signInSub"))}</p>
-    <div class="oauth-list">
+    <div class="oauth-list" id="oauth-list">
       ${buttons || `<p class="test-banner">${escapeHtml(at("noProviders"))}</p>`}
       ${acct.devLogin ? `<button class="oauth-btn dev" data-provider="dev">
           ${PROVIDER_MARK.dev}<span>${escapeHtml(at("devLogin"))}</span></button>` : ""}
+    </div>
+    <button type="button" class="link-btn" id="toggle-password-auth">${escapeHtml(at("orUsername"))}</button>
+    <div id="password-auth" hidden>
+      <div class="field">
+        <label for="pa-username">${escapeHtml(at("usernameLabel"))}</label>
+        <input id="pa-username" type="text" autocomplete="username" />
+      </div>
+      <div class="field">
+        <label for="pa-password">${escapeHtml(at("passwordLabel"))}</label>
+        <input id="pa-password" type="password" autocomplete="current-password" />
+      </div>
+      <p class="field-note" id="pa-note">${escapeHtml(at("noRecoveryNote"))}</p>
+      <button type="button" class="primary" id="pa-submit">${escapeHtml(at("createAccount"))}</button>
+      <button type="button" class="link-btn" id="pa-mode-toggle">${escapeHtml(at("haveAccount"))}</button>
+      <button type="button" class="link-btn" id="pa-back">${escapeHtml(at("backToProviders"))}</button>
     </div>
     <p class="modal-error" hidden></p>
     <p class="legal-line">By continuing you accept our
@@ -389,6 +420,59 @@ function openSignIn(onDone) {
       location.href = `/api/auth/${provider}/start?next=${next}`;
     };
   });
+
+  /* ---------- username/password: no identity revealed ---------- */
+  let paMode = "register";
+  const oauthList = back.querySelector("#oauth-list");
+  const toggleLink = back.querySelector("#toggle-password-auth");
+  const paBox = back.querySelector("#password-auth");
+  const paSubmit = back.querySelector("#pa-submit");
+  const paModeToggle = back.querySelector("#pa-mode-toggle");
+  const paNote = back.querySelector("#pa-note");
+
+  function renderPaMode() {
+    paSubmit.textContent = paMode === "register" ? at("createAccount") : at("logIn");
+    paModeToggle.textContent = paMode === "register" ? at("haveAccount") : at("needAccount");
+    paNote.hidden = paMode !== "register";
+  }
+  renderPaMode();
+
+  toggleLink.onclick = () => {
+    oauthList.hidden = true; toggleLink.hidden = true; paBox.hidden = false;
+  };
+  back.querySelector("#pa-back").onclick = () => {
+    paBox.hidden = true; oauthList.hidden = false; toggleLink.hidden = false;
+  };
+  paModeToggle.onclick = () => {
+    paMode = paMode === "register" ? "login" : "register";
+    renderPaMode();
+  };
+  paSubmit.onclick = async () => {
+    const username = back.querySelector("#pa-username").value.trim();
+    const password = back.querySelector("#pa-password").value;
+    const err = back.querySelector(".modal-error");
+    err.hidden = true;
+    if (!username || !password) {
+      err.textContent = `${at("usernameLabel")} / ${at("passwordLabel")}`; err.hidden = false;
+      return;
+    }
+    const url = paMode === "register" ? "/api/auth/register" : "/api/auth/login";
+    const res = await fetch(url, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      err.textContent = data.detail || "Sign-in failed."; err.hidden = false;
+      return;
+    }
+    acct.user = data.user;
+    renderAccountBar();
+    loadSavedCharts();
+    closeModal();
+    if (data.created) toast(`${at("welcome")} ${data.user.credits} ${at("freeQs")}`);
+    onDone?.(data.user);
+  };
 }
 
 /* ---------- store / paywall ---------- */

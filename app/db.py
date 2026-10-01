@@ -102,6 +102,9 @@ class User(Base):
     provider: Mapped[str] = mapped_column(String(20), default="")
     provider_sub: Mapped[str] = mapped_column(String(128), default="", index=True)
     phone: Mapped[str] = mapped_column(String(20), default="")
+    # Only set for provider="password" accounts (see auth.py); NULL for
+    # every OAuth/dev-login account, which has no password at all.
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True, default=None)
     language: Mapped[str] = mapped_column(String(5), default="en")
     created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     last_seen_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

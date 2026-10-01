@@ -1,16 +1,26 @@
-"""Social sign-in (Google / Microsoft / Apple) and signed session cookies.
+"""Social sign-in (Google / Microsoft / Apple), username/password accounts,
+and signed session cookies.
 
-No passwords and no OTP: the user picks a provider, we receive a verified email
-and a stable subject id, and that is the account. Practical consequences:
+For OAuth: the user picks a provider, we receive a verified email and a
+stable subject id, and that is the account — nothing to leak, we never hold
+a credential the user could reuse elsewhere. **Identity is the (provider,
+sub) pair, not the email.** Emails can be reassigned inside an organisation;
+`sub` cannot. We match on `sub` first and fall back to a verified email so a
+person who signed up with Google and later uses Microsoft on the same
+address lands in the same account.
 
-* **Nothing to leak.** We never hold a credential the user could reuse elsewhere.
-* **Identity is the (provider, sub) pair, not the email.** Emails can be
-  reassigned inside an organisation; `sub` cannot. We match on `sub` first and
-  fall back to a verified email so a person who signed up with Google and later
-  uses Microsoft on the same address lands in the same account.
 * **Apple needs a paid Apple Developer account** and a client secret that is a
   signed JWT valid for at most six months. It is wired up but stays hidden
   until APPLE_* is configured, so the other two work without it.
+
+A username/password path (`register_password_user`/`verify_password_login`)
+exists alongside OAuth for the opposite reason: a visitor who wants an
+account without revealing any identity at all. It reuses the same
+(provider, provider_sub) identity scheme — provider="password",
+provider_sub=<username> — rather than a parallel users table, so it inherits
+uniqueness and the session machinery below for free. There is deliberately
+no email on these accounts, which means no password-recovery path either;
+that is the cost of anonymity, not a gap to quietly work around.
 
 Phone number is kept as an optional profile field — it is how Pandit Shukla's
 team reaches a customer about a hand-written kundali, not a login credential.
@@ -21,9 +31,11 @@ from __future__ import annotations
 import datetime as dt
 import logging
 import os
+import re
 import secrets
 import time
 
+import bcrypt
 from authlib.integrations.starlette_client import OAuth, OAuthError
 from fastapi import HTTPException, Request, Response
 from itsdangerous import BadSignature, URLSafeTimedSerializer
@@ -191,6 +203,95 @@ def upsert_user(db: Session, provider: str, claims: dict) -> tuple[User, bool]:
     if user.blocked:
         raise HTTPException(403, SUSPENDED_MESSAGE)
     return user, created
+
+
+# --------------------------------------------------------------------------
+# Username/password accounts
+# --------------------------------------------------------------------------
+# A deliberately separate pair of functions, not a branch inside
+# upsert_user(): that function's email-merge step assumes a *verified OIDC*
+# email, which has no equivalent here — these accounts have no email at all.
+
+USERNAME_RE = re.compile(r"^[a-zA-Z0-9_-]{3,30}$")
+MIN_PASSWORD_LEN = 8
+
+# In-memory only: a single-process deployment (confirmed — one app
+# container), so this doesn't need to survive a restart or be shared across
+# replicas. Keyed by username; a failed attempt against a username that
+# doesn't exist is tracked the same way a wrong password is, so probing for
+# valid usernames is rate-limited too, not just password guessing.
+_LOGIN_FAILS: dict[str, list[float]] = {}
+LOGIN_MAX_ATTEMPTS = 5
+LOGIN_WINDOW_SECONDS = 15 * 60
+
+
+def _login_rate_limited(username: str) -> bool:
+    now = time.monotonic()
+    attempts = [t for t in _LOGIN_FAILS.get(username, []) if now - t < LOGIN_WINDOW_SECONDS]
+    _LOGIN_FAILS[username] = attempts
+    return len(attempts) >= LOGIN_MAX_ATTEMPTS
+
+
+def _record_login_failure(username: str) -> None:
+    _LOGIN_FAILS.setdefault(username, []).append(time.monotonic())
+
+
+def register_password_user(db: Session, username: str, password: str) -> User:
+    """Create a username/password account. No email, no real name required."""
+    username = username.strip()
+    if not USERNAME_RE.match(username):
+        raise HTTPException(
+            400, "Username must be 3-30 characters: letters, numbers, _ or - only.")
+    if len(password) < MIN_PASSWORD_LEN:
+        raise HTTPException(400, f"Password must be at least {MIN_PASSWORD_LEN} characters.")
+
+    existing = db.execute(
+        select(User).where(User.provider == "password", User.provider_sub == username)
+    ).scalar_one_or_none()
+    if existing is not None:
+        raise HTTPException(409, "That username is already taken.")
+
+    from .billing import FREE_QUESTIONS
+
+    password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    user = User(
+        email="", name=username, provider="password", provider_sub=username,
+        password_hash=password_hash,
+    )
+    db.add(user)
+    db.flush()
+    grant(db, user.id, FREE_QUESTIONS, EntryKind.signup_bonus, note="Welcome — free questions")
+    db.commit()
+    return user
+
+
+def verify_password_login(db: Session, username: str, password: str) -> User | None:
+    """Return the user on a correct username+password, else None.
+
+    Never distinguishes "no such username" from "wrong password" in what it
+    returns — the caller must show one generic message either way, or this
+    account enumeration protection is pointless.
+    """
+    username = username.strip()
+    if _login_rate_limited(username):
+        raise HTTPException(
+            429, "Too many attempts. Please wait a few minutes and try again.")
+
+    user = db.execute(
+        select(User).where(User.provider == "password", User.provider_sub == username)
+    ).scalar_one_or_none()
+    if user is None or not user.password_hash:
+        _record_login_failure(username)
+        return None
+    if not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
+        _record_login_failure(username)
+        return None
+
+    user.last_seen_at = utcnow()
+    db.commit()
+    if user.blocked:
+        raise HTTPException(403, SUSPENDED_MESSAGE)
+    return user
 
 
 # --------------------------------------------------------------------------

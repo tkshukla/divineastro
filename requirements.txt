@@ -24,6 +24,7 @@ psycopg[binary]==3.3.4      # Postgres driver
 # ---------------------------------------------------------------- auth
 Authlib==1.7.2              # Google / Microsoft / Apple OIDC
 cryptography==50.0.0        # Authlib needs it for Apple's ES256 client secret
+bcrypt==5.0.0                # password hashing for the username/password sign-in path
 
 # ---------------------------------------------------------------- payments
 razorpay==2.0.1             # only used when ASTRO_GATEWAY=razorpay
