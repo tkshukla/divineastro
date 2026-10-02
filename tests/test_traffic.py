@@ -18,6 +18,7 @@ against a server that has not just taken a burst of beacons from 127.0.0.1.
 from __future__ import annotations
 
 import datetime as dt
+import os
 import random
 import sys
 from pathlib import Path
@@ -28,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app import analytics as an  # noqa: E402
 
-BASE = "http://127.0.0.1:8600"
+BASE = os.environ.get("ASTRO_TEST_BASE", "http://127.0.0.1:8600")
 RUN = random.randint(100000, 999999)
 failures: list[str] = []
 

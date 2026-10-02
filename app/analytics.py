@@ -56,7 +56,7 @@ from fastapi import Request
 from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
-from . import auth
+from . import auth, seo_cities
 from .db import BirthProfile, QuestionLog, User, Visit, session as db_session, utcnow
 
 log = logging.getLogger(__name__)
@@ -253,6 +253,15 @@ def _is_admin_session(db: Session, token: str | None) -> bool:
 # made-up URL) is garbage or abuse and is ignored, so a forged beacon can at
 # worst add a row for a page that really exists.
 PUBLIC_PAGES = frozenset({"/", "/feedback", "/terms", "/privacy", "/refund", "/contact"})
+# The SEO tool pages (seo_pages.py): the bare tool path, or tool + a real city slug.
+SEO_TOOLS = frozenset({"/panchang", "/rahu-kaal", "/choghadiya", "/kundali-milan"})
+
+
+def is_public_page(path: str) -> bool:
+    if path in PUBLIC_PAGES or path in SEO_TOOLS:
+        return True
+    tool, _, slug = path.rpartition("/")
+    return tool in SEO_TOOLS and tool != "/kundali-milan" and seo_cities.get(slug) is not None
 MAX_BEACON_BYTES = 2048          # path + referrer + query string; real ones are a few hundred
 _MAX_FIELD = 1000                # per string field, before cleaning
 _QUERY_KEYS = ("utm_source", "utm_medium", "utm_campaign", "ref", "source", "welcome")
@@ -312,7 +321,7 @@ def parse_beacon(data: object) -> tuple[str, str, dict[str, str]] | None:
     if not all(isinstance(x, str) and len(x) <= _MAX_FIELD for x in (path, ref, q)):
         return None
     path = path.rstrip("/") or "/"
-    if path not in PUBLIC_PAGES:
+    if not is_public_page(path):
         return None
     try:
         pairs = parse_qsl(q.lstrip("?"), keep_blank_values=True, max_num_fields=40)

@@ -30,10 +30,10 @@ import math
 from xml.sax.saxutils import escape as xml_escape
 from zoneinfo import ZoneInfo
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 
-from . import analytics, seo_cities
+from . import seo_cities
 from .astro import choghadiya as chog
 from .astro import matching
 from .astro import panchang as panchang_engine
@@ -42,7 +42,6 @@ from .legal import ADDRESS, BRAND, EMAIL, LEGAL_NAME, PHONE, SITE, registration_
 from .seo_cities import City
 
 router = APIRouter()
-_COUNT = [Depends(analytics.page_visit)]   # these are public page loads too
 
 IST = ZoneInfo("Asia/Kolkata")
 SITE_URL = SITE.rstrip("/")
@@ -82,9 +81,8 @@ def _cache_headers() -> dict[str, str]:
 
     The content changes once a day, so a short max-age costs nothing — but it
     must never outlive the day it describes, or a cached copy would show
-    yesterday's Rahu Kaal after midnight. `private` because the analytics
-    first-touch cookie can ride on this response, and a shared cache must not
-    hand one visitor's cookie to the next.
+    yesterday's Rahu Kaal after midnight. `private` so a shared cache
+    never serves one person's copy to another.
     """
     now = dt.datetime.now(IST)
     midnight = dt.datetime.combine(now.date() + dt.timedelta(days=1), dt.time(), IST)
@@ -193,6 +191,7 @@ _SHELL = """<!DOCTYPE html>
 <meta name="google-adsense-account" content="{adsense}"/>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={adsense}"
         crossorigin="anonymous"></script>
+<script src="/static/visit.js" defer></script>   <!-- counts the page load: see analytics.py -->
 <link rel="icon" href="/static/favicon.ico"/>
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png"/>
 <link rel="stylesheet" href="/static/styles.css"/>
@@ -397,12 +396,12 @@ from the combined longitudes of Sun and Moon, and <strong>Karana</strong> is hal
                    body=body)
 
 
-@router.get("/panchang", response_class=HTMLResponse, dependencies=_COUNT)
+@router.get("/panchang", response_class=HTMLResponse)
 def panchang_default() -> HTMLResponse:
     return _panchang_page(seo_cities.DEFAULT)
 
 
-@router.get("/panchang/{slug}", response_class=HTMLResponse, dependencies=_COUNT)
+@router.get("/panchang/{slug}", response_class=HTMLResponse)
 def panchang_city(slug: str) -> HTMLResponse:
     city = seo_cities.get(slug)
     return _panchang_page(city) if city else _not_found("panchang", slug)
@@ -472,12 +471,12 @@ Yamaganda and Gulika Kaal are two further eighths of the day treated with simila
                    body=body)
 
 
-@router.get("/rahu-kaal", response_class=HTMLResponse, dependencies=_COUNT)
+@router.get("/rahu-kaal", response_class=HTMLResponse)
 def rahu_default() -> HTMLResponse:
     return _rahu_page(seo_cities.DEFAULT)
 
 
-@router.get("/rahu-kaal/{slug}", response_class=HTMLResponse, dependencies=_COUNT)
+@router.get("/rahu-kaal/{slug}", response_class=HTMLResponse)
 def rahu_city(slug: str) -> HTMLResponse:
     city = seo_cities.get(slug)
     return _rahu_page(city) if city else _not_found("rahu-kaal", slug)
@@ -567,12 +566,12 @@ ruler, so it changes every day — and the length of each slot follows the real 
                    body=body)
 
 
-@router.get("/choghadiya", response_class=HTMLResponse, dependencies=_COUNT)
+@router.get("/choghadiya", response_class=HTMLResponse)
 def choghadiya_default() -> HTMLResponse:
     return _choghadiya_page(seo_cities.DEFAULT)
 
 
-@router.get("/choghadiya/{slug}", response_class=HTMLResponse, dependencies=_COUNT)
+@router.get("/choghadiya/{slug}", response_class=HTMLResponse)
 def choghadiya_city(slug: str) -> HTMLResponse:
     city = seo_cities.get(slug)
     return _choghadiya_page(city) if city else _not_found("choghadiya", slug)
@@ -604,7 +603,7 @@ KOOTAS = (
 )
 
 
-@router.get("/kundali-milan", response_class=HTMLResponse, dependencies=_COUNT)
+@router.get("/kundali-milan", response_class=HTMLResponse)
 def kundali_milan() -> HTMLResponse:
     rows = "".join(
         f"<tr><td><strong>{_e(name)}</strong> "

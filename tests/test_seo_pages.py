@@ -6,8 +6,8 @@ script. It also pins the pieces that fail silently: a canonical URL that points
 at the wrong copy, a sitemap that is not valid XML, a CTA into the app whose
 ?open= key tools.js does not know, an AdSense id that drifted from index.html.
 
-No server needed (FastAPI's in-process client). Page loads are counted by
-analytics, so a throwaway SQLite database is used — never a real one.
+No server needed (FastAPI's in-process client). A throwaway SQLite database is
+used — never a real one.
 
     ~/.venvs/divineastro/bin/python -u -m tests.test_seo_pages
 """
@@ -32,7 +32,7 @@ os.environ["ASTRO_DATABASE_URL"] = f"sqlite:///{Path(_tmp).as_posix()}/t.db"
 
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app import seo_cities, seo_pages  # noqa: E402
+from app import analytics, seo_cities, seo_pages  # noqa: E402
 from app.astro import matching  # noqa: E402
 from app.astro import panchang as panchang_engine  # noqa: E402
 from app.main import ADSENSE_PUBLISHER, app  # noqa: E402
@@ -73,6 +73,9 @@ def common(label: str, path: str, want_canonical: str, must: list[str]) -> str:
         check(f"{label}: raw HTML contains {needle!r}", needle in html)
     check(f"{label}: canonical is {want_canonical}", canonical(html) == SITE + want_canonical,
           str(canonical(html)))
+    check(f"{label}: loads the visit beacon", 'src="/static/visit.js"' in html)
+    check(f"{label}: beacon accepts this path",
+          analytics.is_public_page(path.rstrip("/") or "/"))
     check(f"{label}: has a meta description",
           bool(re.search(r'<meta name="description" content="[^"]{60,}"', html)))
     for prop in ("og:title", "og:description", "og:url", "og:image"):
@@ -221,6 +224,9 @@ def main() -> int:
           f"used {sorted(used)}, unhandled {sorted(used - set(keys))}")
     check("AdSense id matches index.html", f"client=ca-{ADSENSE_PUBLISHER}" in index
           and seo_pages.ADSENSE_CLIENT == f"ca-{ADSENSE_PUBLISHER}")
+
+    for bad in ("/panchang/atlantis", "/kundali-milan/mumbai", "/rahu-kaal/x/y", "/sitemap.xml"):
+        check(f"beacon rejects {bad}", not analytics.is_public_page(bad))
 
     print("\n" + "=" * 60)
     if failures:
