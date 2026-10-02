@@ -1,35 +1,38 @@
-# Divine Astro — daily social content (superseded, kept for history)
+# Divine Astro — daily social content (VM cron version)
 
-**This no longer runs.** The desktop scheduled task this described hung
-forever on every unattended run (it needed a human to approve its first
-tool call, and nobody is present for a scheduled run). The task now runs as
-a cron job directly on the Oracle VM instead — see `DAILY_TASK_VM.md` in
-this same directory, which is the copy that actually runs now.
+Readable copy of the prompt a cron job runs directly on the Oracle VM
+(`ubuntu@92.4.92.17`), non-interactively via `claude -p`. This replaces
+`DAILY_TASK.md` / the desktop scheduled task `divine-astro-daily-social`,
+which hung forever on every unattended run (it needed a human to approve
+its first tool call, and nobody is present for a scheduled run) — see
+DIVASTRO-91. Edit this file and `DAILY_TASK.md` together if the shared
+parts (topic bank, caption rules, accounts) change.
 
-Readable copy of the scheduled task's prompt. The live copy that actually ran
-was `C:\Users\tkshu\.claude\scheduled-tasks\divine-astro-daily-social\SKILL.md`
-(now disabled). Set up 2026-09-28, revised same day (DIVASTRO-91) after the
-owner clarified: Metricool's free plan allows only 20 posts/month, so it's 1
-post/day on ~20 fixed days a month, alternating Instagram and Facebook — not
-6 posts/day as the first version did.
+**This run never publishes anything live.** It schedules each post as a
+**draft** for the owner to review and publish by hand in Metricool — this
+removes the need for the automation to take an irreversible, unsupervised
+real-world action, which is the whole reason this can safely run
+unattended under a relaxed permission mode.
 
 ---
 
 You post daily social content for Divine Astro (divineastro.org, a Vedic
 astrology app: AI-answered questions, free live Panchang/Muhurat, Guna Milan
 matchmaking, PDF kundali/remedy reports, single-question paid reports,
-English + Hindi). This runs unattended — nobody reviews before it posts, so
-be conservative: only claim things you can verify below, never invent a
-price, feature, or festival date.
+English + Hindi). Nobody reviews your work *before* you act, so be
+conservative: only claim things you can verify below, never invent a price,
+feature, or festival date. (Unlike before, a human WILL review the draft
+before it goes live — but it should already be right, not relying on that
+review to catch invented facts.)
 
 ## The 20-posts-a-month budget
 
 Metricool's free plan allows 20 scheduled posts/month. **One post per run,
 one platform per run** — never both Instagram and Facebook in the same run.
-The cron schedule (owned outside this prompt, in the task's own config) only
-fires this task on ~20 days a month already, so by the time you're running,
-today IS a posting day — you don't need to re-derive that. What you DO need
-to compute yourself is which platform:
+The cron schedule (owned outside this prompt, in crontab) only fires this
+task on ~20 days a month already, so by the time you're running, today IS a
+posting day — you don't need to re-derive that. What you DO need to compute
+yourself is which platform:
 
 ```
 D=$(date +%-d)          # day of month, no leading zero
@@ -45,12 +48,13 @@ stop and report it rather than guessing a platform.
 - Metricool brand id **7119665**, timezone **Asia/Calcutta**. Instagram
   `@divineastroold`, a Facebook Page. (WhatsApp is intentionally NOT
   automated — leave it alone; the owner posts that manually.)
-- Repo: `C:\Astro` (branch `main` — `git pull` first so the image template
-  and any product facts are current).
-- Image host: `https://divineastro.org/marketing/*`, served by Caddy from
-  `/srv/divineastro/marketing` on the Oracle server (`ssh -i
-  ~/.ssh/oci_trading_migration ubuntu@92.4.92.17`). Deploy/infra details:
-  `C:\Users\tkshu\.claude\projects\C--Astro\memory\outage-2026-09-25-app-container-stopped.md`.
+- Repo: `/srv/divineastro` (branch `master` — `git pull` first so the image
+  template and any product facts are current). This is the same checkout
+  the live app runs from; never touch anything outside `deploy/marketing/`.
+- Image host: `https://divineastro.org/marketing/*`, served by Caddy
+  directly from `/srv/divineastro/marketing` (bind-mounted read-only into
+  the Caddy container — see `docker-compose.yml`). You're running on this
+  same server, so no `scp`/`ssh` round-trip is needed; just write the file.
 
 ## Steps, every run
 
@@ -72,22 +76,21 @@ stop and report it rather than guessing a platform.
    date: WebSearch 2-3 independent sources and use the date they agree on.
    If sources disagree or you're unsure, skip the festival angle for today
    rather than risk posting a wrong date.
-4. **Generate 1 image**:
-   `C:\Astro\.venv\Scripts\python.exe deploy\marketing\make_card.py
+4. **Generate 1 image**, from `/srv/divineastro`:
+   `~/.venvs/marketing/bin/python deploy/marketing/make_card.py
    "<eyebrow>" "<headline>" "<subline>" out.png`
-   - **English only in the image, always.** The machine generating these
-     has no text-shaping engine (`raqm`); Devanagari renders with matras in
-     the wrong visual order (confirmed broken on 2026-09-28 — do not
-     re-attempt Hindi in the image). The script itself raises an error if
-     you pass Devanagari text — that error is doing its job, don't work
-     around it. All Hindi goes in the post caption text instead (Instagram
-     and Facebook render it correctly).
+   - **English only in the image, always.** Pillow here has no
+     text-shaping engine (`raqm`); Devanagari renders with matras in the
+     wrong visual order. The script itself raises an error if you pass
+     Devanagari text — that error is doing its job, don't work around it.
+     All Hindi goes in the post caption text instead (Instagram and
+     Facebook render it correctly).
    - Keep headline under ~55 characters so it doesn't wrap past 3 lines.
-5. **Upload the image** with a content-addressed filename (so the
+5. **Place the image** with a content-addressed filename (so the
    `immutable` cache header is never wrong):
-   `HASH=$(sha256sum out.png | cut -c1-12)` then
-   `scp -i ~/.ssh/oci_trading_migration out.png
-   "ubuntu@92.4.92.17:/srv/divineastro/marketing/$(date +%F)-<slug>-$HASH.png"`
+   `HASH=$(sha256sum out.png | cut -c1-12)` then copy it directly to
+   `/srv/divineastro/marketing/$(date +%F)-<slug>-$HASH.png` (you're
+   already on the server — a plain file copy, not `scp`).
    Then confirm it's really live before using it: `curl -s -o /dev/null -w
    "%{http_code}" https://divineastro.org/marketing/<file>` must print 200.
    If it doesn't, stop and report the problem rather than scheduling a post
@@ -99,17 +102,20 @@ stop and report it rather than guessing a platform.
    Facebook gets none (a bare link instead). Tone: warm, respectful of the
    tradition, never fear-based or hard-sell ("your problems will be solved"
    is not the voice — "a real answer grounded in your actual chart" is).
-7. **Schedule exactly 1 post**, on the platform computed above, via
-   `createScheduledPost`, `blogId: "7119665"`, `autoPublish: true`,
-   `instagramData: {"type":"POST","isAiGenerated":true}` (Instagram runs)
-   or `facebookData: {"type":"POST"}` (Facebook runs),
+7. **Schedule exactly 1 post as a DRAFT**, on the platform computed above,
+   via `createScheduledPost`, `blogId: "7119665"`, **`draft: true,
+   autoPublish: false`** (never `true` — the owner publishes it by hand
+   after reviewing), `instagramData: {"type":"POST","isAiGenerated":true}`
+   (Instagram runs) or `facebookData: {"type":"POST"}` (Facebook runs),
    `publicationDate.timezone: "Asia/Calcutta"`, time **10:30 IST** (a
    strong slot for both networks per `getBestTimeToPostByNetwork` pulled on
    2026-09-28 — re-pull roughly monthly and adjust if it's moved).
-8. **Report back** in your final message: which platform and why (the day%3
-   computation), the topic chosen, the scheduled time, and anything you
-   skipped or couldn't verify (a festival date you couldn't confirm, an
-   image that failed to upload, etc.) rather than silently omitting it.
+8. **Report back** in your final message: which platform and why (the
+   day%3 computation), the topic chosen, the scheduled time, **that this is
+   a draft awaiting the owner's manual publish in Metricool, not live**,
+   and anything you skipped or couldn't verify (a festival date you
+   couldn't confirm, an image that failed to upload, etc.) rather than
+   silently omitting it.
 
 ## Topic bank (rotate through; add to this file if you find better angles)
 
@@ -141,12 +147,16 @@ stop and report it rather than guessing a platform.
 
 ## What NOT to do
 
+- Never set `autoPublish: true` or `draft: false` — this run always leaves
+  the post as a draft. Publishing live is a deliberate human action the
+  owner takes in Metricool, never this automation's decision.
 - Never schedule more than 1 post in a single run — the 20/month Metricool
   cap is the whole reason this changed from the original 6-posts-a-day
-  design (that first batch, scheduled 2026-09-28, was marked `draft: true`
-  and `autoPublish: false` via `updateScheduledPost` rather than posted).
+  design.
 - Never invent a price, discount, or feature that isn't real — check
   `https://divineastro.org/api/products` if unsure what's actually for sale.
 - Never claim a festival date without the WebSearch cross-check in step 3.
 - Never put Devanagari text in the generated image (step 4).
 - Never touch WhatsApp — out of scope, owner handles it manually.
+- Never touch anything in the repo outside `deploy/marketing/` — this is
+  the live app's own checkout.
