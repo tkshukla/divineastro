@@ -107,7 +107,7 @@ _SHELL = """<!DOCTYPE html>
 <script src="/static/visit.js" defer></script>   <!-- counts the page load: see analytics.py -->
 </body></html>"""
 
-UPDATED = "20 September 2026"
+UPDATED = "3 October 2026"
 
 
 def _page(title: str, body: str) -> HTMLResponse:
@@ -250,7 +250,8 @@ obligations.</p>
       write a hand-written kundali you have ordered — and nothing more.</li>
   <li><strong>Our hosting provider</strong>, which stores the data on our behalf.</li>
   <li><strong>Google AdSense</strong>, which shows advertisements on our home
-      page. Google receives the usual technical details any website visit
+      page and our free Panchang, Rahu Kaal, Choghadiya and Kundali Milan
+      pages. Google receives the usual technical details any website visit
       sends (such as your IP address and browser). It never receives your birth
       details, questions, answers or account information.</li>
 </ul>
