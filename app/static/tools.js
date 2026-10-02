@@ -692,6 +692,7 @@
     panchang: '#open-panchang', 'rahu-kaal': '#open-panchang',
     choghadiya: '#open-choghadiya', muhurat: '#open-muhurat',
     milan: '#open-milan', 'kundali-milan': '#open-milan',
+    kundali: '#home-cta',     // /free-kundali: the birth form, as the home CTA opens it
   };
   const deepParams = new URLSearchParams(location.search);
   const deepTarget = DEEP_LINKS[deepParams.get('open')];

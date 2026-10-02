@@ -11,7 +11,10 @@ const state = {
   sessionId: null,
   chart: null,
   busy: false,
-  lang: localStorage.getItem("astro.lang") || "en",
+  // ?lang=hi|en comes from the /hi/ SEO pages' links (seo_pages.py) and wins
+  // over the stored choice; applyLanguage() then stores it.
+  lang: ({ hi: "hi", en: "en" })[new URLSearchParams(location.search).get("lang")]
+    || localStorage.getItem("astro.lang") || "en",
   // Empty means "the visitor has never chosen" — the server decides in that
   // case (GET /api/llm -> default), so turning Claude on needs no client change.
   //
