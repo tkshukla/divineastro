@@ -56,10 +56,30 @@ def whatsapp_href(text: str, url: str) -> str:
     return WA_ME + quote(f"{text} {url}", safe="")
 
 
+def _parts(path: str) -> list[str]:
+    """Path segments without the /hi/ language prefix: a Hindi copy shares like its English twin."""
+    parts = [p for p in path.split("/") if p]
+    return parts[1:] if parts[:1] == ["hi"] else parts
+
+
 def seo_share_text(path: str) -> str | None:
     """The message for an SEO page, from its path alone (/tool or /tool/<city>)."""
-    parts = [p for p in path.split("/") if p]
-    if not parts or parts[0] not in SEO_TOOLS:
+    parts = _parts(path)
+    if not parts:
+        return None
+    if parts[0] == "free-kundali":
+        return "Get your janam kundali free · अपनी जन्म कुंडली मुफ़्त में बनाएं:"
+    if parts[0] == "rashifal":
+        return "Today's Rashifal for every sign · आज का राशिफल:"
+    if parts[0] == "muhurat" and len(parts) == 2:
+        kind, _, year = parts[1].rpartition("-")
+        names = {"vivah": ("Vivah muhurat", "विवाह मुहूर्त"),
+                 "griha-pravesh": ("Griha Pravesh muhurat", "गृह प्रवेश मुहूर्त")}
+        if kind not in names or not year.isdigit():
+            return None
+        name, name_hi = names[kind]
+        return f"{name} {year} — all dates · {name_hi} {year} की तिथियां:"
+    if parts[0] not in SEO_TOOLS:
         return None
     name, name_hi = SEO_TOOLS[parts[0]]
     if parts[0] == "kundali-milan":
@@ -75,10 +95,11 @@ def seo_share(path: str) -> str:
     text = seo_share_text(path)
     if text is None:
         return ""
-    tool = path.strip("/").split("/")[0]
+    tool = _parts(path)[0]
     href = whatsapp_href(text, share_url(path, f"seo-{tool}"))
+    label = "WhatsApp पर भेजें" if path.startswith("/hi/") else "Share on WhatsApp"
     return (f'<a class="share-wa" href="{html.escape(href)}" target="_blank" rel="noopener" '
-            f'data-share="seo-{tool}">{_ICON}<span>Share on WhatsApp</span></a>')
+            f'data-share="seo-{tool}">{_ICON}<span>{label}</span></a>')
 
 
 # The WhatsApp glyph, simplified; decorative (the link text says what it does).

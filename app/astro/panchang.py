@@ -39,6 +39,7 @@ network or the filesystem beyond the ephemeris stellium already opened.
 from __future__ import annotations
 
 import datetime as dt
+import math
 from zoneinfo import ZoneInfo
 
 try:
@@ -639,6 +640,144 @@ def pradosh_vyapini_date(
     similar pradosh-vyapini festivals."""
     return _festival_date(target_paksha, target_number, start_date,
                           latitude, longitude, timezone, "pradosh", **kwargs)
+
+
+# --------------------------------------------------------------------------
+# Lunar month (amanta) and planetary combustion (DIVASTRO-109)
+# --------------------------------------------------------------------------
+#
+# AMANTA LUNAR MONTHS. A lunar month runs from one new moon (Amavasya end) to
+# the next. In the amanta reckoning used by every panchang that names months
+# for muhurta purposes (Drik Panchang prints both; the amanta name is the one
+# the "Adhika/Leaped month" and Chaturmas markers follow), the month is named
+# after the sidereal sign the Sun occupies at the new moon that BEGINS it:
+#
+#   Sun in Meena at that new moon -> Chaitra, Mesha -> Vaishakha,
+#   Vrishabha -> Jyeshtha, Mithuna -> Ashadha, Karka -> Shravana,
+#   Simha -> Bhadrapada, Kanya -> Ashwin, Tula -> Kartika,
+#   Vrishchika -> Margashirsha, Dhanu -> Pausha, Makara -> Magha,
+#   Kumbha -> Phalguna.
+#
+# ADHIKA (Mal/Purushottam) MASA: a lunar month in which the Sun makes no
+# sankranti (it is in the same sidereal sign at both bounding new moons). It
+# takes the name of the month that follows it (the "nija" month), which falls
+# out of the rule above for free. 2026 check: Adhika Jyeshtha 17 May - 15 Jun
+# 2026, matching Drik Panchang's "Prohibited Adhika/Leaped month" from 16/17 May
+# for New Delhi. A Kshaya month (two sankrantis in one lunation, last 1983,
+# next 2124) is not modelled: the month is simply named by its starting sign.
+#
+# Purnimanta naming (North Indian civil calendars) differs only for the
+# Krishna paksha, which it assigns to the NEXT month: amanta "Bhadrapada
+# Krishna" == purnimanta "Ashwin Krishna". Shukla-paksha dates (all Ekadashis
+# used for Chaturmas below) carry the same month name in both systems.
+
+LUNAR_MONTHS = [
+    "Chaitra", "Vaishakha", "Jyeshtha", "Ashadha", "Shravana", "Bhadrapada",
+    "Ashwin", "Kartika", "Margashirsha", "Pausha", "Magha", "Phalguna",
+]
+
+# Mean synodic speed of the elongation, deg/day; only used as a Newton slope.
+_ELONGATION_RATE = 360.0 / 29.530589
+
+
+def _elongation(jd: float) -> float:
+    return (_tropical(jd, swe.MOON) - _tropical(jd, swe.SUN)) % 360.0
+
+
+def _new_moon_near(jd_guess: float) -> float:
+    """The new moon (elongation 0) nearest `jd_guess`, by Newton iteration on the
+    signed elongation. Converges in 3-5 steps from a guess within a few days."""
+    jd = jd_guess
+    for _ in range(30):
+        signed = (_elongation(jd) + 180.0) % 360.0 - 180.0
+        if abs(signed) < 1e-7:
+            break
+        jd -= signed / _ELONGATION_RATE
+    return jd
+
+
+def lunar_month_at(jd: float, ayanamsa: str = DEFAULT_AYANAMSA) -> dict:
+    """The amanta lunar month containing the instant `jd` (UT).
+
+    Returns ``{"index": 0..11 (0 = Chaitra), "name", "adhika": bool,
+    "start_jd", "end_jd"}`` - see the module note above for the naming rule.
+    """
+    _ephemeris()
+    e = _elongation(jd)
+    start = _new_moon_near(jd - e / _ELONGATION_RATE)
+    if start > jd:                                    # Newton overshot across the boundary
+        start = _new_moon_near(start - 29.5)
+    end = _new_moon_near(start + 29.53)
+    if end <= jd:
+        start, end = end, _new_moon_near(end + 29.53)
+    sign_start = int(_sidereal(start, swe.SUN, ayanamsa) // 30)
+    sign_end = int(_sidereal(end, swe.SUN, ayanamsa) // 30)
+    index = (sign_start + 1) % 12
+    return {"index": index, "name": LUNAR_MONTHS[index],
+            "adhika": sign_start == sign_end,
+            "start_jd": start, "end_jd": end}
+
+
+# PLANETARY COMBUSTION (asta). Surya Siddhanta IX.6-9 gives each planet's
+# kalamsha - the separation from the Sun, in degrees of TIME (sidereal time,
+# 15 deg = 1 hour), within which it is invisible ("set"): Jupiter 11, Venus
+# 10 (8 when retrograde), Saturn 15, Mars 17, Mercury 14 (12 when
+# retrograde). Drik Panchang quotes the same Venus 10/8 and Jupiter 11 figures
+# on its Shukra/Guru asta pages. Kalamsha are measured between the RISINGS of
+# planet and Sun when the planet is west of the Sun (morning, it rises first)
+# and between their SETTINGS when it is east (evening), so they depend on
+# latitude and on the planet's own ecliptic latitude - which is why a plain
+# ecliptic-longitude orb gets e.g. the Oct 2026 retrograde Venus asta wrong by
+# ten days. Verified for New Delhi against Drik Panchang (2026-10-03):
+#   Guru asta     Drik 15 Jul - 12 Aug 2026  | this: 14 Jul - 11 Aug
+#   Shukra asta   Drik 12 Oct - 29 Oct 2026  | this: 11 Oct - 28 Oct (retro, 8)
+#   Shukra asta   Drik 11 Dec 2025 - 1 Feb 2026 | this: 4 Dec - 12 Feb (direct, 10)
+# The last is the one real divergence: Drik uses a modern visibility model
+# rather than the textual 10 deg, and Venus near superior conjunction stays
+# inside 10 kalamsha ~11 days longer than it is actually invisible from Delhi.
+# We keep the classical figure (stricter, never shows a date Drik bars).
+# This function is the bare astronomical test. The 3-day vriddhatva /
+# shishutva margin that muhurta adds around it lives in astro/muhurat.py.
+
+KALAMSHA = {"venus": 10.0, "venus_retrograde": 8.0, "jupiter": 11.0}
+
+
+def kalamsha_from_sun(jd: float, body: int, latitude: float) -> tuple[float, bool, bool]:
+    """(time-degree separation of `body` from the Sun, planet is east of the
+    Sun, planet is retrograde) at `jd`, for an observer at `latitude`.
+
+    Oblique ascension OA = RA - AD and oblique descension OD = RA + AD, where
+    the ascensional difference AD = asin(tan(lat) * tan(dec)). Morning
+    (planet west of the Sun) compares OA, evening compares OD.
+    """
+    _ephemeris()
+    flags = swe.FLG_SWIEPH | swe.FLG_SPEED
+    ecl_sun = swe.calc_ut(jd, swe.SUN, flags)[0]
+    ecl_p = swe.calc_ut(jd, body, flags)[0]
+    east = ((ecl_p[0] - ecl_sun[0]) % 360.0) < 180.0
+    retro = ecl_p[3] < 0
+    eq_sun = swe.calc_ut(jd, swe.SUN, flags | swe.FLG_EQUATORIAL)[0]
+    eq_p = swe.calc_ut(jd, body, flags | swe.FLG_EQUATORIAL)[0]
+    t = math.tan(math.radians(max(-66.0, min(66.0, float(latitude)))))
+
+    def ad(dec: float) -> float:
+        return math.degrees(math.asin(max(-1.0, min(1.0, t * math.tan(math.radians(dec))))))
+
+    if east:
+        sep = (eq_p[0] + ad(eq_p[1])) - (eq_sun[0] + ad(eq_sun[1]))
+    else:
+        sep = (eq_sun[0] - ad(eq_sun[1])) - (eq_p[0] - ad(eq_p[1]))
+    sep = abs((sep + 180.0) % 360.0 - 180.0)
+    return sep, east, retro
+
+
+def is_combust(jd: float, planet: str, latitude: float) -> bool:
+    """Shukra/Guru asta by the Surya Siddhanta kalamsha above. `planet` is
+    'venus' or 'jupiter'."""
+    body = swe.VENUS if planet == "venus" else swe.JUPITER
+    sep, _east, retro = kalamsha_from_sun(jd, body, latitude)
+    orb = KALAMSHA["venus_retrograde"] if (planet == "venus" and retro) else KALAMSHA[planet]
+    return sep < orb
 
 
 def _tithi_entry(index: int, start: float, end: float, tz: ZoneInfo) -> dict:

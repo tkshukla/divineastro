@@ -1361,7 +1361,8 @@ def sitemap_paths() -> list[str]:
         for tool in TOOLS:
             paths += [_path(tool, c, lang) for c in seo_cities.CITIES]
     from .rashifal_pages import sitemap_paths as rashifal_paths  # lazy: it imports this module
-    return paths + rashifal_paths()
+    from .muhurat_pages import page_paths as muhurat_paths  # same: imports this module
+    return paths + rashifal_paths() + muhurat_paths()
 
 
 @router.get("/sitemap.xml")

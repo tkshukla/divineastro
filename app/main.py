@@ -33,6 +33,7 @@ from .legal import router as legal_router
 from .seo_pages import router as seo_router
 from .rashifal_pages import router as rashifal_router
 from .share import router as share_router
+from .muhurat_pages import router as muhurat_pages_router
 from .chart_service import BirthData, build, solar_return, timing_snapshot, transits, wheel_svg
 from .db import (
     EntryKind, QuestionLog, User, balance, grant, init_db, session as db_session,
@@ -65,6 +66,7 @@ app.include_router(legal_router)
 app.include_router(seo_router)     # /panchang, /rahu-kaal, /choghadiya, /kundali-milan, sitemap, robots
 app.include_router(rashifal_router)  # /rashifal, /hi/rashifal (DIVASTRO-105)
 app.include_router(share_router)   # /api/share/cities (DIVASTRO-107 WhatsApp share buttons)
+app.include_router(muhurat_pages_router)  # /muhurat/vivah-2026 etc. + /hi/ copies (DIVASTRO-109)
 
 
 class InsufficientCredits(HTTPException):

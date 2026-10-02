@@ -68,6 +68,8 @@ from .seo_pages import (
     _footer, _panchang, _today,
 )
 
+from .share import seo_share  # noqa: E402  (DIVASTRO-107 share button)
+
 router = APIRouter()
 
 
@@ -545,7 +547,8 @@ def _shell(*, lang: str, rashi: Rashi | None, title: str, description: str,
         canonical=_e(canonical), alt_en=_e(SITE_URL + path(rashi, "en")),
         alt_hi=_e(SITE_URL + path(rashi, "hi")), og_locale="hi_IN" if lang == "hi" else "en_IN",
         brand=_e(BRAND), site=_e(SITE_URL), adsense=ADSENSE_CLIENT,
-        style=_STYLE + _EXTRA_STYLE, jsonld=jsonld, crumbs=crumb_html, body=body,
+        style=_STYLE + _EXTRA_STYLE, jsonld=jsonld, crumbs=crumb_html,
+        body=(seo_share(path(rashi, lang)) if status == 200 else "") + body,
         footer=_footer(lang))
     headers = _cache_headers() if cache else {"Cache-Control": "no-store"}
     return HTMLResponse(page, status_code=status, headers=headers)

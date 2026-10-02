@@ -142,10 +142,27 @@ def city_list_checks() -> None:
           all({"name", "name_hi", "lat", "lon"} <= set(c) for c in data.get("cities", [])))
 
 
+def more_page_checks() -> None:
+    """Hindi copies, Rashifal, Free Kundali and Muhurat pages carry the button too."""
+    print("\nShare buttons on the other public pages")
+    for path, campaign in (("/hi/panchang", "seo-panchang"), ("/hi/rahu-kaal/mumbai", "seo-rahu-kaal"),
+                           ("/free-kundali", "seo-free-kundali"), ("/hi/free-kundali", "seo-free-kundali"),
+                           ("/rashifal", "seo-rashifal"), ("/rashifal/mesh", "seo-rashifal"),
+                           ("/hi/rashifal/meen", "seo-rashifal"), ("/muhurat/vivah-2026", "seo-muhurat"),
+                           ("/hi/muhurat/griha-pravesh-2026", "seo-muhurat")):
+        html = client.get(path).text
+        link = f"utm_campaign%3D{campaign}"
+        check(f"{path}: has a wa.me share link tagged {campaign}",
+              'class="share-wa"' in html and link in html)
+    check("Hindi page labels the button in Hindi", "WhatsApp पर भेजें" in client.get("/hi/panchang").text)
+    check("unknown muhurat kind has no share text", share.seo_share_text("/muhurat/foo-2026") is None)
+
+
 def main() -> int:
     analytics_checks()
     seo_checks()
     city_list_checks()
+    more_page_checks()
     print("\n" + "=" * 60)
     if failures:
         print(f"{len(failures)} FAILURES")
