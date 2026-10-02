@@ -8,11 +8,13 @@ its first tool call, and nobody is present for a scheduled run) — see
 DIVASTRO-91. Edit this file and `DAILY_TASK.md` together if the shared
 parts (topic bank, caption rules, accounts) change.
 
-**This run never publishes anything live.** It schedules each post as a
-**draft** for the owner to review and publish by hand in Metricool — this
-removes the need for the automation to take an irreversible, unsupervised
-real-world action, which is the whole reason this can safely run
-unattended under a relaxed permission mode.
+**This run auto-publishes** (owner's decision, 2026-10-02 — drafts meant
+nothing went out unless they remembered to approve it). Two safeguards
+remain: a post that states a festival or other calendar date is scheduled
+as a **draft** unless the date was confirmed by 2+ independent sources
+(step 3), and every post is scheduled ~2.5 hours after the 08:02 run, so
+the owner has a window to edit or delete it in Metricool before it goes
+live.
 
 ---
 
@@ -21,9 +23,8 @@ astrology app: AI-answered questions, free live Panchang/Muhurat, Guna Milan
 matchmaking, PDF kundali/remedy reports, single-question paid reports,
 English + Hindi). Nobody reviews your work *before* you act, so be
 conservative: only claim things you can verify below, never invent a price,
-feature, or festival date. (Unlike before, a human WILL review the draft
-before it goes live — but it should already be right, not relying on that
-review to catch invented facts.)
+feature, or festival date. Most posts go live with no human review at
+all, so they must be right as written.
 
 ## The 20-posts-a-month budget
 
@@ -75,7 +76,8 @@ stop and report it rather than guessing a platform.
    day on 2026-09-27 — see DIVASTRO-90, not yet fixed). For ANY festival
    date: WebSearch 2-3 independent sources and use the date they agree on.
    If sources disagree or you're unsure, skip the festival angle for today
-   rather than risk posting a wrong date.
+   rather than risk posting a wrong date. Record whether a date in today's
+   post was confirmed by 2+ independent sources — step 7 depends on it.
 4. **Generate 1 image**, from `/srv/divineastro`:
    `~/.venvs/marketing/bin/python deploy/marketing/make_card.py
    "<eyebrow>" "<headline>" "<subline>" out.png`
@@ -102,20 +104,27 @@ stop and report it rather than guessing a platform.
    Facebook gets none (a bare link instead). Tone: warm, respectful of the
    tradition, never fear-based or hard-sell ("your problems will be solved"
    is not the voice — "a real answer grounded in your actual chart" is).
-7. **Schedule exactly 1 post as a DRAFT**, on the platform computed above,
-   via `createScheduledPost`, `blogId: "7119665"`, **`draft: true,
-   autoPublish: false`** (never `true` — the owner publishes it by hand
-   after reviewing), `instagramData: {"type":"POST","isAiGenerated":true}`
+7. **Schedule exactly 1 post**, on the platform computed above, via
+   `createScheduledPost`, `blogId: "7119665"`:
+   - **Evergreen post** (no festival or calendar date in the image or
+     caption), or a dated post whose date 2+ independent sources agreed on
+     in step 3: **`draft: false, autoPublish: true`** — it goes live on
+     its own.
+   - **Any dated post where that confirmation is missing or shaky**:
+     **`draft: true, autoPublish: false`** — leave it for the owner. When
+     in doubt, draft.
+
+   Also pass `instagramData: {"type":"POST","isAiGenerated":true}`
    (Instagram runs) or `facebookData: {"type":"POST"}` (Facebook runs),
    `publicationDate.timezone: "Asia/Calcutta"`, time **10:30 IST** (a
    strong slot for both networks per `getBestTimeToPostByNetwork` pulled on
    2026-09-28 — re-pull roughly monthly and adjust if it's moved).
 8. **Report back** in your final message: which platform and why (the
-   day%3 computation), the topic chosen, the scheduled time, **that this is
-   a draft awaiting the owner's manual publish in Metricool, not live**,
-   and anything you skipped or couldn't verify (a festival date you
-   couldn't confirm, an image that failed to upload, etc.) rather than
-   silently omitting it.
+   day%3 computation), the topic chosen, the scheduled time, **whether it
+   was scheduled to auto-publish or left as a draft, and why**, and
+   anything you skipped or couldn't verify (a festival date you couldn't
+   confirm, an image that failed to upload, etc.) rather than silently
+   omitting it.
 
 ## Topic bank (rotate through; add to this file if you find better angles)
 
@@ -147,9 +156,10 @@ stop and report it rather than guessing a platform.
 
 ## What NOT to do
 
-- Never set `autoPublish: true` or `draft: false` — this run always leaves
-  the post as a draft. Publishing live is a deliberate human action the
-  owner takes in Metricool, never this automation's decision.
+- Never auto-publish a post containing a festival or calendar date unless
+  2+ independent sources confirmed that date (step 3) — draft it instead.
+- Never schedule a post sooner than 10:30 IST on the run day — the gap
+  after the 08:02 run is the owner's window to catch a mistake.
 - Never schedule more than 1 post in a single run — the 20/month Metricool
   cap is the whole reason this changed from the original 6-posts-a-day
   design.
