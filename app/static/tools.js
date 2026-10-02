@@ -706,6 +706,7 @@
     panchang: '#open-panchang', 'rahu-kaal': '#open-panchang',
     choghadiya: '#open-choghadiya', muhurat: '#open-muhurat',
     milan: '#open-milan', 'kundali-milan': '#open-milan',
+    kundali: '#home-cta',   // birth form (rashifal_pages.py CTA)
   };
   const deepParams = new URLSearchParams(location.search);
   const deepTarget = DEEP_LINKS[deepParams.get('open')];

@@ -282,7 +282,7 @@ def _tool_links(city: City, current: str) -> str:
     links = [(_path(t, city), f"{TOOLS[t][0]} in {city.name}") for t in TOOLS if t != current]
     if current != "kundali-milan":
         links.append(("/kundali-milan", "Kundali Milan (36 guna)"))
-    links += [("/?open=muhurat", "Muhurat Finder"), ("/", "Your free kundali")]
+    links += [("/?open=muhurat", "Muhurat Finder"), ("/rashifal", "Today's Rashifal"), ("/", "Your free kundali")]
     items = "".join(f'<li><a href="{_e(h)}">{_e(t)}</a></li>' for h, t in links)
     return f'<h2>More free tools</h2><ul class="links">{items}</ul>'
 
@@ -676,7 +676,8 @@ def sitemap_paths() -> list[str]:
     paths = list(STATIC_PATHS)
     for tool in TOOLS:
         paths += [_path(tool, c) for c in seo_cities.CITIES]
-    return paths
+    from .rashifal_pages import sitemap_paths as rashifal_paths  # lazy: it imports this module
+    return paths + rashifal_paths()
 
 
 @router.get("/sitemap.xml")
