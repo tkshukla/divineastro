@@ -110,7 +110,9 @@ function showGate(title, msg, offerSignIn) {
 
   const box = $('#gate-actions');
   api('/api/auth/providers').then(({ providers, dev_login }) => {
-    (providers || []).forEach((p) => {
+    // Inline providers (username, phone) sign in inside the main site's sheet,
+    // not by redirect — and admins are recognised by email, which they lack.
+    (providers || []).filter((p) => !p.inline).forEach((p) => {
       const a = document.createElement('a');
       a.className = 'primary as-button';
       a.href = `/api/auth/${p.key}/start?next=/admin`;
@@ -571,7 +573,7 @@ async function loadUsers() {
             <tr data-id="${u.id}">
               <td>
                 <b>${esc(u.name || '—')}</b><br>
-                <span class="muted">${esc(u.email || u.provider)}</span>
+                <span class="muted">${esc(u.login_label || u.email || u.provider)}</span>
                 ${u.blocked ? '<span class="pill st-deleted" style="margin-left:4px;">blocked</span>' : ''}
                 ${u.is_admin ? '<span class="pill delivered" style="margin-left:4px;">admin</span>' : ''}
                 ${u.blocked && u.blocked_reason ? `<div class="muted" style="font-size:0.78rem;">Reason: ${esc(u.blocked_reason)}</div>` : ''}
@@ -703,7 +705,7 @@ function renderUserModal(d) {
     : '<p class="empty">No feedback sent.</p>';
 
   $('#um-body').innerHTML = `
-    <h3 id="um-title" style="margin:0 0 4px;">${esc(u.name || u.email || 'User')}
+    <h3 id="um-title" style="margin:0 0 4px;">${esc(u.name || u.email || u.login_label || 'User')}
       ${u.blocked ? '<span class="pill st-deleted">blocked</span>' : ''}
       ${u.is_admin ? '<span class="pill delivered">admin</span>' : ''}</h3>
     <p class="pane-help" style="margin:0 0 14px;">${esc(u.email || '—')}${u.phone ? ` &middot; ${esc(u.phone)}` : ''}
@@ -736,7 +738,7 @@ function renderUserModal(d) {
     const fail = (m) => { err.textContent = m; err.hidden = false; };
     if (note.length < 3) return fail('Add a short note saying why — it is kept on the record.');
 
-    const who = u.email || u.name || `user ${u.id}`;
+    const who = u.email || u.name || u.login_label || `user ${u.id}`;
     let label, path, payload;
     if (action.value === 'product') {
       const p = (umProducts || []).find((x) => x.sku === $('#um-sku').value);
@@ -791,11 +793,11 @@ function renderUserModal(d) {
     const reason = $('#um-reason').value.trim();
     const err = $('#um-block-err');
     if (reason.length < 3) { err.textContent = 'Give a reason — it is kept on the account.'; err.hidden = false; return; }
-    if (confirm(`Block ${u.email || u.name}? They will be signed out and unable to use the site.`)) setBlocked(true, reason);
+    if (confirm(`Block ${u.email || u.name || u.login_label}? They will be signed out and unable to use the site.`)) setBlocked(true, reason);
   };
   const unblockBtn = $('#um-unblock');
   if (unblockBtn) unblockBtn.onclick = () => {
-    if (confirm(`Unblock ${u.email || u.name}?`)) setBlocked(false, '');
+    if (confirm(`Unblock ${u.email || u.name || u.login_label}?`)) setBlocked(false, '');
   };
 }
 

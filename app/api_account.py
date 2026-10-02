@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from . import analytics, auth, billing, coupons, mail
+from . import analytics, auth, billing, coupons, mail, phone_auth
 from .db import (
     BirthProfile, Coupon, CouponKind, CouponRedemption, CreditEntry, EntryKind,
     Feedback, FulfilStatus, Order, OrderStatus, QuestionLog, User, balance, grant,
@@ -188,6 +188,37 @@ def login(body: PasswordAuthIn, response: Response,
     return {"user": _user_dict(db, user), "created": False}
 
 
+class PhoneStartIn(BaseModel):
+    number: str
+
+
+class PhoneVerifyIn(BaseModel):
+    number: str
+    code: str
+
+
+def _client_ip(request: Request) -> str:
+    # uvicorn runs with --proxy-headers, so this is the visitor, not Caddy.
+    return request.client.host if request.client else "unknown"
+
+
+@router.post("/auth/phone/start")
+def phone_start(body: PhoneStartIn, request: Request) -> dict:
+    """Text a one-time code. 404 while ASTRO_SMS_PROVIDER is unset (see phone_auth)."""
+    return phone_auth.start(body.number, _client_ip(request))
+
+
+@router.post("/auth/phone/verify")
+def phone_verify(body: PhoneVerifyIn, request: Request, response: Response,
+                 db: Session = Depends(get_db)) -> dict:
+    number = phone_auth.check_code(body.number, body.code, _client_ip(request))
+    user, created = phone_auth.sign_in(db, number)
+    if created:
+        analytics.attribute_signup(db, user, request)
+    auth.issue_session(response, user)
+    return {"user": _user_dict(db, user), "created": created}
+
+
 @router.get("/auth/{provider}/start")
 async def oauth_start(provider: str, request: Request, next: str = "/"):
     client = auth.client(provider)
@@ -259,6 +290,9 @@ def _user_dict(db: Session, user: User) -> dict:
     return {
         "id": user.id, "email": user.email, "name": user.name,
         "picture": user.picture, "provider": user.provider, "phone": user.phone,
+        # What to show when there is no name or email (a phone account shows
+        # its masked number) — see auth.login_label.
+        "login_label": auth.login_label(user),
         "language": user.language, "is_admin": user.is_admin,
         "credits": balance(db, user.id),
         "questions_asked": len(asked),
@@ -665,8 +699,10 @@ def _manual_customer(db: Session, email: str, name: str, phone: str) -> tuple[Us
     A created account is `provider="manual"`; when its owner later signs in
     with Google/etc. on the same verified address, auth.upsert_user adopts it,
     so they land on the purchase that was recorded for them. A phone-only
-    customer (no email) has nothing to be adopted by — the admin can still
-    fulfil the order, it just stays under that record.
+    customer (no email) is adopted the same way by a phone (SMS code) sign-in
+    on that number, when phone sign-in is enabled — see
+    phone_auth._adopt_manual. Until then the admin can still fulfil the
+    order; it just stays under that record.
     """
     email = email.strip().lower()
     phone = re.sub(r"[\s\-()]", "", phone or "")[:20]
@@ -1261,9 +1297,11 @@ def admin_users(q: str = "", limit: int = 50, _: User = Depends(admin),
     stmt = select(User)
     if q.strip():
         search = f"%{q.strip().lower()}%"
-        stmt = stmt.where((func.lower(User.email).like(search)) | (func.lower(User.name).like(search)))
-    
-    users = db.execute(stmt.order_by(User.created_at.desc()).limit(min(limit, 100))).scalars().all()
+        # Phone too: a phone-sign-in account has no email and often no name.
+        stmt = stmt.where((func.lower(User.email).like(search)) | (func.lower(User.name).like(search))
+                          | User.phone.like(search) | User.provider_sub.like(search))
+
+    users =db.execute(stmt.order_by(User.created_at.desc()).limit(min(limit, 100))).scalars().all()
 
     results = []
     for u in users:
@@ -1285,6 +1323,7 @@ def admin_users(q: str = "", limit: int = 50, _: User = Depends(admin),
             "name": u.name,
             "phone": u.phone,
             "provider": u.provider,
+            "login_label": auth.login_label(u),
             "is_admin": u.is_admin,
             "blocked": u.blocked,
             "blocked_reason": u.blocked_reason or "",
@@ -1390,7 +1429,8 @@ def admin_user_detail(user_id: int, _: User = Depends(admin),
     return {
         "user": {
             "id": u.id, "email": u.email, "name": u.name, "phone": u.phone,
-            "provider": u.provider, "is_admin": u.is_admin,
+            "provider": u.provider, "login_label": auth.login_label(u),
+            "is_admin": u.is_admin,
             "created_at": when(u.created_at), "last_seen_at": when(u.last_seen_at),
             "blocked": u.blocked, "blocked_reason": u.blocked_reason or "",
             "blocked_at": when(u.blocked_at),
@@ -1461,7 +1501,8 @@ def admin_questions(q: str = "", limit: int = 50, _: User = Depends(admin),
         questions.append({
             "id": q_log.id,
             "user_id": q_log.user_id,
-            "user_email": u.email if u else "anonymous",
+            # Password and phone accounts have no email; show what they do have.
+            "user_email": (u.email or auth.login_label(u)) if u else "anonymous",
             "question": q_log.question,
             "answer_preview": (q_log.answer[:140] + "...") if q_log.answer and len(q_log.answer) > 140 else (q_log.answer or ""),
             "topic": q_log.topic,

@@ -22,8 +22,33 @@ uniqueness and the session machinery below for free. There is deliberately
 no email on these accounts, which means no password-recovery path either;
 that is the cost of anonymity, not a gap to quietly work around.
 
-Phone number is kept as an optional profile field — it is how Pandit Shukla's
-team reaches a customer about a hand-written kundali, not a login credential.
+Phone OTP (`app/phone_auth.py`) is the third path, for the many Indian
+visitors who would rather type a mobile number than pick an account or
+invent a password. Same scheme again: provider="phone", provider_sub=<the
+number in E.164, e.g. +919876543210>, session via issue_session(). It ships
+**disabled**: until ASTRO_SMS_PROVIDER is set it is neither advertised by
+/api/auth/providers nor reachable.
+
+* ``ASTRO_SMS_PROVIDER`` — ``msg91`` in production; ``console`` only for
+  tests/dev (logs the code, and refuses to run when ASTRO_COOKIE_SECURE=1).
+  Unset → phone sign-in off.
+* ``ASTRO_MSG91_AUTHKEY`` — MSG91 dashboard → Authkey.
+* ``ASTRO_MSG91_TEMPLATE_ID`` — the MSG91 OTP template id. **India DLT:**
+  TRAI requires every commercial SMS to come from a DLT-registered entity
+  (PE ID), a registered sender header and a pre-approved content template.
+  Register on a DLT portal (Jio/Airtel/Vi/BSNL), get the OTP template
+  approved with a variable for the code, then attach that DLT template id
+  to the MSG91 template. Without it operators silently drop the SMS while
+  the API still answers "success".
+* ``ASTRO_SMS_COUNTRIES`` — calling codes allowed to receive a code,
+  default ``91``. Kept narrow on purpose: an open OTP endpoint is a target
+  for international SMS-pumping fraud, and we pay for every message.
+
+The phone *profile* field (`users.phone`) is still just contact detail — how
+Pandit Shukla's team reaches a customer about a hand-written kundali. It is
+never used to find an account: it was typed in, not verified, so matching on
+it would hand one person's account to whoever owns the number they typed. A
+phone sign-in fills it in, since that number *has* been verified.
 """
 
 from __future__ import annotations
@@ -126,8 +151,22 @@ PROVIDERS = _register()
 
 
 def providers() -> list[dict]:
-    """What the sign-in screen should offer. Empty until credentials are set."""
-    return [{"key": k, "label": v} for k, v in PROVIDERS.items()]
+    """What the sign-in screen should offer.
+
+    Redirect (OAuth) providers appear once their credentials are set. The two
+    that complete inside the page — phone OTP, only when an SMS sender is
+    configured, and username/password, which needs no configuration and is
+    always on — are flagged ``inline: true``, so a page that can only render
+    "Continue with X" links (admin, feedback) knows to skip them rather than
+    link to /api/auth/<key>/start and a 400.
+    """
+    from . import phone_auth
+
+    out = [{"key": k, "label": v} for k, v in PROVIDERS.items()]
+    if phone_auth.enabled():
+        out.append({"key": "phone", "label": "Phone", "inline": True})
+    out.append({"key": "password", "label": "Username", "inline": True})
+    return out
 
 
 def client(name: str):
@@ -216,24 +255,53 @@ USERNAME_RE = re.compile(r"^[a-zA-Z0-9_-]{3,30}$")
 MIN_PASSWORD_LEN = 8
 
 # In-memory only: a single-process deployment (confirmed — one app
-# container), so this doesn't need to survive a restart or be shared across
-# replicas. Keyed by username; a failed attempt against a username that
-# doesn't exist is tracked the same way a wrong password is, so probing for
-# valid usernames is rate-limited too, not just password guessing.
+# container, `--workers 1` in the Dockerfile), so this doesn't need to
+# survive a restart or be shared across replicas. Keyed by username; a failed
+# attempt against a username that doesn't exist is tracked the same way a
+# wrong password is, so probing for valid usernames is rate-limited too, not
+# just password guessing.
 _LOGIN_FAILS: dict[str, list[float]] = {}
 LOGIN_MAX_ATTEMPTS = 5
 LOGIN_WINDOW_SECONDS = 15 * 60
 
 
-def _login_rate_limited(username: str) -> bool:
+def throttled(store: dict[str, list[float]], key: str, limit: int, window: float) -> bool:
+    """Sliding window: True once `key` has `limit` hits inside the last `window`
+    seconds. Shared by password login and phone OTP, each with its own store."""
     now = time.monotonic()
-    attempts = [t for t in _LOGIN_FAILS.get(username, []) if now - t < LOGIN_WINDOW_SECONDS]
-    _LOGIN_FAILS[username] = attempts
-    return len(attempts) >= LOGIN_MAX_ATTEMPTS
+    hits = [t for t in store.get(key, []) if now - t < window]
+    if hits:
+        store[key] = hits
+    else:
+        store.pop(key, None)       # one-off keys (IPs, numbers) must not pile up
+    return len(hits) >= limit
+
+
+def note_hit(store: dict[str, list[float]], key: str) -> None:
+    store.setdefault(key, []).append(time.monotonic())
+
+
+def _login_rate_limited(username: str) -> bool:
+    return throttled(_LOGIN_FAILS, username, LOGIN_MAX_ATTEMPTS, LOGIN_WINDOW_SECONDS)
 
 
 def _record_login_failure(username: str) -> None:
-    _LOGIN_FAILS.setdefault(username, []).append(time.monotonic())
+    note_hit(_LOGIN_FAILS, username)
+
+
+def login_label(user: User) -> str:
+    """How an account is recognised on screen when it has no name or email.
+
+    A phone account shows a masked number (+91 ••••••3210): enough for its
+    owner to recognise, not enough to read off a shoulder or a screenshot.
+    """
+    if user.provider == "phone":
+        from .phone_auth import mask
+
+        return mask(user.provider_sub)
+    if user.provider == "password":
+        return user.provider_sub
+    return user.email or ""
 
 
 def register_password_user(db: Session, username: str, password: str) -> User:
@@ -354,5 +422,6 @@ def require_user(request: Request, db: Session) -> User:
 
 __all__ = [
     "OAuthError", "PROVIDERS", "clear_session", "client", "current_user",
-    "issue_session", "providers", "require_user", "upsert_user",
+    "issue_session", "login_label", "note_hit", "providers", "require_user",
+    "throttled", "upsert_user",
 ]

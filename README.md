@@ -47,7 +47,7 @@ docstring — nothing CI-specific, the same commands you'd run locally:
 
 | Job | What | Needs |
 |---|---|---|
-| `unit-tests` | 29 suites with no server (import `app.*` directly) | nothing |
+| `unit-tests` | 31 suites with no server (import `app.*` directly) | nothing |
 | `integration-tests-default-gateway` | 10 suites that hit a live server over HTTP | `ASTRO_GATEWAY=test`, `ASTRO_DEV_LOGIN=1`, `ASTRO_ADMIN_EMAILS` |
 | `integration-tests-upi-gateway` | `test_upi` (asserts the active gateway *is* `upi_manual`, so it can't share a server with the pass above) | `ASTRO_GATEWAY=upi_manual`, `ASTRO_UPI_VPA` |
 | `e2e-tests` | the Playwright suites in `tests/e2e/` (DIVASTRO-72) | `playwright install chromium` — each test starts its own throwaway server, no shared state |
@@ -150,6 +150,31 @@ The *analysis narrative* is a different matter: it is composed from an English
 delineation vocabulary, so translating it needs the narration layer below. With
 narration off, the panels and chrome are Hindi and the reading itself stays
 English.
+
+## Sign-in
+
+Asking a question needs an account. The sign-in sheet offers, side by side:
+Google (and Microsoft/Apple when configured), a username & password account
+with no email at all, and — once enabled — a mobile number confirmed by a
+6-digit SMS code. `GET /api/auth/providers` lists what is on; the in-page
+methods carry `"inline": true`. Every method is the same `(provider,
+provider_sub)` identity and session, see `app/auth.py`.
+
+**Phone sign-in ships off.** It needs:
+
+| Variable | Value |
+|---|---|
+| `ASTRO_SMS_PROVIDER` | `msg91` (blank = off; `console` = dev/tests only, logs the code, refused in production) |
+| `ASTRO_MSG91_AUTHKEY` | MSG91 dashboard → Authkey |
+| `ASTRO_MSG91_TEMPLATE_ID` | an MSG91 template containing `##otp##`, linked to a **DLT-approved** template |
+| `ASTRO_SMS_COUNTRIES` | calling codes allowed, default `91` |
+
+**India DLT is mandatory**: TRAI requires the sending business, its sender
+header and the exact message template to be registered on a DLT portal (Jio,
+Airtel, Vi or BSNL) before operators deliver anything. Without it MSG91 still
+answers "success" and the SMS silently never arrives. Codes expire after 10
+minutes, allow 5 wrong tries, and sends are rate-limited per number and per IP
+(`app/phone_auth.py`).
 
 ## Narration (optional LLM)
 
