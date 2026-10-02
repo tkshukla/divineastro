@@ -190,11 +190,73 @@ class TestNoApproximation(unittest.TestCase):
         for path in (ROOT / "app").rglob("*.py"):
             self.assertNotIn("_approx_sun_times", path.read_text(encoding="utf-8"), str(path))
 
-    def test_tool_defaults_to_local_not_utc_date(self):
+    def test_tools_default_to_local_not_utc_date(self):
         js = (ROOT / "app" / "static" / "tools.js").read_text(encoding="utf-8")
-        block = js[js.index("#open-choghadiya"):js.index("function renderChoghadiya")]
-        self.assertNotIn("toISOString", block)
-        self.assertIn("Asia/Kolkata", js[js.index("const choToday"):js.index("#open-choghadiya")])
+        helper = js[js.index("function todayIn"):js.index("function addDaysIso")]
+        self.assertIn("Asia/Kolkata", helper)
+        for start, end in (("q('#open-choghadiya')", "function renderChoghadiya"),
+                           ("function initMuhuratDates", "q('#mu-place')")):
+            i = js.index(start)
+            block = js[i:js.index(end, i)]
+            self.assertNotIn("toISOString", block, start)
+            self.assertIn("todayIn(", block, start)
+
+
+class TestActiveSlot(unittest.TestCase):
+    """DIVASTRO-103: before sunrise the running choghadiya is the previous
+    night's, not today's first day slot."""
+    LAT, LON = 28.6139, 77.2090
+    IST_TZ = ZoneInfo(IST)
+
+    def _at(self, date, hh, mm):
+        y, m, d = map(int, date.split("-"))
+        return dt.datetime(y, m, d, hh, mm, tzinfo=self.IST_TZ)
+
+    def test_before_sunrise_is_previous_nights_last_slot(self):
+        # Sat 3 Oct 2026, 05:00 IST: sunrise ~06:14, so Friday night's 8th slot
+        # (Friday night runs Rog ... Rog) is running.
+        now = self._at("2026-10-03", 5, 0)
+        r = get_choghadiya_schedule("2026-10-03", self.LAT, self.LON, IST, now_dt=now)
+        prev = get_choghadiya_schedule("2026-10-02", self.LAT, self.LON, IST, now_dt=now)
+        act = r["active_slot"]
+        self.assertTrue(act["is_current"])
+        self.assertEqual((act["period"], act["index"], act["name"]), ("night", 16, "Rog"))
+        self.assertEqual(act["date"], "2026-10-02")
+        self.assertEqual(act["start_iso"], prev["night_slots"][-1]["start_iso"])
+        self.assertEqual(_iso(act["end_iso"]), _iso(r["day_slots"][0]["start_iso"]))
+        self.assertTrue(_iso(act["start_iso"]) <= now < _iso(act["end_iso"]))
+        # nothing in today's own 16 slots is marked current
+        self.assertFalse(any(s["is_current"] for s in r["day_slots"] + r["night_slots"]))
+
+    def test_just_after_midnight_is_an_earlier_night_slot(self):
+        # 00:30 IST falls in Friday night's 5th slot (Shubh, ~00:1x-01:4x).
+        now = self._at("2026-10-03", 0, 30)
+        r = get_choghadiya_schedule("2026-10-03", self.LAT, self.LON, IST, now_dt=now)
+        act = r["active_slot"]
+        self.assertEqual((act["period"], act["index"], act["name"], act["date"]),
+                         ("night", 13, "Shubh", "2026-10-02"))
+        self.assertTrue(_iso(act["start_iso"]) <= now < _iso(act["end_iso"]))
+
+    def test_api_without_date_is_current_now(self):
+        # The API path (no date, no now_dt) always lands in the slot running now.
+        r = client.get("/api/choghadiya", params={"latitude": self.LAT, "longitude": self.LON,
+                                                  "timezone": IST}).json()
+        now = dt.datetime.now(self.IST_TZ)
+        act = r["active_slot"]
+        self.assertTrue(act["is_current"])
+        self.assertTrue(_iso(act["start_iso"]) <= now < _iso(act["end_iso"]))
+
+    def test_after_sunrise_unchanged(self):
+        now = self._at("2026-10-03", 6, 30)
+        act = get_choghadiya_schedule("2026-10-03", self.LAT, self.LON, IST, now_dt=now)["active_slot"]
+        self.assertEqual((act["period"], act["index"], act["name"]), ("day", 1, "Kaal"))
+        self.assertNotIn("date", act)
+
+    def test_late_night_is_todays_night(self):
+        now = self._at("2026-10-03", 23, 0)
+        act = get_choghadiya_schedule("2026-10-03", self.LAT, self.LON, IST, now_dt=now)["active_slot"]
+        self.assertEqual((act["period"], act["name"]), ("night", "Amrit"))
+        self.assertNotIn("date", act)
 
 
 if __name__ == "__main__":

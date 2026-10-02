@@ -180,18 +180,11 @@ def get_choghadiya_schedule(
 
     day_parts, night_parts = day_night_slots(vedic_weekday, sunrise, sunset, next_sunrise)
 
-    day_slots: list[dict[str, Any]] = []
-    night_slots: list[dict[str, Any]] = []
-    active_slot: dict[str, Any] | None = None
-
-    # Build Day slots
-    for i, (name, s_time, e_time) in enumerate(day_parts):
+    def slot(index: int, period: str, name: str, s_time: dt.datetime, e_time: dt.datetime) -> dict[str, Any]:
         info = CHOGHADIYA_INFO[name]
-
-        is_current = s_time <= current_time < e_time
-        slot_dict = {
-            "index": i + 1,
-            "period": "day",
+        return {
+            "index": index,
+            "period": period,
             "name": name,
             "name_label": info["name_hi"] if hi else name,
             "ruler": info["ruler"],
@@ -204,39 +197,30 @@ def get_choghadiya_schedule(
             "start_iso": s_time.isoformat(),
             "end_iso": e_time.isoformat(),
             "description": info["description_hi"] if hi else info["description"],
-            "is_current": is_current,
+            "is_current": s_time <= current_time < e_time,
         }
-        day_slots.append(slot_dict)
-        if is_current:
-            active_slot = slot_dict
 
-    # Build Night slots
-    for i, (name, s_time, e_time) in enumerate(night_parts):
-        info = CHOGHADIYA_INFO[name]
+    day_slots = [slot(i + 1, "day", n, s, e) for i, (n, s, e) in enumerate(day_parts)]
+    night_slots = [slot(i + 9, "night", n, s, e) for i, (n, s, e) in enumerate(night_parts)]
+    active_slot: dict[str, Any] | None = next(
+        (x for x in day_slots + night_slots if x["is_current"]), None)
 
-        is_current = s_time <= current_time < e_time
-        slot_dict = {
-            "index": i + 9,
-            "period": "night",
-            "name": name,
-            "name_label": info["name_hi"] if hi else name,
-            "ruler": info["ruler"],
-            "ruler_label": info["ruler_hi"] if hi else info["ruler"],
-            "quality": info["quality"],
-            "quality_label": info["quality_hi"] if hi else info["quality"].capitalize(),
-            "score": info["score"],
-            "start": s_time.strftime("%H:%M"),
-            "end": e_time.strftime("%H:%M"),
-            "start_iso": s_time.isoformat(),
-            "end_iso": e_time.isoformat(),
-            "description": info["description_hi"] if hi else info["description"],
-            "is_current": is_current,
-        }
-        night_slots.append(slot_dict)
-        if is_current:
-            active_slot = slot_dict
+    # Between midnight and this date's sunrise the running choghadiya belongs to
+    # the PREVIOUS vedic day's night (sunset yesterday -> sunrise today), whose
+    # sequence follows yesterday's weekday lord.
+    if active_slot is None and current_time < sunrise:
+        prev = c_date - dt.timedelta(days=1)
+        p_rise, p_set, p_next = sun_times(prev, latitude, longitude, tz_name)
+        if p_rise and p_set and p_next:
+            _, prev_night = day_night_slots((prev.weekday() + 1) % 7, p_rise, p_set, p_next)
+            for i, (n, s, e) in enumerate(prev_night):
+                if s <= current_time < e:
+                    active_slot = slot(i + 9, "night", n, s, e)
+                    active_slot["date"] = prev.isoformat()
+                    break
 
-    # If current_time was before sunrise of c_date, active_slot may fall in yesterday's night
+    # A date that is neither today nor tomorrow-before-sunrise: keep the old
+    # behaviour of pointing at the first slot (not marked current).
     if active_slot is None:
         active_slot = day_slots[0]
 

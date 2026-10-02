@@ -68,6 +68,21 @@ def muhurat_finder(p, browser, base: str) -> None:
     check("no CSP violations", not pg.csp_violations(), str(pg.csp_violations()[:2]))
     ctx.close()
 
+    # DIVASTRO-103: at 01:30 IST on 1 Nov the UTC date is still 31 Oct; the range
+    # must start on the Indian date and end 30 calendar days later.
+    ctx = browser.new_context(**DESKTOPS["desktop_1440x800"], timezone_id="UTC")
+    page = ctx.new_page()
+    page.clock.set_fixed_time("2026-10-31T20:00:00Z")
+    pg = Page(page, base)
+    pg.open_home()
+    pg.page.click("#open-muhurat")
+    pg.page.wait_for_selector("#stage-muhurat", state="visible", timeout=10000)
+    got = (pg.page.input_value("#mu-from"), pg.page.input_value("#mu-to"))
+    check("default range is today in IST .. +30 days, not UTC (01:30 IST)",
+          got == ("2026-11-01", "2026-12-01"), str(got))
+    check("no console errors (fixed clock)", not pg.console_errors, "; ".join(pg.console_errors[:3]))
+    ctx.close()
+
 
 def choghadiya(p, browser, base: str) -> None:
     print("\n[Choghadiya: day/night slot tables for a chosen date]")

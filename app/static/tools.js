@@ -19,6 +19,23 @@
     try { const v = t(k); return v && v !== k ? v : fallback; } catch { return fallback; }
   };
 
+  // DIVASTRO-103: "today" is the calendar date at the chosen place (India by
+  // default), not the UTC date — toISOString() showed yesterday 00:00-05:30 IST.
+  // A function declaration (hoisted), so every tool below can use it.
+  function todayIn(tz) {
+    try {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: tz || 'Asia/Kolkata' }).format(new Date());
+    } catch (_) {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+    }
+  }
+  // 'YYYY-MM-DD' plus n days, in pure calendar arithmetic (no timezone involved).
+  function addDaysIso(iso, n) {
+    const d = new Date(`${iso}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+
   // Read a response as JSON WITHOUT surfacing the browser's own parse error. When the
   // server fails with a plain-text "Internal Server Error", `await res.json()` used to
   // throw `Unexpected token 'I', "Internal S"... is not valid JSON` straight into the
@@ -419,12 +436,9 @@
   let muPlace = null;
 
   function initMuhuratDates() {
-    const today = new Date();
-    const future = new Date();
-    future.setDate(today.getDate() + 30);
-    const toIso = (d) => d.toISOString().slice(0, 10);
-    if (!q('#mu-from').value) q('#mu-from').value = toIso(today);
-    if (!q('#mu-to').value) q('#mu-to').value = toIso(future);
+    const today = todayIn((muPlace || muPick())?.timezone);
+    if (!q('#mu-from').value) q('#mu-from').value = today;
+    if (!q('#mu-to').value) q('#mu-to').value = addDaysIso(today, 30);
   }
 
   q('#mu-place')?.addEventListener('place:chosen', (e) => {
@@ -539,22 +553,12 @@
   // which exist: the home-page card did nothing (ReferenceError), typing a place
   // threw on every keystroke, and Hindi users always got English. Found by the
   // browser audit in tests/e2e/test_mobile_screens.py.
-  // DIVASTRO-103: "today" is the calendar date at the chosen place (India by
-  // default), not the UTC date — toISOString() showed yesterday 00:00-05:30 IST.
-  const choToday = (tz) => {
-    try {
-      return new Intl.DateTimeFormat('en-CA', { timeZone: tz || 'Asia/Kolkata' }).format(new Date());
-    } catch (_) {
-      return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
-    }
-  };
-
   const getChoPlace = choPlaceInput ? placePicker(choPlaceInput, choResults, choChosen) : () => null;
 
   q('#open-choghadiya')?.addEventListener('click', () => {
     showStage('stage-choghadiya');
     if (!q('#cho-date').value) {
-      q('#cho-date').value = choToday(getChoPlace()?.timezone);
+      q('#cho-date').value = todayIn(getChoPlace()?.timezone);
     }
   });
 
@@ -568,7 +572,7 @@
       longitude: 77.2090,
       timezone: 'Asia/Kolkata',
     };
-    const targetDate = q('#cho-date').value || choToday(place.timezone);
+    const targetDate = q('#cho-date').value || todayIn(place.timezone);
     const lang = (typeof state !== 'undefined' && state.lang) ? state.lang : 'en';
 
     const params = new URLSearchParams({
