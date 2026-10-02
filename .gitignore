@@ -58,3 +58,4 @@ docs/design/shots/
 !/deploy/marketing/.gitkeep
 !/deploy/marketing/make_card.py
 !/deploy/marketing/DAILY_TASK.md
+!/deploy/marketing/DAILY_TASK_VM.md

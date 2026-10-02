@@ -5,6 +5,7 @@ One reusable template: a diya glow behind a headline + one-line sub, brand mark 
 Usage: python make_card.py "<eyebrow>" "<headline>" "<subline>" out.png
 """
 import sys
+import platform
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
@@ -16,11 +17,16 @@ PRIMARY_B = (166, 58, 8)       # --primary-b
 MAROON_DEEP = (43, 18, 25)     # --surface-bar base
 MAROON_DARKER = (26, 10, 14)
 
-FONT_DIR = Path("C:/Windows/Fonts")
+# The image is English-only by design (see _assert_ascii_only below), so this
+# just needs one clean Latin face per OS - no Devanagari shaping involved.
+FONT_FILE = (
+    Path("C:/Windows/Fonts/Nirmala.ttc") if platform.system() == "Windows"
+    else Path("/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf")
+)
 
 
-def font(name: str, size: int) -> ImageFont.FreeTypeFont:
-    return ImageFont.truetype(str(FONT_DIR / name), size)
+def font(size: int) -> ImageFont.FreeTypeFont:
+    return ImageFont.truetype(str(FONT_FILE), size)
 
 
 def vertical_gradient(size, top, bottom):
@@ -93,10 +99,10 @@ def make_card(eyebrow: str, headline: str, subline: str, out: str,
     draw.polygon(flame_pts, fill=PRIMARY_A)
     draw.ellipse([cx - 10, cy - 80, cx + 10, cy - 40], fill=(255, 214, 130))
 
-    f_eyebrow = font("Nirmala.ttc", 34)
-    f_head = font("Nirmala.ttc", 64)
-    f_sub = font("Nirmala.ttc", 36)
-    f_foot = font("Nirmala.ttc", 28)
+    f_eyebrow = font(34)
+    f_head = font(64)
+    f_sub = font(36)
+    f_foot = font(28)
 
     # Lay out headline + sub first (their combined height varies with wrapping),
     # THEN vertically center the whole block in the space below the diya - so a
