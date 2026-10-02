@@ -489,24 +489,20 @@ def rahu_city(slug: str) -> HTMLResponse:
 def choghadiya_slots(p: dict) -> tuple[list[dict], list[dict]]:
     """Day and night choghadiya from a `daily_panchang` result.
 
-    The sequences and meanings come from astro/choghadiya.py; the boundaries
-    deliberately do NOT. That engine estimates sunrise from a seasonal formula
-    (it was ~35 minutes early for Delhi in October 2026), while this page sits
-    one link away from a Panchang page printing the ephemeris sunrise. Cutting
-    the day at the same sunrise and sunset keeps the two pages consistent.
+    Slots come from chog.day_night_slots, the same code /api/choghadiya uses,
+    cut at the ephemeris sunrise/sunset this page's Panchang prints
+    (DIVASTRO-103: both now agree to the second).
     """
     rise, sset, next_rise = (_local(p["sun"][k]) for k in ("rise", "set", "next_rise"))
     if not (rise and sset and next_rise):
         return [], []
     vara = p["vara"]["index"]                          # Sunday = 0, as choghadiya.py uses
 
-    def run(names: list[str], start: dt.datetime, end: dt.datetime) -> list[dict]:
-        step = (end - start) / 8
-        return [{"name": n, "start": start + i * step, "end": start + (i + 1) * step,
-                 **chog.CHOGHADIYA_INFO[n]} for i, n in enumerate(names)]
+    def run(parts: list) -> list[dict]:
+        return [{"name": n, "start": s, "end": e, **chog.CHOGHADIYA_INFO[n]} for n, s, e in parts]
 
-    return (run(chog.DAY_SEQUENCE[vara], rise, sset),
-            run(chog.NIGHT_SEQUENCE[vara], sset, next_rise))
+    day, night = chog.day_night_slots(vara, rise, sset, next_rise)
+    return run(day), run(night)
 
 
 def _chog_table(slots: list[dict], day: dt.date) -> str:

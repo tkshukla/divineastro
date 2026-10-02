@@ -539,26 +539,36 @@
   // which exist: the home-page card did nothing (ReferenceError), typing a place
   // threw on every keystroke, and Hindi users always got English. Found by the
   // browser audit in tests/e2e/test_mobile_screens.py.
+  // DIVASTRO-103: "today" is the calendar date at the chosen place (India by
+  // default), not the UTC date — toISOString() showed yesterday 00:00-05:30 IST.
+  const choToday = (tz) => {
+    try {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: tz || 'Asia/Kolkata' }).format(new Date());
+    } catch (_) {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+    }
+  };
+
+  const getChoPlace = choPlaceInput ? placePicker(choPlaceInput, choResults, choChosen) : () => null;
+
   q('#open-choghadiya')?.addEventListener('click', () => {
     showStage('stage-choghadiya');
     if (!q('#cho-date').value) {
-      q('#cho-date').value = new Date().toISOString().slice(0, 10);
+      q('#cho-date').value = choToday(getChoPlace()?.timezone);
     }
   });
-
-  const getChoPlace = choPlaceInput ? placePicker(choPlaceInput, choResults, choChosen) : () => null;
 
   q('#choghadiya-go')?.addEventListener('click', async () => {
     const err = q('#choghadiya-error');
     err.hidden = true; err.textContent = '';
     const btn = q('#choghadiya-go');
-    const targetDate = q('#cho-date').value || new Date().toISOString().slice(0, 10);
     const place = getChoPlace() || {
       label: 'New Delhi, India',
       latitude: 28.6139,
       longitude: 77.2090,
       timezone: 'Asia/Kolkata',
     };
+    const targetDate = q('#cho-date').value || choToday(place.timezone);
     const lang = (typeof state !== 'undefined' && state.lang) ? state.lang : 'en';
 
     const params = new URLSearchParams({

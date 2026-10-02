@@ -89,6 +89,19 @@ def choghadiya(p, browser, base: str) -> None:
     check("no CSP violations", not pg.csp_violations(), str(pg.csp_violations()[:2]))
     ctx.close()
 
+    # DIVASTRO-103: at 01:30 IST on 4 Oct the UTC date is still 3 Oct; the tool
+    # must default to the Indian date, whatever the browser's own timezone.
+    ctx = browser.new_context(**DESKTOPS["desktop_1440x800"], timezone_id="UTC")
+    page = ctx.new_page()
+    page.clock.set_fixed_time("2026-10-03T20:00:00Z")
+    pg = Page(page, base)
+    pg.open_home()
+    pg.page.click("#open-choghadiya")
+    pg.page.wait_for_selector("#stage-choghadiya", state="visible", timeout=10000)
+    check("default date is today in IST, not UTC (01:30 IST)",
+          pg.page.input_value("#cho-date") == "2026-10-04", pg.page.input_value("#cho-date"))
+    ctx.close()
+
 
 def main() -> int:
     with server() as base, sync_playwright() as p:

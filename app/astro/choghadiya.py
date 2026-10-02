@@ -16,6 +16,8 @@ import datetime as dt
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from .panchang import sun_times
+
 # Choghadiya properties
 CHOGHADIYA_INFO = {
     "Amrit": {
@@ -114,41 +116,31 @@ NIGHT_SEQUENCE = {
 }
 
 
-def _approx_sun_times(
-    date: dt.date,
-    latitude: float,
-    longitude: float,
-    tz_str: str = "Asia/Kolkata",
-) -> tuple[dt.datetime, dt.datetime, dt.datetime]:
-    """Calculate approximate Sunrise, Sunset, and Next Sunrise for the location.
+def eighths(start: dt.datetime, end: dt.datetime) -> list[tuple[dt.datetime, dt.datetime]]:
+    """Cut [start, end) into the eight equal choghadiya parts.
 
-    Falls back cleanly when high-precision astronomical ephemeris is not required.
+    Each boundary is computed from `start` (not by accumulating steps) so the
+    last part ends exactly at `end` and the parts are contiguous.
     """
-    tz = ZoneInfo(tz_str)
-    # Default 06:00 to 18:00 localized with solar longitude approximation
-    # 4 minutes per degree longitude difference from standard meridian
-    std_lon = 82.5 if "Kolkata" in tz_str else 0.0
-    offset_mins = (longitude - std_lon) * 4.0
+    step = (end - start) / 8
+    return [(start + i * step, end if i == 7 else start + (i + 1) * step) for i in range(8)]
 
-    # Solar declination approximation for day-length variation
-    day_of_year = date.timetuple().tm_yday
-    # Seasonal variation in minutes
-    var_mins = 25.0 * (day_of_year - 80) / 180.0
-    if var_mins > 35.0:
-        var_mins = 35.0
-    elif var_mins < -35.0:
-        var_mins = -35.0
 
-    rise_min = int(360 - offset_mins - var_mins)   # Around 06:00
-    set_min = int(1080 - offset_mins + var_mins)   # Around 18:00
+def day_night_slots(
+    vara: int,
+    sunrise: dt.datetime,
+    sunset: dt.datetime,
+    next_sunrise: dt.datetime,
+) -> tuple[list[tuple[str, dt.datetime, dt.datetime]], list[tuple[str, dt.datetime, dt.datetime]]]:
+    """(name, start, end) for the 8 day slots (sunrise -> sunset) and the 8 night
+    slots (sunset -> next sunrise) of a vedic weekday (Sunday = 0).
 
-    sunrise = dt.datetime.combine(date, dt.time(rise_min // 60, rise_min % 60), tzinfo=tz)
-    sunset = dt.datetime.combine(date, dt.time(set_min // 60, set_min % 60), tzinfo=tz)
-    
-    next_date = date + dt.timedelta(days=1)
-    next_sunrise = dt.datetime.combine(next_date, dt.time(rise_min // 60, rise_min % 60), tzinfo=tz)
-
-    return sunrise, sunset, next_sunrise
+    The single implementation shared by the in-app tool (/api/choghadiya) and
+    the server-rendered /choghadiya pages (seo_pages.choghadiya_slots).
+    """
+    day = [(n, s, e) for n, (s, e) in zip(DAY_SEQUENCE[vara], eighths(sunrise, sunset))]
+    night = [(n, s, e) for n, (s, e) in zip(NIGHT_SEQUENCE[vara], eighths(sunset, next_sunrise))]
+    return day, night
 
 
 def get_choghadiya_schedule(
@@ -175,29 +167,25 @@ def get_choghadiya_schedule(
     else:
         current_time = now_dt.astimezone(tz) if now_dt.tzinfo else now_dt.replace(tzinfo=tz)
 
-    sunrise, sunset, next_sunrise = _approx_sun_times(c_date, latitude, longitude, tz_name)
+    # The same Swiss Ephemeris sunrise/sunset the Panchang prints (DIVASTRO-103:
+    # this used to be a seasonal estimate, ~20-50 min off for Delhi in October).
+    sunrise, sunset, next_sunrise = sun_times(c_date, latitude, longitude, tz_name)
+    if not (sunrise and sunset and next_sunrise):
+        raise ValueError("The Sun does not both rise and set on this date at this "
+                         "latitude, so Choghadiya is not defined.")
 
     # 0 = Monday in Python weekday(), convert to 0 = Sunday (Vedic standard)
     py_weekday = c_date.weekday()
     vedic_weekday = (py_weekday + 1) % 7
 
-    day_slots_names = DAY_SEQUENCE[vedic_weekday]
-    night_slots_names = NIGHT_SEQUENCE[vedic_weekday]
-
-    day_duration = (sunset - sunrise).total_seconds()
-    slot_day_sec = day_duration / 8.0
-
-    night_duration = (next_sunrise - sunset).total_seconds()
-    slot_night_sec = night_duration / 8.0
+    day_parts, night_parts = day_night_slots(vedic_weekday, sunrise, sunset, next_sunrise)
 
     day_slots: list[dict[str, Any]] = []
     night_slots: list[dict[str, Any]] = []
     active_slot: dict[str, Any] | None = None
 
     # Build Day slots
-    for i, name in enumerate(day_slots_names):
-        s_time = sunrise + dt.timedelta(seconds=i * slot_day_sec)
-        e_time = sunrise + dt.timedelta(seconds=(i + 1) * slot_day_sec)
+    for i, (name, s_time, e_time) in enumerate(day_parts):
         info = CHOGHADIYA_INFO[name]
 
         is_current = s_time <= current_time < e_time
@@ -223,9 +211,7 @@ def get_choghadiya_schedule(
             active_slot = slot_dict
 
     # Build Night slots
-    for i, name in enumerate(night_slots_names):
-        s_time = sunset + dt.timedelta(seconds=i * slot_night_sec)
-        e_time = sunset + dt.timedelta(seconds=(i + 1) * slot_night_sec)
+    for i, (name, s_time, e_time) in enumerate(night_parts):
         info = CHOGHADIYA_INFO[name]
 
         is_current = s_time <= current_time < e_time

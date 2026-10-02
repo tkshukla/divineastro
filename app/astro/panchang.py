@@ -309,6 +309,44 @@ def _karana_name(index: int) -> str:
 # Panchang
 # --------------------------------------------------------------------------
 
+def _sun_jds(jd_midnight: float, geopos: tuple[float, float, float]
+             ) -> tuple[float | None, float | None, float | None]:
+    """Sunrise, sunset and the next sunrise (JD, UT) after local midnight.
+
+    The one place the vedic day's boundaries are computed: daily_panchang and
+    sun_times (hence the choghadiya engine) both go through here, so the
+    Panchang, Rahu Kaal and Choghadiya can never disagree on sunrise.
+    """
+    sunrise = _rise_or_set(jd_midnight, swe.SUN, geopos, True, 1.5)
+    sunset = _rise_or_set(sunrise, swe.SUN, geopos, False, 1.5) if sunrise else None
+    next_sunrise = _rise_or_set(sunset or jd_midnight + 1.0, swe.SUN, geopos, True, 1.5)
+    return sunrise, sunset, next_sunrise
+
+
+def sun_times(
+    date: dt.date | str,
+    latitude: float,
+    longitude: float,
+    timezone: str,
+    *,
+    elevation: float = 0.0,
+) -> tuple[dt.datetime | None, dt.datetime | None, dt.datetime | None]:
+    """(sunrise, sunset, next sunrise) for a local date, as aware datetimes in
+    `timezone`, rounded to the second — exactly the values daily_panchang
+    reports under ``sun``. Any of them is None where the Sun does not rise or
+    set (polar day/night)."""
+    _ephemeris()
+    tz = ZoneInfo(timezone)
+    if isinstance(date, str):
+        date = dt.date.fromisoformat(date)
+    elif isinstance(date, dt.datetime):
+        date = date.date()
+    geopos = (float(longitude), float(latitude), float(elevation))
+    jd_midnight = _to_jd(dt.datetime(date.year, date.month, date.day, tzinfo=tz))
+    return tuple(_from_jd(jd, tz) if jd else None          # type: ignore[return-value]
+                 for jd in _sun_jds(jd_midnight, geopos))
+
+
 def daily_panchang(
     date: dt.date | str,
     latitude: float,
@@ -341,9 +379,7 @@ def daily_panchang(
     jd_midnight = _to_jd(midnight)
 
     notes: list[str] = []
-    sunrise = _rise_or_set(jd_midnight, swe.SUN, geopos, True, 1.5)
-    sunset = _rise_or_set(sunrise, swe.SUN, geopos, False, 1.5) if sunrise else None
-    next_sunrise = _rise_or_set(sunset or jd_midnight + 1.0, swe.SUN, geopos, True, 1.5)
+    sunrise, sunset, next_sunrise = _sun_jds(jd_midnight, geopos)
 
     # A day needs both ends. One without the other happens right at the edge of
     # the polar circle and is just as unusable as neither.
