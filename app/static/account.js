@@ -16,7 +16,8 @@ const A_I18N = {
   en: {
     signIn: "Sign in", signOut: "Sign out",
     signInTitle: "Sign in to Divine Astro",
-    signInSub: "One tap. No password to remember, nothing to verify by SMS.",
+    signInSub: "Takes about 10 seconds — and a username account needs no email at all.",
+    signInFree: "Your first {n} questions are free.",
     continueWith: "Continue with",
     noProviders: "Sign-in is not configured yet. Add OAuth credentials to enable it.",
     devLogin: "Developer sign-in",
@@ -73,7 +74,9 @@ const A_I18N = {
     cNone: "No coupons yet.", cBlank: "blank = unlimited",
     kPercent: "Percent off", kFlat: "Flat ₹ off", kExtra: "Bonus credits",
     cConfirmDelete: "Delete this coupon? It stops working immediately. It is kept in the Deleted list in the admin panel and can be restored.",
-    orUsername: "Or use a username instead",
+    orUsername: "Create an account with a username & password",
+    haveOneLogIn: "I already have a username — log in",
+    orDivider: "or",
     usernameLabel: "Username", passwordLabel: "Password",
     createAccount: "Create account", logIn: "Log in",
     haveAccount: "Already have an account? Log in",
@@ -81,11 +84,21 @@ const A_I18N = {
     noRecoveryNote: "No email is attached to this account, so there is no way "
                    + "to recover it if you forget your password — write it down somewhere safe.",
     backToProviders: "Back",
+    phoneContinue: "Continue with phone number",
+    phoneLabel: "Mobile number", phoneHint: "We'll text you a 6-digit code. Standard SMS rates may apply.",
+    phoneSend: "Send code", phoneSending: "Sending…",
+    phoneCodeLabel: "Code from the SMS", phoneSentTo: "Code sent to {n}.",
+    phoneVerify: "Verify & continue", phoneVerifying: "Checking…",
+    phoneResend: "Resend code", phoneResendIn: "Resend in {s}s",
+    phoneChange: "Use a different number",
+    phoneNeedNumber: "Enter your mobile number.", phoneNeedCode: "Enter the 6-digit code.",
+    signInFailed: "Sign-in failed. Please try again.",
   },
   hi: {
     signIn: "साइन इन", signOut: "साइन आउट",
     signInTitle: "Divine Astro में साइन इन करें",
-    signInSub: "एक क्लिक। न पासवर्ड, न SMS सत्यापन।",
+    signInSub: "लगभग 10 सेकंड लगते हैं — और यूज़रनेम वाले खाते के लिए ईमेल की ज़रूरत ही नहीं।",
+    signInFree: "आपके पहले {n} प्रश्न निःशुल्क हैं।",
     continueWith: "जारी रखें",
     noProviders: "साइन-इन अभी कॉन्फ़िगर नहीं है।",
     devLogin: "डेवलपर साइन-इन",
@@ -141,7 +154,9 @@ const A_I18N = {
     cNone: "अभी कोई कूपन नहीं।", cBlank: "खाली = असीमित",
     kPercent: "प्रतिशत छूट", kFlat: "निश्चित ₹ छूट", kExtra: "बोनस क्रेडिट",
     cConfirmDelete: "यह कूपन हटाएँ? यह तुरंत काम करना बंद कर देगा। यह एडमिन पैनल की 'Deleted' सूची में रहेगा और वापस लाया जा सकता है।",
-    orUsername: "या इसके बजाय यूज़रनेम इस्तेमाल करें",
+    orUsername: "यूज़रनेम और पासवर्ड से खाता बनाएँ",
+    haveOneLogIn: "मेरे पास पहले से यूज़रनेम है — लॉग इन करें",
+    orDivider: "या",
     usernameLabel: "यूज़रनेम", passwordLabel: "पासवर्ड",
     createAccount: "खाता बनाएँ", logIn: "लॉग इन करें",
     haveAccount: "पहले से खाता है? लॉग इन करें",
@@ -149,6 +164,15 @@ const A_I18N = {
     noRecoveryNote: "इस खाते से कोई ईमेल जुड़ा नहीं है, इसलिए पासवर्ड भूलने पर इसे वापस पाने "
                    + "का कोई तरीका नहीं है — इसे कहीं सुरक्षित लिख लें।",
     backToProviders: "वापस",
+    phoneContinue: "मोबाइल नंबर से जारी रखें",
+    phoneLabel: "मोबाइल नंबर", phoneHint: "हम आपको 6 अंकों का कोड SMS करेंगे। सामान्य SMS शुल्क लग सकता है।",
+    phoneSend: "कोड भेजें", phoneSending: "भेजा जा रहा है…",
+    phoneCodeLabel: "SMS में आया कोड", phoneSentTo: "कोड {n} पर भेजा गया।",
+    phoneVerify: "सत्यापित करें और जारी रखें", phoneVerifying: "जाँच हो रही है…",
+    phoneResend: "कोड दोबारा भेजें", phoneResendIn: "{s} सेकंड में दोबारा भेजें",
+    phoneChange: "दूसरा नंबर इस्तेमाल करें",
+    phoneNeedNumber: "अपना मोबाइल नंबर दर्ज करें।", phoneNeedCode: "6 अंकों का कोड दर्ज करें।",
+    signInFailed: "साइन-इन नहीं हो सका। कृपया फिर से कोशिश करें।",
   },
 };
 
@@ -290,7 +314,8 @@ function renderAccountBar() {
       <!-- The caret matters: without it this reads as a label, and customers
            could not find Sign out or the admin panel hidden behind it. -->
       <button class="ghost-btn has-menu" id="btn-acct" aria-haspopup="menu" aria-expanded="false">${escapeHtml(
-        acct.user.name || (acct.user.email || "").split("@")[0] || "Account")}<span class="caret">&#9662;</span></button>
+        acct.user.name || (acct.user.email || "").split("@")[0]
+        || acct.user.login_label || "Account")}<span class="caret">&#9662;</span></button>
       <div class="acct-drop" hidden>
         <button data-act="history">${escapeHtml(at("history"))}</button>
         <button data-act="orders">${escapeHtml(at("orders"))}</button>
@@ -353,26 +378,47 @@ const PROVIDER_MARK = {
   microsoft: `<svg viewBox="0 0 23 23" width="17" height="17"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#7fba00" d="M12 1h10v10H12z"/><path fill="#00a4ef" d="M1 12h10v10H1z"/><path fill="#ffb900" d="M12 12h10v10H12z"/></svg>`,
   apple: `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M16.4 12.8c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.8-2-1.6-.2-3.1.9-3.9.9s-2-.9-3.4-.9c-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.3 2.6 1.3-.1 1.8-.9 3.4-.9s2 .9 3.4.8c1.4 0 2.3-1.2 3.2-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.7-1-2.7-4zM13.9 4.5c.7-.9 1.2-2.1 1.1-3.3-1.1 0-2.4.7-3.1 1.6-.7.8-1.3 2-1.1 3.2 1.2.1 2.4-.6 3.1-1.5z"/></svg>`,
   dev: `<span style="font-size:15px">🛠</span>`,
+  phone: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg>`,
+  password: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M10.8 12.2 20 3M17 6l3 3M15 8l2 2"/></svg>`,
 };
 
+/* The sheet offers every way in side by side: the redirect providers (Google…),
+   phone by SMS code when the server advertises "phone", and a username/password
+   account — the last needs no configuration, so it is always there. The "first
+   N free" line uses the number /api/me reported (acct.freeQuestions), and is left
+   out until the server has said it, exactly like the home page's free badge. */
 function openSignIn(onDone) {
   acct.afterLogin = onDone || null;
   const provs = acct.authProviders || [];
-  const buttons = provs.map((p) => `
+  // Inline providers complete inside this sheet; only the rest are redirects.
+  const buttons = provs.filter((p) => !p.inline).map((p) => `
     <button class="oauth-btn" data-provider="${escapeHtml(p.key)}">
       ${PROVIDER_MARK[p.key] || ""}
       <span>${escapeHtml(at("continueWith"))} ${escapeHtml(p.label)}</span>
     </button>`).join("");
+  const phoneOn = provs.some((p) => p.key === "phone");
+  const freeLine = acct.freeKnown && acct.freeQuestions > 0
+    ? ` <b>${escapeHtml(at("signInFree").replace("{n}", acct.freeQuestions))}</b>` : "";
 
   const back = modal(`
     <h2 class="modal-title">${escapeHtml(at("signInTitle"))}</h2>
-    <p class="modal-sub">${escapeHtml(at("signInSub"))}</p>
-    <div class="oauth-list" id="oauth-list">
-      ${buttons || `<p class="test-banner">${escapeHtml(at("noProviders"))}</p>`}
-      ${acct.devLogin ? `<button class="oauth-btn dev" data-provider="dev">
-          ${PROVIDER_MARK.dev}<span>${escapeHtml(at("devLogin"))}</span></button>` : ""}
+    <p class="modal-sub">${escapeHtml(at("signInSub"))}${freeLine}</p>
+    <div id="signin-choices">
+      <div class="oauth-list" id="oauth-list">
+        ${buttons}
+        ${phoneOn ? `<button type="button" class="oauth-btn" id="phone-open">
+            ${PROVIDER_MARK.phone}<span>${escapeHtml(at("phoneContinue"))}</span></button>` : ""}
+        ${acct.devLogin ? `<button class="oauth-btn dev" data-provider="dev">
+            ${PROVIDER_MARK.dev}<span>${escapeHtml(at("devLogin"))}</span></button>` : ""}
+      </div>
+      ${buttons || phoneOn || acct.devLogin
+        ? `<p class="signin-or"><span>${escapeHtml(at("orDivider"))}</span></p>` : ""}
+      <div class="oauth-list">
+        <button type="button" class="oauth-btn" id="toggle-password-auth">
+          ${PROVIDER_MARK.password}<span>${escapeHtml(at("orUsername"))}</span></button>
+      </div>
+      <button type="button" class="link-btn" id="toggle-password-login">${escapeHtml(at("haveOneLogIn"))}</button>
     </div>
-    <button type="button" class="link-btn" id="toggle-password-auth">${escapeHtml(at("orUsername"))}</button>
     <div id="password-auth" hidden>
       <div class="field">
         <label for="pa-username">${escapeHtml(at("usernameLabel"))}</label>
@@ -387,11 +433,39 @@ function openSignIn(onDone) {
       <button type="button" class="link-btn" id="pa-mode-toggle">${escapeHtml(at("haveAccount"))}</button>
       <button type="button" class="link-btn" id="pa-back">${escapeHtml(at("backToProviders"))}</button>
     </div>
+    <div id="phone-auth" hidden>
+      <div id="ph-step-number">
+        <div class="field">
+          <label for="ph-number">${escapeHtml(at("phoneLabel"))}</label>
+          <div class="phone-row"><span class="phone-cc">+91</span>
+            <input id="ph-number" type="tel" inputmode="tel" autocomplete="tel-national"
+                   placeholder="98765 43210" maxlength="16" /></div>
+        </div>
+        <p class="field-note">${escapeHtml(at("phoneHint"))}</p>
+        <button type="button" class="primary" id="ph-send">${escapeHtml(at("phoneSend"))}</button>
+      </div>
+      <div id="ph-step-code" hidden>
+        <p class="field-note" id="ph-sent-to" role="status"></p>
+        <div class="field">
+          <label for="ph-code">${escapeHtml(at("phoneCodeLabel"))}</label>
+          <input id="ph-code" type="text" inputmode="numeric" autocomplete="one-time-code"
+                 pattern="[0-9]*" maxlength="6" />
+        </div>
+        <button type="button" class="primary" id="ph-verify">${escapeHtml(at("phoneVerify"))}</button>
+        <button type="button" class="link-btn" id="ph-resend" disabled></button>
+        <button type="button" class="link-btn" id="ph-change">${escapeHtml(at("phoneChange"))}</button>
+      </div>
+      <button type="button" class="link-btn" id="ph-back">${escapeHtml(at("backToProviders"))}</button>
+    </div>
     <p class="modal-error" hidden></p>
     <p class="legal-line">By continuing you accept our
       <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>.</p>`);
 
-  back.querySelectorAll(".oauth-btn").forEach((b) => {
+  const errBox = back.querySelector(".modal-error");
+  const showErr = (msg) => { errBox.textContent = msg || at("signInFailed"); errBox.hidden = false; };
+  const choices = back.querySelector("#signin-choices");
+
+  back.querySelectorAll(".oauth-btn[data-provider]").forEach((b) => {
     b.onclick = async () => {
       const provider = b.dataset.provider;
       if (provider === "dev") {
@@ -402,20 +476,12 @@ function openSignIn(onDone) {
           body: JSON.stringify({ email }),
         });
         const data = await res.json();
-        if (!res.ok) {
-          const err = back.querySelector(".modal-error");
-          err.textContent = data.detail || "Sign-in failed."; err.hidden = false;
-          return;
-        }
-        acct.user = data.user;
-        renderAccountBar();
-        loadSavedCharts();
-        closeModal();
-        if (data.created) toast(`${at("welcome")} ${data.user.credits} ${at("freeQs")}`);
-        onDone?.(data.user);
+        if (!res.ok) { showErr(data.detail); return; }
+        finishInPageSignIn(data, onDone);
         return;
       }
-      // Full-page redirect: OAuth cannot complete inside fetch().
+      // Full-page redirect: OAuth cannot complete inside fetch(). A question
+      // parked by handleAskRejection survives in localStorage and is asked on return.
       const next = encodeURIComponent(location.pathname + location.search);
       location.href = `/api/auth/${provider}/start?next=${next}`;
     };
@@ -423,8 +489,6 @@ function openSignIn(onDone) {
 
   /* ---------- username/password: no identity revealed ---------- */
   let paMode = "register";
-  const oauthList = back.querySelector("#oauth-list");
-  const toggleLink = back.querySelector("#toggle-password-auth");
   const paBox = back.querySelector("#password-auth");
   const paSubmit = back.querySelector("#pa-submit");
   const paModeToggle = back.querySelector("#pa-mode-toggle");
@@ -434,14 +498,18 @@ function openSignIn(onDone) {
     paSubmit.textContent = paMode === "register" ? at("createAccount") : at("logIn");
     paModeToggle.textContent = paMode === "register" ? at("haveAccount") : at("needAccount");
     paNote.hidden = paMode !== "register";
+    back.querySelector("#pa-password").autocomplete =
+      paMode === "register" ? "new-password" : "current-password";
   }
-  renderPaMode();
-
-  toggleLink.onclick = () => {
-    oauthList.hidden = true; toggleLink.hidden = true; paBox.hidden = false;
+  const openPassword = (mode) => {
+    paMode = mode; renderPaMode();
+    choices.hidden = true; paBox.hidden = false; errBox.hidden = true;
+    back.querySelector("#pa-username").focus();
   };
+  back.querySelector("#toggle-password-auth").onclick = () => openPassword("register");
+  back.querySelector("#toggle-password-login").onclick = () => openPassword("login");
   back.querySelector("#pa-back").onclick = () => {
-    paBox.hidden = true; oauthList.hidden = false; toggleLink.hidden = false;
+    paBox.hidden = true; choices.hidden = false; errBox.hidden = true;
   };
   paModeToggle.onclick = () => {
     paMode = paMode === "register" ? "login" : "register";
@@ -450,29 +518,118 @@ function openSignIn(onDone) {
   paSubmit.onclick = async () => {
     const username = back.querySelector("#pa-username").value.trim();
     const password = back.querySelector("#pa-password").value;
-    const err = back.querySelector(".modal-error");
-    err.hidden = true;
-    if (!username || !password) {
-      err.textContent = `${at("usernameLabel")} / ${at("passwordLabel")}`; err.hidden = false;
-      return;
-    }
+    errBox.hidden = true;
+    if (!username || !password) { showErr(`${at("usernameLabel")} / ${at("passwordLabel")}`); return; }
     const url = paMode === "register" ? "/api/auth/register" : "/api/auth/login";
     const res = await fetch(url, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
     const data = await res.json();
-    if (!res.ok) {
-      err.textContent = data.detail || "Sign-in failed."; err.hidden = false;
-      return;
-    }
-    acct.user = data.user;
-    renderAccountBar();
-    loadSavedCharts();
-    closeModal();
-    if (data.created) toast(`${at("welcome")} ${data.user.credits} ${at("freeQs")}`);
-    onDone?.(data.user);
+    if (!res.ok) { showErr(data.detail); return; }
+    finishInPageSignIn(data, onDone);
   };
+
+  /* ---------- phone: number -> SMS code (only when advertised) ---------- */
+  if (!phoneOn) return;
+  const phBox = back.querySelector("#phone-auth");
+  const phNumber = back.querySelector("#ph-number");
+  const phCode = back.querySelector("#ph-code");
+  const phSend = back.querySelector("#ph-send");
+  const phVerify = back.querySelector("#ph-verify");
+  const phResend = back.querySelector("#ph-resend");
+  let cooldown = null;
+
+  const showStep = (step) => {
+    back.querySelector("#ph-step-number").hidden = step !== "number";
+    back.querySelector("#ph-step-code").hidden = step !== "code";
+    (step === "number" ? phNumber : phCode).focus();
+  };
+  // The server enforces its own cooldown; this only keeps the button honest.
+  const startCooldown = (seconds) => {
+    clearInterval(cooldown);
+    let left = seconds;
+    const tick = () => {
+      // The sheet may have been closed mid-countdown.
+      if (!document.body.contains(phResend)) { clearInterval(cooldown); return; }
+      phResend.disabled = left > 0;
+      phResend.textContent = left > 0 ? at("phoneResendIn").replace("{s}", left) : at("phoneResend");
+      left -= 1;
+      if (left < 0) clearInterval(cooldown);
+    };
+    tick();
+    cooldown = setInterval(tick, 1000);
+  };
+
+  async function sendCode() {
+    const number = phNumber.value.trim();
+    errBox.hidden = true;
+    if (!number) { showErr(at("phoneNeedNumber")); return; }
+    phSend.disabled = true; phSend.textContent = at("phoneSending");
+    try {
+      const res = await fetch("/api/auth/phone/start", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ number }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { showErr(data.detail); return; }
+      back.querySelector("#ph-sent-to").textContent = at("phoneSentTo").replace("{n}", data.number);
+      phCode.value = "";
+      showStep("code");
+      startCooldown(data.resend_after || 30);
+    } catch { showErr(); }
+    finally { phSend.disabled = false; phSend.textContent = at("phoneSend"); }
+  }
+
+  back.querySelector("#phone-open").onclick = () => {
+    choices.hidden = true; phBox.hidden = false; errBox.hidden = true;
+    showStep("number");
+  };
+  back.querySelector("#ph-back").onclick = () => {
+    clearInterval(cooldown);
+    phBox.hidden = true; choices.hidden = false; errBox.hidden = true;
+  };
+  back.querySelector("#ph-change").onclick = () => { errBox.hidden = true; showStep("number"); };
+  phSend.onclick = sendCode;
+  phResend.onclick = sendCode;
+  phNumber.onkeydown = (e) => { if (e.key === "Enter") sendCode(); };
+  phCode.onkeydown = (e) => { if (e.key === "Enter") phVerify.click(); };
+  phVerify.onclick = async () => {
+    const code = phCode.value.replace(/\D/g, "");
+    errBox.hidden = true;
+    if (code.length !== 6) { showErr(at("phoneNeedCode")); return; }
+    phVerify.disabled = true; phVerify.textContent = at("phoneVerifying");
+    try {
+      const res = await fetch("/api/auth/phone/verify", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ number: phNumber.value.trim(), code }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { showErr(data.detail); return; }
+      clearInterval(cooldown);
+      finishInPageSignIn(data, onDone);
+    } catch { showErr(); }
+    finally { phVerify.disabled = false; phVerify.textContent = at("phoneVerify"); }
+  };
+}
+
+/* Every in-page sign-in (dev, username, phone) ends here, so they all behave like
+   the OAuth round-trip does on its ?welcome= reload (loadAccount): rescue a chart
+   cast while signed out, then either carry on with what the caller wanted, or ask
+   the question parked at the sign-in wall. Before this, an in-page sign-in left
+   that parked question sitting in localStorage until some later page load. */
+function finishInPageSignIn(data, onDone) {
+  acct.user = data.user;
+  renderAccountBar();
+  closeModal();
+  if (data.created) toast(`${at("welcome")} ${data.user.credits} ${at("freeQs")}`);
+  const ready = (typeof claimPendingBirth === "function" ? claimPendingBirth() : Promise.resolve())
+    .finally(loadSavedCharts);
+  if (onDone) { onDone(data.user); return; }
+  let parked = false;
+  try { parked = typeof PENDING_QUESTION !== "undefined" && !!localStorage.getItem(PENDING_QUESTION); }
+  catch { /* private mode: nothing was parked */ }
+  if (parked && typeof resumeAfterSignIn === "function") ready.then(resumeAfterSignIn);
 }
 
 /* ---------- store / paywall ---------- */

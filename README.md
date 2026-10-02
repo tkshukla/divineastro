@@ -151,6 +151,31 @@ delineation vocabulary, so translating it needs the narration layer below. With
 narration off, the panels and chrome are Hindi and the reading itself stays
 English.
 
+## Sign-in
+
+Asking a question needs an account. The sign-in sheet offers, side by side:
+Google (and Microsoft/Apple when configured), a username & password account
+with no email at all, and — once enabled — a mobile number confirmed by a
+6-digit SMS code. `GET /api/auth/providers` lists what is on; the in-page
+methods carry `"inline": true`. Every method is the same `(provider,
+provider_sub)` identity and session, see `app/auth.py`.
+
+**Phone sign-in ships off.** It needs:
+
+| Variable | Value |
+|---|---|
+| `ASTRO_SMS_PROVIDER` | `msg91` (blank = off; `console` = dev/tests only, logs the code, refused in production) |
+| `ASTRO_MSG91_AUTHKEY` | MSG91 dashboard → Authkey |
+| `ASTRO_MSG91_TEMPLATE_ID` | an MSG91 template containing `##otp##`, linked to a **DLT-approved** template |
+| `ASTRO_SMS_COUNTRIES` | calling codes allowed, default `91` |
+
+**India DLT is mandatory**: TRAI requires the sending business, its sender
+header and the exact message template to be registered on a DLT portal (Jio,
+Airtel, Vi or BSNL) before operators deliver anything. Without it MSG91 still
+answers "success" and the SMS silently never arrives. Codes expire after 10
+minutes, allow 5 wrong tries, and sends are rate-limited per number and per IP
+(`app/phone_auth.py`).
+
 ## Narration (optional LLM)
 
 The astrology is never done by a model. The engine computes the chart, gathers
