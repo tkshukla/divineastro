@@ -14,13 +14,11 @@ from __future__ import annotations
 
 import os
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from . import analytics
 
 router = APIRouter()
-_COUNT = [Depends(analytics.page_visit)]   # count public page loads (see analytics.py)
 
 BRAND = os.environ.get("ASTRO_BRAND", "Divine Astro")
 SITE = os.environ.get("ASTRO_SITE_URL", "https://divineastro.org")
@@ -105,7 +103,9 @@ _SHELL = """<!DOCTYPE html>
   <h1>{title}</h1>
   <p class="updated">Last updated: {updated}</p>
   {body}
-</div></body></html>"""
+</div>
+<script src="/static/visit.js" defer></script>   <!-- counts the page load: see analytics.py -->
+</body></html>"""
 
 UPDATED = "20 September 2026"
 
@@ -145,7 +145,7 @@ def site_details() -> dict:
     }
 
 
-@router.get("/terms", response_class=HTMLResponse, dependencies=_COUNT)
+@router.get("/terms", response_class=HTMLResponse)
 def terms() -> HTMLResponse:
     return _page("Terms of Service", f"""
 {DISCLAIMER}
@@ -205,7 +205,7 @@ have exclusive jurisdiction.</p>
 {_source_note()}""")
 
 
-@router.get("/privacy", response_class=HTMLResponse, dependencies=_COUNT)
+@router.get("/privacy", response_class=HTMLResponse)
 def privacy() -> HTMLResponse:
     return _page("Privacy Policy", f"""
 <p>This policy explains what {BRAND} collects, why, and what you can ask us to
@@ -290,7 +290,7 @@ consent before any advertising cookies are set.</p>
 their data.</p>""")
 
 
-@router.get("/refund", response_class=HTMLResponse, dependencies=_COUNT)
+@router.get("/refund", response_class=HTMLResponse)
 def refund() -> HTMLResponse:
     return _page("Refund &amp; Cancellation Policy", f"""
 <p>We would rather resolve a problem than argue about it. If something has gone
@@ -328,7 +328,7 @@ days</strong> of approval. The gateway may take a further few days to show it on
 your statement.</p>""")
 
 
-@router.get("/contact", response_class=HTMLResponse, dependencies=_COUNT)
+@router.get("/contact", response_class=HTMLResponse)
 def contact() -> HTMLResponse:
     return _page("Contact Us", f"""
 <p>We are a small team and we read everything.</p>

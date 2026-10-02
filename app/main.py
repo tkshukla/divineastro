@@ -28,7 +28,6 @@ from . import auth, billing, geo, llm, pdf_report
 from .api_account import router as account_router
 from .api_feedback import router as feedback_router
 from .api_traffic import router as traffic_router
-from . import analytics
 from .api_tools import router as tools_router
 from .legal import router as legal_router
 from .chart_service import BirthData, build, solar_return, timing_snapshot, transits, wheel_svg
@@ -55,7 +54,6 @@ app.add_middleware(
     max_age=600,
 )
 init_db()
-app.add_middleware(analytics.SourceCookieMiddleware)
 app.include_router(account_router)
 app.include_router(feedback_router)
 app.include_router(traffic_router)
@@ -953,7 +951,7 @@ def _page(name: str) -> HTMLResponse:
     return HTMLResponse(html, headers={"Cache-Control": "no-store"})
 
 
-@app.get("/", dependencies=[Depends(analytics.page_visit)])
+@app.get("/")
 def index() -> HTMLResponse:
     return _page("index.html")
 
@@ -969,7 +967,7 @@ def ads_txt() -> PlainTextResponse:
     return PlainTextResponse(f"google.com, {ADSENSE_PUBLISHER}, DIRECT, f08c47fec0942fa0\n")
 
 
-@app.get("/feedback", dependencies=[Depends(analytics.page_visit)])
+@app.get("/feedback")
 def feedback_page() -> HTMLResponse:
     """The page is public; sending feedback needs an account, which the page
     itself checks (and the API enforces)."""

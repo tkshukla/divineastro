@@ -1236,6 +1236,28 @@ function renderDailyTable(days) {
   box.appendChild(t);
 }
 
+// Each step as a bar against visitors, with the step-to-step conversion beside it.
+function renderFunnel(f) {
+  if (!f) return;
+  const steps = [
+    { label: 'Visitors', count: f.visitors, sub: 'daily unique visitors, summed' },
+    { label: 'Signed up', count: f.new_users, sub: 'new accounts' },
+    { label: 'Saved a chart', count: f.chart_users, sub: `${fmt(f.charts)} charts saved` },
+    { label: 'Asked a question', count: f.question_users, sub: `${fmt(f.questions)} questions asked` },
+  ];
+  barList($('#bl-funnel'), steps, {
+    raw: true,
+    value: (r) => {
+      const i = steps.indexOf(r), prev = i > 0 ? steps[i - 1].count : 0;
+      return i === 0 ? `${fmt(r.count)} · ${r.sub}`
+        : `${fmt(r.count)} · ${r.sub} · ${prev ? pct(r.count / prev) : '—'} of the step before`;
+    },
+  });
+  $('#tr-funnel-note').textContent = 'Saving a chart and asking need an account; a chart cast without signing in is not stored. ' +
+    'The later steps count everyone active in the range, not only its new users, so a step can be larger than the one before. ' +
+    'Your own charts and questions are left out.';
+}
+
 function renderTraffic(d) {
   const tot = d.totals, w = d.windows;
   const tiles = $('#tr-tiles');
@@ -1254,6 +1276,8 @@ function renderTraffic(d) {
     ? `Visit tracking began on ${d.tracking_since}; earlier visits were not recorded (new-user counts go back further, since they come from sign-up dates). `
     : 'No visits have been recorded yet. Load the public site in a private window to see the first one — your own signed-in visits are never counted. ';
   $('#tr-note').textContent = `${since}A visitor is counted once per day, so a multi-day total is a sum of daily visitors. ` +
+    'A visit is counted only when the page\'s own script runs, so scanners that fetch the page without running it are left out ' +
+    '(visits before 3 Oct 2026 were counted on the page fetch and include them). ' +
     'Bots, Do-Not-Track requests and your own visits are excluded; no IP address or browser string is stored. ' +
     'Only full page loads are counted, not clicks inside the app.';
 
@@ -1269,6 +1293,7 @@ function renderTraffic(d) {
   draw();
   ['#chart-visitors', '#chart-new'].forEach((s) => { $(s)._redraw = draw; });
 
+  renderFunnel(d.funnel);
   barList($('#bl-sources'), d.sources.filter((r) => r.label !== 'internal'));
   barList($('#bl-signup'), d.signup_sources, { color: 'orange' });
   barList($('#bl-pages'), d.pages, {

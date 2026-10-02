@@ -1,10 +1,18 @@
 """Traffic analytics: what counts as a visit, how it is classified, what is (and
-is not) stored, first-touch sign-up attribution, and the admin endpoint.
+is not) stored, first-touch sign-up attribution, the funnel, and the admin endpoint.
+
+Since DIVASTRO-99 a visit is recorded by the page's own beacon (POST /api/visit,
+sent by static/visit.js), never by the HTML request, so these checks send the
+beacon the way a browser would after loading the page.
 
 Part 1 is pure functions — no server. Part 2 needs the app running:
 
     ASTRO_GATEWAY=test ASTRO_DEV_LOGIN=1 uvicorn app.main:app --port 8600
     C:\\Astro\\.venv\\Scripts\\python.exe -m tests.test_traffic
+
+The server must see the client as 127.0.0.1 and honour X-Forwarded-For from it
+(uvicorn's default), and it rate-limits /api/visit per address, so run this
+against a server that has not just taken a burst of beacons from 127.0.0.1.
 """
 
 from __future__ import annotations
@@ -26,6 +34,11 @@ failures: list[str] = []
 
 CHROME = (f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
           f"(KHTML, like Gecko) Chrome/120.0 Safari/537.36 run{RUN}")
+# Beacons come "from" an address unique to this run (via X-Forwarded-For, which the
+# server honours from 127.0.0.1), so the per-address rate limit on /api/visit is
+# never shared with an earlier run against the same server. 198.18.0.0/15 is a
+# reserved benchmarking range: not a cloud network, never a real visitor.
+RUN_IP = f"198.18.{RUN % 250}.{RUN // 250 % 250 + 1}"
 IPHONE = ("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 "
           f"(KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1 run{RUN}")
 
@@ -171,7 +184,68 @@ def part1() -> None:
               abs(s1["windows"]["d30"]["signup_rate"] - 1 / 3) < 1e-3, str(s1["windows"]["d30"]["signup_rate"]))
         check("and the rate can never exceed 100% just because history is longer",
               all((w["signup_rate"] or 0) <= 1 for w in s1["windows"].values()))
+        # the funnel: visitors -> sign-ups -> saved a chart -> asked
+        from app.db import BirthProfile, QuestionLog
+        f0 = an.summary(db, 30)["funnel"]
+        check("the funnel carries every step",
+              {"visitors", "new_users", "chart_users", "charts", "question_users", "questions"} <= set(f0), str(f0))
+        check("with no charts or questions yet, those steps are 0",
+              (f0["charts"], f0["questions"]) == (0, 0) and f0["visitors"] == 3, str(f0))
+        users = db.query(User).order_by(User.id).all()
+        boss = User(email="boss@example.com", provider="google", provider_sub="gb", is_admin=True,
+                    created_at=now_ - dt.timedelta(days=40))
+        db.add(boss)
+        db.flush()
+        birth = dict(date="1990-01-01", time="10:00", place="Delhi", latitude=28.6, longitude=77.2,
+                     timezone="Asia/Kolkata")
+        for u in users[:2]:                                    # two people, three charts
+            db.add(BirthProfile(user_id=u.id, created_at=now_, **birth))
+        db.add(BirthProfile(user_id=users[0].id, created_at=now_, **birth))
+        db.add(BirthProfile(user_id=users[2].id, created_at=now_ - dt.timedelta(days=60), **birth))
+        db.add(BirthProfile(user_id=boss.id, created_at=now_, **birth))
+        for _ in range(4):
+            db.add(QuestionLog(user_id=users[0].id, question="q", answer="a", created_at=now_))
+        db.add(QuestionLog(user_id=boss.id, question="q", answer="a", created_at=now_))
+        db.commit()
+        f1 = an.summary(db, 30)["funnel"]
+        check("charts saved in the window, and by how many people",
+              (f1["charts"], f1["chart_users"]) == (3, 2), str(f1))
+        check("questions asked in the window, and by how many people",
+              (f1["questions"], f1["question_users"]) == (4, 1), str(f1))
+        check("the funnel's sign-ups and visitors match the totals",
+              f1["new_users"] == 47 and f1["visitors"] == 3, str(f1))
+        check("the 7-day funnel is computed over 7 days",
+              an.summary(db, 7)["funnel"]["charts"] == 3)
     eng.dispose()
+
+    print("\n3d. The beacon body is checked before anything is counted")
+    pb = an.parse_beacon
+    check("a normal beacon is accepted, query reduced to the keys that matter",
+          pb({"path": "/", "ref": "https://www.google.com/", "q": "?utm_source=x&junk=1&fbclid=abc"})
+          == ("/", "https://www.google.com/", {"utm_source": "x"}))
+    check("every public page is accepted, trailing slash or not",
+          all(pb({"path": p_ + "/", "ref": "", "q": ""}) is not None
+              for p_ in ("/feedback", "/terms", "/privacy", "/refund", "/contact")))
+    for label, body in (("an API path", {"path": "/api/health"}), ("the admin page", {"path": "/admin"}),
+                        ("a made-up page", {"path": "/wp-login.php"}), ("no path", {"ref": ""}),
+                        ("a non-string path", {"path": ["/"]}), ("a list, not an object", ["/"]),
+                        ("null", None), ("an over-long referrer", {"path": "/", "ref": "x" * 5000})):
+        check(f"rejected: {label}", pb(body) is None)
+    check("?welcome survives parsing so the visit can be skipped",
+          "welcome" in pb({"path": "/", "q": "?welcome=1"})[2])
+
+    print("\n3e. The beacon is rate-limited per address, in memory")
+    an._rate.clear()
+    t = 1000.0
+    allowed = sum(an.rate_ok("198.51.100.7", t) for _ in range(an.RATE_MAX + 15))
+    check(f"at most {an.RATE_MAX} a minute from one address", allowed == an.RATE_MAX, str(allowed))
+    check("another address is unaffected", an.rate_ok("198.51.100.8", t))
+    check("the window resets after a minute", an.rate_ok("198.51.100.7", t + an.RATE_WINDOW_S + 1))
+    an._rate.clear()
+    allowed6 = sum(an.rate_ok(f"2401:4900:1c00:7::{i:x}", t) for i in range(an.RATE_MAX + 15))
+    check("rotating IPv6 addresses inside one /64 share a limit", allowed6 == an.RATE_MAX, str(allowed6))
+    check("garbage in place of an address does not crash it", an.rate_ok("not-an-ip", t))
+    an._rate.clear()
 
 
 # --------------------------------------------------------------------------
@@ -196,6 +270,18 @@ def get(path: str, ua: str = CHROME, headers: dict | None = None,
     s = session_ or requests.Session()
     return s.get(f"{BASE}{path}", headers={"User-Agent": ua, **(headers or {})},
                  timeout=30, allow_redirects=False)
+
+
+def beacon(path: str = "/", ua: str = CHROME, referrer: str = "", q: str = "",
+           headers: dict | None = None, session_: requests.Session | None = None, raw=None):
+    """What static/visit.js sends after the page has loaded and run its script.
+    Like sendBeacon, the body is a plain-text JSON string."""
+    import json
+    s = session_ or requests.Session()
+    data = raw if raw is not None else json.dumps({"path": path, "ref": referrer, "q": q})
+    return s.post(f"{BASE}/api/visit", data=data, timeout=30,
+                  headers={"User-Agent": ua, "Content-Type": "text/plain;charset=UTF-8",
+                           "Referer": f"{BASE}{path}", "X-Forwarded-For": RUN_IP, **(headers or {})})
 
 
 def sign_in(email: str, session_: requests.Session | None = None) -> requests.Session:
@@ -228,49 +314,77 @@ def user_row(email: str):
 def part2() -> None:
     print("\n4. What counts as a visit")
     before = count_visits()
-    r = get("/", headers={"Referer": "https://www.google.com/search?q=kundali"})
-    check("the home page loads", r.status_code == 200, str(r.status_code))
+    for path in ("/", "/feedback", "/terms", "/privacy", "/refund", "/contact"):
+        r = get(path, headers={"Referer": "https://www.google.com/search?q=kundali"})
+        check(f"{path} loads", r.status_code == 200, str(r.status_code))
+        check(f"loading {path} sets no cookie", "astro_src" not in r.headers.get("set-cookie", ""))
+    check("loading the HTML alone records NOTHING (scanners never run the beacon)",
+          count_visits() == before, f"{before} -> {count_visits()}")
+    home = get("/").text
+    check("every public page loads the beacon script",
+          "/static/visit.js" in home and "/static/visit.js" in get("/feedback").text
+          and all("/static/visit.js" in get(p_).text for p_ in ("/terms", "/privacy", "/refund", "/contact")))
+    check("the beacon script itself is served", get("/static/visit.js").status_code == 200)
+
+    r = beacon("/", referrer="https://www.google.com/search?q=kundali")
+    check("the beacon answers 204", r.status_code == 204, str(r.status_code))
     rows = visits_now()
-    check("one visit was recorded", len(rows) == before + 1, f"{before} -> {len(rows)}")
+    check("one beacon records one visit", len(rows) == before + 1, f"{before} -> {len(rows)}")
     v = rows[-1]
-    check("with the page, classified source and device",
+    check("classified by the PAGE's referrer, not the beacon's own (our-site) Referer",
           (v.path, v.source, v.device) == ("/", "google", "desktop"), str((v.path, v.source, v.device)))
     check("and an anonymous visitor hash", len(v.visitor) == 16)
     stored = " ".join(str(x) for x in (v.path, v.source, v.medium, v.campaign, v.device, v.visitor))
     check("NO IP address and NO browser string reached the database",
-          "127.0.0.1" not in stored and "Mozilla" not in stored and f"run{RUN}" not in stored, stored)
+          RUN_IP not in stored and "127.0.0.1" not in stored and "Mozilla" not in stored and f"run{RUN}" not in stored, stored)
 
     n = count_visits()
     for label, kwargs in [
         ("a bot", dict(ua="Googlebot/2.1 (+http://www.google.com/bot.html)")),
+        ("headless Chrome", dict(ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                                    "HeadlessChrome/120.0 Safari/537.36")),
         ("a WhatsApp link-preview fetch", dict(ua="WhatsApp/2.23.20.0 A")),
         ("Do-Not-Track", dict(headers={"DNT": "1"})),
         ("Global-Privacy-Control", dict(headers={"Sec-GPC": "1"})),
-        ("a browser prefetch", dict(headers={"Sec-Purpose": "prefetch"})),
+        ("a prerender", dict(headers={"Sec-Purpose": "prefetch;prerender"})),
         ("no user-agent at all", dict(ua="")),
         ("the fake iOS 13.2.3 iPhone", dict(ua="Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) "
                                               "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1")),
         ("a real-looking browser arriving from a Tencent Cloud address", dict(headers={"X-Forwarded-For": "43.157.38.228"})),
         ("a real-looking browser arriving from a Google Cloud address", dict(headers={"X-Forwarded-For": "34.96.40.48"})),
+        ("the landing after signing in (?welcome)", dict(q="?welcome=1")),
     ]:
-        get("/", **kwargs)
-        check(f"{label} is not counted", count_visits() == n, f"{n} -> {count_visits()}")
-    get("/", ua=CHROME + " home", headers={"X-Forwarded-For": "49.37.248.16"})
+        r = beacon("/", **kwargs)
+        check(f"{label} is not counted (and still gets a quiet 204)",
+              count_visits() == n and r.status_code == 204, f"{n} -> {count_visits()}, {r.status_code}")
+    beacon("/", ua=CHROME + " home", headers={"X-Forwarded-For": "49.37.248.16"})
     check("a real person on a home connection IS still counted", count_visits() == n + 1, f"{n} -> {count_visits()}")
+
+    print("\n4b. The beacon ignores garbage")
     n = count_visits()
-    for path in ("/api/health", "/static/app.js", "/admin", "/?welcome=1"):
-        get(path)
-        check(f"{path} is not counted", count_visits() == n, f"{n} -> {count_visits()}")
+    for path in ("/api/health", "/static/app.js", "/admin", "/wp-login.php", "/docs"):
+        r = beacon(path)
+        check(f"a beacon claiming {path} is ignored", count_visits() == n and r.status_code == 204,
+              f"{n} -> {count_visits()}, {r.status_code}")
+    check("a body that is not JSON -> 400", beacon(raw="hello").status_code == 400)
+    check("deeply nested JSON -> 400, not a crash", beacon(raw="[" * 2000).status_code == 400)
+    check("an oversized body -> 413", beacon(raw='{"path": "/", "ref": "' + "x" * 5000 + '"}').status_code == 413)
+    check("a GET to the beacon is not allowed", requests.get(f"{BASE}/api/visit", timeout=10).status_code == 405)
+    check("none of that was counted", count_visits() == n, f"{n} -> {count_visits()}")
+    flood_ip = f"198.19.{RUN % 250}.{RUN // 250 % 250 + 1}"
+    codes = {beacon("/", ua=CHROME + " flood", headers={"X-Forwarded-For": flood_ip}).status_code
+             for _ in range(an.RATE_MAX + 5)}
+    check(f"one address flooding the beacon records at most {an.RATE_MAX} a minute",
+          count_visits() == n + an.RATE_MAX, f"{n} -> {count_visits()}")
+    check("and the excess still gets a quiet 204", codes == {204}, str(codes))
 
     print("\n5. Public pages, paths, UTM tags")
-    get("/feedback")
-    get("/privacy", headers={"Referer": "https://divineastro.org/"})
+    beacon("/feedback")
+    beacon("/privacy/", referrer="https://divineastro.org/")
     paths = [x.path for x in visits_now()[-2:]]
-    check("other public pages are counted with their own path",
+    check("other public pages are counted with their own path (trailing slash normalised)",
           paths == ["/feedback", "/privacy"], str(paths))
-    check("(a trailing-slash URL is redirected by the router, so it is not a page load)",
-          get("/privacy/").status_code in (301, 307, 308))
-    get(f"/?utm_source=WhatsApp&utm_medium=Social&utm_campaign=diwali{RUN}", ua=IPHONE)
+    beacon("/", ua=IPHONE, q=f"?utm_source=WhatsApp&utm_medium=Social&utm_campaign=diwali{RUN}")
     v = visits_now()[-1]
     check("utm_source / medium / campaign are recorded, cleaned, and win",
           (v.source, v.medium, v.campaign, v.device) == ("whatsapp", "social", f"diwali{RUN}", "mobile"),
@@ -284,22 +398,29 @@ def part2() -> None:
     make_admin(admin_email)
     a = sign_in(admin_email)
     n = count_visits()
-    get("/", session_=a)
+    beacon("/", session_=a)
     check("a signed-in admin loading the site adds nothing", count_visits() == n, f"{n} -> {count_visits()}")
-    get("/", ua=CHROME + " other")
+    beacon("/", ua=CHROME + " other")
     check("but an ordinary visitor still does", count_visits() == n + 1)
 
     print("\n7. The first-touch cookie")
     s = requests.Session()
     r = get("/?utm_source=instagram&utm_campaign=reel1", ua=CHROME + " insta", session_=s)
+    check("loading the page does not set it — only a browser that runs the beacon gets one",
+          "astro_src" not in r.headers.get("set-cookie", "") and "astro_src" not in s.cookies)
+    r = beacon("/", ua=CHROME + " insta", q="?utm_source=instagram&utm_campaign=reel1", session_=s)
     set_cookie = r.headers.get("set-cookie", "")
-    check("the first visit sets the source cookie (source|campaign)",
+    check("the first beacon sets the source cookie (source|campaign)",
           "astro_src=instagram|reel1" in set_cookie.replace('"', ''), set_cookie[:120])
-    check("it is HttpOnly and SameSite=Lax", "httponly" in set_cookie.lower() and "samesite=lax" in set_cookie.lower())
-    r = get("/?utm_source=facebook", ua=CHROME + " insta", session_=s)
+    check("it is HttpOnly, SameSite=Lax and site-wide",
+          all(x in set_cookie.lower() for x in ("httponly", "samesite=lax", "path=/")), set_cookie)
+    r = beacon("/", ua=CHROME + " insta", q="?utm_source=facebook", session_=s)
     check("a later visit does NOT overwrite it (first touch wins)", "astro_src" not in r.headers.get("set-cookie", ""))
-    r2 = get("/", session_=requests.Session(), headers={"Referer": "https://divineastro.org/x"})
+    r2 = beacon("/", session_=requests.Session(), referrer="https://divineastro.org/x")
     check("an internal referrer never seeds the cookie", "astro_src" not in r2.headers.get("set-cookie", ""))
+    r3 = beacon("/", session_=requests.Session(), ua="Googlebot/2.1 (+http://www.google.com/bot.html)",
+                q="?utm_source=spam")
+    check("a bot's beacon never gets the cookie", "astro_src" not in r3.headers.get("set-cookie", ""))
 
     print("\n8. Sign-up attribution")
     email = f"attr{RUN}@example.com"
@@ -312,13 +433,19 @@ def part2() -> None:
     check("a sign-up with no cookie is 'unknown', not guessed", user_row(email2).signup_source == "unknown")
     sign_in(email, s)
     check("signing in again does not restamp the source", user_row(email).signup_source == "instagram")
+    s3 = requests.Session()
+    beacon("/terms", ua=CHROME + " legal", referrer="https://t.co/abc", session_=s3)
+    email3 = f"legal{RUN}@example.com"
+    sign_in(email3, s3)
+    check("first touch on a legal page attributes too", user_row(email3).signup_source == "x",
+          str(user_row(email3).signup_source))
 
     print("\n9. The admin endpoint")
     plain = sign_in(f"tplain{RUN}@example.com")
     check("anonymous -> 401", requests.get(f"{BASE}/api/admin/traffic", timeout=20).status_code == 401)
     check("a normal user -> 403", plain.get(f"{BASE}/api/admin/traffic", timeout=20).status_code == 403)
     t0 = a.get(f"{BASE}/api/admin/traffic?days=30", timeout=30).json()
-    keys = {"range", "windows", "totals", "live_now", "daily", "sources", "signup_sources",
+    keys = {"range", "windows", "totals", "funnel", "live_now", "daily", "sources", "signup_sources",
             "providers", "devices", "pages", "campaigns", "tracking_since", "users_total"}
     check("the response carries every section", keys <= set(t0), str(keys - set(t0)))
     check("30 days -> 30 daily points, oldest first", len(t0["daily"]) == 30
@@ -328,6 +455,11 @@ def part2() -> None:
           and len(a.get(f"{BASE}/api/admin/traffic?days=999", timeout=30).json()["daily"]) == 180)
     today = t0["daily"][-1]
     check("today's page views include what this test just generated", today["pageviews"] >= 8, str(today))
+    fun = t0["funnel"]
+    check("the funnel carries every step",
+          {"visitors", "new_users", "chart_users", "charts", "question_users", "questions"} <= set(fun), str(fun))
+    check("its visitors and sign-ups are the range totals",
+          (fun["visitors"], fun["new_users"]) == (t0["totals"]["visitors"], t0["totals"]["new_users"]), str(fun))
     check("visitors are unique people, not page views", today["visitors"] < today["pageviews"], str(today))
 
     from app.analytics import summary
