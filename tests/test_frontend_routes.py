@@ -67,6 +67,60 @@ def problems(source: str, table, where: str = "") -> tuple[int, list[str]]:
     return n, bad
 
 
+HOME_IDS = ("today-strip", "today-open", "today-city", "today-place", "today-results",
+            "today-tithi", "today-nak", "today-rahu", "sample-qa", "sample-q", "sample-a",
+            "sample-ask", "sample-ask-label", "home-cta", "free-badge")
+HOME_KEYS = ("homeCta", "todayTitle", "todayTithi", "todayNak", "todayRahu", "todayNow",
+             "todayChange", "todayCityPh", "todayOpen", "sampleTag", "sampleQ", "sampleA",
+             "sampleNote", "sampleAsk")
+
+
+def i18n_keys(app_js: str, lang: str) -> set[str]:
+    """Keys of one language block of app.js's I18N table (`en: {` … `hi: {` / `};`)."""
+    start = app_js.index(f"\n  {lang}: {{")
+    nxt = re.search(r"\n  [a-z]{2}: \{|\n\};", app_js[start + 5:])
+    block = app_js[start:start + 5 + nxt.start()] if nxt else app_js[start:]
+    return set(re.findall(r"(?:^|[\s,{])([A-Za-z_]\w*):\s", block))
+
+
+def home_value_checks() -> None:
+    """DIVASTRO-101: the home screen's Today strip, sample answer and clearer main
+    button are wired up, in both languages, and in the agreed order."""
+    print("\n3. Home screen shows value before the first tap (DIVASTRO-101)")
+    static = ROOT / "app" / "static"
+    html = (static / "index.html").read_text(encoding="utf-8")
+    app_js = (static / "app.js").read_text(encoding="utf-8")
+    tools_js = (static / "tools.js").read_text(encoding="utf-8")
+
+    missing = [i for i in HOME_IDS if f'id="{i}"' not in html]
+    check("every new home element is in index.html", not missing, str(missing))
+
+    home = html[html.index('id="stage-home"'):html.index('id="home-footer"')]
+    order = ["home-tagline", "home-cta", "today-strip", "open-milan", "sample-qa", "feat-grid"]
+    pos = [home.find(f'id="{i}"') for i in order]
+    check("order: tagline > main button > Today strip > tools > sample Q&A > features",
+          all(p >= 0 for p in pos) and pos == sorted(pos), str(dict(zip(order, pos))))
+
+    en, hi = i18n_keys(app_js, "en"), i18n_keys(app_js, "hi")
+    check("the language parser finds the real tables", len(en) > 100 and len(hi) > 100, f"{len(en)}/{len(hi)}")
+    check("every new string exists in English", not [k for k in HOME_KEYS if k not in en],
+          str([k for k in HOME_KEYS if k not in en]))
+    check("every new string exists in Hindi", not [k for k in HOME_KEYS if k not in hi],
+          str([k for k in HOME_KEYS if k not in hi]))
+
+    cta = re.search(r'\n    homeCta: "([^"]+)"', app_js)
+    check("the main button says the kundali is free and needs no sign-in",
+          bool(cta) and "free" in cta.group(1).lower() and "sign-in" in cta.group(1).lower(),
+          cta.group(1) if cta else "no homeCta")
+
+    # The strip must reuse the Panchang tool's API (no second computation) and
+    # remember the city defensively (localStorage throws in some private modes).
+    check("the Today strip calls the existing /api/panchang", "fetch(`/api/panchang?${params}`)" in tools_js)
+    check("the chosen city is remembered, inside try/catch",
+          re.search(r"try \{ localStorage\.setItem\(TODAY_KEY", tools_js) is not None)
+    check("a failed load hides the strip", "todayStrip.hidden = true" in tools_js)
+
+
 def main() -> int:
     from app.main import app
 
@@ -96,6 +150,8 @@ def main() -> int:
     check("every fetch()/api() call names a route (and method) that exists",
           not all_bad, "; ".join(all_bad))
     check("the scan is not vacuous", total > 40, f"{total} calls read")
+
+    home_value_checks()
 
     print("\n" + "=" * 60)
     if failures:

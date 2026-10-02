@@ -276,6 +276,144 @@
     q('#panchang-result').hidden = false;
   }
 
+  /* ------------------------------------------------- home: the Today strip */
+  // DIVASTRO-101. Of ~23 real visitors in a week, ~21 left the home screen without
+  // tapping anything: nothing on it was worth having by itself. Today's tithi,
+  // nakshatra and Rahu Kaal are what people check daily, cost no LLM tokens, and
+  // come from the same /api/panchang the Panchang tool above already calls, so
+  // there is no second computation to keep in step with this one.
+  //
+  // It lives here rather than in app.js because it reuses this file's place picker
+  // and opens the Panchang tool with the same city already chosen.
+  const TODAY_KEY = 'astro.todayCity';
+  const DELHI = { latitude: 28.6139, longitude: 77.2090, timezone: 'Asia/Kolkata', label: 'New Delhi, India' };
+  // The API speaks English names; Hindi visitors get the names they actually use.
+  // Same tables as app/astro/muhurat.py.
+  const PAKSHA_HI = { Shukla: 'शुक्ल', Krishna: 'कृष्ण' };
+  const TITHI_HI = {
+    Pratipada: 'प्रतिपदा', Dwitiya: 'द्वितीया', Tritiya: 'तृतीया', Chaturthi: 'चतुर्थी',
+    Panchami: 'पंचमी', Shashthi: 'षष्ठी', Saptami: 'सप्तमी', Ashtami: 'अष्टमी',
+    Navami: 'नवमी', Dashami: 'दशमी', Ekadashi: 'एकादशी', Dwadashi: 'द्वादशी',
+    Trayodashi: 'त्रयोदशी', Chaturdashi: 'चतुर्दशी', Purnima: 'पूर्णिमा', Amavasya: 'अमावस्या',
+  };
+  const NAK_HI = {
+    Ashwini: 'अश्विनी', Bharani: 'भरणी', Krittika: 'कृत्तिका', Rohini: 'रोहिणी',
+    Mrigashira: 'मृगशिरा', Ardra: 'आर्द्रा', Punarvasu: 'पुनर्वसु', Pushya: 'पुष्य',
+    Ashlesha: 'आश्लेषा', Magha: 'मघा', 'Purva Phalguni': 'पूर्वा फाल्गुनी',
+    'Uttara Phalguni': 'उत्तरा फाल्गुनी', Hasta: 'हस्त', Chitra: 'चित्रा', Swati: 'स्वाति',
+    Vishakha: 'विशाखा', Anuradha: 'अनुराधा', Jyeshtha: 'ज्येष्ठा', Mula: 'मूल',
+    'Purva Ashadha': 'पूर्वाषाढ़ा', 'Uttara Ashadha': 'उत्तराषाढ़ा', Shravana: 'श्रवण',
+    Dhanishta: 'धनिष्ठा', Shatabhisha: 'शतभिषा', 'Purva Bhadrapada': 'पूर्व भाद्रपद',
+    'Uttara Bhadrapada': 'उत्तर भाद्रपद', Revati: 'रेवती',
+  };
+
+  const todayStrip = q('#today-strip');
+  let todayPlace = DELHI;
+  let todayData = null;
+  let todaySeq = 0;                       // a slow reply for an old city must not overwrite a newer one
+
+  // Anything in storage was written by an older page (or by hand): use it only if it
+  // still looks like a place, else quietly fall back to Delhi.
+  try {
+    const saved = JSON.parse(localStorage.getItem(TODAY_KEY) || 'null');
+    if (saved && Number.isFinite(saved.latitude) && Number.isFinite(saved.longitude)
+        && typeof saved.label === 'string') todayPlace = saved;
+  } catch { /* private mode or bad JSON: Delhi */ }
+
+  // The panchang lists every tithi/nakshatra that touches the day; "today's" is the
+  // one running now, not the one at sunrise (they differ for much of the day).
+  const current = (rows) => {
+    const now = Date.now();
+    return (rows || []).find((r) => Date.parse(r.starts) <= now && now < Date.parse(r.ends))
+      || (rows || [])[0] || null;
+  };
+
+  function renderTodayStrip() {
+    if (!todayStrip) return;
+    const hi = typeof state !== 'undefined' && state.lang === 'hi';
+    const set = (sel, text) => { const el = q(sel); if (el) el.textContent = text; };
+    set('#today-title', tr('todayTitle', 'Today'));
+    set('#today-tithi-l', tr('todayTithi', 'Tithi'));
+    set('#today-nak-l', tr('todayNak', 'Nakshatra'));
+    set('#today-rahu-l', tr('todayRahu', 'Rahu Kaal'));
+    set('#today-city-name', String(todayPlace.label).split(',')[0]);
+    q('#today-city')?.setAttribute('aria-label', `${tr('todayChange', 'Change city')}: ${todayPlace.label}`);
+    q('#today-place')?.setAttribute('placeholder', tr('todayCityPh', 'Start typing a city…'));
+    if (!todayData) return;               // still loading: the skeleton stays
+
+    const ti = current(todayData.tithi);
+    const nk = current(todayData.nakshatra);
+    const rk = todayData.muhurta && todayData.muhurta.rahu_kaal;
+    const tithi = ti ? (hi ? `${PAKSHA_HI[ti.paksha] || ti.paksha} ${TITHI_HI[ti.name] || ti.name}`
+                           : (ti.label || ti.name)) : '—';
+    const nak = nk ? (hi ? NAK_HI[nk.name] || nk.name : nk.name) : '—';
+    const now = Date.now();
+    const inRahu = !!(rk && Date.parse(rk.start) <= now && now < Date.parse(rk.end));
+    const rahu = rk ? `${hhmm(rk.start)}–${hhmm(rk.end)}` : '—';
+    set('#today-tithi', tithi);
+    set('#today-nak', nak);
+    set('#today-rahu', inRahu ? `${rahu} · ${tr('todayNow', 'now')}` : rahu);
+    q('#today-rahu')?.parentElement.classList.toggle('now', inRahu);
+    q('#today-open')?.setAttribute('aria-label',
+      `${tr('todayOpen', "Open today's full panchang")}. ${tr('todayTithi', 'Tithi')}: ${tithi}. ` +
+      `${tr('todayNak', 'Nakshatra')}: ${nak}. ${tr('todayRahu', 'Rahu Kaal')}: ${rahu}.`);
+  }
+  // app.js calls this from applyLanguage, so the strip follows the EN / हिं switch.
+  window.renderTodayStrip = renderTodayStrip;
+
+  async function loadToday() {
+    if (!todayStrip) return;
+    const seq = ++todaySeq;
+    todayData = null;
+    todayStrip.classList.add('loading');
+    renderTodayStrip();
+    const params = new URLSearchParams({
+      latitude: todayPlace.latitude, longitude: todayPlace.longitude, timezone: todayPlace.timezone || '',
+    });
+    try {
+      const res = await fetch(`/api/panchang?${params}`);
+      if (!res.ok) throw new Error(String(res.status));
+      const data = await res.json();
+      if (seq !== todaySeq) return;
+      todayData = data;
+      todayStrip.classList.remove('loading');
+      renderTodayStrip();
+    } catch {
+      // A home screen that shows a broken box is worse than one without it.
+      if (seq === todaySeq) todayStrip.hidden = true;
+    }
+  }
+
+  if (todayStrip) {
+    const picker = q('#today-picker');
+    const cityBtn = q('#today-city');
+    placePicker(q('#today-place'), q('#today-results'), null);
+    const closePicker = () => { picker.hidden = true; cityBtn.setAttribute('aria-expanded', 'false'); };
+    cityBtn.addEventListener('click', () => {
+      picker.hidden = !picker.hidden;
+      cityBtn.setAttribute('aria-expanded', String(!picker.hidden));
+      if (!picker.hidden) { q('#today-place').value = ''; q('#today-place').focus(); }
+    });
+    q('#today-place').addEventListener('keydown', (e) => { if (e.key === 'Escape') closePicker(); });
+    q('#today-place').addEventListener('place:chosen', (e) => {
+      const p = e.detail;
+      todayPlace = { latitude: p.latitude, longitude: p.longitude, timezone: p.timezone, label: p.label };
+      try { localStorage.setItem(TODAY_KEY, JSON.stringify(todayPlace)); } catch { /* private mode */ }
+      closePicker();
+      loadToday();
+    });
+    // The strip is the way in to the full Panchang, for the same city.
+    q('#today-open').addEventListener('click', () => {
+      showStage('stage-panchang');
+      paPlace = todayPlace;
+      q('#pa-place').value = todayPlace.label;
+      q('#pa-chosen').hidden = true;
+      q('#pa-date').value = '';            // the strip is about today
+      loadPanchang();
+    });
+    loadToday();
+  }
+
   /* ---------------------------------------------------------------- muhurat */
   const muPick = placePicker(q('#mu-place'), q('#mu-results'), q('#mu-chosen'));
   let muPlace = null;
@@ -543,5 +681,24 @@
     `;
     q('#choghadiya-result').hidden = false;
     q('#choghadiya-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ------------------------------------------------------------- deep links */
+  // The server-rendered /panchang, /rahu-kaal, /choghadiya and /kundali-milan
+  // pages (app/seo_pages.py) link here as /?open=<tool>. Clicking the home card
+  // reuses exactly what a visitor's own tap would do, then the parameter is
+  // dropped so a reload or a shared link of the address bar starts clean.
+  const DEEP_LINKS = {
+    panchang: '#open-panchang', 'rahu-kaal': '#open-panchang',
+    choghadiya: '#open-choghadiya', muhurat: '#open-muhurat',
+    milan: '#open-milan', 'kundali-milan': '#open-milan',
+  };
+  const deepParams = new URLSearchParams(location.search);
+  const deepTarget = DEEP_LINKS[deepParams.get('open')];
+  if (deepTarget) {
+    q(deepTarget)?.click();
+    deepParams.delete('open');
+    history.replaceState({}, '', location.pathname +
+      (deepParams.toString() ? `?${deepParams}` : ''));
   }
 })();

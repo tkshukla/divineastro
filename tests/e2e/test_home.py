@@ -220,6 +220,85 @@ def never_wrong(p, browser, base: str) -> None:
     ctx.close()
 
 
+def today_and_sample(p, browser, base: str) -> None:
+    """DIVASTRO-101: the home screen shows something worth having before any tap —
+    today's panchang for the visitor's city and a sample answer — and both lead on."""
+    print("\n[Today strip and sample answer]")
+    phone = {"viewport": {"width": 412, "height": 915}, "is_mobile": True, "has_touch": True}
+    ctx = browser.new_context(**phone)
+    pg = Page(ctx.new_page(), base)
+    pg.open_home()
+    pg.page.wait_for_selector("#today-strip:not(.loading)", timeout=15000)
+    vals = [pg.page.inner_text(s).strip() for s in ("#today-tithi", "#today-nak", "#today-rahu")]
+    check("tithi, nakshatra and Rahu Kaal are filled in with no click", all(v and v != "—" for v in vals), str(vals))
+    check("Rahu Kaal reads as a time window", ":" in vals[2] and "–" in vals[2], vals[2])
+    check("the default city is New Delhi", pg.page.inner_text("#today-city-name").strip() == "New Delhi")
+    strip, cta, tools = pg.rect("#today-strip"), pg.rect("#home-cta"), pg.rect(".tool-row")
+    sample, feats = pg.rect("#sample-qa"), pg.rect("#feat-grid")
+    check("order on a phone: main button > Today > tools > sample > features",
+          cta["bottom"] <= strip["top"] and strip["bottom"] <= tools["top"]
+          and tools["bottom"] <= sample["top"] and sample["bottom"] <= feats["top"])
+    check("the strip is on the first screen (412x915)", strip["bottom"] <= 915, f"bottom {strip['bottom']:.0f}")
+    check("the main button says free and no sign-in", "no sign-in" in pg.page.inner_text("#home-cta"))
+    check("the sample is labelled as an example", pg.page.inner_text("#sample-qa-tag").strip().lower() == "example")
+
+    # Hindi
+    pg.page.click('.lang[data-lang="hi"]')
+    pg.page.wait_for_timeout(300)
+    check("Hindi: strip labels and names switch", pg.page.inner_text("#today-rahu-l").strip() == "राहु काल"
+          and any("ऀ" <= ch <= "ॿ" for ch in pg.page.inner_text("#today-tithi")))
+    check("Hindi: the sample is in Hindi", pg.page.inner_text("#sample-qa-tag").strip() == "उदाहरण"
+          and "अपना प्रश्न" in pg.page.inner_text("#sample-ask"))
+    pg.page.click('.lang[data-lang="en"]')
+
+    # Change the city: remembered across a reload.
+    pg.page.click("#today-city")
+    pg.page.fill("#today-place", "Mumbai")
+    pg.page.wait_for_selector("#today-results li", timeout=10000)
+    pg.page.click("#today-results li >> nth=0")
+    pg.page.wait_for_selector("#today-strip:not(.loading)", timeout=15000)
+    city = pg.page.inner_text("#today-city-name").strip()
+    check("picking a city updates the strip", "Mumbai" in city, city)
+    pg.open_home()
+    pg.page.wait_for_selector("#today-strip:not(.loading)", timeout=15000)
+    check("the city is remembered after a reload", "Mumbai" in pg.page.inner_text("#today-city-name"))
+
+    # Tap the strip -> the full Panchang, for that city.
+    pg.page.tap("#today-open")
+    pg.page.wait_for_selector("#stage-panchang.active #panchang-result .pa-limbs", timeout=15000)
+    check("tapping the strip opens the full Panchang for the same city",
+          "Mumbai" in pg.page.inner_text("#panchang-result"))
+
+    # Sample CTA, signed out -> sign-in.
+    pg.page.evaluate("showStage('stage-home')")
+    pg.page.tap("#sample-ask")
+    pg.page.wait_for_selector(".modal .oauth-btn", timeout=5000)
+    check("signed out: 'Ask your own question' opens sign-in", True)
+    check("no console errors", not pg.console_errors, "; ".join(pg.console_errors[:2]))
+    check("no CSP violations", not pg.csp_violations())
+    ctx.close()
+
+    # Signed in with no chart -> birth form, the same path as the free-questions box.
+    ctx = browser.new_context(**phone)
+    pg = Page(ctx.new_page(), base)
+    pg.sign_in("sampleask@example.com", "Sample Ask")
+    pg.open_home()
+    pg.page.tap("#sample-ask")
+    pg.page.wait_for_selector("#stage-birth.active", timeout=5000)
+    check("signed in with no chart: 'Ask your own question' opens the birth form", True)
+    ctx.close()
+
+    # The API fails -> no strip at all, and nothing else breaks.
+    ctx = browser.new_context(**phone)
+    pg = Page(ctx.new_page(), base)
+    pg.page.route("**/api/panchang?*", lambda route: route.fulfill(status=500, body="Internal Server Error"))
+    pg.open_home()
+    pg.page.wait_for_timeout(1500)
+    check("a failing panchang API hides the strip", pg.page.is_hidden("#today-strip"))
+    check("...and the page still works (main button present)", pg.page.is_visible("#home-cta"))
+    ctx.close()
+
+
 def main() -> int:
     phones = {
         "pixel7_412x915": {"viewport": {"width": 412, "height": 915}, "is_mobile": True, "has_touch": True},
@@ -237,6 +316,7 @@ def main() -> int:
                 never_wrong(p, browser, base)
                 tappable(p, browser, base)
                 festival_lights(p, browser, base)
+                today_and_sample(p, browser, base)
             # A server configured for 25: the page must say 25 — proof it is not hard-coded.
             with server({"ASTRO_FREE_QUESTIONS": "25"}) as base:
                 run_profile(p, browser, base, "server says 25 (pixel7)", phones["pixel7_412x915"], expect_n=25)

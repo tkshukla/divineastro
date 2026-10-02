@@ -139,7 +139,9 @@ let providers = null;
 async function loadGateButtons() {
   const box = $('#gate-actions');
   try {
-    if (!providers) providers = (await api('/api/auth/providers')).providers || [];
+    // Only redirect providers can be a plain link; inline ones (username,
+    // phone) need the main site's sign-in sheet.
+    if (!providers) providers = ((await api('/api/auth/providers')).providers || []).filter((p) => !p.inline);
     box.innerHTML = providers.map((p) =>
       `<a class="primary" href="/api/auth/${esc(p.key)}/start?next=/feedback">` +
       `${esc(t().signInWith)} ${esc(p.label)}</a>`).join('');

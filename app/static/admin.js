@@ -110,7 +110,9 @@ function showGate(title, msg, offerSignIn) {
 
   const box = $('#gate-actions');
   api('/api/auth/providers').then(({ providers, dev_login }) => {
-    (providers || []).forEach((p) => {
+    // Inline providers (username, phone) sign in inside the main site's sheet,
+    // not by redirect — and admins are recognised by email, which they lack.
+    (providers || []).filter((p) => !p.inline).forEach((p) => {
       const a = document.createElement('a');
       a.className = 'primary as-button';
       a.href = `/api/auth/${p.key}/start?next=/admin`;
@@ -571,7 +573,7 @@ async function loadUsers() {
             <tr data-id="${u.id}">
               <td>
                 <b>${esc(u.name || '—')}</b><br>
-                <span class="muted">${esc(u.email || u.provider)}</span>
+                <span class="muted">${esc(u.login_label || u.email || u.provider)}</span>
                 ${u.blocked ? '<span class="pill st-deleted" style="margin-left:4px;">blocked</span>' : ''}
                 ${u.is_admin ? '<span class="pill delivered" style="margin-left:4px;">admin</span>' : ''}
                 ${u.blocked && u.blocked_reason ? `<div class="muted" style="font-size:0.78rem;">Reason: ${esc(u.blocked_reason)}</div>` : ''}
@@ -703,7 +705,7 @@ function renderUserModal(d) {
     : '<p class="empty">No feedback sent.</p>';
 
   $('#um-body').innerHTML = `
-    <h3 id="um-title" style="margin:0 0 4px;">${esc(u.name || u.email || 'User')}
+    <h3 id="um-title" style="margin:0 0 4px;">${esc(u.name || u.email || u.login_label || 'User')}
       ${u.blocked ? '<span class="pill st-deleted">blocked</span>' : ''}
       ${u.is_admin ? '<span class="pill delivered">admin</span>' : ''}</h3>
     <p class="pane-help" style="margin:0 0 14px;">${esc(u.email || '—')}${u.phone ? ` &middot; ${esc(u.phone)}` : ''}
@@ -736,7 +738,7 @@ function renderUserModal(d) {
     const fail = (m) => { err.textContent = m; err.hidden = false; };
     if (note.length < 3) return fail('Add a short note saying why — it is kept on the record.');
 
-    const who = u.email || u.name || `user ${u.id}`;
+    const who = u.email || u.name || u.login_label || `user ${u.id}`;
     let label, path, payload;
     if (action.value === 'product') {
       const p = (umProducts || []).find((x) => x.sku === $('#um-sku').value);
@@ -791,11 +793,11 @@ function renderUserModal(d) {
     const reason = $('#um-reason').value.trim();
     const err = $('#um-block-err');
     if (reason.length < 3) { err.textContent = 'Give a reason — it is kept on the account.'; err.hidden = false; return; }
-    if (confirm(`Block ${u.email || u.name}? They will be signed out and unable to use the site.`)) setBlocked(true, reason);
+    if (confirm(`Block ${u.email || u.name || u.login_label}? They will be signed out and unable to use the site.`)) setBlocked(true, reason);
   };
   const unblockBtn = $('#um-unblock');
   if (unblockBtn) unblockBtn.onclick = () => {
-    if (confirm(`Unblock ${u.email || u.name}?`)) setBlocked(false, '');
+    if (confirm(`Unblock ${u.email || u.name || u.login_label}?`)) setBlocked(false, '');
   };
 }
 
@@ -1236,6 +1238,28 @@ function renderDailyTable(days) {
   box.appendChild(t);
 }
 
+// Each step as a bar against visitors, with the step-to-step conversion beside it.
+function renderFunnel(f) {
+  if (!f) return;
+  const steps = [
+    { label: 'Visitors', count: f.visitors, sub: 'daily unique visitors, summed' },
+    { label: 'Signed up', count: f.new_users, sub: 'new accounts' },
+    { label: 'Saved a chart', count: f.chart_users, sub: `${fmt(f.charts)} charts saved` },
+    { label: 'Asked a question', count: f.question_users, sub: `${fmt(f.questions)} questions asked` },
+  ];
+  barList($('#bl-funnel'), steps, {
+    raw: true,
+    value: (r) => {
+      const i = steps.indexOf(r), prev = i > 0 ? steps[i - 1].count : 0;
+      return i === 0 ? `${fmt(r.count)} · ${r.sub}`
+        : `${fmt(r.count)} · ${r.sub} · ${prev ? pct(r.count / prev) : '—'} of the step before`;
+    },
+  });
+  $('#tr-funnel-note').textContent = 'Saving a chart and asking need an account; a chart cast without signing in is not stored. ' +
+    'The later steps count everyone active in the range, not only its new users, so a step can be larger than the one before. ' +
+    'Your own charts and questions are left out.';
+}
+
 function renderTraffic(d) {
   const tot = d.totals, w = d.windows;
   const tiles = $('#tr-tiles');
@@ -1254,6 +1278,8 @@ function renderTraffic(d) {
     ? `Visit tracking began on ${d.tracking_since}; earlier visits were not recorded (new-user counts go back further, since they come from sign-up dates). `
     : 'No visits have been recorded yet. Load the public site in a private window to see the first one — your own signed-in visits are never counted. ';
   $('#tr-note').textContent = `${since}A visitor is counted once per day, so a multi-day total is a sum of daily visitors. ` +
+    'A visit is counted only when the page\'s own script runs, so scanners that fetch the page without running it are left out ' +
+    '(visits before 3 Oct 2026 were counted on the page fetch and include them). ' +
     'Bots, Do-Not-Track requests and your own visits are excluded; no IP address or browser string is stored. ' +
     'Only full page loads are counted, not clicks inside the app.';
 
@@ -1269,6 +1295,7 @@ function renderTraffic(d) {
   draw();
   ['#chart-visitors', '#chart-new'].forEach((s) => { $(s)._redraw = draw; });
 
+  renderFunnel(d.funnel);
   barList($('#bl-sources'), d.sources.filter((r) => r.label !== 'internal'));
   barList($('#bl-signup'), d.signup_sources, { color: 'orange' });
   barList($('#bl-pages'), d.pages, {

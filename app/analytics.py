@@ -2,20 +2,34 @@
 
 What is recorded, and what deliberately is not
 ----------------------------------------------
-A visit is one full page load of a public page. We store: when, which page,
+A visit is one full page load of a public page, reported by that page's own
+JavaScript (see static/visit.js -> POST /api/visit). We store: when, which page,
 where it came from (a classified source such as "google" or "whatsapp", plus any
 utm_medium / utm_campaign), a device class, and a `visitor` hash.
+
+Why a beacon and not the HTML request: until DIVASTRO-99 a visit was recorded
+when the server sent the HTML. Headless scanners with ordinary desktop-Chrome
+user-agents, from residential-looking addresses, passed every filter below and
+inflated "visitors" about five-fold (117 counted vs ~23 real browsers in the
+week to 2 Oct 2026; of 413 addresses that fetched / only 29 ran the page's JS).
+Those scanners do not execute JavaScript, so counting from the page's script
+removes them without any fingerprinting. The cost is that a person with JS
+disabled is not counted; the site does not work without JS anyway.
+
+The beacon carries the page's own path, `document.referrer` and query string.
+The beacon request's Referer header is always our own site, so classifying it
+would make every visit "internal".
 
 We do NOT store the IP address, the user-agent string, or which user it was.
 The hash is HMAC(server secret, IST-date | ip | user-agent), truncated. It lets
 us count one person once per day, but it changes every day (so nobody can be
 followed across days) and the IP cannot be recovered from it. Requests that send
-Do-Not-Track / Global-Privacy-Control, bots, link-preview fetchers, prefetches,
+Do-Not-Track / Global-Privacy-Control, bots, link-preview fetchers, prerenders,
 and the administrator's own signed-in visits are not recorded at all.
 
 Where a visitor first came from is remembered in ONE small first-party cookie so
 it can be stamped on the account if they sign up later ("where do new users come
-from"). Nothing else is put in it.
+from"). Nothing else is put in it. It is set on the beacon's response.
 
 Known limits (also shown in the admin panel): only full page loads are counted,
 not navigation inside the single-page app; and because the visitor hash rotates
@@ -33,17 +47,17 @@ import logging
 import os
 import random
 import re
+import time
 from collections import Counter, defaultdict
-from urllib.parse import urlsplit
+from urllib.parse import parse_qsl, urlsplit
 from zoneinfo import ZoneInfo
 
 from fastapi import Request
-from starlette.datastructures import MutableHeaders
 from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
-from . import auth
-from .db import User, Visit, session as db_session, utcnow
+from . import auth, seo_cities
+from .db import BirthProfile, QuestionLog, User, Visit, session as db_session, utcnow
 
 log = logging.getLogger(__name__)
 
@@ -235,19 +249,103 @@ def _is_admin_session(db: Session, token: str | None) -> bool:
     return bool(user is not None and user.is_admin)
 
 
-def _trackable(request: Request) -> tuple[str, str] | None:
-    """(user_agent, ip) if this request should be counted, else None."""
-    if request.method != "GET":
+# The public pages a beacon may report. Anything else (an /api path, /admin, a
+# made-up URL) is garbage or abuse and is ignored, so a forged beacon can at
+# worst add a row for a page that really exists.
+PUBLIC_PAGES = frozenset({"/", "/feedback", "/terms", "/privacy", "/refund", "/contact"})
+# The SEO tool pages (seo_pages.py): the bare tool path, or tool + a real city slug.
+SEO_TOOLS = frozenset({"/panchang", "/rahu-kaal", "/choghadiya", "/kundali-milan"})
+
+
+def is_public_page(path: str) -> bool:
+    if path in PUBLIC_PAGES or path in SEO_TOOLS:
+        return True
+    tool, _, slug = path.rpartition("/")
+    return tool in SEO_TOOLS and tool != "/kundali-milan" and seo_cities.get(slug) is not None
+MAX_BEACON_BYTES = 2048          # path + referrer + query string; real ones are a few hundred
+_MAX_FIELD = 1000                # per string field, before cleaning
+_QUERY_KEYS = ("utm_source", "utm_medium", "utm_campaign", "ref", "source", "welcome")
+
+# /api/visit is unauthenticated, so one address may only report so many page
+# loads a minute. Generous on purpose: Indian mobile carriers put many people
+# behind one CGNAT address. Kept in process memory only (the app runs one
+# worker), never stored; like is_cloud_ip, the IP is used and forgotten.
+RATE_WINDOW_S = 60.0
+RATE_MAX = 60
+_rate: dict[str, tuple[float, int]] = {}
+
+
+_RATE_KEYS_MAX = 10_000
+
+
+def _rate_key(ip: str) -> str:
+    """The address, or for IPv6 its /64: one host is routinely handed a whole /64
+    and could otherwise rotate through it to dodge the limit."""
+    try:
+        addr = ipaddress.ip_address(ip)
+    except ValueError:
+        return ip
+    if addr.version == 6:
+        return str(ipaddress.ip_network(f"{addr}/64", strict=False))
+    return ip
+
+
+def rate_ok(ip: str, now: float | None = None) -> bool:
+    """True if this address may report another page load in the current window.
+    Called from the event loop only, so the dict needs no lock."""
+    now = time.monotonic() if now is None else now
+    key = _rate_key(ip)
+    start, n = _rate.get(key, (now, 0))
+    if now - start >= RATE_WINDOW_S:
+        start, n = now, 0
+    if n >= RATE_MAX:
+        return False
+    _rate[key] = (start, n + 1)
+    if len(_rate) > _RATE_KEYS_MAX:               # a scan from many addresses: drop stale entries
+        for k in [k for k, (t, _) in _rate.items() if now - t >= RATE_WINDOW_S]:
+            del _rate[k]
+        if len(_rate) > _RATE_KEYS_MAX // 2:      # still huge: forget it all rather than rescan every request
+            _rate.clear()
+    return True
+
+
+def parse_beacon(data: object) -> tuple[str, str, dict[str, str]] | None:
+    """(path, referrer, query) from a beacon body, or None if it is not one of ours.
+
+    Only the few query keys classify_source() reads are kept, so a long or
+    hostile query string never gets further than this.
+    """
+    if not isinstance(data, dict):
         return None
-    path = request.url.path
-    if path.startswith(("/api", "/static", "/admin", "/docs", "/redoc", "/openapi")):
+    path, ref, q = data.get("path"), data.get("ref", ""), data.get("q", "")
+    if not all(isinstance(x, str) and len(x) <= _MAX_FIELD for x in (path, ref, q)):
         return None
+    path = path.rstrip("/") or "/"
+    if not is_public_page(path):
+        return None
+    try:
+        pairs = parse_qsl(q.lstrip("?"), keep_blank_values=True, max_num_fields=40)
+    except ValueError:
+        return None
+    query: dict[str, str] = {}
+    for k, v in pairs:
+        if k in _QUERY_KEYS:
+            query.setdefault(k, v)
+    return path, ref, query
+
+
+def _countable(request: Request) -> tuple[str, str] | None:
+    """(user_agent, ip) if the browser behind this beacon should be counted, else None.
+
+    The beacon is a same-origin request from the page, so DNT / GPC, the
+    user-agent, the address and the session cookie are the visitor's own.
+    """
     h = request.headers
     if h.get("dnt") == "1" or h.get("sec-gpc") == "1":
         return None
+    # A prerendered page runs its scripts before (or without) being seen; visit.js
+    # waits for activation, and this catches any browser that does not.
     if h.get("sec-purpose", "").startswith("prefetch") or h.get("purpose") == "prefetch":
-        return None
-    if "welcome" in request.query_params:          # the landing after signing in
         return None
     ua = h.get("user-agent", "")
     if is_bot(ua):
@@ -258,75 +356,44 @@ def _trackable(request: Request) -> tuple[str, str] | None:
     return ua, ip
 
 
-class SourceCookieMiddleware:
-    """Adds the first-touch cookie to a response when page_visit() asked for one.
+def record_visit(request: Request, path: str, referrer: str,
+                 query: dict[str, str]) -> str | None:
+    """Count one page load reported by a beacon. Returns the first-touch
+    Set-Cookie value to send back, or None.
 
-    Why this exists: a FastAPI dependency can set a cookie on its `Response`
-    parameter, but FastAPI discards that when the route returns its own
-    `HTMLResponse` (as every page route here does) — so the cookie silently never
-    arrived and every sign-up was attributed to "unknown". The dependency instead
-    leaves the header in `scope`, and this adds it to the outgoing response.
-
-    Pure ASGI on purpose (not BaseHTTPMiddleware): it must not sit in the way of
-    the streaming chat endpoint, and it does nothing unless a header was asked for.
-    """
-
-    def __init__(self, app):
-        self.app = app
-
-    async def __call__(self, scope, receive, send):
-        if scope["type"] != "http":
-            return await self.app(scope, receive, send)
-        scope["astro_cookies"] = []
-
-        async def send_with_cookies(message):
-            if message["type"] == "http.response.start" and scope["astro_cookies"]:
-                headers = MutableHeaders(scope=message)
-                for value in scope["astro_cookies"]:
-                    headers.append("set-cookie", value)
-            await send(message)
-
-        await self.app(scope, receive, send_with_cookies)
-
-
-def page_visit(request: Request) -> None:
-    """FastAPI dependency for the public HTML pages: count the visit and, on the
-    first one, ask for the first-touch source cookie (see SourceCookieMiddleware).
-
-    A dependency on those few routes (rather than a global middleware) keeps the
-    tracking away from the streaming chat endpoint. It must never break the page,
-    so every failure is swallowed and logged.
+    Never raises: analytics must not be able to break the page, so every failure
+    is swallowed and logged.
     """
     try:
-        seen = _trackable(request)
-        if seen is None:
-            return
+        seen = _countable(request)
+        if seen is None or "welcome" in query:     # ?welcome is the landing after signing in
+            return None
         ua, ip = seen
-        query = dict(request.query_params)
         source, medium, campaign = classify_source(
-            request.headers.get("referer", ""), query, own_hosts(request.url.hostname or ""))
+            referrer, query, own_hosts(request.url.hostname or ""))
 
-        # First-touch: only the first external source is remembered. "internal"
-        # (a page-to-page move) never overwrites or seeds it.
-        if SRC_COOKIE not in request.cookies and source != "internal":
-            cookie = (f"{SRC_COOKIE}={source}|{campaign}; Max-Age={SRC_COOKIE_MAX_AGE}; "
-                      "Path=/; HttpOnly; SameSite=lax")
-            if request.url.scheme == "https":
-                cookie += "; Secure"
-            request.scope.setdefault("astro_cookies", []).append(cookie)
-
-        path = request.url.path.rstrip("/") or "/"
         with db_session() as db:
             if _is_admin_session(db, request.cookies.get(auth.COOKIE)):
-                return                              # the operator's own visits don't count
+                return None                         # the operator's own visits don't count
             db.add(Visit(
                 path=path[:200], source=source, medium=medium, campaign=campaign,
                 device=device_class(ua), visitor=visitor_hash(ip, ua)))
             db.commit()
             if random.randrange(PURGE_ONE_IN) == 0:
                 purge_old(db)
+
+        # First-touch: only the first external source is remembered. "internal"
+        # (a page-to-page move) never overwrites or seeds it.
+        if SRC_COOKIE in request.cookies or source == "internal":
+            return None
+        cookie = (f"{SRC_COOKIE}={source}|{campaign}; Max-Age={SRC_COOKIE_MAX_AGE}; "
+                  "Path=/; HttpOnly; SameSite=lax")
+        if request.url.scheme == "https":
+            cookie += "; Secure"
+        return cookie
     except Exception:
         log.warning("visit tracking failed", exc_info=True)
+        return None
 
 
 def purge_old(db: Session) -> int:
@@ -393,6 +460,31 @@ def _totals(daily: list[dict], since: str | None = None) -> dict:
     u = sum(d["new_users"] for d in daily)
     return {"visitors": v, "pageviews": p, "new_users": u,
             "signup_rate": signup_rate(daily, since)}
+
+
+def funnel(db: Session, start_utc: dt.datetime, visitors: int, new_users: int) -> dict:
+    """Visitors -> sign-ups -> people who saved a chart -> people who asked, for
+    the window starting at `start_utc`.
+
+    Saving a chart and asking a question both need an account, so sign-up is the
+    step before them. A chart cast without signing in is not stored anywhere, so
+    "saved a chart" is the nearest measurable step. The later steps count
+    everyone active in the window, not only that window's new users, so they are
+    not strictly a subset of the step before. The administrator's own charts and
+    questions are left out, like their visits.
+    """
+    def active(model) -> tuple[int, int]:
+        rows, people = db.execute(
+            select(func.count(model.id), func.count(func.distinct(model.user_id)))
+            .join(User, User.id == model.user_id)
+            .where(model.created_at >= start_utc, User.is_admin.is_(False))).one()
+        return rows or 0, people or 0
+
+    charts, chart_users = active(BirthProfile)
+    questions, question_users = active(QuestionLog)
+    return {"visitors": visitors, "new_users": new_users,
+            "chart_users": chart_users, "charts": charts,
+            "question_users": question_users, "questions": questions}
 
 
 def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict:
@@ -475,6 +567,10 @@ def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict
             if campaign:
                 camp_counter[campaign] += 1
 
+    totals = _totals(daily, since_day.isoformat() if since_day else None)
+    range_start = dt.datetime.combine(
+        today - dt.timedelta(days=n - 1), dt.time.min, IST).astimezone(dt.timezone.utc)
+
     live_cut = now - dt.timedelta(minutes=5)
     live_now = db.execute(select(func.count(func.distinct(Visit.visitor)))
                           .where(Visit.ts >= live_cut)).scalar_one() or 0
@@ -484,7 +580,8 @@ def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict
     return {
         "range": {"days": n, "from": daily[0]["date"], "to": daily[-1]["date"], "tz": "Asia/Kolkata"},
         "windows": {"today": window(1), "d7": window(7), "d30": window(30)},
-        "totals": _totals(daily, since_day.isoformat() if since_day else None),
+        "totals": totals,
+        "funnel": funnel(db, range_start, totals["visitors"], totals["new_users"]),
         "live_now": live_now,
         "daily": daily,
         "sources": _top(src_counter),

@@ -92,7 +92,9 @@ const I18N = {
     savedSub: "Open one with a tap, or cast a new chart below.",
     castAnother: "+ Cast a new chart",
     homeHeadline: "Know your kundali. Ask anything.",
-    homeCta: "Get my free kundali reading",
+    // Casting a chart needs no account (only asking the AI does); say so, because
+    // "reading" alone read like the start of a sign-up wall (DIVASTRO-101).
+    homeCta: "Get my free kundali — no sign-in needed",
     homeBlurb: "Your birth chart, cast to the exact minute — with answers in Hindi or English, "
              + "drawn from your own planets and dashas.",
     freeBadge: "First {n} questions FREE",
@@ -215,6 +217,19 @@ const I18N = {
     timingsL: "Timings",
     until: "until",
     none: "none today",
+    // ---- DIVASTRO-101: home screen Today strip + sample question ----
+    todayTitle: "Today", todayTithi: "Tithi", todayNak: "Nakshatra", todayRahu: "Rahu Kaal",
+    todayNow: "now", todayChange: "Change city", todayCityPh: "Start typing a city…",
+    todayOpen: "Open today's full panchang",
+    sampleTag: "Example",
+    sampleQ: "When will my career pick up? I have felt stuck for two years.",
+    sampleA: "Your 10th lord Saturn sits strong in its own sign, which favours a steady rise "
+           + "over sudden jumps. The stuck feeling matches your Rahu antardasha, which tends to "
+           + "scatter effort. When it ends, Jupiter's antardasha begins and looks directly at "
+           + "your 10th house — that is the window to push for a new role. Until then, build "
+           + "skills and keep your work visible.",
+    sampleNote: "Every answer is read from the person's own chart and dashas.",
+    sampleAsk: "Ask your own question",
   },
   hi: {
     tagline: "स्विस एफ़ेमेरिस की सटीकता, वैदिक विवेचन — आपकी कुंडली, सही ढंग से।",
@@ -265,7 +280,7 @@ const I18N = {
     savedSub: "किसी पर क्लिक करके पढ़ें, या नीचे नई कुंडली बनाएँ।",
     castAnother: "+ नई कुंडली बनाएँ",
     homeHeadline: "अपनी कुंडली जानें। कुछ भी पूछें।",
-    homeCta: "मेरी निःशुल्क कुंडली देखें",
+    homeCta: "मेरी निःशुल्क कुंडली देखें — साइन-इन की ज़रूरत नहीं",
     homeBlurb: "सटीक समय पर बनी आपकी जन्म कुंडली — आपके अपने ग्रहों और दशाओं पर आधारित उत्तर, "
              + "हिंदी या अंग्रेज़ी में।",
     freeBadge: "पहले {n} प्रश्न बिल्कुल मुफ़्त",
@@ -388,6 +403,19 @@ const I18N = {
     timingsL: "शुभ-अशुभ समय",
     until: "तक",
     none: "आज नहीं है",
+    // ---- DIVASTRO-101: home screen Today strip + sample question ----
+    todayTitle: "आज", todayTithi: "तिथि", todayNak: "नक्षत्र", todayRahu: "राहु काल",
+    todayNow: "अभी", todayChange: "शहर बदलें", todayCityPh: "शहर का नाम लिखना शुरू करें…",
+    todayOpen: "आज का पूरा पंचांग खोलें",
+    sampleTag: "उदाहरण",
+    sampleQ: "मेरा करियर कब आगे बढ़ेगा? दो साल से सब अटका हुआ लगता है।",
+    sampleA: "आपके दशमेश शनि अपनी ही राशि में बलवान हैं — यह अचानक छलाँग के बजाय धीमी, "
+           + "स्थिर उन्नति देता है। अटके होने का अनुभव आपकी राहु अंतर्दशा से मेल खाता है, जो "
+           + "प्रयासों को बिखेर देती है। इसके समाप्त होते ही गुरु की अंतर्दशा आरंभ होगी, जिसकी "
+           + "सीधी दृष्टि आपके दशम भाव पर है — नई भूमिका के लिए प्रयास का वही समय है। तब तक "
+           + "कौशल बढ़ाइए और अपने काम को सबके सामने रखिए।",
+    sampleNote: "हर उत्तर व्यक्ति की अपनी कुंडली और दशाओं से पढ़ा जाता है।",
+    sampleAsk: "अपना प्रश्न पूछें",
   },
 };
 
@@ -937,6 +965,7 @@ function applyLanguage() {
   set("#home-cta", t("homeCta"));
   for (let i = 1; i <= 6; i++) set(`#feat-${i}`, t(`feat${i}`));
   renderFreeBadge();
+  renderHomeValue();      // DIVASTRO-101 block at the end of this file
 
   // Tools buttons
   set("#tool-milan-name", t("toolMilanName"));
@@ -2779,4 +2808,33 @@ $("#generate-pdf-hi")?.addEventListener("click", () => {
     window.location.href = `/api/pdf/chart/${state.sessionId}?lang=hi`;
     $("#kundali-pdf-modal").style.display = "none";
   }
+});
+
+/* ============================================================
+   DIVASTRO-101 — home screen: show value before the first tap.
+   In a week of real traffic ~21 of ~23 visitors left the home screen without
+   doing anything. Kept as one self-contained block (plus one call in
+   applyLanguage) so the parallel analytics, SEO and sign-in work merges cleanly.
+   The Today strip's data and city picker live in tools.js beside the Panchang
+   tool, whose API and place search they reuse; this block owns the sample
+   question's copy and its call to action.
+   ============================================================ */
+function renderHomeValue() {
+  const set = (sel, text) => { const el = $(sel); if (el) el.textContent = text; };
+  set("#sample-qa-tag", t("sampleTag"));
+  set("#sample-q", t("sampleQ"));
+  set("#sample-a", t("sampleA"));
+  set("#sample-note", t("sampleNote"));
+  set("#sample-ask-label", t("sampleAsk"));
+  // tools.js loads after this file, so on the very first call it is not there yet;
+  // it renders itself once loaded, and every later language switch reaches it here.
+  if (typeof window.renderTodayStrip === "function") window.renderTodayStrip();
+}
+
+// "Ask your own question" goes exactly where the free-questions box goes: signed out
+// it opens sign-in; signed in it opens the chat (goToChat sends someone with no chart
+// yet to the birth form first, since an answer needs a chart).
+$("#sample-ask")?.addEventListener("click", () => {
+  if (typeof acct !== "undefined" && acct.user) goToChat();
+  else if (typeof openSignIn === "function") openSignIn();
 });
