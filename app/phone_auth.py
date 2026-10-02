@@ -18,31 +18,23 @@ The flow is two calls:
   OTP_MAX_ATTEMPTS times, before OTP_TTL_SECONDS runs out; on success find or
   create the account.
 
-Pending codes live in memory, like the password-login limiter in auth.py:
-production is one process (`--workers 1`), so there is nothing to share, and
-the worst a restart does is make someone tap "resend". The codes are HMAC'd
-with ASTRO_SECRET_KEY all the same, so a memory dump or a stray debug print
-never shows one. If this ever scales past one worker, the pending codes and
-the limiter stores have to move to the database together.
+The code itself — generation, HMAC storage, rate limits, attempt counting —
+lives in app/otp.py, shared with email sign-in (DIVASTRO-104). This module
+keeps what is particular to SMS: numbers, senders, and the wording.
 """
 
 from __future__ import annotations
 
-import hashlib
-import hmac
 import logging
 import os
 import re
-import secrets
-import time
-from dataclasses import dataclass
 
 import httpx
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import auth
+from . import auth, otp
 from .db import CreditEntry, EntryKind, User, grant, utcnow
 
 log = logging.getLogger("astro.phone_auth")
@@ -61,21 +53,12 @@ SEND_PER_NUMBER_DAILY = (10, 24 * 60 * 60)
 SEND_PER_IP = (10, 60 * 60)
 VERIFY_FAILS_PER_IP = (20, 15 * 60)
 
-_SENDS_BY_NUMBER: dict[str, list[float]] = {}
-_SENDS_BY_NUMBER_DAILY: dict[str, list[float]] = {}
-_SENDS_BY_IP: dict[str, list[float]] = {}
-_VERIFY_FAILS_BY_IP: dict[str, list[float]] = {}
-
-
-@dataclass
-class _Pending:
-    digest: str
-    sent_at: float
-    expires_at: float
-    attempts: int = 0
-
-
-_PENDING: dict[str, _Pending] = {}
+_BOOK = otp.CodeBook(
+    ttl=OTP_TTL_SECONDS, max_attempts=OTP_MAX_ATTEMPTS, cooldown=RESEND_COOLDOWN_SECONDS,
+    per_key=SEND_PER_NUMBER, per_key_daily=SEND_PER_NUMBER_DAILY, per_ip=SEND_PER_IP,
+    fails_per_ip=VERIFY_FAILS_PER_IP, digits=OTP_DIGITS)
+# Number -> pending code. The book's own dict, named here for tests to inspect.
+_PENDING = _BOOK.pending
 
 
 # --------------------------------------------------------------------------
@@ -236,13 +219,24 @@ def enabled() -> bool:
 # The flow
 # --------------------------------------------------------------------------
 
-def _digest(number: str, code: str) -> str:
-    return hmac.new(auth.SECRET.encode(), f"{number}|{code}".encode(),
-                    hashlib.sha256).hexdigest()
-
-
-def _too_many(what: str) -> HTTPException:
-    return HTTPException(429, f"Too many {what}. Please wait a few minutes and try again.")
+def _refusal(r: otp.Refused) -> HTTPException:
+    """Word a CodeBook refusal for the SMS flow."""
+    msg = {
+        "cooldown": f"A code was just sent. You can ask for another in {r.info.get('wait')} seconds.",
+        "ip_sends": "Too many codes requested from this connection. "
+                    "Please wait a few minutes and try again.",
+        "key_sends": "Too many codes sent to this number. Please wait a few minutes and try again.",
+        "send_failed": "We couldn't send the SMS just now. Please try again "
+                       "in a minute, or sign in another way.",
+        "ip_fails": "Too many wrong codes from this connection. "
+                    "Please wait a few minutes and try again.",
+        "expired": "That code has expired. Please ask for a new one.",
+        "burned": "Too many wrong codes. Please ask for a new one.",
+    }.get(r.reason)
+    if r.reason == "wrong":
+        left = r.info.get("left", 0)
+        msg = f"That code is not right. {left} {'try' if left == 1 else 'tries'} left."
+    return HTTPException(r.status, msg or "Please try again.")
 
 
 def start(raw_number: str, ip: str) -> dict:
@@ -251,30 +245,10 @@ def start(raw_number: str, ip: str) -> dict:
     if sms is None:
         raise HTTPException(404, "Not found.")
     number = normalise(raw_number)
-
-    now = time.monotonic()
-    pending = _PENDING.get(number)
-    if pending and now - pending.sent_at < RESEND_COOLDOWN_SECONDS:
-        wait = int(RESEND_COOLDOWN_SECONDS - (now - pending.sent_at)) + 1
-        raise HTTPException(429, f"A code was just sent. You can ask for another in {wait} seconds.")
-    if auth.throttled(_SENDS_BY_IP, ip, *SEND_PER_IP):
-        raise _too_many("codes requested from this connection")
-    if (auth.throttled(_SENDS_BY_NUMBER, number, *SEND_PER_NUMBER)
-            or auth.throttled(_SENDS_BY_NUMBER_DAILY, number, *SEND_PER_NUMBER_DAILY)):
-        raise _too_many("codes sent to this number")
-
-    # Counted before sending, and whether or not it succeeds: a failing
-    # gateway must not become an unlimited retry loop at our expense.
-    auth.note_hit(_SENDS_BY_IP, ip)
-    auth.note_hit(_SENDS_BY_NUMBER, number)
-    auth.note_hit(_SENDS_BY_NUMBER_DAILY, number)
-
-    code = f"{secrets.randbelow(10 ** OTP_DIGITS):0{OTP_DIGITS}d}"
-    if not sms.send_code(number, code):
-        raise HTTPException(502, "We couldn't send the SMS just now. Please try again "
-                                 "in a minute, or sign in another way.")
-    _PENDING[number] = _Pending(digest=_digest(number, code), sent_at=now,
-                                expires_at=now + OTP_TTL_SECONDS)
+    try:
+        _BOOK.issue(number, ip, lambda code: sms.send_code(number, code))
+    except otp.Refused as r:
+        raise _refusal(r) from None
     return {"ok": True, "number": mask(number), "digits": OTP_DIGITS,
             "expires_in": OTP_TTL_SECONDS, "resend_after": RESEND_COOLDOWN_SECONDS}
 
@@ -288,25 +262,10 @@ def check_code(raw_number: str, raw_code: str, ip: str) -> str:
     if len(code) != OTP_DIGITS:
         # A typo in length is not a guess; it does not use up an attempt.
         raise HTTPException(400, f"Enter the {OTP_DIGITS}-digit code from the SMS.")
-    if auth.throttled(_VERIFY_FAILS_BY_IP, ip, *VERIFY_FAILS_PER_IP):
-        raise _too_many("wrong codes from this connection")
-
-    pending = _PENDING.get(number)
-    if pending is None or time.monotonic() >= pending.expires_at:
-        _PENDING.pop(number, None)
-        raise HTTPException(400, "That code has expired. Please ask for a new one.")
-
-    if not hmac.compare_digest(pending.digest, _digest(number, code)):
-        pending.attempts += 1
-        auth.note_hit(_VERIFY_FAILS_BY_IP, ip)
-        left = OTP_MAX_ATTEMPTS - pending.attempts
-        if left <= 0:
-            _PENDING.pop(number, None)
-            raise HTTPException(429, "Too many wrong codes. Please ask for a new one.")
-        raise HTTPException(400, f"That code is not right. {left} "
-                                 f"{'try' if left == 1 else 'tries'} left.")
-
-    _PENDING.pop(number, None)
+    try:
+        _BOOK.check(number, code, ip)
+    except otp.Refused as r:
+        raise _refusal(r) from None
     return number
 
 
@@ -375,7 +334,5 @@ def sign_in(db: Session, number: str) -> tuple[User, bool]:
 
 def reset_for_tests() -> None:
     """Forget every pending code and limiter hit. Tests only."""
-    for store in (_PENDING, _SENDS_BY_NUMBER, _SENDS_BY_NUMBER_DAILY, _SENDS_BY_IP,
-                  _VERIFY_FAILS_BY_IP):
-        store.clear()
+    _BOOK.reset()
     ConsoleSender.OUTBOX.clear()

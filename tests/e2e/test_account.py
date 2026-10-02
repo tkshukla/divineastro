@@ -2,11 +2,16 @@
 flow 2). Drives the real sign-in UI (including the native prompt() dialog),
 not harness.py's API-level sign_in() shortcut, for at least the sign-in leg.
 
+Also email sign-in by code (DIVASTRO-104): the server runs with mail.py's dev
+"console" transport, which logs each email, so the test reads the code from
+the server log exactly as a person would read it from their inbox.
+
     C:\\Astro\\.venv\\Scripts\\python.exe -m tests.e2e.test_account
 """
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -14,7 +19,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from playwright.sync_api import sync_playwright  # noqa: E402
 
-from tests.e2e.harness import Checker, DESKTOPS, Page, server  # noqa: E402
+from tests.e2e.harness import (  # noqa: E402
+    Checker, DESKTOPS, PHONES, SERVER_LOGS, Page, server,
+)
 
 check = Checker()
 
@@ -156,14 +163,90 @@ def username_password_signup_and_login(p, browser, base: str) -> None:
     ctx.close()
 
 
+def _mailed_code(base: str, addr: str) -> str:
+    """The code in the last console email to `addr`, from the server log."""
+    log = SERVER_LOGS[base].read_text(encoding="utf-8", errors="replace")
+    tail = log[log.rindex(f"to {addr}:"):]
+    return re.search(r"\b(\d{6})\b", tail).group(1)
+
+
+def email_code_sign_in(p, browser, base: str) -> None:
+    print("\n[email: 'Email me a sign-in code' -> code -> signed in, on a phone]")
+    ctx = browser.new_context(**PHONES["android_360x640"])
+    pg = Page(ctx.new_page(), base)
+    pg.open_home()
+    pg.page.wait_for_selector("#btn-signin", timeout=10000)
+    pg.page.click("#btn-signin")
+    pg.page.wait_for_selector("#email-open", timeout=10000)
+    check("the sheet offers 'Email me a sign-in code' as its own button",
+          "Email me a sign-in code" in pg.page.inner_text("#email-open"))
+    pg.page.click("#email-open")
+    pg.page.wait_for_selector("#email-auth:not([hidden])", timeout=5000)
+    check("the choices are hidden while the email step is open",
+          pg.page.locator("#signin-choices").is_hidden())
+
+    pg.page.fill("#em-address", "someone@gmial.com")
+    pg.page.click("#em-send")
+    pg.page.wait_for_selector(".modal-error:not([hidden])", timeout=5000)
+    check("a mistyped domain is caught with a suggestion",
+          "someone@gmail.com" in pg.page.inner_text(".modal-error"),
+          pg.page.inner_text(".modal-error"))
+
+    addr = "e2e.email@gmail.com"
+    pg.page.fill("#em-address", addr)
+    pg.page.click("#em-send")
+    pg.page.wait_for_selector("#em-step-code:not([hidden])", timeout=10000)
+    check("after sending, the code step shows where it went",
+          addr in pg.page.inner_text("#em-sent-to"), pg.page.inner_text("#em-sent-to"))
+    resend = pg.page.inner_text("#em-resend")
+    check("resend is counting down, and disabled",
+          "Resend in" in resend and pg.page.locator("#em-resend").is_disabled(), resend)
+    code = _mailed_code(base, addr)
+    pg.page.fill("#em-code", f"{(int(code) + 1) % 1_000_000:06d}")
+    pg.page.click("#em-verify")
+    pg.page.wait_for_selector(".modal-error:not([hidden])", timeout=5000)
+    check("a wrong code says so and stays on the code step",
+          "not right" in pg.page.inner_text(".modal-error")
+          and pg.page.locator("#em-step-code").is_visible(), pg.page.inner_text(".modal-error"))
+    pg.page.fill("#em-code", code)
+    pg.page.click("#em-verify")
+    pg.page.wait_for_selector("#btn-credits", timeout=10000)
+    me = pg.page.context.request.get(f"{base}/api/me").json()["user"]
+    check("signed in as an email account on that address",
+          me["provider"] == "email" and me["email"] == addr, str(me)[:160])
+    check("with the welcome bonus", me["credits"] == 10, str(me["credits"]))
+    label = pg.page.inner_text("#btn-acct")
+    check("the account button shows the address's name part only",
+          "e2e.email" in label and "@" not in label, label)
+
+    # The same flow in Hindi: every label on the email step is translated.
+    pg.page.context.clear_cookies()
+    pg.open_home()
+    pg.page.wait_for_selector("#btn-signin", timeout=10000)
+    pg.page.evaluate("state.lang = 'hi'; applyLanguage();")
+    pg.page.click("#btn-signin")
+    pg.page.wait_for_selector("#email-open", timeout=10000)
+    check("Hindi: the email button is translated",
+          "ईमेल" in pg.page.inner_text("#email-open"), pg.page.inner_text("#email-open"))
+
+    # The mistyped domain and the wrong code above are deliberate 400s.
+    unexpected = [e for e in pg.console_errors if "status of 400" not in e]
+    check("no console errors beyond the two expected 400s", not unexpected,
+          "; ".join(unexpected[:3]))
+    check("no CSP violations", not pg.csp_violations(), str(pg.csp_violations()[:2]))
+    ctx.close()
+
+
 def main() -> int:
-    with server() as base, sync_playwright() as p:
+    # Mail on (dev console transport), so the sheet offers email sign-in too.
+    with server({"ASTRO_SMTP_HOST": "console"}) as base, sync_playwright() as p:
         browser = p.chromium.launch()
         sign_in_and_out(p, browser, base)
         blocked_user_message(p, browser, base)
         username_password_signup_and_login(p, browser, base)
+        email_code_sign_in(p, browser, base)
         browser.close()
-    return check.finish("account (sign in/out, blocked user, username/password)")
+    return check.finish("account (sign in/out, blocked user, username/password, email code)")
 
 
 if __name__ == "__main__":

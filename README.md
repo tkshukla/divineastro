@@ -154,11 +154,23 @@ English.
 ## Sign-in
 
 Asking a question needs an account. The sign-in sheet offers, side by side:
-Google (and Microsoft/Apple when configured), a username & password account
-with no email at all, and — once enabled — a mobile number confirmed by a
-6-digit SMS code. `GET /api/auth/providers` lists what is on; the in-page
+Google (and Microsoft/Apple when configured), a 6-digit code sent by email, a
+username & password account with no email at all, and — once enabled — a
+mobile number confirmed by a 6-digit SMS code. `GET /api/auth/providers` lists what is on; the in-page
 methods carry `"inline": true`. Every method is the same `(provider,
 provider_sub)` identity and session, see `app/auth.py`.
+
+**Email sign-in is on whenever mail is** (`ASTRO_SMTP_HOST`, the same Brevo
+SMTP the admin pings use — free, no DLT). The code is mailed in English and
+Hindi, expires after 10 minutes, allows 5 wrong tries, and sends are
+rate-limited per address and per IP exactly like phone codes (both use
+`app/otp.py`). `ASTRO_EMAIL_DAILY_CAP` (default 250) caps code emails per 24
+hours so the ~300/day free tier is never exhausted; past it the sheet says
+email sign-in is busy and points to Google or a username. An address that
+already belongs to a Google account signs in to *that* account; admin
+addresses must use Google. The reasoning is in `app/email_auth.py`.
+`ASTRO_SMTP_HOST=console` is a dev/test transport that logs mail instead of
+sending it, refused when `ASTRO_COOKIE_SECURE=1`.
 
 **Phone sign-in ships off.** It needs:
 
