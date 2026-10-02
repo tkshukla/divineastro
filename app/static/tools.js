@@ -544,4 +544,23 @@
     q('#choghadiya-result').hidden = false;
     q('#choghadiya-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+
+  /* ------------------------------------------------------------- deep links */
+  // The server-rendered /panchang, /rahu-kaal, /choghadiya and /kundali-milan
+  // pages (app/seo_pages.py) link here as /?open=<tool>. Clicking the home card
+  // reuses exactly what a visitor's own tap would do, then the parameter is
+  // dropped so a reload or a shared link of the address bar starts clean.
+  const DEEP_LINKS = {
+    panchang: '#open-panchang', 'rahu-kaal': '#open-panchang',
+    choghadiya: '#open-choghadiya', muhurat: '#open-muhurat',
+    milan: '#open-milan', 'kundali-milan': '#open-milan',
+  };
+  const deepParams = new URLSearchParams(location.search);
+  const deepTarget = DEEP_LINKS[deepParams.get('open')];
+  if (deepTarget) {
+    q(deepTarget)?.click();
+    deepParams.delete('open');
+    history.replaceState({}, '', location.pathname +
+      (deepParams.toString() ? `?${deepParams}` : ''));
+  }
 })();

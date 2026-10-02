@@ -47,7 +47,7 @@ docstring — nothing CI-specific, the same commands you'd run locally:
 
 | Job | What | Needs |
 |---|---|---|
-| `unit-tests` | 28 suites with no server (import `app.*` directly) | nothing |
+| `unit-tests` | 29 suites with no server (import `app.*` directly) | nothing |
 | `integration-tests-default-gateway` | 10 suites that hit a live server over HTTP | `ASTRO_GATEWAY=test`, `ASTRO_DEV_LOGIN=1`, `ASTRO_ADMIN_EMAILS` |
 | `integration-tests-upi-gateway` | `test_upi` (asserts the active gateway *is* `upi_manual`, so it can't share a server with the pass above) | `ASTRO_GATEWAY=upi_manual`, `ASTRO_UPI_VPA` |
 | `e2e-tests` | the Playwright suites in `tests/e2e/` (DIVASTRO-72) | `playwright install chromium` — each test starts its own throwaway server, no shared state |
