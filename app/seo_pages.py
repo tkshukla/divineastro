@@ -200,12 +200,18 @@ _SHELL = """<!DOCTYPE html>
 </head>
 <body class="sacred">
 <main class="seo">
-  <a class="back" href="/">&larr; {brand}</a>
+  {share}<a class="back" href="/">&larr; {brand}</a>
   <nav class="crumbs" aria-label="Breadcrumb">{crumbs}</nav>
   {body}
 </main>
 {footer}
 </body></html>"""
+
+
+def _share(path: str) -> str:
+    """DIVASTRO-107: a plain wa.me "Share on WhatsApp" link, UTM-tagged (see share.py)."""
+    from .share import seo_share
+    return seo_share(path)
 
 
 def _footer() -> str:
@@ -252,7 +258,8 @@ def _render(*, title: str, description: str, path: str, crumbs: list[tuple[str, 
     page = _SHELL.format(
         title=_e(title), description=_e(description), canonical=_e(canonical),
         brand=_e(BRAND), site=_e(SITE_URL), adsense=ADSENSE_CLIENT, style=_STYLE,
-        jsonld=jsonld, crumbs=crumb_html, body=body, footer=_footer())
+        jsonld=jsonld, crumbs=crumb_html, body=body, footer=_footer(),
+        share=_share(path) if status == 200 else "")
     headers = _cache_headers() if cache else {"Cache-Control": "no-store"}
     return HTMLResponse(page, status_code=status, headers=headers)
 
