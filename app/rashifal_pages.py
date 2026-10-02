@@ -546,7 +546,7 @@ def _shell(*, lang: str, rashi: Rashi | None, title: str, description: str,
         alt_hi=_e(SITE_URL + path(rashi, "hi")), og_locale="hi_IN" if lang == "hi" else "en_IN",
         brand=_e(BRAND), site=_e(SITE_URL), adsense=ADSENSE_CLIENT,
         style=_STYLE + _EXTRA_STYLE, jsonld=jsonld, crumbs=crumb_html, body=body,
-        footer=_footer())
+        footer=_footer(lang))
     headers = _cache_headers() if cache else {"Cache-Control": "no-store"}
     return HTMLResponse(page, status_code=status, headers=headers)
 
