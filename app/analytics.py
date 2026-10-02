@@ -260,6 +260,9 @@ SEO_TOOLS = frozenset({"/panchang", "/rahu-kaal", "/choghadiya", "/kundali-milan
 def is_public_page(path: str) -> bool:
     if path in PUBLIC_PAGES or path in SEO_TOOLS:
         return True
+    if path.startswith(("/muhurat/", "/hi/muhurat/")):
+        from .muhurat_pages import page_paths   # lazy: muhurat_pages pulls in the engines
+        return path in page_paths()
     tool, _, slug = path.rpartition("/")
     return tool in SEO_TOOLS and tool != "/kundali-milan" and seo_cities.get(slug) is not None
 MAX_BEACON_BYTES = 2048          # path + referrer + query string; real ones are a few hundred

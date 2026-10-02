@@ -680,6 +680,8 @@ def sitemap_paths() -> list[str]:
     paths = list(STATIC_PATHS)
     for tool in TOOLS:
         paths += [_path(tool, c) for c in seo_cities.CITIES]
+    from .muhurat_pages import page_paths       # imports this module; lazy to avoid a cycle
+    paths += page_paths()
     return paths
 
 
