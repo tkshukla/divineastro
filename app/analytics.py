@@ -56,7 +56,7 @@ from fastapi import Request
 from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
-from . import auth, seo_cities
+from . import auth, rashifal_pages, seo_cities
 from .db import BirthProfile, QuestionLog, User, Visit, session as db_session, utcnow
 
 log = logging.getLogger(__name__)
@@ -255,10 +255,12 @@ def _is_admin_session(db: Session, token: str | None) -> bool:
 PUBLIC_PAGES = frozenset({"/", "/feedback", "/terms", "/privacy", "/refund", "/contact"})
 # The SEO tool pages (seo_pages.py): the bare tool path, or tool + a real city slug.
 SEO_TOOLS = frozenset({"/panchang", "/rahu-kaal", "/choghadiya", "/kundali-milan"})
+# The daily rashifal pages (rashifal_pages.py): the 26 canonical URLs, EN + HI.
+RASHIFAL_PAGES = rashifal_pages.PUBLIC_PATHS
 
 
 def is_public_page(path: str) -> bool:
-    if path in PUBLIC_PAGES or path in SEO_TOOLS:
+    if path in PUBLIC_PAGES or path in SEO_TOOLS or path in RASHIFAL_PAGES:
         return True
     tool, _, slug = path.rpartition("/")
     return tool in SEO_TOOLS and tool != "/kundali-milan" and seo_cities.get(slug) is not None
