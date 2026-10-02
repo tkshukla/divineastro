@@ -92,6 +92,16 @@ const A_I18N = {
     phoneResend: "Resend code", phoneResendIn: "Resend in {s}s",
     phoneChange: "Use a different number",
     phoneNeedNumber: "Enter your mobile number.", phoneNeedCode: "Enter the 6-digit code.",
+    emailContinue: "Email me a sign-in code",
+    emailLabel: "Email address",
+    emailHint: "We'll email you a 6-digit code — no password needed.",
+    emailSend: "Send code", emailSending: "Sending…",
+    emailCodeLabel: "Code from the email",
+    emailSentTo: "Code sent to {e}. It can take a minute — check Spam or Promotions too.",
+    emailVerify: "Verify & continue", emailVerifying: "Checking…",
+    emailResend: "Resend code", emailResendIn: "Resend in {s}s",
+    emailChange: "Use a different email",
+    emailNeedAddress: "Enter your email address.", emailNeedCode: "Enter the 6-digit code.",
     signInFailed: "Sign-in failed. Please try again.",
   },
   hi: {
@@ -172,6 +182,16 @@ const A_I18N = {
     phoneResend: "कोड दोबारा भेजें", phoneResendIn: "{s} सेकंड में दोबारा भेजें",
     phoneChange: "दूसरा नंबर इस्तेमाल करें",
     phoneNeedNumber: "अपना मोबाइल नंबर दर्ज करें।", phoneNeedCode: "6 अंकों का कोड दर्ज करें।",
+    emailContinue: "ईमेल पर साइन-इन कोड पाएँ",
+    emailLabel: "ईमेल पता",
+    emailHint: "हम आपको 6 अंकों का कोड ईमेल करेंगे — पासवर्ड की ज़रूरत नहीं।",
+    emailSend: "कोड भेजें", emailSending: "भेजा जा रहा है…",
+    emailCodeLabel: "ईमेल में आया कोड",
+    emailSentTo: "कोड {e} पर भेजा गया। इसमें एक मिनट लग सकता है — Spam या Promotions फ़ोल्डर भी देखें।",
+    emailVerify: "सत्यापित करें और जारी रखें", emailVerifying: "जाँच हो रही है…",
+    emailResend: "कोड दोबारा भेजें", emailResendIn: "{s} सेकंड में दोबारा भेजें",
+    emailChange: "दूसरा ईमेल इस्तेमाल करें",
+    emailNeedAddress: "अपना ईमेल पता दर्ज करें।", emailNeedCode: "6 अंकों का कोड दर्ज करें।",
     signInFailed: "साइन-इन नहीं हो सका। कृपया फिर से कोशिश करें।",
   },
 };
@@ -379,11 +399,13 @@ const PROVIDER_MARK = {
   apple: `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M16.4 12.8c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.8-2-1.6-.2-3.1.9-3.9.9s-2-.9-3.4-.9c-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.3 2.6 1.3-.1 1.8-.9 3.4-.9s2 .9 3.4.8c1.4 0 2.3-1.2 3.2-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.7-1-2.7-4zM13.9 4.5c.7-.9 1.2-2.1 1.1-3.3-1.1 0-2.4.7-3.1 1.6-.7.8-1.3 2-1.1 3.2 1.2.1 2.4-.6 3.1-1.5z"/></svg>`,
   dev: `<span style="font-size:15px">🛠</span>`,
   phone: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg>`,
+  email: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>`,
   password: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M10.8 12.2 20 3M17 6l3 3M15 8l2 2"/></svg>`,
 };
 
 /* The sheet offers every way in side by side: the redirect providers (Google…),
-   phone by SMS code when the server advertises "phone", and a username/password
+   a code by email when the server advertises "email" (mail is configured),
+   phone by SMS code when it advertises "phone", and a username/password
    account — the last needs no configuration, so it is always there. The "first
    N free" line uses the number /api/me reported (acct.freeQuestions), and is left
    out until the server has said it, exactly like the home page's free badge. */
@@ -397,6 +419,7 @@ function openSignIn(onDone) {
       <span>${escapeHtml(at("continueWith"))} ${escapeHtml(p.label)}</span>
     </button>`).join("");
   const phoneOn = provs.some((p) => p.key === "phone");
+  const emailOn = provs.some((p) => p.key === "email");
   const freeLine = acct.freeKnown && acct.freeQuestions > 0
     ? ` <b>${escapeHtml(at("signInFree").replace("{n}", acct.freeQuestions))}</b>` : "";
 
@@ -406,12 +429,14 @@ function openSignIn(onDone) {
     <div id="signin-choices">
       <div class="oauth-list" id="oauth-list">
         ${buttons}
+        ${emailOn ? `<button type="button" class="oauth-btn" id="email-open">
+            ${PROVIDER_MARK.email}<span>${escapeHtml(at("emailContinue"))}</span></button>` : ""}
         ${phoneOn ? `<button type="button" class="oauth-btn" id="phone-open">
             ${PROVIDER_MARK.phone}<span>${escapeHtml(at("phoneContinue"))}</span></button>` : ""}
         ${acct.devLogin ? `<button class="oauth-btn dev" data-provider="dev">
             ${PROVIDER_MARK.dev}<span>${escapeHtml(at("devLogin"))}</span></button>` : ""}
       </div>
-      ${buttons || phoneOn || acct.devLogin
+      ${buttons || emailOn || phoneOn || acct.devLogin
         ? `<p class="signin-or"><span>${escapeHtml(at("orDivider"))}</span></p>` : ""}
       <div class="oauth-list">
         <button type="button" class="oauth-btn" id="toggle-password-auth">
@@ -456,6 +481,29 @@ function openSignIn(onDone) {
         <button type="button" class="link-btn" id="ph-change">${escapeHtml(at("phoneChange"))}</button>
       </div>
       <button type="button" class="link-btn" id="ph-back">${escapeHtml(at("backToProviders"))}</button>
+    </div>
+    <div id="email-auth" hidden>
+      <div id="em-step-address">
+        <div class="field">
+          <label for="em-address">${escapeHtml(at("emailLabel"))}</label>
+          <input id="em-address" type="email" inputmode="email" autocomplete="email"
+                 autocapitalize="off" spellcheck="false" placeholder="name@gmail.com" maxlength="128" />
+        </div>
+        <p class="field-note">${escapeHtml(at("emailHint"))}</p>
+        <button type="button" class="primary" id="em-send">${escapeHtml(at("emailSend"))}</button>
+      </div>
+      <div id="em-step-code" hidden>
+        <p class="field-note" id="em-sent-to" role="status"></p>
+        <div class="field">
+          <label for="em-code">${escapeHtml(at("emailCodeLabel"))}</label>
+          <input id="em-code" type="text" inputmode="numeric" autocomplete="one-time-code"
+                 pattern="[0-9]*" maxlength="6" />
+        </div>
+        <button type="button" class="primary" id="em-verify">${escapeHtml(at("emailVerify"))}</button>
+        <button type="button" class="link-btn" id="em-resend" disabled></button>
+        <button type="button" class="link-btn" id="em-change">${escapeHtml(at("emailChange"))}</button>
+      </div>
+      <button type="button" class="link-btn" id="em-back">${escapeHtml(at("backToProviders"))}</button>
     </div>
     <p class="modal-error" hidden></p>
     <p class="legal-line">By continuing you accept our
@@ -530,20 +578,47 @@ function openSignIn(onDone) {
     finishInPageSignIn(data, onDone);
   };
 
-  /* ---------- phone: number -> SMS code (only when advertised) ---------- */
-  if (!phoneOn) return;
-  const phBox = back.querySelector("#phone-auth");
-  const phNumber = back.querySelector("#ph-number");
-  const phCode = back.querySelector("#ph-code");
-  const phSend = back.querySelector("#ph-send");
-  const phVerify = back.querySelector("#ph-verify");
-  const phResend = back.querySelector("#ph-resend");
+  /* ---------- one-time codes: email, and phone by SMS (only when advertised) ----------
+     Both are the same two steps — an address, then the 6-digit code sent to
+     it — against the same server machinery (app/otp.py), so they share one
+     wiring and differ only in ids, wording and endpoint. */
+  if (emailOn) {
+    wireCodeSignIn(back, showErr, choices, onDone, {
+      p: "em", open: "#email-open", box: "#email-auth", first: "address",
+      api: "/api/auth/email", field: "email", k: "email",
+      need: "emailNeedAddress", sentTo: (d) => at("emailSentTo").replace("{e}", d.email),
+    });
+  }
+  if (phoneOn) {
+    wireCodeSignIn(back, showErr, choices, onDone, {
+      p: "ph", open: "#phone-open", box: "#phone-auth", first: "number",
+      api: "/api/auth/phone", field: "number", k: "phone",
+      need: "phoneNeedNumber", sentTo: (d) => at("phoneSentTo").replace("{n}", d.number),
+    });
+  }
+}
+
+/* The address -> code steps of an in-page code sign-in. `o.p` is the id prefix
+   (#<p>-<first>, #<p>-send, #<p>-code, …), `o.k` the i18n prefix (<k>Send,
+   <k>Verify, …), and `o.field` the request key the address travels under. The
+   sheet's language goes along too: the email endpoints answer in it (the phone
+   ones ignore it). */
+function wireCodeSignIn(back, showErr, choices, onDone, o) {
+  const $ = (suffix) => back.querySelector(`#${o.p}-${suffix}`);
+  const errBox = back.querySelector(".modal-error");
+  const box = back.querySelector(o.box);
+  const addrIn = $(o.first);
+  const codeIn = $("code");
+  const sendBtn = $("send");
+  const verifyBtn = $("verify");
+  const resendBtn = $("resend");
+  const t = (key) => at(o.k + key);
   let cooldown = null;
 
   const showStep = (step) => {
-    back.querySelector("#ph-step-number").hidden = step !== "number";
-    back.querySelector("#ph-step-code").hidden = step !== "code";
-    (step === "number" ? phNumber : phCode).focus();
+    $(`step-${o.first}`).hidden = step !== "address";
+    $("step-code").hidden = step !== "code";
+    (step === "address" ? addrIn : codeIn).focus();
   };
   // The server enforces its own cooldown; this only keeps the button honest.
   const startCooldown = (seconds) => {
@@ -551,69 +626,68 @@ function openSignIn(onDone) {
     let left = seconds;
     const tick = () => {
       // The sheet may have been closed mid-countdown.
-      if (!document.body.contains(phResend)) { clearInterval(cooldown); return; }
-      phResend.disabled = left > 0;
-      phResend.textContent = left > 0 ? at("phoneResendIn").replace("{s}", left) : at("phoneResend");
+      if (!document.body.contains(resendBtn)) { clearInterval(cooldown); return; }
+      resendBtn.disabled = left > 0;
+      resendBtn.textContent = left > 0 ? t("ResendIn").replace("{s}", left) : t("Resend");
       left -= 1;
       if (left < 0) clearInterval(cooldown);
     };
     tick();
     cooldown = setInterval(tick, 1000);
   };
+  const post = (path, extra) => fetch(`${o.api}/${path}`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ [o.field]: addrIn.value.trim(), lang: state.lang, ...extra }),
+  });
 
   async function sendCode() {
-    const number = phNumber.value.trim();
     errBox.hidden = true;
-    if (!number) { showErr(at("phoneNeedNumber")); return; }
-    phSend.disabled = true; phSend.textContent = at("phoneSending");
+    if (!addrIn.value.trim()) { showErr(at(o.need)); return; }
+    sendBtn.disabled = true; sendBtn.textContent = t("Sending");
     try {
-      const res = await fetch("/api/auth/phone/start", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ number }),
-      });
+      const res = await post("start", {});
       const data = await res.json().catch(() => ({}));
+      // 503 is email's "busy" (daily cap): its message already points to
+      // Google and the username account, which are one tap away via Back.
       if (!res.ok) { showErr(data.detail); return; }
-      back.querySelector("#ph-sent-to").textContent = at("phoneSentTo").replace("{n}", data.number);
-      phCode.value = "";
+      $("sent-to").textContent = o.sentTo(data);
+      codeIn.value = "";
       showStep("code");
       startCooldown(data.resend_after || 30);
     } catch { showErr(); }
-    finally { phSend.disabled = false; phSend.textContent = at("phoneSend"); }
+    finally { sendBtn.disabled = false; sendBtn.textContent = t("Send"); }
   }
 
-  back.querySelector("#phone-open").onclick = () => {
-    choices.hidden = true; phBox.hidden = false; errBox.hidden = true;
-    showStep("number");
+  back.querySelector(o.open).onclick = () => {
+    choices.hidden = true; box.hidden = false; errBox.hidden = true;
+    showStep("address");
   };
-  back.querySelector("#ph-back").onclick = () => {
+  $("back").onclick = () => {
     clearInterval(cooldown);
-    phBox.hidden = true; choices.hidden = false; errBox.hidden = true;
+    box.hidden = true; choices.hidden = false; errBox.hidden = true;
   };
-  back.querySelector("#ph-change").onclick = () => { errBox.hidden = true; showStep("number"); };
-  phSend.onclick = sendCode;
-  phResend.onclick = sendCode;
-  phNumber.onkeydown = (e) => { if (e.key === "Enter") sendCode(); };
-  phCode.onkeydown = (e) => { if (e.key === "Enter") phVerify.click(); };
-  phVerify.onclick = async () => {
-    const code = phCode.value.replace(/\D/g, "");
+  $("change").onclick = () => { errBox.hidden = true; showStep("address"); };
+  sendBtn.onclick = sendCode;
+  resendBtn.onclick = sendCode;
+  addrIn.onkeydown = (e) => { if (e.key === "Enter") sendCode(); };
+  codeIn.onkeydown = (e) => { if (e.key === "Enter") verifyBtn.click(); };
+  verifyBtn.onclick = async () => {
+    const code = codeIn.value.replace(/\D/g, "");
     errBox.hidden = true;
-    if (code.length !== 6) { showErr(at("phoneNeedCode")); return; }
-    phVerify.disabled = true; phVerify.textContent = at("phoneVerifying");
+    if (code.length !== 6) { showErr(t("NeedCode")); return; }
+    verifyBtn.disabled = true; verifyBtn.textContent = t("Verifying");
     try {
-      const res = await fetch("/api/auth/phone/verify", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ number: phNumber.value.trim(), code }),
-      });
+      const res = await post("verify", { code });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { showErr(data.detail); return; }
       clearInterval(cooldown);
       finishInPageSignIn(data, onDone);
     } catch { showErr(); }
-    finally { phVerify.disabled = false; phVerify.textContent = at("phoneVerify"); }
+    finally { verifyBtn.disabled = false; verifyBtn.textContent = t("Verify"); }
   };
 }
 
-/* Every in-page sign-in (dev, username, phone) ends here, so they all behave like
+/* Every in-page sign-in (dev, username, email, phone) ends here, so they all behave like
    the OAuth round-trip does on its ?welcome= reload (loadAccount): rescue a chart
    cast while signed out, then either carry on with what the caller wanted, or ask
    the question parked at the sign-in wall. Before this, an in-page sign-in left

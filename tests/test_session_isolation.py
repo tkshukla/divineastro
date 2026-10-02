@@ -9,6 +9,7 @@ entitlement. This pins that down.
 
 from __future__ import annotations
 
+import os
 import random
 import sys
 from pathlib import Path
@@ -17,7 +18,8 @@ import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-BASE = "http://127.0.0.1:8600"
+# ASTRO_TEST_BASE points the run at a server on another port, as in test_traffic.
+BASE = os.environ.get("ASTRO_TEST_BASE", "http://127.0.0.1:8600").rstrip("/")
 failures: list[str] = []
 
 

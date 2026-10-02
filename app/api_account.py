@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from . import analytics, auth, billing, coupons, mail, phone_auth
+from . import analytics, auth, billing, coupons, email_auth, mail, phone_auth
 from .db import (
     BirthProfile, Coupon, CouponKind, CouponRedemption, CreditEntry, EntryKind,
     Feedback, FulfilStatus, Order, OrderStatus, QuestionLog, User, balance, grant,
@@ -213,6 +213,35 @@ def phone_verify(body: PhoneVerifyIn, request: Request, response: Response,
                  db: Session = Depends(get_db)) -> dict:
     number = phone_auth.check_code(body.number, body.code, _client_ip(request))
     user, created = phone_auth.sign_in(db, number)
+    if created:
+        analytics.attribute_signup(db, user, request)
+    auth.issue_session(response, user)
+    return {"user": _user_dict(db, user), "created": created}
+
+
+class EmailStartIn(BaseModel):
+    email: str
+    # The sheet's language: errors (and the email's first block) come back in it.
+    lang: str = "en"
+
+
+class EmailVerifyIn(BaseModel):
+    email: str
+    code: str
+    lang: str = "en"
+
+
+@router.post("/auth/email/start")
+def email_start(body: EmailStartIn, request: Request) -> dict:
+    """Email a one-time code. 404 while mail is unconfigured (see email_auth)."""
+    return email_auth.start(body.email, _client_ip(request), body.lang)
+
+
+@router.post("/auth/email/verify")
+def email_verify(body: EmailVerifyIn, request: Request, response: Response,
+                 db: Session = Depends(get_db)) -> dict:
+    addr = email_auth.check_code(body.email, body.code, _client_ip(request), body.lang)
+    user, created = email_auth.sign_in(db, addr, body.lang)
     if created:
         analytics.attribute_signup(db, user, request)
     auth.issue_session(response, user)

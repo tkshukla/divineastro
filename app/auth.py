@@ -44,6 +44,15 @@ number in E.164, e.g. +919876543210>, session via issue_session(). It ships
   default ``91``. Kept narrow on purpose: an open OTP endpoint is a target
   for international SMS-pumping fraud, and we pay for every message.
 
+Email codes (`app/email_auth.py`, DIVASTRO-104) are the fourth: the free
+alternative to SMS, a 6-digit code mailed through the same Brevo SMTP as the
+admin pings. provider="email", provider_sub=<the address, lowercased>. It is
+on whenever mail is configured (``ASTRO_SMTP_HOST``), and
+``ASTRO_EMAIL_DAILY_CAP`` (default 250) keeps code sends inside Brevo's free
+~300/day. A verified address signs in to an existing Google/Apple account on
+the same address rather than creating a duplicate; why that is safe, and why
+Microsoft and admin accounts are excluded, is in that module's docstring.
+
 The phone *profile* field (`users.phone`) is still just contact detail — how
 Pandit Shukla's team reaches a customer about a hand-written kundali. It is
 never used to find an account: it was typed in, not verified, so matching on
@@ -153,16 +162,19 @@ PROVIDERS = _register()
 def providers() -> list[dict]:
     """What the sign-in screen should offer.
 
-    Redirect (OAuth) providers appear once their credentials are set. The two
-    that complete inside the page — phone OTP, only when an SMS sender is
-    configured, and username/password, which needs no configuration and is
-    always on — are flagged ``inline: true``, so a page that can only render
+    Redirect (OAuth) providers appear once their credentials are set. The ones
+    that complete inside the page — email codes, when mail is configured;
+    phone OTP, only when an SMS sender is configured; and username/password,
+    which needs no configuration and is always on — are flagged
+    ``inline: true``, so a page that can only render
     "Continue with X" links (admin, feedback) knows to skip them rather than
     link to /api/auth/<key>/start and a 400.
     """
-    from . import phone_auth
+    from . import email_auth, phone_auth
 
     out = [{"key": k, "label": v} for k, v in PROVIDERS.items()]
+    if email_auth.enabled():
+        out.append({"key": "email", "label": "Email", "inline": True})
     if phone_auth.enabled():
         out.append({"key": "phone", "label": "Phone", "inline": True})
     out.append({"key": "password", "label": "Username", "inline": True})
@@ -205,7 +217,12 @@ def upsert_user(db: Session, provider: str, claims: dict) -> tuple[User, bool]:
 
     # Same person, different provider, same verified address → one account.
     if user is None and email and verified:
-        user = db.execute(select(User).where(User.email == email)).scalar_one_or_none()
+        # first(), not scalar_one_or_none(): an email-code account and, say, a
+        # Microsoft one can legitimately share an address, and two matches
+        # must pick the oldest account, not raise a 500 mid-sign-in.
+        user = db.execute(
+            select(User).where(User.email == email).order_by(User.id)
+        ).scalars().first()
         # An admin-created "manual" account (a customer paid off-site and was
         # recorded by hand) is adopted the first time its owner signs in with
         # the same verified address, so their purchase is waiting for them.
@@ -301,6 +318,11 @@ def login_label(user: User) -> str:
         return mask(user.provider_sub)
     if user.provider == "password":
         return user.provider_sub
+    # An email-code account is labelled by its address, exactly like a Google
+    # one: the header already shows only the part before the "@" (account.js),
+    # and the full address is what the owner's admin needs to see.
+    if user.provider == "email":
+        return user.email or user.provider_sub
     return user.email or ""
 
 

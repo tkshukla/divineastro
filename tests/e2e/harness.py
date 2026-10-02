@@ -58,6 +58,11 @@ DESKTOPS = {
 }
 
 
+# base URL -> that server's log file. A test that needs what only the server
+# saw (the dev "console" mail transport logs each sign-in code) reads it here.
+SERVER_LOGS: dict[str, Path] = {}
+
+
 def _free_port() -> int:
     with socket.socket() as s:
         s.bind(("127.0.0.1", 0))
@@ -84,6 +89,7 @@ def server(extra_env: dict | None = None):
          "--port", str(port)],
         cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT)
     base = f"http://127.0.0.1:{port}"
+    SERVER_LOGS[base] = Path(tmp) / "server.log"
     try:
         for _ in range(120):
             try:
