@@ -85,8 +85,32 @@
     </button>
 
     <button type="button" class="primary home-cta" id="home-cta">
-      Get my kundali reading
+      Get my free kundali — no sign-in needed
     </button>
+
+    <!-- DIVASTRO-101: something of value before any tap. Today's tithi, nakshatra
+         and Rahu Kaal for the visitor's city, from the same /api/panchang the
+         Panchang tool uses (tools.js). The skeleton holds the strip's height while
+         it loads, so nothing below jumps; if the API fails the strip is hidden. -->
+    <section class="today-strip loading" id="today-strip" aria-labelledby="today-title">
+      <div class="today-head">
+        <span class="today-title" id="today-title">Today</span>
+        <button type="button" class="today-city" id="today-city"
+                aria-expanded="false" aria-controls="today-picker">
+          <span id="today-city-name">New Delhi</span> <span class="caret" aria-hidden="true">&#9662;</span>
+        </button>
+      </div>
+      <div class="today-picker place" id="today-picker" hidden>
+        <input type="text" id="today-place" placeholder="Start typing a city…" autocomplete="off" />
+        <ul class="suggest" id="today-results" hidden></ul>
+      </div>
+      <button type="button" class="today-body" id="today-open">
+        <span class="today-cell"><small id="today-tithi-l">Tithi</small><b id="today-tithi">&nbsp;</b></span>
+        <span class="today-cell"><small id="today-nak-l">Nakshatra</small><b id="today-nak">&nbsp;</b></span>
+        <span class="today-cell bad"><small id="today-rahu-l">Rahu Kaal</small><b id="today-rahu">&nbsp;</b></span>
+        <span class="go" aria-hidden="true">&rsaquo;</span>
+      </button>
+    </section>
 
     <!-- Free tools. Deliberately unmetered: they cost no LLM tokens and they
          are what people search for. -->
@@ -116,6 +140,19 @@
     <!-- Saved charts live here on the home screen: a returning customer opens
          one with a tap instead of re-entering birth details. -->
     <section id="saved-charts" class="card saved-charts" hidden></section>
+
+    <!-- DIVASTRO-101: what an answer actually looks like, so "ask a question" is
+         not a leap of faith. Clearly marked as an example; the text lives in the
+         I18N table (sampleQ / sampleA) so Hindi visitors see it in Hindi. -->
+    <section class="sample-qa" id="sample-qa" aria-labelledby="sample-qa-tag">
+      <span class="sample-tag" id="sample-qa-tag">Example</span>
+      <p class="sample-q" id="sample-q">When will my career pick up? I have felt stuck for two years.</p>
+      <div class="sample-a">
+        <p id="sample-a">Your 10th lord Saturn sits strong in its own sign, which favours a steady rise over sudden jumps. The stuck feeling matches your Rahu antardasha, which tends to scatter effort. When it ends, Jupiter's antardasha begins and looks directly at your 10th house — that is the window to push for a new role. Until then, build skills and keep your work visible.</p>
+        <small class="sample-note" id="sample-note">Every answer is read from the person's own chart and dashas.</small>
+      </div>
+      <button type="button" class="sample-cta" id="sample-ask"><span id="sample-ask-label">Ask your own question</span> <span aria-hidden="true">&rsaquo;</span></button>
+    </section>
 
     <div class="lotus-div" aria-hidden="true"><svg class="ico"><use href="#i-lotus"/></svg></div>
     <div class="feat-grid" id="feat-grid">
