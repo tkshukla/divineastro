@@ -148,6 +148,80 @@ def _render(text: str, channel: str) -> str:
     return text.replace(_B, "").replace(_EB, "")
 
 
+
+# --------------------------------------------------------------------------
+# The promo at the foot of every post. One per day, rotating, so followers
+# don't see the same pitch every morning. Every price and the free-question
+# count are read from billing at send time, so a price change can never leave
+# a stale number in a post; a product that disappears drops out of the rotation.
+# --------------------------------------------------------------------------
+
+def _promos(lang: str) -> list[tuple[str, str]]:
+    """(text, path) pairs for today's rotation, only for products that exist."""
+    from . import billing                     # lazy: billing pulls in the DB layer
+    hi = lang == HI
+    P = billing.PRODUCTS
+    free = billing.FREE_QUESTIONS
+    out: list[tuple[str, str]] = []
+    if free > 0:
+        out.append((
+            f"🎁 अपनी कुंडली से जुड़ा कोई भी सवाल पूछें: करियर, विवाह, स्वास्थ्य या सही समय। "
+            f"पहले {free} प्रश्न बिल्कुल मुफ़्त, कोई कार्ड नहीं चाहिए।" if hi else
+            f"🎁 Ask anything about your own kundali: career, marriage, health or timing. "
+            f"Your first {free} questions are free, no card needed.", "/"))
+    if "q50" in P:
+        q = P["q50"]
+        out.append((
+            f"💬 {q.credits} प्रश्न केवल ₹{q.rupees} में (₹{q.rupees / q.credits:.0f} प्रति प्रश्न), "
+            f"हर उत्तर आपकी अपनी जन्म कुंडली और दशा से।" if hi else
+            f"💬 {q.credits} questions for just ₹{q.rupees} (₹{q.rupees / q.credits:.0f} per question), "
+            f"every answer read from your own birth chart and dashas.", "/"))
+    if "k3" in P:
+        k = P["k3"]
+        out.append((
+            f"✍️ हमारे ज्योतिषी द्वारा हाथ से लिखी कुंडली, ₹{k.rupees} से। पीडीएफ़ सीधे आपके फ़ोन पर।" if hi else
+            f"✍️ A kundali hand-written by our astrologer, from ₹{k.rupees}. Delivered as a PDF.",
+            "/"))
+    reports = [P[s] for s in ("sq_career", "sq_marriage_timing", "sq_wealth_business") if s in P]
+    if reports:
+        low = min(r.rupees for r in reports)
+        out.append((
+            f"📜 करियर, विवाह या धन पर आपकी कुंडली से बनी विस्तृत रिपोर्ट, केवल ₹{low} में।" if hi else
+            f"📜 A detailed report from your own chart on career, marriage or wealth, just ₹{low}.",
+            "/"))
+    out.append((
+        "🔯 अपनी मुफ़्त जन्म कुंडली बनाएं: लग्न चार्ट, दशा, ग्रह स्थिति, साइन-इन की ज़रूरत नहीं।" if hi else
+        "🔯 Make your free janam kundali: lagna chart, dashas and planets, no sign-in needed.",
+        "/free-kundali"))
+    out.append((
+        "💍 विवाह से पहले कुंडली मिलान करें: 36 गुण और मंगल दोष, मुफ़्त।" if hi else
+        "💍 Matching for marriage? Check all 36 gunas and Mangal dosha, free.",
+        "/kundali-milan"))
+    return out
+
+
+def promo_lines(day: dt.date, lang: str, channel: str) -> list[str]:
+    """Today's promo (rotates by date) plus a 'share this channel' line."""
+    promos = _promos(lang)
+    if not promos:
+        return []
+    text, page = promos[day.toordinal() % len(promos)]
+    hi = lang == HI
+    path = page if page == "/" else _path(page.strip("/"), lang)
+    link = utm_url(path, channel, day).replace("utm_campaign=daily-", "utm_campaign=promo-")
+    if page == "/" and hi:
+        link = link.replace("/?", "/?lang=hi&", 1)   # the app honours ?lang=hi
+    return [
+        "",
+        "━━━━━━━━━━",
+        text,
+        "👉 " + link,
+        "",
+        "🙏 यह चैनल अपने परिवार और मित्रों के साथ साझा करें।" if hi else
+        "🙏 Share this channel with your family and friends.",
+    ]
+
+
 def channel_message(day: dt.date, lat: float = CITY.latitude, lon: float = CITY.longitude,
                     tz: str = CITY.timezone, lang: str = HI, channel: str = "plain",
                     place: tuple[str, str] | None = None) -> str:
@@ -204,6 +278,7 @@ def channel_message(day: dt.date, lat: float = CITY.latitude, lon: float = CITY.
         ("🪔 व्रत-त्योहार कैलेंडर: " if hi else "🪔 Vrat & festival calendar: ")
         + utm_url(_path("vrat-tyohar", lang), channel, day),
     ]
+    lines += promo_lines(day, lang, channel)
     return _render("\n".join(lines), channel)
 
 

@@ -105,19 +105,42 @@ def test_content() -> None:
           and "आज का पंचांग" in b["title"] and b["url"].startswith("https://divineastro.org/hi/"))
 
 
+def test_promos() -> None:
+    print("\n2b. Promo footer")
+    from app import billing
+    seen = set()
+    for i in range(12):
+        day = JITIYA + dt.timedelta(days=i)
+        for lang in ("hi", "en"):
+            lines = D.promo_lines(day, lang, "whatsapp")
+            check(f"{day} {lang}: promo block present", len(lines) >= 4 and lines[2], str(lines)[:120])
+            seen.add(lines[2])
+    check("promos rotate (6 different texts in 6 days per language)", len(seen) >= 12, str(len(seen)))
+    texts = " ".join(t for t, _ in D._promos("en"))
+    check("prices come from billing (50 for ₹351, ₹111 kundali)",
+          f"₹{billing.PRODUCTS['q50'].rupees}" in texts and f"₹{billing.PRODUCTS['k3'].rupees}" in texts, texts[:200])
+    check(f"free-question count from billing ({billing.FREE_QUESTIONS})",
+          f"first {billing.FREE_QUESTIONS} questions" in texts)
+
+
 def test_links() -> None:
     print("\n2. UTM links")
     for channel in ("telegram", "whatsapp"):
         for lang, prefix in (("hi", "/hi"), ("en", "")):
             text = html.unescape(D.channel_message(JITIYA, lang=lang, channel=channel))
             urls = URL.findall(text)
-            paths = sorted(u.split("?")[0].replace("https://divineastro.org", "") for u in urls)
+            daily = [u for u in urls if "utm_campaign=daily-" in u]
+            promo = [u for u in urls if "utm_campaign=promo-" in u]
+            paths = sorted(u.split("?")[0].replace("https://divineastro.org", "") for u in daily)
             want = sorted(f"{prefix}/{p}" for p in ("panchang", "rashifal", "vrat-tyohar"))
             check(f"{channel}/{lang}: links to panchang, vrat-tyohar, rashifal", paths == want,
                   str(paths))
             tag = (f"utm_source={channel}&utm_medium=channel&utm_campaign=daily-2026-10-03")
-            check(f"{channel}/{lang}: every link tagged", all(u.endswith("?" + tag) for u in urls),
-                  str(urls))
+            check(f"{channel}/{lang}: every daily link tagged", all(u.endswith("?" + tag) for u in daily),
+                  str(daily))
+            ptag = f"utm_source={channel}&utm_medium=channel&utm_campaign=promo-2026-10-03"
+            check(f"{channel}/{lang}: exactly one promo link, tagged promo-<date>",
+                  len(promo) == 1 and promo[0].endswith(ptag) and len(urls) == 4, str(urls))
     tg = D.channel_message(JITIYA, lang="hi", channel="telegram")
     check("telegram: & escaped for HTML parse mode", "&amp;utm_medium" in tg and
           "&utm_medium" not in tg.replace("&amp;", ""))
@@ -308,6 +331,7 @@ def test_card() -> None:
 def main() -> int:
     print("Daily channel message, Telegram sender, WhatsApp pack (DIVASTRO-113)")
     test_content()
+    test_promos()
     test_links()
     test_markup()
     test_telegram()
