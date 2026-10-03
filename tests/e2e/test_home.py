@@ -283,6 +283,9 @@ def today_and_sample(p, browser, base: str) -> None:
     pg = Page(ctx.new_page(), base)
     pg.sign_in("sampleask@example.com", "Sample Ask")
     pg.open_home()
+    # The account loads asynchronously (/api/me); a tap before it lands is, correctly,
+    # treated as signed out. Wait for it, or the test races the page.
+    pg.page.wait_for_function("typeof acct !== 'undefined' && !!acct.user", timeout=15000)
     pg.page.tap("#sample-ask")
     pg.page.wait_for_selector("#stage-birth.active", timeout=5000)
     check("signed in with no chart: 'Ask your own question' opens the birth form", True)
