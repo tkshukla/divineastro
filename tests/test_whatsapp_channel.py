@@ -152,13 +152,19 @@ def main() -> int:
             check("posts: Hindi whatsapp text (same builder as the email pack) as the caption",
                   p.get("text") == text and "*🪔 आज का पंचांग*" in p.get("text", ""))
             img = base64.b64decode(p.get("image_base64", "")) if p else b""
-            check("posts: the image card PNG", img == png and img[:8] == b"\x89PNG\r\n\x1a\n")
-            thumb = base64.b64decode(p.get("thumbnail_base64", "")) if p else b""
-            ok = False
-            if thumb:
-                t = Image.open(io.BytesIO(thumb))
-                ok = t.format == "JPEG" and max(t.size) <= 96
-            check("posts: a small JPEG thumbnail", ok)
+            if len(text) <= W.CAPTION_LIMIT:
+                check("posts: the image card PNG", img == png and img[:8] == b"\x89PNG\r\n\x1a\n")
+                thumb = base64.b64decode(p.get("thumbnail_base64", "")) if p else b""
+                ok = False
+                if thumb:
+                    t = Image.open(io.BytesIO(thumb))
+                    ok = t.format == "JPEG" and max(t.size) <= 96
+                check("posts: a small JPEG thumbnail", ok)
+            else:
+                # With the daily promo footer the post can outgrow a media caption:
+                # then it goes out as one text post (no image, no thumbnail).
+                check(f"posts: text over the {W.CAPTION_LIMIT}-char caption limit goes text-only",
+                      not img and not p.get("thumbnail_base64"), str(len(text)))
             check("state recorded with the message id",
                   daily_state.sent(W.JOB, JITIYA).get("hi") == "3EB01", str(daily_state.load(W.JOB)))
             check("channel JID cached", (daily_state.recall(W.JOB, "channel") or {}).get("jid") == JID)
