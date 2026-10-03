@@ -106,5 +106,18 @@ divineastro.org, www.divineastro.org {
 			roll_size 20mb
 			roll_keep 5
 		}
+		# Naam se Kundali Milan (DIVASTRO-115) is a GET form: the names
+		# typed into it must never land in this log (app/naam_milan.py).
+		format filter {
+			wrap json
+			fields {
+				request>uri query {
+					delete boy
+					delete girl
+					delete boy_pada
+					delete girl_pada
+				}
+			}
+		}
 	}
 }

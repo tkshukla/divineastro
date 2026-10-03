@@ -118,6 +118,9 @@
       <!-- DIVASTRO-111: "Today: <vrat/festival>" when there is one (tools.js) -->
       <a class="today-vrat" id="today-vrat" href="/vrat-tyohar" hidden></a>
     </section>
+    <!-- DIVASTRO-112: opt-in daily vrat / Rahu Kaal push (push.js); stays hidden
+         unless the browser can do push and the server has VAPID keys -->
+    <div class="push-optin" id="push-optin" hidden></div>
 
     <!-- Free tools. Deliberately unmetered: they cost no LLM tokens and they
          are what people search for. -->
@@ -727,5 +730,6 @@
 <script src="/static/account.js"></script>
 <script src="/static/share.js"></script>
 <script src="/static/tools.js"></script>
+<script src="/static/push.js"></script>
 </body>
 </html>

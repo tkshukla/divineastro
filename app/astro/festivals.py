@@ -662,10 +662,10 @@ def _ekadashi(index: int, span: tuple[float, float], lat: float, lon: float, tz:
     spec = Spec("ekadashi", en, hi, index, None, "udaya")
     o = _base(spec, fast, how, index, span, tz, month)
     o["name_en"], o["name_hi"] = en, hi
-    o["rule_en"] = ("Smarta: Ekadashi prevailing at sunrise (first day if at two sunrises); "
+    o["rule_en"] = ("Smarta: Ekadashi prevailing at sunrise (second day if at two sunrises); "
                     "parana next day after sunrise and after Hari Vasara, within Pratahkala "
                     "and before Dwadashi ends")
-    o["rule_hi"] = ("स्मार्त: सूर्योदय के समय एकादशी (दो सूर्योदय पर हो तो पहला दिन); पारण अगले दिन "
+    o["rule_hi"] = ("स्मार्त: सूर्योदय के समय एकादशी (दो सूर्योदय पर हो तो दूसरा दिन); पारण अगले दिन "
                     "सूर्योदय व हरि वासर के बाद, प्रातःकाल में और द्वादशी समाप्त होने से पहले")
     o["key"] = "ekadashi"
     o["slug"] = None
@@ -1111,6 +1111,16 @@ def observances(start: dt.date, end: dt.date, latitude: float = DELHI[0],
         out += [o for o in _year(y, lat, lon, timezone)
                 if start.isoformat() <= o["date"] <= end.isoformat()]
     return out
+
+
+def window(start: dt.date, end: dt.date, latitude: float, longitude: float,
+           timezone: str) -> list[dict]:
+    """observances() for a short range WITHOUT computing (and caching) whole
+    years: ~40 ms for 31 days at any place, against ~0.4 s per year. For the
+    per-city /vrat-tyohar/<city> pages (DIVASTRO-114), which cache the result
+    per (city, day) themselves - 114 cities would thrash `_year`'s cache. Same
+    engine, same OMITTED filtering, same order as observances()."""
+    return _compute(start, end, round(float(latitude), 4), round(float(longitude), 4), timezone)
 
 
 @functools.lru_cache(maxsize=1024)

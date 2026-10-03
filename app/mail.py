@@ -19,6 +19,8 @@ and logged in full (so a dev, or an e2e test reading the server log, can).
 Because that log would contain every sign-in code, it is refused when
 `ASTRO_COOKIE_SECURE=1` — the same production test phone_auth's console SMS
 sender and the dev sign-in use — and mail is then simply "not configured".
+Attachments (DIVASTRO-113: the daily WhatsApp pack's image card) are kept on
+the OUTBOX entry's `.attachments`; only their names and sizes are logged.
 """
 
 from __future__ import annotations
@@ -30,8 +32,25 @@ from email.message import EmailMessage
 
 log = logging.getLogger(__name__)
 
-# (to, subject, text body, html body or None) — console transport only.
-OUTBOX: list[tuple[list[str], str, str, str | None]] = []
+# (filename, MIME type such as "image/png", bytes)
+Attachment = tuple[str, str, bytes]
+
+
+class Sent(tuple):
+    """One console-transport message: unpacks as (to, subject, body, html), the
+    shape callers have always read, with `.attachments` alongside."""
+
+    attachments: list[Attachment]
+
+    def __new__(cls, to: list[str], subject: str, body: str, html: str | None,
+                attachments: list[Attachment] | None = None) -> "Sent":
+        self = super().__new__(cls, (to, subject, body, html))
+        self.attachments = list(attachments or [])
+        return self
+
+
+# Console transport only.
+OUTBOX: list[Sent] = []
 
 
 def _console() -> bool:
@@ -53,11 +72,13 @@ def configured() -> bool:
     return True
 
 
-def send(to: list[str], subject: str, body: str, html: str | None = None) -> bool:
+def send(to: list[str], subject: str, body: str, html: str | None = None,
+         attachments: list[Attachment] | None = None) -> bool:
     """Best-effort send. Returns whether it actually went out.
 
     `body` is the plain-text part every client can show; `html`, if given, is
-    attached as the alternative that most clients prefer.
+    attached as the alternative that most clients prefer. `attachments` are
+    (filename, "type/subtype", bytes) files added to the message.
     """
     if not to:
         log.warning("mail.send: no recipients (ASTRO_ADMIN_EMAILS empty?), dropping %r", subject)
@@ -67,8 +88,10 @@ def send(to: list[str], subject: str, body: str, html: str | None = None) -> boo
         return False
 
     if _console():
-        OUTBOX.append((list(to), subject, body, html))
-        log.warning("[console mail — dev only] to %s: %s\n%s", ", ".join(to), subject, body)
+        OUTBOX.append(Sent(list(to), subject, body, html, attachments))
+        files = "".join(f"\n[attachment {name} {mime} {len(data)} bytes]"
+                        for name, mime, data in attachments or [])
+        log.warning("[console mail — dev only] to %s: %s\n%s%s", ", ".join(to), subject, body, files)
         return True
 
     host = os.environ["ASTRO_SMTP_HOST"]
@@ -84,6 +107,10 @@ def send(to: list[str], subject: str, body: str, html: str | None = None) -> boo
     msg.set_content(body)
     if html:
         msg.add_alternative(html, subtype="html")
+    for name, mime, data in attachments or []:
+        maintype, _, subtype = mime.partition("/")
+        msg.add_attachment(data, maintype=maintype, subtype=subtype or "octet-stream",
+                           filename=name)
 
     try:
         with smtplib.SMTP(host, port, timeout=10) as smtp:

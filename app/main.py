@@ -7,6 +7,7 @@ interpretation engine is local Python.
 
 from __future__ import annotations
 
+import contextlib
 import datetime as dt
 import json
 import logging
@@ -32,9 +33,12 @@ from .api_tools import router as tools_router
 from .legal import router as legal_router
 from .seo_pages import router as seo_router
 from .rashifal_pages import router as rashifal_router
+from .nakshatra_pages import router as nakshatra_router
+from .naam_milan import router as naam_milan_router
 from .share import router as share_router
 from .muhurat_pages import router as muhurat_pages_router
 from .vrat_pages import router as vrat_pages_router
+from .push import router as push_router, start_sender as start_push_sender
 from .astro.names_hi import KARANA_HI, NAKSHATRAS_HI, TITHI_HI, YOGA_HI
 from .chart_service import BirthData, build, solar_return, timing_snapshot, transits, wheel_svg
 from .db import (
@@ -48,7 +52,20 @@ STATIC = Path(__file__).parent / "static"
 BRAND = os.environ.get("ASTRO_BRAND", "Divine Astro")
 SITE_URL = os.environ.get("ASTRO_SITE_URL", "https://divineastro.org")
 
-app = FastAPI(title=BRAND, description="Vedic chart analysis", version="2.0.0")
+@contextlib.asynccontextmanager
+async def _lifespan(_app):
+    # DIVASTRO-112: the daily web-push sender, an in-process loop (see push.py
+    # for why, and why it assumes ONE worker). A no-op while push is off.
+    task = start_push_sender()
+    try:
+        yield
+    finally:
+        if task is not None:
+            task.cancel()
+
+
+app = FastAPI(title=BRAND, description="Vedic chart analysis", version="2.0.0",
+              lifespan=_lifespan)
 # Authlib keeps the OAuth state/nonce in this session between the redirect out
 # and the callback back. It is separate from the login cookie in auth.py.
 app.add_middleware(
@@ -67,9 +84,12 @@ app.include_router(tools_router)
 app.include_router(legal_router)
 app.include_router(seo_router)     # /panchang, /rahu-kaal, /choghadiya, /kundali-milan, sitemap, robots
 app.include_router(rashifal_router)  # /rashifal, /hi/rashifal (DIVASTRO-105)
+app.include_router(nakshatra_router)  # /nakshatra, /rashi + /hi/ copies (DIVASTRO-115)
+app.include_router(naam_milan_router)  # /naam-se-kundali-milan + /hi/ (DIVASTRO-115)
 app.include_router(share_router)   # /api/share/cities (DIVASTRO-107 WhatsApp share buttons)
 app.include_router(muhurat_pages_router)  # /muhurat/vivah-2026 etc. + /hi/ copies (DIVASTRO-109)
 app.include_router(vrat_pages_router)  # /vrat-tyohar, /tyohar/<x>-2026, /ekadashi-2026, /api/vrat/today (DIVASTRO-111)
+app.include_router(push_router)   # /sw.js, /api/push/* daily web push (DIVASTRO-112); 404 while VAPID keys are unset
 
 
 class InsufficientCredits(HTTPException):

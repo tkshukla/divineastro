@@ -70,4 +70,7 @@ def admin_traffic(days: int = 30, _: User = Depends(admin),
                   db: Session = Depends(get_db)) -> dict:
     """Visitors, page views, new users, the sign-up funnel and where they came
     from, for the last `days` days (1-180, IST calendar days)."""
-    return analytics.summary(db, days)
+    out = analytics.summary(db, days)
+    from . import push                     # DIVASTRO-112: daily web-push subscribers
+    out["push"] = push.admin_summary(db)
+    return out
