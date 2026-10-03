@@ -451,6 +451,44 @@ class WebhookEvent(Base):
 
 
 # --------------------------------------------------------------------------
+# Daily web push (DIVASTRO-112)
+# --------------------------------------------------------------------------
+
+class PushSubscription(Base):
+    """One browser that opted in to the daily vrat / Rahu Kaal notification.
+
+    No account is needed: the browser's push `endpoint` IS the identity (it is
+    unguessable and unique per browser profile), and knowing it is what lets
+    the browser unsubscribe again. `user_id` is filled only when the visitor
+    happened to be signed in. The place is the home Today strip's city, so the
+    notification carries that city's Rahu Kaal; `tz` decides when "06:00" is.
+
+    `last_sent` makes the daily sender idempotent: a subscriber is due only
+    when nothing has been attempted on today's local date (one attempt a day).
+    `failures` counts consecutive days whose send failed; a 404/410 from the
+    push service deletes the row outright — the subscription is gone for good.
+    """
+
+    __tablename__ = "push_subscriptions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    endpoint: Mapped[str] = mapped_column(String(1000), unique=True)
+    p256dh: Mapped[str] = mapped_column(String(200))
+    auth: Mapped[str] = mapped_column(String(64))
+    lat: Mapped[float] = mapped_column()
+    lon: Mapped[float] = mapped_column()
+    tz: Mapped[str] = mapped_column(String(64), default="Asia/Kolkata")
+    city: Mapped[str] = mapped_column(String(120), default="")
+    lang: Mapped[str] = mapped_column(String(5), default="en")
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True, default=None, index=True)
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    last_sent: Mapped[dt.datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None)
+    failures: Mapped[int] = mapped_column(Integer, default=0)
+
+
+# --------------------------------------------------------------------------
 # Helpers
 # --------------------------------------------------------------------------
 

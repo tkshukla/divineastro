@@ -46,6 +46,11 @@ python-multipart==0.0.20    # Starlette's Request.form() needs this to parse
                             # Without it every PayU payment 500s silently on
                             # return; caught by tests.test_payu, not by hand.
 
+# ---------------------------------------------------------------- notifications
+pywebpush==2.5.0            # DIVASTRO-112 daily web push (VAPID, RFC 8030/8292).
+                            # Pulls py-vapid, http-ece and aiohttp; all ship
+                            # wheels for py3.12 x86_64 and aarch64 (checked).
+
 # ---------------------------------------------------------------- documents
 typst==0.15.0               # PDF rendering (ships with stellium; pinned here
                             # because pdf_report.py depends on it directly)

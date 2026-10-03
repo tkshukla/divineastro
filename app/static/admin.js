@@ -1273,6 +1273,11 @@ function renderTraffic(d) {
       d.tracking_since && d.tracking_since > d.range.from
         ? `new users ÷ visitors, since ${d.tracking_since}` : 'new users ÷ visitors'),
     tile('On the site now', fmt(d.live_now), 'in the last 5 minutes'));
+  // DIVASTRO-112: browsers opted in to the daily vrat / Rahu Kaal push.
+  if (d.push) {
+    tiles.append(tile('Push subscribers', fmt(d.push.subscribers),
+      d.push.enabled ? 'daily 6 AM alert' : 'push is off (no VAPID keys)'));
+  }
 
   const since = d.tracking_since
     ? `Visit tracking began on ${d.tracking_since}; earlier visits were not recorded (new-user counts go back further, since they come from sign-up dates). `

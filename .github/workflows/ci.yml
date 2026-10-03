@@ -53,7 +53,7 @@ jobs:
             test_life_book test_llm_date_audit test_llm_dignity_audit \
             test_llm_ollama_fallback test_logging test_mail test_match_api \
             test_festivals test_matching test_muhurat test_muhurat_pages test_panchang test_password_auth \
-            test_payu test_pdf_direct test_phone_auth test_email_auth \
+            test_payu test_pdf_direct test_phone_auth test_email_auth test_push \
             test_rashifal_pages test_remedies_doshas test_seo_pages test_seo_pages_hi test_share test_single_question test_sudarshana \
             test_topic_routing test_varga_svg test_vargas test_vrat_pages test_watchdog \
             test_yogini_dasha; do
@@ -195,7 +195,7 @@ jobs:
             test_account test_ask_question test_chart_casting test_chart_panel \
             test_chat_layout test_dashboard_widgets test_feedback_admin \
             test_first_run test_home test_milan test_mobile_screens \
-            test_panchang_tools test_panchang_hindi test_pdfs_and_account test_share test_site_chrome test_store; do
+            test_panchang_tools test_panchang_hindi test_pdfs_and_account test_push_optin test_share test_site_chrome test_store; do
             echo "::group::$m"
             python -u -m tests.e2e.$m
             echo "::endgroup::"
