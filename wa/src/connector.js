@@ -223,10 +223,21 @@ export class Connector {
     this._requireConnected()
     const meta = await withTimeout(this.sock.newsletterMetadata('invite', code), 30000, 'channel lookup')
     if (!meta?.id) throw httpError(404, 'no channel for that link')
+    let viewer = meta.viewer_metadata ?? meta.viewerMetadata ?? null
+    // The invite lookup can come back without the viewer's role even for the
+    // channel's owner; the same query keyed by the channel id usually has it.
+    if (!viewer?.role) {
+      try {
+        const byJid = await withTimeout(this.sock.newsletterMetadata('jid', meta.id), 30000, 'channel lookup')
+        viewer = byJid?.viewer_metadata ?? byJid?.viewerMetadata ?? viewer
+      } catch { /* keep what the invite lookup gave */ }
+    }
     return {
       jid: meta.id,
       name: meta.thread_metadata?.name?.text ?? meta.name ?? null,
-      role: meta.viewer_metadata?.role ?? null
+      role: viewer?.role ?? null,
+      // Field names only (no values), to diagnose a missing role without logging anything personal.
+      viewer_fields: viewer ? Object.keys(viewer) : []
     }
   }
 
