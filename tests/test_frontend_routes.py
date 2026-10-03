@@ -218,6 +218,18 @@ def share_checks() -> None:
     check("the city list comes from /api/share/cities", "fetch('/api/share/cities')" in share_js)
 
 
+def vrat_card_checks() -> None:
+    """The home screen always links to the vrat calendar: a card, in both languages."""
+    print("\n5. Vrat & Tyohar home card")
+    static = ROOT / "app" / "static"
+    html = (static / "index.html").read_text(encoding="utf-8")
+    app_js = (static / "app.js").read_text(encoding="utf-8")
+    check("index.html has #open-vrat linking to /vrat-tyohar", 'id="open-vrat" href="/vrat-tyohar"' in html)
+    check("toolVratName/toolVratSub exist in English and Hindi",
+          app_js.count("toolVratName:") == 2 and app_js.count("toolVratSub:") == 2)
+    check("the card's link switches to /hi/vrat-tyohar in Hindi", '"/hi/vrat-tyohar"' in app_js)
+
+
 def main() -> int:
     from app.main import app
 
@@ -250,6 +262,7 @@ def main() -> int:
 
     home_value_checks()
     share_checks()
+    vrat_card_checks()
 
     print("\n" + "=" * 60)
     if failures:

@@ -26,6 +26,9 @@
   border-color: rgba(240, 198, 116, 0.4);
   transform: translateY(-1px);
 }
+a.tool-card { text-decoration: none; }
+/* The fifth card (Vrat & Tyohar) spans the row, so the 2-column phone grid stays even. */
+.tool-card-wide { grid-column: 1 / -1; }
 .tool-icon { font-size: 19px; line-height: 1; }
 .tool-name { font-size: 14.5px; font-weight: 600; color: var(--gold-soft); }
 .tool-sub { font-size: 12px; color: var(--ink-faint); }

@@ -412,9 +412,16 @@
     const el = q('#today-vrat');
     if (!el) return;
     const items = (todayVrat && Array.isArray(todayVrat.items)) ? todayVrat.items : [];
-    if (!todayData || !items.length) { el.hidden = true; return; }
-    const names = items.slice(0, 2).map((v) => (hi ? v.name_hi : v.name_en)).join(', ');
-    el.textContent = `${hi ? 'आज' : 'Today'}: ${names}`;
+    const upcoming = todayVrat && todayVrat.next;
+    if (!todayData || (!items.length && !upcoming)) { el.hidden = true; return; }
+    if (items.length) {
+      const names = items.slice(0, 2).map((v) => (hi ? v.name_hi : v.name_en)).join(', ');
+      el.textContent = `${hi ? 'आज' : 'Today'}: ${names}`;
+    } else {
+      // An ordinary day: say what is next, so the vrat calendar is always one tap away.
+      el.textContent = hi ? `अगला व्रत/त्योहार: ${upcoming.name_hi} · ${upcoming.day_hi}`
+                          : `Next vrat/festival: ${upcoming.name_en} · ${upcoming.day_en}`;
+    }
     el.setAttribute('href', hi ? '/hi/vrat-tyohar' : '/vrat-tyohar');
     el.hidden = false;
   }
