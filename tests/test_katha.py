@@ -461,11 +461,23 @@ def _exits(fn) -> bool:
     return False
 
 
+def navratri_checks() -> None:
+    """The nine nights get the nine forms of the Devi, in order (real story files)."""
+    print("\nNavratri order (Sharad Navratri 11-19 Oct 2026)")
+    import datetime as _dt
+    got = [katha.pick(_dt.date(2026, 10, 11) + _dt.timedelta(days=i), posted={}) for i in range(9)]
+    check("day 1..9 -> Shailputri .. Siddhidatri", tuple(got) == katha.NAVDURGA, str(got))
+    check("Dussehra (20 Oct) -> Vijayadashami",
+          katha.pick(_dt.date(2026, 10, 20), posted={}) == "vijayadashami")
+    check("all nine Navadurga stories exist", all(s in katha.STORIES for s in katha.NAVDURGA))
+
+
 def main() -> int:
     test_loader()
     test_pages()
     test_pick()
     test_cli()
+    navratri_checks()
     print("\n" + "=" * 60)
     if failures:
         print(f"{len(failures)} FAILURES")

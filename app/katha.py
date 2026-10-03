@@ -442,6 +442,12 @@ def history(stories: dict[str, Story] | None = None) -> dict[str, dt.date]:
     return out
 
 
+# The nine forms of Navadurga, one per night of Navratri, in order.
+NAVDURGA = ("shailputri", "brahmacharini", "chandraghanta", "kushmanda", "skandamata",
+            "katyayani", "kalaratri", "mahagauri", "siddhidatri")
+NAVRATRI_KEYS = ("navratri", "chaitra_navratri")
+
+
 def pick(day: dt.date, stories: dict[str, Story] | None = None,
          posted: dict[str, dt.date] | None = None) -> str | None:
     """The story for `day`'s evening post.
@@ -470,6 +476,19 @@ def pick(day: dt.date, stories: dict[str, Story] | None = None,
     def staleness(slug: str) -> tuple:
         last = posted.get(slug)
         return (last is not None, last or dt.date.min, order[slug])
+
+    # Navratri: the nine nights each have their own form of the Devi, in a
+    # fixed order (Shailputri on the first day … Siddhidatri on the ninth), so
+    # those days get their story by position, not by tag. festivals.on() marks
+    # only the first day, so find the start within the last eight days.
+    for start_key in NAVRATRI_KEYS:
+        for o in festivals.observances(day - dt.timedelta(days=8), day):
+            if o.get("key") != start_key:
+                continue
+            n = (day - dt.date.fromisoformat(o["date"])).days
+            if 0 <= n < len(NAVDURGA) and NAVDURGA[n] in stories \
+                    and not fresh(NAVDURGA[n], FESTIVAL_GAP_DAYS):
+                return NAVDURGA[n]
 
     best: tuple | None = None
     for o in festivals.on(day):
