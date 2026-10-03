@@ -27,6 +27,16 @@ night likewise into 15 muhurtas):
                                                 - Pradosh vrat, Dhanteras, Diwali
   nishita     8th of the 15 night muhurtas      - Shivratri, Janmashtami
   moonrise    the tithi at moonrise             - Sankashti, Karwa Chauth
+  dina        first day with the tithi between sunrise and sunset - Skanda Shashthi
+
+Added after the Jivitputrika report (3 Oct 2026): Jivitputrika (madhyahna,
+udaya3 tie - Drik 2022/2023/2024/2026/2029), the Teejs, Nag/Rishi Panchami,
+Anant Chaturdashi, Pitru Paksha + Sarva Pitru Amavasya (aparahna, with Kutup/
+Rohina), Vat Savitri / Vat Purnima, Ganga Dussehra (in the ADHIKA Jyeshtha when
+there is one - Spec.adhika_first), Sheetala Ashtami, Gangaur, Gudi Padwa, Tulsi
+Vivah, Kartik Purnima, Dev Deepawali, Narak Chaturdashi (abhyang snan), Sakat
+Chauth, Mauni Amavasya, Hal Shashthi, Lohri (eve of Makar Sankranti), and the
+monthly Kalashtami (pradosh) and Skanda Shashthi (dina).
 
 TIES - the tithi touching the part on two consecutive days:
   * default: the earlier day (purva-viddha) - Pradosh, Shivratri, Purnima vrat;
@@ -146,6 +156,10 @@ LABELS = {
     "tithi": ("Tithi", "तिथि"),
     "dwadashi_end": ("Dwadashi ends", "द्वादशी समाप्त"),
     "hari_vasara_end": ("Hari Vasara ends", "हरि वासर समाप्त"),
+    "kutup": ("Kutup muhurat", "कुतुप मुहूर्त"),
+    "rohina": ("Rohina muhurat", "रौहिण मुहूर्त"),
+    "aparahna_kaal": ("Aparahna kaal", "अपराह्न काल"),
+    "abhyang": ("Abhyang snan (moonrise to sunrise)", "अभ्यंग स्नान (चंद्रोदय से सूर्योदय)"),
 }
 
 # --------------------------------------------------------------------------
@@ -168,6 +182,9 @@ class Spec:
     major: bool = False              # gets its own /tyohar page
     slug: str | None = None
     tie: str = "first"               # which day when the tithi touches the part on two days
+    # Kept in the ADHIKA month when its month is doubled (and then not in the
+    # nija month) - Ganga Dussehra 2026 (Drik: 25 May, adhika Jyeshtha).
+    adhika_first: bool = False
 
 
 RECURRING = [
@@ -183,6 +200,14 @@ RECURRING = [
     Spec("amavasya", "Amavasya", "अमावस्या", K + 14, None, "udaya"),
     Spec("masik_shivratri", "Masik Shivratri", "मासिक शिवरात्रि", K + 13, None, "nishita"),
     Spec("durgashtami", "Masik Durgashtami", "मासिक दुर्गाष्टमी", S + 7, None, "udaya"),
+    # Kalashtami: Krishna Ashtami prevailing in the evening (Pradosh) - all
+    # 13 Drik dates of 2026 (incl. 10 Apr and 1 Dec, where Nishita would
+    # give the day before).
+    Spec("kalashtami", "Kalashtami", "कालाष्टमी", K + 7, None, "pradosh"),
+    # Skanda Shashthi: the first day on which Shashthi is present between
+    # sunrise and sunset (Panchami-yukta Shashthi preferred) - all 12 Drik
+    # dates of 2026 (Sayahna fails 24 Mar, Madhyahna fails 19 Jun).
+    Spec("skanda_shashthi", "Skanda Shashthi", "स्कंद षष्ठी", S + 5, None, "dina"),
 ]
 
 FESTIVALS = [
@@ -226,6 +251,69 @@ FESTIVALS = [
          "guru-purnima"),
     Spec("sharad_purnima", "Sharad Purnima", "शरद पूर्णिमा", S + 14, 6, "moonrise", True,
          "sharad-purnima"),
+    # ---- Added after the Jivitputrika report (3 Oct 2026). Each rule is the
+    # one that reproduces Drik Panchang's New Delhi dates in the years where
+    # the candidate rules disagree; tests/test_festivals.py lists them.
+    # Sakat Chauth = the Sankashti of (purnimanta) Magha: Chaturthi at moonrise.
+    Spec("sakat_chauth", "Sakat Chauth", "सकट चौथ", K + 3, 9, "moonrise", True, "sakat-chauth"),
+    # Magha (purnimanta) Amavasya at sunrise, like every Amavasya snan day.
+    Spec("mauni_amavasya", "Mauni Amavasya", "मौनी अमावस्या", K + 14, 9, "udaya", True,
+         "mauni-amavasya"),
+    # Chaitra (purnimanta) Krishna Ashtami at sunrise (2024: 2 Apr; 2027: 30 Mar).
+    Spec("sheetala_ashtami", "Sheetala Ashtami (Basoda)", "शीतला अष्टमी (बसौड़ा)", K + 7, 11,
+         "udaya", True, "sheetala-ashtami"),
+    # Chaitra Shukla Pratipada at sunrise - the Chaitra Navratri rule.
+    Spec("gudi_padwa", "Gudi Padwa / Ugadi", "गुड़ी पड़वा / उगादी", S + 0, 0, "udaya", True,
+         "gudi-padwa"),
+    Spec("gangaur", "Gangaur", "गणगौर", S + 2, 0, "udaya", True, "gangaur"),
+    # Jyeshtha (purnimanta) Amavasya touching Madhyahna, earlier day on a tie
+    # (2022: 30 May; 2025: 26 May, not the sunrise day 27 May).
+    Spec("vat_savitri", "Vat Savitri Vrat", "वट सावित्री व्रत", K + 14, 1, "madhyahna", True,
+         "vat-savitri"),
+    # Jyeshtha Shukla Dashami in the forenoon (2022: 9 Jun; 2023: 30 May), in
+    # the adhika month when Jyeshtha is doubled (2026: 25 May).
+    Spec("ganga_dussehra", "Ganga Dussehra", "गंगा दशहरा", S + 9, 2, "purvahna", True,
+         "ganga-dussehra", tie="udaya3", adhika_first=True),
+    # Jyeshtha Purnima, the Purnima-vrat rule (Madhyahna, earlier day):
+    # 2023: 3 Jun; 2025: 10 Jun.
+    Spec("vat_purnima", "Vat Purnima Vrat", "वट पूर्णिमा व्रत", S + 14, 2, "madhyahna", True,
+         "vat-purnima"),
+    Spec("hariyali_teej", "Hariyali Teej", "हरियाली तीज", S + 2, 4, "udaya", True,
+         "hariyali-teej"),
+    Spec("nag_panchami", "Nag Panchami", "नाग पंचमी", S + 4, 4, "udaya", True, "nag-panchami"),
+    # Bhadrapada (purnimanta) Krishna Tritiya at sunrise (2025: 12 Aug; 2026: 31 Aug).
+    Spec("kajari_teej", "Kajari Teej", "कजरी तीज", K + 2, 4, "udaya", True, "kajari-teej"),
+    Spec("hal_shashthi", "Hal Shashthi (Lalahi Chhath)", "हल षष्ठी (ललही छठ)", K + 5, 4, "udaya",
+         True, "hal-shashthi"),
+    # Tritiya at sunrise, however briefly (2029: 4 minutes - Drik still 11 Sep).
+    Spec("hartalika_teej", "Hartalika Teej", "हरतालिका तीज", S + 2, 5, "udaya", True,
+         "hartalika-teej"),
+    # Panchami at Madhyahna, earlier day (2027: 4 Sep, Panchami from 12:25).
+    Spec("rishi_panchami", "Rishi Panchami", "ऋषि पंचमी", S + 4, 5, "madhyahna", True,
+         "rishi-panchami"),
+    Spec("anant_chaturdashi", "Anant Chaturdashi", "अनंत चतुर्दशी", S + 13, 5, "udaya", True,
+         "anant-chaturdashi"),
+    # Shraddha days: the tithi in Aparahna (Drik's shraddha pages).
+    Spec("pitru_paksha", "Pitru Paksha begins (Pratipada Shraddha)",
+         "पितृ पक्ष आरंभ (प्रतिपदा श्राद्ध)", K + 0, 5, "aparahna", True, "pitru-paksha"),
+    # Jivitputrika: Ashwin (purnimanta) Krishna Ashtami at Madhyahna, with the
+    # udaya3 tie: 2022 18 Sep (sunrise day), 2023 6 Oct (NOT the sunrise day 7
+    # Oct, Ashtami over by 8:08 AM), 2024 25 Sep, 2026 3 Oct, 2029 1 Oct.
+    Spec("jivitputrika", "Jivitputrika Vrat (Jitiya)", "जीवित्पुत्रिका व्रत (जितिया)", K + 7, 5,
+         "madhyahna", True, "jivitputrika", tie="udaya3"),
+    Spec("sarva_pitru_amavasya", "Sarva Pitru Amavasya (Mahalaya)",
+         "सर्व पितृ अमावस्या (महालया)", K + 14, 5, "aparahna", True, "sarva-pitru-amavasya"),
+    # Abhyang snan: Chaturdashi at (pre-dawn moonrise and) sunrise.
+    Spec("narak_chaturdashi", "Narak Chaturdashi (Roop Chaudas)", "नरक चतुर्दशी (रूप चौदस)",
+         K + 13, 6, "udaya", True, "narak-chaturdashi"),
+    # Kartika Shukla Dwadashi at sunrise (2024: 13 Nov; 2027: 11 Nov).
+    Spec("tulsi_vivah", "Tulsi Vivah", "तुलसी विवाह", S + 11, 7, "udaya", True, "tulsi-vivah"),
+    # Snan-daan day: Purnima at sunrise (2027: 14 Nov, the vrat being 13 Nov).
+    Spec("kartik_purnima", "Kartik Purnima", "कार्तिक पूर्णिमा", S + 14, 7, "udaya", True,
+         "kartik-purnima"),
+    # Purnima in Pradosh (2023: 26 Nov; 2027: 13 Nov).
+    Spec("dev_deepawali", "Dev Deepawali", "देव दीपावली", S + 14, 7, "pradosh", True,
+         "dev-deepawali"),
 ]
 
 # Recurring / festival keys switched off because they could not be validated
@@ -237,7 +325,16 @@ OMITTED: dict[str, str] = {
         "afternoon after Holika Dahan) the colour day and the Pratipada at sunrise can fall "
         "on different days, and Drik's multi-year Holi list could not be retrieved "
         "(rate-limited). Holika Dahan itself is validated and shown."),
+    "santan_saptami": (
+        "Santan Saptami (Bhadrapada Shukla Saptami): Drik's date could not be retrieved, and "
+        "the candidate rules disagree in 2026 (Saptami at sunrise -> 18 Sep, at Madhyahna -> "
+        "17 Sep) and 2027 (7 vs 6 Sep). Not computed."),
 }
+# Considered for DIVASTRO-111's audit and deliberately NOT modelled (no key is
+# ever produced for them; listed so the next audit does not redo the work):
+#   Skanda Shashthi/Kalashtami/Nirjala Ekadashi/Basant (Vasant) Panchami are in
+#   RECURRING/FESTIVALS/EKADASHI_NAMES; "Choti Diwali" is Narak Chaturdashi
+#   (Drik shows both on Diwali day itself in 2026, so no separate entry).
 # Individual timings switched off: (observance key, timing key) -> reason.
 OMITTED_TIMINGS: dict[tuple[str, str], str] = {
     ("holika_dahan", "holika_after_bhadra"): (
@@ -251,6 +348,10 @@ OMITTED_TIMINGS: dict[tuple[str, str], str] = {
         "Drik shifts Chaitra ghatasthapana to the Pratipada start and the end of a "
         "dual-sign lagna (2026: 6:52-7:43 AM); the lagna rule is not modelled. The "
         "Abhijit alternative matches and is shown."),
+    ("jivitputrika", "parana"): (
+        "Drik prints no parana time for Jivitputrika (only the Ashtami span); news sources "
+        "give 'next morning after sunrise' with city-dependent clock times that do not "
+        "agree. The page says parana is the next morning, without a time."),
 }
 
 
@@ -392,6 +493,8 @@ def _window(d: Day, rule: str, lat: float, lon: float) -> tuple[float, float] | 
         return d.part(3)
     if rule == "aparahna":
         return d.part(4)
+    if rule == "dina":                           # sunrise to sunset
+        return d.sunrise, d.sunset
     if rule == "sayahna":
         return d.sunset, d.sunset
     if rule == "pradosh":
@@ -502,6 +605,8 @@ RULE_TEXT = {
                   "मध्याह्न व्यापिनी तिथि"),
     "aparahna": ("tithi prevailing at Aparahna (fourth fifth of the day)",
                  "अपराह्न व्यापिनी तिथि"),
+    "dina": ("first day on which the tithi is present between sunrise and sunset",
+             "पहला दिन जब सूर्योदय से सूर्यास्त के बीच तिथि हो"),
     "sayahna": ("tithi prevailing at sunset", "सूर्यास्त के समय की तिथि"),
     "pradosh": ("tithi prevailing in Pradosh kaal (after sunset)", "प्रदोष व्यापिनी तिथि"),
     "nishita": ("tithi prevailing at Nishita kaal (midnight)", "निशीथ व्यापिनी तिथि"),
@@ -653,6 +758,35 @@ def _add_timings(o: dict, spec: Spec, d: Day, span: tuple[float, float], lat: fl
         # Sunset + a tenth of the night (Drik 2026: Karwa Chauth 29 Oct
         # 5:38-6:56 PM, Ahoi Ashtami 1 Nov 5:36-6:54 PM).
         t.insert(0, _timing("karwa_puja", tz, d.sunset, d.sunset + d.night_len / 10.0))
+    if key == "rishi_panchami":                 # Drik 2026 11:02-1:30 PM, 2027 12:25-1:36 PM
+        w = _clip(d.part(3), span)
+        if w:
+            t.append(_timing("madhyahna", tz, *w))
+    if key == "hartalika_teej":                 # Pratahkala in the Tritiya (2029: 4 minutes)
+        w = _clip(d.part(1), span)
+        if w:
+            t.append(_timing("pratah", tz, *w))
+    if key == "anant_chaturdashi":              # sunrise to the end of Chaturdashi
+        w = _clip((d.sunrise, d.next_sunrise), span)
+        if w:
+            t.append(_timing("puja", tz, *w))
+    if key == "sheetala_ashtami":               # sunrise to sunset
+        t.append(_timing("puja", tz, d.sunrise, d.sunset))
+    if key in ("pitru_paksha", "sarva_pitru_amavasya"):
+        # Shraddha: Kutup and Rohina are the 8th and 9th day muhurtas, then
+        # Aparahna (the 4th fifth of the day).
+        t.append(_timing("kutup", tz, *d.day_muhurta(8)))
+        t.append(_timing("rohina", tz, *d.day_muhurta(9)))
+        t.append(_timing("aparahna_kaal", tz, *d.part(4)))
+    if key == "narak_chaturdashi":
+        # Abhyang snan: from moonrise (or the start of Chaturdashi) to sunrise.
+        m = P._rise_or_set(d.sunrise - 0.25, swe.MOON, (lon, lat, 0.0), True, 0.25)
+        if m and m < d.sunrise:
+            s = max(m, span[0])
+            if s < d.sunrise:
+                t.append(_timing("abhyang", tz, s, d.sunrise))
+    if key == "dev_deepawali":                  # sunset + 3 night muhurtas
+        t.append(_timing("pradosh_kaal", tz, d.sunset, d.sunset + 3 * d.night_len / 15.0))
 
 
 
@@ -868,6 +1002,26 @@ def _tithi_runs(jd_from: float, jd_to: float) -> list[tuple[int, float, float]]:
     return out
 
 
+def _doubled(month: dict) -> bool:
+    """Whether this lunar month occurs twice this year: it is the adhika one,
+    or the month before it was the adhika month of the same name."""
+    if month["adhika"]:
+        return True
+    prev = P.lunar_month_at(month["start_jd"] - 1.0)
+    return bool(prev["adhika"] and prev["index"] == month["index"])
+
+
+def _lohri(ms: dict) -> dict:
+    """Lohri: the day before Makar Sankranti (Drik: 13 Jan 2026, 14 Jan 2024)."""
+    d = dt.date.fromisoformat(ms["date"]) - dt.timedelta(days=1)
+    return {
+        "key": "lohri", "name_en": "Lohri", "name_hi": "लोहड़ी", "date": d.isoformat(),
+        "major": True, "slug": "lohri", "kind": "festival", "rule": "sankranti-eve",
+        "rule_en": "the day before Makar Sankranti", "rule_hi": "मकर संक्रांति से एक दिन पहले",
+        "decided": "day-before-makar-sankranti", "month": None, "tithi": None, "timings": [],
+    }
+
+
 def _compute(first: dt.date, last: dt.date, lat: float, lon: float, tz: str) -> list[dict]:
     """Every validated observance dated first..last, unsorted."""
     P._ephemeris()
@@ -887,8 +1041,11 @@ def _compute(first: dt.date, last: dt.date, lat: float, lon: float, tz: str) -> 
             if o:
                 out.append(o)
         for spec in by_tithi.get(index, ()):
-            if spec.month is not None and (spec.month != month["index"] or month["adhika"]):
-                continue
+            if spec.month is not None:
+                if spec.month != month["index"]:
+                    continue
+                if month["adhika"] != (spec.adhika_first and _doubled(month)):
+                    continue
             rakhi = None
             if spec.key == "janmashtami":
                 chosen = _janmashtami(span, lat, lon, tz)
@@ -925,10 +1082,11 @@ def _compute(first: dt.date, last: dt.date, lat: float, lon: float, tz: str) -> 
                             rule_hi="होलिका दहन के अगले दिन", timings=[])
                 out.append(holi)
     for year in range(first.year, last.year + 1):
-        if first <= dt.date(year, 1, 16) and dt.date(year, 1, 12) <= last:
+        if first <= dt.date(year, 1, 16) and dt.date(year, 1, 11) <= last:
             ms = _makar_sankranti(year, lat, lon, tz)
             if ms:
                 out.append(ms)
+                out.append(_lohri(ms))
     lo, hi = first.isoformat(), last.isoformat()
     out = [o for o in out if lo <= o["date"] <= hi and o["key"] not in OMITTED]
     for o in out:

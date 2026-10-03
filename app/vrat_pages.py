@@ -198,6 +198,167 @@ ABOUT = {
         "देवउठनी (प्रबोधिनी) एकादशी, कार्तिक शुक्ल एकादशी पर भगवान विष्णु चार माह की योगनिद्रा से "
         "जागते हैं और चातुर्मास समाप्त होता है। तुलसी विवाह होता है और विवाह के मुहूर्त फिर शुरू होते "
         "हैं। भक्त व्रत रखकर अगले दिन पारण करते हैं।"),
+    # ---- Added with the Jivitputrika fix.
+    "jivitputrika": (
+        "Jivitputrika (Jitiya, Jiutiya) is kept by mothers in Bihar, Jharkhand, eastern Uttar "
+        "Pradesh and Nepal for the long life and well-being of their children, on Ashwin "
+        "Krishna Ashtami (purnimanta). It begins with nahay-khay the day before; the fast "
+        "itself is nirjala, without water, through the day and night, with worship of Jimutavahana "
+        "and the Jitiya katha. Parana, breaking the fast, is the next morning.",
+        "जीवित्पुत्रिका (जितिया, जिउतिया) व्रत बिहार, झारखंड, पूर्वी उत्तर प्रदेश और नेपाल में माताएं "
+        "संतान की लंबी आयु और कुशलता के लिए आश्विन कृष्ण अष्टमी (पूर्णिमांत) को रखती हैं। एक दिन पहले "
+        "नहाय-खाय होता है; व्रत निर्जला होता है, दिन-रात जल भी ग्रहण नहीं किया जाता, जीमूतवाहन की "
+        "पूजा व जितिया कथा होती है। पारण अगली सुबह किया जाता है।"),
+    "lohri": (
+        "Lohri, the evening before Makar Sankranti, is the winter harvest festival of Punjab and "
+        "North India. A bonfire is lit at dusk and people offer til, gur, rewari, peanuts and "
+        "popcorn to it, sing and dance; it is especially celebrated for a new bride or a newborn.",
+        "लोहड़ी, मकर संक्रांति से पहले की शाम, पंजाब और उत्तर भारत का शीतकालीन फसल पर्व है। संध्या को "
+        "अलाव जलाकर तिल, गुड़, रेवड़ी, मूंगफली व मक्का अर्पित किए जाते हैं, गीत और नृत्य होते हैं; नई "
+        "बहू या नवजात के घर यह विशेष उत्साह से मनाई जाती है।"),
+    "sakat-chauth": (
+        "Sakat Chauth (Tilkut Chauth), the Sankashti Chaturthi of Magha (purnimanta), is kept by "
+        "mothers for their children. Ganesha and Sakat Mata are worshipped with til and jaggery, "
+        "and the fast is broken after offering arghya to the rising Moon.",
+        "सकट चौथ (तिलकुट चौथ), माघ (पूर्णिमांत) की संकष्टी चतुर्थी, माताएं संतान के लिए रखती हैं। तिल-गुड़ "
+        "से गणेश जी और सकट माता की पूजा होती है और चंद्रोदय पर अर्घ्य देकर व्रत खोला जाता है।"),
+    "mauni-amavasya": (
+        "Mauni Amavasya, the Amavasya of Magha (purnimanta), is the great bathing day of the Magh "
+        "Mela at Prayagraj. Devotees bathe in the Ganga or a holy river, keep silence (mauna) and "
+        "give in charity.",
+        "माघ (पूर्णिमांत) की अमावस्या, मौनी अमावस्या प्रयागराज के माघ मेले का प्रमुख स्नान पर्व है। "
+        "श्रद्धालु गंगा या पवित्र नदी में स्नान, मौन व्रत और दान करते हैं।"),
+    "sheetala-ashtami": (
+        "Sheetala Ashtami (Basoda), Chaitra Krishna Ashtami (purnimanta), honours Sheetala Mata, "
+        "the goddess who protects from fevers and pox. Food is cooked the day before and the "
+        "stale (basi) food is offered and eaten; no fire is lit for cooking that day.",
+        "चैत्र कृष्ण अष्टमी (पूर्णिमांत), शीतला अष्टमी (बसौड़ा) पर शीतला माता की पूजा होती है, जो रोगों से "
+        "रक्षा करती हैं। भोजन एक दिन पहले बनाया जाता है और बासी भोजन का भोग लगाकर ग्रहण किया जाता "
+        "है; उस दिन चूल्हा नहीं जलाया जाता।"),
+    "gudi-padwa": (
+        "Gudi Padwa (Maharashtra) and Ugadi (Karnataka, Andhra Pradesh, Telangana) mark the lunar "
+        "New Year on Chaitra Shukla Pratipada. A gudi - a decorated pole with a cloth and kalash - "
+        "is raised at the door, and neem with jaggery is eaten for a year of both sweet and bitter.",
+        "चैत्र शुक्ल प्रतिपदा को गुड़ी पड़वा (महाराष्ट्र) और उगादी (कर्नाटक, आंध्र, तेलंगाना) चांद्र नववर्ष "
+        "के रूप में मनाए जाते हैं। द्वार पर गुड़ी - वस्त्र व कलश से सजा डंडा - लगाई जाती है और "
+        "नीम-गुड़ खाकर वर्ष के मीठे-कड़वे अनुभवों को स्वीकार किया जाता है।"),
+    "gangaur": (
+        "Gangaur, Chaitra Shukla Tritiya, is Rajasthan's festival of Gauri (Parvati) and Shiva. "
+        "Women worship Gauri for marital happiness - married women for their husbands, girls for "
+        "a good match - ending eighteen days of puja that begin the day after Holi.",
+        "चैत्र शुक्ल तृतीया, गणगौर राजस्थान का गौरी (पार्वती) और शिव का पर्व है। सुहागिनें पति के लिए और "
+        "कन्याएं अच्छे वर के लिए गौरी पूजन करती हैं; होली के अगले दिन से चलने वाली अठारह दिन की पूजा "
+        "इसी दिन पूर्ण होती है।"),
+    "vat-savitri": (
+        "Vat Savitri Vrat, on Jyeshtha Amavasya in North India (purnimanta), remembers Savitri, "
+        "who won back her husband Satyavan's life from Yama. Married women fast, worship the "
+        "banyan (vat) tree, tie raw thread around it while circling it, and hear the Savitri katha.",
+        "उत्तर भारत में ज्येष्ठ अमावस्या (पूर्णिमांत) को वट सावित्री व्रत सावित्री की स्मृति है, जिन्होंने "
+        "यमराज से पति सत्यवान के प्राण वापस पाए। सुहागिनें व्रत रखकर वट वृक्ष की पूजा करती हैं, कच्चा "
+        "सूत लपेटते हुए परिक्रमा करती हैं और सावित्री कथा सुनती हैं।"),
+    "vat-purnima": (
+        "Vat Purnima is the same Vat Savitri vrat as kept on Jyeshtha Purnima in Maharashtra, "
+        "Gujarat and the south (amanta calendar), fifteen days after the North Indian date. "
+        "Married women fast and worship the banyan tree for their husbands' long life.",
+        "वट पूर्णिमा वही वट सावित्री व्रत है जो महाराष्ट्र, गुजरात और दक्षिण भारत (अमांत) में ज्येष्ठ "
+        "पूर्णिमा को, उत्तर भारत की तिथि से पंद्रह दिन बाद, रखा जाता है। सुहागिनें पति की दीर्घायु के लिए "
+        "व्रत रखकर वट वृक्ष की पूजा करती हैं।"),
+    "ganga-dussehra": (
+        "Ganga Dussehra, Jyeshtha Shukla Dashami, celebrates the descent of the Ganga to earth "
+        "through Bhagiratha's penance. Devotees bathe in the Ganga, offer lamps and give in "
+        "charity; the bath is held to wash away ten kinds of sin.",
+        "ज्येष्ठ शुक्ल दशमी, गंगा दशहरा भगीरथ के तप से गंगा के पृथ्वी पर अवतरण का पर्व है। श्रद्धालु गंगा "
+        "स्नान, दीपदान और दान करते हैं; यह स्नान दस प्रकार के पापों को हरने वाला माना जाता है।"),
+    "hariyali-teej": (
+        "Hariyali Teej, Shravana Shukla Tritiya, celebrates the reunion of Shiva and Parvati in "
+        "the monsoon. Women wear green, apply mehndi, swing on decorated jhoolas, sing Sawan songs "
+        "and many keep a fast for their husbands.",
+        "श्रावण शुक्ल तृतीया, हरियाली तीज सावन में शिव-पार्वती के मिलन का उत्सव है। स्त्रियां हरे वस्त्र "
+        "पहनती हैं, मेहंदी लगाती हैं, झूला झूलती हैं, सावन के गीत गाती हैं और अनेक पति के लिए व्रत रखती हैं।"),
+    "nag-panchami": (
+        "Nag Panchami, Shravana Shukla Panchami, is the day serpent deities (nagas) are "
+        "worshipped. Images of snakes are drawn or installed and offered milk, flowers and "
+        "sweets, with prayers for the family's protection. (In Gujarat, Nag Pancham falls later, "
+        "in Bhadrapada.)",
+        "श्रावण शुक्ल पंचमी, नाग पंचमी पर नाग देवताओं की पूजा होती है। नाग की आकृति बनाकर या स्थापित कर "
+        "दूध, पुष्प और मिष्ठान्न अर्पित किए जाते हैं और परिवार की रक्षा की प्रार्थना होती है। (गुजरात में नाग "
+        "पंचम बाद में, भाद्रपद में होती है।)"),
+    "kajari-teej": (
+        "Kajari (Kajli, Badi) Teej, Bhadrapada Krishna Tritiya (purnimanta), is kept by married "
+        "women of Uttar Pradesh, Bihar, Rajasthan and Madhya Pradesh. They fast, worship the "
+        "neem tree (Neemadi Mata) and break the fast after offering arghya to the Moon; kajari "
+        "folk songs are sung.",
+        "भाद्रपद कृष्ण तृतीया (पूर्णिमांत), कजरी (कजली, बड़ी) तीज उत्तर प्रदेश, बिहार, राजस्थान और मध्य "
+        "प्रदेश में सुहागिनें रखती हैं। वे व्रत रखकर नीमड़ी माता की पूजा करती हैं और चंद्रमा को अर्घ्य देकर "
+        "व्रत खोलती हैं; कजरी लोकगीत गाए जाते हैं।"),
+    "hal-shashthi": (
+        "Hal Shashthi (Lalahi Chhath, Har Chhath), Bhadrapada Krishna Shashthi (purnimanta), is "
+        "Lord Balarama's birthday, whose weapon is the plough (hal). Mothers fast for their "
+        "children and eat nothing grown with a plough - often pasahi rice and buffalo milk.",
+        "भाद्रपद कृष्ण षष्ठी (पूर्णिमांत), हल षष्ठी (ललही छठ, हरछठ) हलधर बलराम जी की जयंती है। माताएं "
+        "संतान के लिए व्रत रखती हैं और हल से जोती भूमि का अन्न नहीं खातीं - प्रायः पसही चावल और भैंस "
+        "का दूध लिया जाता है।"),
+    "hartalika-teej": (
+        "Hartalika Teej, Bhadrapada Shukla Tritiya, honours Parvati's penance to win Shiva. "
+        "Women keep a nirjala fast, make clay images of Shiva and Parvati, worship them (morning "
+        "puja in Pratahkala is preferred), keep vigil at night and break the fast next morning.",
+        "भाद्रपद शुक्ल तृतीया, हरतालिका तीज शिव को पाने के लिए पार्वती के तप की स्मृति है। स्त्रियां "
+        "निर्जला व्रत रखकर मिट्टी के शिव-पार्वती बनाकर पूजन करती हैं (प्रातःकाल पूजा उत्तम), रात्रि "
+        "जागरण करती हैं और अगली सुबह व्रत खोलती हैं।"),
+    "rishi-panchami": (
+        "Rishi Panchami, Bhadrapada Shukla Panchami, honours the Saptarishis, the seven sages. "
+        "Women in particular bathe, fast and worship the sages at midday (Madhyahna), seeking "
+        "purification from faults committed unknowingly.",
+        "भाद्रपद शुक्ल पंचमी, ऋषि पंचमी सप्तर्षियों को समर्पित है। विशेष रूप से स्त्रियां स्नान, व्रत और "
+        "मध्याह्न में सप्तर्षि पूजन करती हैं, ताकि अनजाने में हुए दोषों से शुद्धि हो।"),
+    "anant-chaturdashi": (
+        "Anant Chaturdashi, Bhadrapada Shukla Chaturdashi, is the worship of Lord Vishnu as "
+        "Anant. A sacred thread with fourteen knots (the anant sutra) is tied on the arm after "
+        "puja; it is also the day Ganesh idols are immersed (Ganesh Visarjan).",
+        "भाद्रपद शुक्ल चतुर्दशी, अनंत चतुर्दशी पर भगवान विष्णु के अनंत रूप की पूजा होती है। पूजा के बाद "
+        "चौदह गांठों वाला अनंत सूत्र बांह पर बांधा जाता है; इसी दिन गणेश विसर्जन भी होता है।"),
+    "pitru-paksha": (
+        "Pitru Paksha, the fortnight of the ancestors, runs from Pratipada to Amavasya of the "
+        "dark half of Ashwin (purnimanta). On the tithi of an ancestor's passing, families offer "
+        "tarpan and shraddha - pinda, food for Brahmins, cows, crows and dogs - in the Kutup, "
+        "Rohina or Aparahna time.",
+        "पितृ पक्ष, पितरों का पखवाड़ा, आश्विन (पूर्णिमांत) कृष्ण प्रतिपदा से अमावस्या तक चलता है। पूर्वज की "
+        "मृत्यु तिथि पर परिवार कुतुप, रौहिण या अपराह्न काल में तर्पण और श्राद्ध - पिंडदान, ब्राह्मण भोजन "
+        "तथा गाय, कौए व कुत्ते के लिए भोजन - करते हैं।"),
+    "sarva-pitru-amavasya": (
+        "Sarva Pitru Amavasya (Mahalaya Amavasya) closes Pitru Paksha. Shraddha on this day "
+        "reaches all ancestors, including those whose tithi is not known; it is done in the "
+        "Kutup, Rohina or Aparahna time.",
+        "सर्व पितृ अमावस्या (महालया अमावस्या) पितृ पक्ष का अंतिम दिन है। इस दिन किया गया श्राद्ध सभी "
+        "पितरों तक पहुंचता है, उन तक भी जिनकी तिथि ज्ञात न हो; यह कुतुप, रौहिण या अपराह्न काल में किया "
+        "जाता है।"),
+    "narak-chaturdashi": (
+        "Narak Chaturdashi (Roop Chaudas), Kartika Krishna Chaturdashi (purnimanta), remembers "
+        "Krishna's victory over Narakasura. Before sunrise, while the Moon is up, people take an "
+        "oil bath with ubtan (Abhyang snan), and a lamp for Yama is lit in the evening.",
+        "कार्तिक कृष्ण चतुर्दशी (पूर्णिमांत), नरक चतुर्दशी (रूप चौदस) श्रीकृष्ण की नरकासुर पर विजय की "
+        "स्मृति है। सूर्योदय से पहले, चंद्रोदय के बाद, उबटन व तेल से अभ्यंग स्नान किया जाता है और संध्या "
+        "को यम का दीपक जलाया जाता है।"),
+    "tulsi-vivah": (
+        "Tulsi Vivah, on Kartika Shukla Dwadashi, is the ceremonial wedding of the tulsi plant "
+        "(as Vrinda) to Lord Vishnu as Shaligram. Families decorate the tulsi like a bride and "
+        "perform the rites of a wedding; the Hindu wedding season begins after it.",
+        "कार्तिक शुक्ल द्वादशी को तुलसी विवाह में तुलसी (वृंदा) का शालिग्राम रूप भगवान विष्णु से विधिवत "
+        "विवाह कराया जाता है। तुलसी को दुल्हन की तरह सजाकर विवाह की रस्में की जाती हैं; इसके बाद विवाह के "
+        "मुहूर्त शुरू होते हैं।"),
+    "kartik-purnima": (
+        "Kartik Purnima ends the holy month of Kartika. It is a great day for bathing in the "
+        "Ganga or a holy river and giving in charity, and also Guru Nanak Jayanti and Tripuri "
+        "Purnima, when Shiva destroyed Tripurasura.",
+        "कार्तिक पूर्णिमा पवित्र कार्तिक मास का समापन है। यह गंगा या पवित्र नदी में स्नान और दान का "
+        "महापर्व है; इसी दिन गुरु नानक जयंती और त्रिपुरी पूर्णिमा (शिव द्वारा त्रिपुरासुर वध) भी है।"),
+    "dev-deepawali": (
+        "Dev Deepawali, the 'Diwali of the gods', is celebrated on Kartik Purnima evening, above "
+        "all on the ghats of Varanasi, which are lit with lakhs of diyas. It marks Shiva's "
+        "victory over Tripurasura; lamps are offered to the Ganga in Pradosh kaal.",
+        "देव दीपावली, 'देवताओं की दिवाली', कार्तिक पूर्णिमा की संध्या को, विशेषकर वाराणसी के घाटों पर लाखों "
+        "दीयों के साथ मनाई जाती है। यह शिव की त्रिपुरासुर पर विजय का पर्व है; प्रदोष काल में गंगा को "
+        "दीपदान किया जाता है।"),
 }
 
 # Short notes where traditions differ, shown on the festival page.
@@ -224,6 +385,43 @@ TRADITION_NOTE = {
         "Bengal and some almanacs Vijayadashami can fall a day later.",
         "तिथि द्रिक पंचांग के अनुसार है (अपराह्न में दशमी, श्रवण नक्षत्र को प्राथमिकता)। बंगाल और "
         "कुछ पंचांगों में विजयादशमी एक दिन बाद हो सकती है।"),
+    "jivitputrika": (
+        "Dates follow Drik Panchang (Ashtami at midday; when it is at sunrise only briefly, as in "
+        "2023, the previous day). Nahay-khay is the day before and parana the next morning; "
+        "regional panchangs (e.g. Mithila) can differ by a day.",
+        "तिथि द्रिक पंचांग के अनुसार है (मध्याह्न में अष्टमी; सूर्योदय पर थोड़ी देर ही हो, जैसे 2023 में, तो "
+        "पिछला दिन)। नहाय-खाय एक दिन पहले और पारण अगली सुबह होता है; क्षेत्रीय पंचांगों (जैसे मिथिला) में "
+        "कभी-कभी एक दिन का अंतर होता है।"),
+    "vat-savitri": (
+        "Two traditions: North India keeps Vat Savitri on Jyeshtha Amavasya (this date); "
+        "Maharashtra, Gujarat and the south keep it as Vat Purnima fifteen days later.",
+        "दो परंपराएं: उत्तर भारत में वट सावित्री ज्येष्ठ अमावस्या (यह तिथि) को; महाराष्ट्र, गुजरात और दक्षिण "
+        "भारत में पंद्रह दिन बाद वट पूर्णिमा के रूप में।"),
+    "vat-purnima": (
+        "Two traditions: this is the Purnima (amanta) date of Maharashtra, Gujarat and the south; "
+        "North India keeps Vat Savitri on the Amavasya fifteen days earlier.",
+        "दो परंपराएं: यह महाराष्ट्र, गुजरात और दक्षिण भारत की पूर्णिमा (अमांत) तिथि है; उत्तर भारत में वट "
+        "सावित्री पंद्रह दिन पहले अमावस्या को होता है।"),
+    "ganga-dussehra": (
+        "When Jyeshtha is doubled (an adhika month, as in 2026), Drik Panchang keeps Ganga "
+        "Dussehra in the adhika Jyeshtha; some almanacs give the nija Jyeshtha date a month later.",
+        "जब ज्येष्ठ दो हों (अधिक मास, जैसे 2026 में), द्रिक पंचांग गंगा दशहरा अधिक ज्येष्ठ में बताता है; "
+        "कुछ पंचांग एक माह बाद निज ज्येष्ठ की तिथि देते हैं।"),
+    "pitru-paksha": (
+        "Drik Panchang counts Pitru Paksha from the Pratipada shraddha; Purnima shraddha is on "
+        "the day before, and many calendars start the fortnight there.",
+        "द्रिक पंचांग पितृ पक्ष प्रतिपदा श्राद्ध से गिनता है; पूर्णिमा श्राद्ध एक दिन पहले होता है और कई "
+        "कैलेंडर पखवाड़ा वहीं से शुरू करते हैं।"),
+    "dev-deepawali": (
+        "Drik Panchang publishes Dev Deepawali for Varanasi; the date here uses the same rule "
+        "(Purnima in Pradosh), and the Pradosh kaal shown is New Delhi's.",
+        "द्रिक पंचांग देव दीपावली वाराणसी के लिए देता है; यहां तिथि उसी नियम (प्रदोष में पूर्णिमा) से है "
+        "और दिया गया प्रदोष काल नई दिल्ली का है।"),
+    "kartik-purnima": (
+        "This is the snan-daan day (Purnima at sunrise). When Purnima begins the previous "
+        "afternoon, the Purnima fast and Dev Deepawali can fall a day earlier.",
+        "यह स्नान-दान का दिन है (सूर्योदय पर पूर्णिमा)। जब पूर्णिमा पिछले दिन दोपहर बाद शुरू हो, तो पूर्णिमा "
+        "व्रत और देव दीपावली एक दिन पहले हो सकते हैं।"),
 }
 
 
@@ -271,7 +469,7 @@ def _festival_slugs(year: int) -> list[str]:
     switched off, plus Devuthani Ekadashi and Makar Sankranti."""
     keys_off = set(festivals.OMITTED)
     slugs = [s.slug for s in festivals.FESTIVALS if s.key not in keys_off and s.slug]
-    slugs += ["devuthani-ekadashi", "makar-sankranti"]
+    slugs += ["devuthani-ekadashi", "makar-sankranti", "lohri"]
     if "holi" not in keys_off:
         slugs.append("holi")
     return slugs
@@ -282,6 +480,7 @@ def festival_names() -> dict[str, tuple[str, str]]:
     out = {s.slug: (s.name_en, s.name_hi) for s in festivals.FESTIVALS if s.slug}
     out["devuthani-ekadashi"] = ("Devuthani Ekadashi", "देवउठनी एकादशी")
     out["makar-sankranti"] = ("Makar Sankranti", "मकर संक्रांति")
+    out["lohri"] = ("Lohri", "लोहड़ी")
     out["holi"] = ("Holi", "होली")
     return out
 
