@@ -129,6 +129,11 @@ a.tool-card { text-decoration: none; }
 .pa-times .bad  { border-color: rgba(240, 112, 140, 0.32); color: var(--rose); }
 .pa-times .good { border-color: rgba(111, 211, 154, 0.32); color: var(--green); }
 .pa-times span { color: var(--ink-dim); }
+/* DIVASTRO-111: the date's vrat/festivals with their puja muhurat, parana, moonrise… */
+.pa-vrat-item + .pa-vrat-item { margin-top: 14px; }
+.pa-vrat-item h4 { margin: 0 0 8px; font-size: 14.5px; font-weight: 600; }
+.pa-vrat-item h4 a { color: var(--gold); text-decoration: none; }
+.pa-vrat-item h4 a:hover { text-decoration: underline; }
 
 @media (max-width: 620px) {
   .ms-num { font-size: 38px; }

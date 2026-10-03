@@ -483,6 +483,13 @@ def _tool_crumbs(tool: str, city: City, lang: str = EN) -> list[tuple[str, str]]
 # /panchang
 # --------------------------------------------------------------------------
 
+def _vrat_block(city: City, day: dt.date, lang: str = EN) -> str:
+    """Today's vrat/festivals with their puja muhurat, parana etc. for this
+    city (DIVASTRO-111); empty on an ordinary day."""
+    from . import vrat_pages            # vrat_pages imports this module: import late
+    return vrat_pages.panchang_block(day, city.latitude, city.longitude, city.timezone, lang)
+
+
 def _panchang_page(city: City) -> HTMLResponse:
     day = _today()
     p = _panchang(city.slug, day)
@@ -526,6 +533,7 @@ def _panchang_page(city: City) -> HTMLResponse:
 <div class="box"><p>Today in {_e(city.name)} is <strong>{_e(paksha)} {_e(s['tithi'])}</strong>
 with the Moon in <strong>{_e(s['nakshatra'])}</strong> nakshatra. Rahu Kaal runs
 <strong>{_span(m['rahu_kaal'], day)}</strong> — avoid starting anything new in that window.</p></div>
+{_vrat_block(city, day)}
 <div class="scroll"><table>{table}</table></div>
 <p>Times are for {_e(city.label)} ({city.latitude:.4f}°N, {city.longitude:.4f}°E) in
 Indian Standard Time. The panchang day runs from sunrise to the next sunrise, so a tithi
@@ -586,6 +594,7 @@ def _panchang_page_hi(city: City) -> HTMLResponse:
 <div class="box"><p>आज {_e(city.name_hi)} में <strong>{_e(paksha)} की {_e(tithi)}</strong> तिथि है और
 चंद्रमा <strong>{_e(nak)}</strong> नक्षत्र में है। राहु काल <strong>{rahu}</strong> तक रहेगा —
 इस समय में कोई नया काम शुरू न करें।</p></div>
+{_vrat_block(city, day, HI)}
 <div class="scroll"><table>{table}</table></div>
 <p>सभी समय {_e(city.name_hi)} ({city.latitude:.4f}°N, {city.longitude:.4f}°E) के लिए भारतीय मानक
 समय (IST) में हैं। पंचांग का दिन सूर्योदय से अगले सूर्योदय तक चलता है, इसलिए कोई तिथि या नक्षत्र

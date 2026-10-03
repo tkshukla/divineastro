@@ -255,11 +255,26 @@
     loadPanchang();
   });
   q('#pa-date')?.addEventListener('change', () => loadPanchang());
-  let paShown = null;                      // {p, place}: re-rendered when the language changes
+  let paShown = null;                      // {p, place, vrat}: re-rendered when the language changes
+  let paSeq = 0;                           // a slow reply for an old date/place must not win
+
+  // DIVASTRO-111: the date's vrat/festivals with their validated timings. Any
+  // failure is "nothing", so the section simply does not appear.
+  async function fetchVratDay(place, date) {
+    try {
+      const params = new URLSearchParams({
+        lat: place.latitude, lon: place.longitude, tz: place.timezone || '',
+      });
+      if (date) params.set('date', date);
+      const res = await fetch(`/api/vrat/day?${params}`);
+      return res.ok ? await res.json() : null;
+    } catch { return null; }
+  }
 
   async function loadPanchang() {
     const err = q('#panchang-error');
     err.hidden = true;
+    const seq = ++paSeq;
     const place = paPlace || paPick() ||
       { latitude: 28.6139, longitude: 77.2090, timezone: 'Asia/Kolkata', label: 'New Delhi, India' };
     const params = new URLSearchParams({
@@ -269,13 +284,17 @@
     if (date) params.set('date', date);
 
     try {
+      const vratReq = fetchVratDay(place, date);
       const res = await fetch(`/api/panchang?${params}`);
       const data = await readJson(res);
       if (!res.ok) throw new Error(failText(data.detail, 'paErr', 'Could not compute the panchang.'));
+      const vrat = await vratReq;
+      if (seq !== paSeq) return;
       paSharePlace = place;                // DIVASTRO-107: the share link's city
-      paShown = { p: data, place };
-      renderPanchang(data, place);
+      paShown = { p: data, place, vrat };
+      renderPanchang(data, place, vrat);
     } catch (ex) {
+      if (seq !== paSeq) return;
       err.textContent = ex.message || tr('paErr', 'Could not compute the panchang.'); err.hidden = false;
     }
   }
@@ -283,7 +302,33 @@
   const hhmm = (iso) => (iso ? String(iso).slice(11, 16) : '—');
   const span = (w) => (w ? `${hhmm(w.start)} – ${hhmm(w.end)}` : '—');
 
-  function renderPanchang(p, place) {
+  // DIVASTRO-111: "Vrat & Festivals today" — each observance of the shown date,
+  // linked to its festival page (or the vrat calendar), with exactly the timings
+  // the festival engine validated: puja muhurat, parana, moonrise, pradosh, nishita…
+  // Nothing at all on an ordinary day.
+  function vratSection(v, p, place) {
+    const items = (v && v.date === p.date && Array.isArray(v.items)) ? v.items : [];
+    if (!items.length) return '';
+    const hi = isHi();
+    const isToday = p.date === todayIn(place && place.timezone);
+    const heading = isToday ? tr('vratDayToday', 'Vrat & Festivals today')
+      : tr('vratDayOn', 'Vrat & Festivals on {d}').replace('{d}', (hi ? v.day_hi : v.day_en) || showDate(p.date));
+    const when = (t) => {
+      const day = t.day_en ? `${hi ? t.day_hi : t.day_en}, ` : '';
+      return day + (t.at ? hhmm(t.at) : `${hhmm(t.start)} – ${hhmm(t.end)}`);
+    };
+    const rows = items.map((it) => {
+      const times = (it.timings || []).map((t) =>
+        `<div class="good"><span>${esc(hi ? t.label_hi : t.label_en)}</span><b>${esc(when(t))}</b></div>`).join('');
+      return `<div class="pa-vrat-item">
+          <h4><a href="${esc(hi ? it.url_hi : it.url)}">${esc(hi ? it.name_hi : it.name_en)}</a></h4>
+          ${times ? `<div class="pa-times">${times}</div>` : ''}
+        </div>`;
+    }).join('');
+    return `<div class="card pa-card pa-vrat" id="pa-vrat"><h3>${esc(heading)}</h3>${rows}</div>`;
+  }
+
+  function renderPanchang(p, place, vrat) {
     const hi = isHi();
     // /api/panchang sends every name in both languages (app/astro/names_hi.py).
     const name = (r) => (hi ? r.label_hi || r.name_hi : '') || r.label || r.name;
@@ -316,6 +361,8 @@
           <div><h4>${esc(tr('karanaL', 'Karana'))}</h4>${limb(p.karana)}</div>
         </div>
       </div>
+
+      ${vratSection(vrat, p, place)}
 
       <div class="card pa-card">
         <h3>${esc(tr('timingsL', 'Timings'))}</h3>
@@ -832,14 +879,14 @@
     qa('#mu-event option').forEach((o) => {
       if (MU_EVENTS[o.value]) o.textContent = tr(MU_EVENTS[o.value], o.textContent);
     });
-    if (paShown) renderPanchang(paShown.p, paShown.place);
+    if (paShown) renderPanchang(paShown.p, paShown.place, paShown.vrat);
     if (muShown && !q('#muhurat-result').hidden) findMuhurat(false);
     if (choShown && !q('#choghadiya-result').hidden) loadChoghadiya(false);
   }
   window.applyToolsLanguage = applyToolsLanguage;
   applyToolsLanguage();
   // The SEO city list (Hindi city names) may arrive after the first render.
-  if (SHARE()) SHARE().ready.then(() => { if (paShown) renderPanchang(paShown.p, paShown.place); });
+  if (SHARE()) SHARE().ready.then(() => { if (paShown) renderPanchang(paShown.p, paShown.place, paShown.vrat); });
 
   /* ------------------------------------------------------------- deep links */
   // The server-rendered /panchang, /rahu-kaal, /choghadiya and /kundali-milan

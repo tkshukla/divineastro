@@ -103,6 +103,16 @@ const A_I18N = {
     emailChange: "Use a different email",
     emailNeedAddress: "Enter your email address.", emailNeedCode: "Enter the 6-digit code.",
     signInFailed: "Sign-in failed. Please try again.",
+    // DIVASTRO-111: the rest of the sheet and menu, so Hindi leaves no English behind.
+    account: "Account", emailPlaceholder: "name@gmail.com",
+    legalLine: "By continuing you accept our {terms} and {privacy}.",
+    terms: "Terms", privacy: "Privacy Policy",
+    devEmailPrompt: "Developer sign-in — email:",
+    status: {
+      created: "Not paid", awaiting_verification: "Awaiting verification", paid: "Paid",
+      failed: "Failed", refunded: "Refunded", rejected: "Rejected",
+      pending: "Pending", in_progress: "In progress", delivered: "Delivered",
+    },
   },
   hi: {
     signIn: "साइन इन", signOut: "साइन आउट",
@@ -193,10 +203,40 @@ const A_I18N = {
     emailChange: "दूसरा ईमेल इस्तेमाल करें",
     emailNeedAddress: "अपना ईमेल पता दर्ज करें।", emailNeedCode: "6 अंकों का कोड दर्ज करें।",
     signInFailed: "साइन-इन नहीं हो सका। कृपया फिर से कोशिश करें।",
+    account: "मेरा खाता", emailPlaceholder: "आपका ईमेल पता",
+    legalLine: "आगे बढ़कर आप हमारी {terms} और {privacy} स्वीकार करते हैं।",
+    terms: "शर्तें", privacy: "गोपनीयता नीति",
+    devEmailPrompt: "डेवलपर साइन-इन — ईमेल:",
+    status: {
+      created: "भुगतान नहीं हुआ", awaiting_verification: "पुष्टि की प्रतीक्षा", paid: "भुगतान हो गया",
+      failed: "विफल", refunded: "धनवापसी हो गई", rejected: "अस्वीकृत",
+      pending: "लंबित", in_progress: "प्रगति पर", delivered: "भेज दी गई",
+    },
+    // The server's sign-in errors are English; these are the ones a person can fix.
+    errors: {
+      "Invalid username or password.": "यूज़रनेम या पासवर्ड गलत है।",
+      "That username is already taken.": "यह यूज़रनेम पहले से लिया जा चुका है।",
+      "Username must be 3-30 characters: letters, numbers, _ or - only.":
+        "यूज़रनेम 3-30 अक्षरों का हो: केवल अंग्रेज़ी अक्षर, अंक, _ या -।",
+    },
   },
 };
 
 const at = (k) => (A_I18N[state.lang] || A_I18N.en)[k] ?? A_I18N.en[k] ?? k;
+
+/* A sign-in error as the reader should see it. The email endpoints already answer
+   in the sheet's language; the username and phone ones answer in English, so in
+   Hindi a known message is translated and any other English one becomes the
+   generic Hindi failure line (undefined -> showErr's own fallback). */
+function authErr(detail) {
+  if (typeof detail !== "string") return undefined;
+  if (state.lang !== "hi" || /[ऀ-ॿ]/.test(detail)) return detail;
+  const known = (at("errors") || {})[detail];
+  if (known) return known;
+  const m = /^Password must be at least (\d+) characters\.$/.exec(detail);
+  return m ? `पासवर्ड कम से कम ${m[1]} अक्षरों का हो।` : undefined;
+}
+const statusText = (s) => (at("status") || {})[s] || s;
 
 /* ---------- generic modal ---------- */
 function modal(html, { dismissable = true } = {}) {
@@ -204,7 +244,7 @@ function modal(html, { dismissable = true } = {}) {
   const back = document.createElement("div");
   back.className = "modal-backdrop";
   back.innerHTML = `<div class="modal" role="dialog" aria-modal="true">
-    ${dismissable ? '<button class="modal-x" aria-label="Close">&times;</button>' : ""}
+    ${dismissable ? `<button class="modal-x" aria-label="${escapeHtml(at("close"))}">&times;</button>` : ""}
     <div class="modal-body">${html}</div></div>`;
   document.body.append(back);
   if (dismissable) {
@@ -335,7 +375,7 @@ function renderAccountBar() {
            could not find Sign out or the admin panel hidden behind it. -->
       <button class="ghost-btn has-menu" id="btn-acct" aria-haspopup="menu" aria-expanded="false">${escapeHtml(
         acct.user.name || (acct.user.email || "").split("@")[0]
-        || acct.user.login_label || "Account")}<span class="caret">&#9662;</span></button>
+        || acct.user.login_label || at("account"))}<span class="caret">&#9662;</span></button>
       <div class="acct-drop" hidden>
         <button data-act="history">${escapeHtml(at("history"))}</button>
         <button data-act="orders">${escapeHtml(at("orders"))}</button>
@@ -356,13 +396,16 @@ function renderAccountBar() {
     drop.hidden = !drop.hidden;
     acctBtn.setAttribute("aria-expanded", String(!drop.hidden));
   };
-  // Clicking anywhere else closes it, as any menu should.
-  document.addEventListener("click", (e) => {
+  // Clicking anywhere else closes it, as any menu should. One listener, replaced on
+  // each render: the bar is re-rendered on every EN / हिं switch now.
+  if (acct.closeMenuOnClick) document.removeEventListener("click", acct.closeMenuOnClick);
+  acct.closeMenuOnClick = (e) => {
     if (!bar.contains(e.target) && !drop.hidden) {
       drop.hidden = true;
       acctBtn.setAttribute("aria-expanded", "false");
     }
-  });
+  };
+  document.addEventListener("click", acct.closeMenuOnClick);
   drop.querySelectorAll("button").forEach((b) => {
     b.onclick = async () => {
       drop.hidden = true;
@@ -487,7 +530,7 @@ function openSignIn(onDone) {
         <div class="field">
           <label for="em-address">${escapeHtml(at("emailLabel"))}</label>
           <input id="em-address" type="email" inputmode="email" autocomplete="email"
-                 autocapitalize="off" spellcheck="false" placeholder="name@gmail.com" maxlength="128" />
+                 autocapitalize="off" spellcheck="false" placeholder="${escapeHtml(at("emailPlaceholder"))}" maxlength="128" />
         </div>
         <p class="field-note">${escapeHtml(at("emailHint"))}</p>
         <button type="button" class="primary" id="em-send">${escapeHtml(at("emailSend"))}</button>
@@ -506,18 +549,19 @@ function openSignIn(onDone) {
       <button type="button" class="link-btn" id="em-back">${escapeHtml(at("backToProviders"))}</button>
     </div>
     <p class="modal-error" hidden></p>
-    <p class="legal-line">By continuing you accept our
-      <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>.</p>`);
+    <p class="legal-line">${escapeHtml(at("legalLine"))
+      .replace("{terms}", `<a href="/terms">${escapeHtml(at("terms"))}</a>`)
+      .replace("{privacy}", `<a href="/privacy">${escapeHtml(at("privacy"))}</a>`)}</p>`);
 
   const errBox = back.querySelector(".modal-error");
-  const showErr = (msg) => { errBox.textContent = msg || at("signInFailed"); errBox.hidden = false; };
+  const showErr = (msg) => { errBox.textContent = authErr(msg) || at("signInFailed"); errBox.hidden = false; };
   const choices = back.querySelector("#signin-choices");
 
   back.querySelectorAll(".oauth-btn[data-provider]").forEach((b) => {
     b.onclick = async () => {
       const provider = b.dataset.provider;
       if (provider === "dev") {
-        const email = prompt("Developer sign-in — email:", "dev@example.com");
+        const email = prompt(at("devEmailPrompt"), "dev@example.com");
         if (!email) return;
         const res = await fetch("/api/auth/dev", {
           method: "POST", headers: { "Content-Type": "application/json" },
@@ -970,7 +1014,7 @@ async function openCashfree(orderId, c) {
 function openUpiInstructions(orderId, c, back) {
   const body = back.querySelector(".modal") || back;
   body.innerHTML = `
-    <button class="modal-x" aria-label="Close">&times;</button>
+    <button class="modal-x" aria-label="${escapeHtml(at("close"))}">&times;</button>
     <h3>${escapeHtml(at("upiTitle"))}</h3>
     <p class="modal-sub">${escapeHtml(at("upiSub"))}</p>
     <div class="upi-box">
@@ -1102,8 +1146,8 @@ async function openOrders() {
     <div class="hist">${orders.length ? orders.map((o) => `
       <div class="hist-row">
         <div class="hist-q">${escapeHtml(o.title)} — ₹${o.amount}</div>
-        <div class="hist-meta">${escapeHtml(o.created_at)} · ${escapeHtml(o.status)}${
-          o.fulfilment !== "not_applicable" ? " · " + escapeHtml(o.fulfilment) : ""}</div>
+        <div class="hist-meta">${escapeHtml(o.created_at)} · ${escapeHtml(statusText(o.status))}${
+          o.fulfilment !== "not_applicable" ? " · " + escapeHtml(statusText(o.fulfilment)) : ""}</div>
       </div>`).join("") : "<p class='modal-sub'>—</p>"}</div>`);
 }
 
