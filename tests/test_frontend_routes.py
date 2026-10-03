@@ -120,6 +120,19 @@ def home_value_checks() -> None:
           re.search(r"try \{ localStorage\.setItem\(TODAY_KEY", tools_js) is not None)
     check("a failed load hides the strip", "todayStrip.hidden = true" in tools_js)
 
+    # DIVASTRO-111: "Today: <vrat>" line, from its own tiny endpoint, failing silently.
+    check("the strip has a hidden vrat line linking to /vrat-tyohar",
+          re.search(r'<a class="today-vrat" id="today-vrat" href="/vrat-tyohar" hidden>', home)
+          is not None)
+    check("tools.js fetches /api/vrat/today", "fetch(`/api/vrat/today?${params}`)" in tools_js)
+    _p, body = js_function(tools_js, "loadVrat")
+    check("the vrat lookup swallows every failure", "catch" in body and "hidden = true" not in body
+          and "throw" not in body)
+    _p, line = js_function(tools_js, "renderVratLine")
+    check("the vrat line says 'आज:' / 'Today:' and links to the Hindi page in Hindi",
+          "'आज'" in line and "'Today'" in line and "/hi/vrat-tyohar" in line)
+    check("an ordinary day shows no line", "!items.length" in line and "el.hidden = true" in line)
+
 
 # ---- DIVASTRO-107: WhatsApp share buttons ---------------------------------
 SHARE_KEYS = ("shareWa", "shareShort", "shareMilanText", "shareTodayText", "sharePanchangText")

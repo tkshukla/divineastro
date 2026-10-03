@@ -158,11 +158,32 @@ def more_page_checks() -> None:
     check("unknown muhurat kind has no share text", share.seo_share_text("/muhurat/foo-2026") is None)
 
 
+def vrat_checks() -> None:
+    """DIVASTRO-111: the vrat / tyohar pages share like the other SEO pages."""
+    print("\nShare buttons on the vrat-tyohar pages (DIVASTRO-111)")
+    for path, campaign, needle in (
+            ("/vrat-tyohar", "seo-vrat-tyohar", "आज के व्रत और त्योहार"),
+            ("/hi/vrat-tyohar/2026", "seo-vrat-tyohar", "2026"),
+            ("/ekadashi-2026", "seo-ekadashi", "Ekadashi 2026"),
+            ("/hi/ekadashi-2027", "seo-ekadashi", "एकादशी 2027"),
+            ("/tyohar/diwali-2026", "seo-tyohar", "Diwali (Lakshmi Puja) 2026"),
+            ("/hi/tyohar/karwa-chauth-2026", "seo-tyohar", "करवा चौथ 2026")):
+        text = share.seo_share_text(path) or ""
+        check(f"{path}: share text names it", needle in text, text)
+        html = client.get(path).text
+        check(f"{path}: has a wa.me share link tagged {campaign}",
+              'class="share-wa"' in html and f"utm_campaign%3D{campaign}" in html)
+    for bad in ("/tyohar/no-such-festival-2026", "/tyohar/diwali-xx", "/vrat-tyohar/abc",
+                "/ekadashi-xyz"):
+        check(f"{bad}: no share text", share.seo_share_text(bad) is None)
+
+
 def main() -> int:
     analytics_checks()
     seo_checks()
     city_list_checks()
     more_page_checks()
+    vrat_checks()
     print("\n" + "=" * 60)
     if failures:
         print(f"{len(failures)} FAILURES")

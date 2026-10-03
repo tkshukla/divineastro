@@ -572,12 +572,12 @@ def _more_links(rashi: Rashi | None, lang: str) -> str:
     if lang == "hi":
         links = [(path(rashi, "en"), "Read in English"), ("/panchang", "आज का पंचांग"),
                  ("/rahu-kaal", "आज का राहु काल"), ("/choghadiya", "आज का चौघड़िया"),
-                 ("/kundali-milan", "कुंडली मिलान")]
+                 ("/kundali-milan", "कुंडली मिलान"), ("/hi/vrat-tyohar", "आज के व्रत और त्योहार")]
         head = "और भी"
     else:
         links = [(path(rashi, "hi"), "हिन्दी में पढ़ें"), ("/panchang", "Today's Panchang"),
                  ("/rahu-kaal", "Rahu Kaal today"), ("/choghadiya", "Choghadiya today"),
-                 ("/kundali-milan", "Kundali Milan")]
+                 ("/kundali-milan", "Kundali Milan"), ("/vrat-tyohar", "Today's vrat & festivals")]
         head = "More free tools"
     items = "".join(f'<li><a href="{_e(h)}">{_e(t)}</a></li>' for h, t in links)
     return f'<h2>{head}</h2><ul class="links">{items}</ul>'

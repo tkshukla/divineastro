@@ -2411,5 +2411,10 @@ button.free-badge:focus-visible { outline: 3px solid var(--gold); outline-offset
 /* The compact one in the home Today strip's header row. */
 .share-wa-sm { padding: 0 12px; font-size: 13.5px; gap: 6px; }
 .today-head .today-title { margin-right: auto; }
+/* DIVASTRO-111: "Today: Papankusha Ekadashi" under the Today strip. */
+.today-vrat { display: block; margin-top: 8px; font-size: 13.5px; color: var(--gold);
+              text-decoration: none; }
+.today-vrat:hover { text-decoration: underline; }
+.today-vrat[hidden] { display: none; }
 /* SEO pages: top-right, on the line of the "← Divine Astro" back link. */
 .seo > .share-wa { float: right; margin: -10px 0 6px 10px; text-decoration: none; color: var(--ink); }

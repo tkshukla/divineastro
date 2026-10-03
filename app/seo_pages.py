@@ -408,6 +408,7 @@ def _tool_links(city: City, current: str, lang: str = EN) -> str:
             links.append(("/hi/free-kundali", "मुफ़्त जन्म कुंडली"))
         links.append((_app_link("muhurat", HI), "मुहूर्त खोजें"))
         links.append(("/hi/rashifal", "आज का राशिफल"))
+        links.append(("/hi/vrat-tyohar", "आज के व्रत और त्योहार"))
         heading = "और मुफ़्त टूल"
     else:
         links = [(_path(t, city), f"{TOOLS[t][0]} in {city.name}") for t in TOOLS if t != current]
@@ -417,6 +418,7 @@ def _tool_links(city: City, current: str, lang: str = EN) -> str:
             links.append(("/free-kundali", "Free Janam Kundali"))
         links.append(("/?open=muhurat", "Muhurat Finder"))
         links.append(("/rashifal", "Today's Rashifal"))
+        links.append(("/vrat-tyohar", "Today's Vrat & Festivals"))
         heading = "More free tools"
     items = "".join(f'<li><a href="{_e(h)}">{_e(t)}</a></li>' for h, t in links)
     return f'<h2>{heading}</h2><ul class="links">{items}</ul>'
@@ -1362,7 +1364,8 @@ def sitemap_paths() -> list[str]:
             paths += [_path(tool, c, lang) for c in seo_cities.CITIES]
     from .rashifal_pages import sitemap_paths as rashifal_paths  # lazy: it imports this module
     from .muhurat_pages import page_paths as muhurat_paths  # same: imports this module
-    return paths + rashifal_paths() + muhurat_paths()
+    from .vrat_pages import page_paths as vrat_paths  # same: imports this module
+    return paths + rashifal_paths() + muhurat_paths() + vrat_paths()
 
 
 @router.get("/sitemap.xml")
