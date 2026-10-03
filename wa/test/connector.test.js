@@ -30,7 +30,9 @@ function fakeBaileys ({ registered = false } = {}) {
         sent: [],
         async requestPairingCode (phone) { sock.pairedWith = phone; return 'ABCDEFGH' },
         async newsletterMetadata (type, key) {
-          return { id: '120363012345678901@newsletter', thread_metadata: { name: { text: 'Divine Astro' } }, viewer_metadata: { role: 'OWNER' }, type, key }
+          // Like the live service: the invite lookup omits the viewer's role, the jid lookup has it.
+          const viewer = type === 'jid' ? { role: 'OWNER', mute: 'off' } : { mute: 'off' }
+          return { id: '120363012345678901@newsletter', thread_metadata: { name: { text: 'Divine Astro' } }, viewer_metadata: viewer, type, key }
         },
         async sendMessage (jid, content) { sock.sent.push([jid, content]); return { key: { id: 'MSG1' } } }
       }
@@ -89,7 +91,7 @@ test('post: image with caption, or text only; resolve returns the role', async (
   await c.post({ jid: 'x@newsletter', text: 'only text' })
   assert.deepEqual(b.sockets[0].sent[1][1], { text: 'only text', linkPreview: null })
   const r = await c.resolve('0029Va')
-  assert.deepEqual(r, { jid: '120363012345678901@newsletter', name: 'Divine Astro', role: 'OWNER' })
+  assert.deepEqual(r, { jid: '120363012345678901@newsletter', name: 'Divine Astro', role: 'OWNER', viewer_fields: ['role', 'mute'] })
 })
 
 test('transient close reconnects; restartRequired reconnects at once', async () => {
