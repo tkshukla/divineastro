@@ -19,6 +19,23 @@
     try { const v = t(k); return v && v !== k ? v : fallback; } catch { return fallback; }
   };
 
+  // DIVASTRO-103: "today" is the calendar date at the chosen place (India by
+  // default), not the UTC date — toISOString() showed yesterday 00:00-05:30 IST.
+  // A function declaration (hoisted), so every tool below can use it.
+  function todayIn(tz) {
+    try {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: tz || 'Asia/Kolkata' }).format(new Date());
+    } catch (_) {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+    }
+  }
+  // 'YYYY-MM-DD' plus n days, in pure calendar arithmetic (no timezone involved).
+  function addDaysIso(iso, n) {
+    const d = new Date(`${iso}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+
   // Read a response as JSON WITHOUT surfacing the browser's own parse error. When the
   // server fails with a plain-text "Internal Server Error", `await res.json()` used to
   // throw `Unexpected token 'I', "Internal S"... is not valid JSON` straight into the
@@ -181,6 +198,8 @@
         </div>
       </div>
 
+      ${shareSlot('milan-share')}
+
       <table class="koota-table"><tbody>${rows}</tbody></table>
 
       <div class="card milan-extra">
@@ -195,6 +214,7 @@
 
       ${d.caveat ? `<p class="warn-line">${esc(d.caveat)}</p>` : ''}
       <p class="muted-line">${esc(ak.band_note || '')} ${esc(ak.convention_note || '')}</p>`;
+    shareMilan(ak);                        // DIVASTRO-107
     q('#milan-result').hidden = false;
     q('#milan-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -224,6 +244,7 @@
       const res = await fetch(`/api/panchang?${params}`);
       const data = await readJson(res);
       if (!res.ok) throw new Error(data.detail || 'Could not compute the panchang.');
+      paSharePlace = place;                // DIVASTRO-107: the share link's city
       renderPanchang(data, place.label);
     } catch (ex) {
       err.textContent = ex.message; err.hidden = false;
@@ -272,7 +293,9 @@
       </div>
 
       ${(p.notes || []).length
-        ? `<p class="muted-line">${esc(p.notes.join(' '))}</p>` : ''}`;
+        ? `<p class="muted-line">${esc(p.notes.join(' '))}</p>` : ''}
+      ${shareSlot('panchang-share')}`;
+    sharePanchang(p);                      // DIVASTRO-107
     q('#panchang-result').hidden = false;
   }
 
@@ -339,6 +362,8 @@
     set('#today-city-name', String(todayPlace.label).split(',')[0]);
     q('#today-city')?.setAttribute('aria-label', `${tr('todayChange', 'Change city')}: ${todayPlace.label}`);
     q('#today-place')?.setAttribute('placeholder', tr('todayCityPh', 'Start typing a city…'));
+    const shareEl = q('#today-share');     // DIVASTRO-107: hidden until there is something to share
+    if (shareEl) shareEl.hidden = !todayData;
     if (!todayData) return;               // still loading: the skeleton stays
 
     const ti = current(todayData.tithi);
@@ -354,6 +379,7 @@
     set('#today-nak', nak);
     set('#today-rahu', inRahu ? `${rahu} · ${tr('todayNow', 'now')}` : rahu);
     q('#today-rahu')?.parentElement.classList.toggle('now', inRahu);
+    shareToday(tithi, rahu);               // DIVASTRO-107
     q('#today-open')?.setAttribute('aria-label',
       `${tr('todayOpen', "Open today's full panchang")}. ${tr('todayTithi', 'Tithi')}: ${tithi}. ` +
       `${tr('todayNak', 'Nakshatra')}: ${nak}. ${tr('todayRahu', 'Rahu Kaal')}: ${rahu}.`);
@@ -419,12 +445,9 @@
   let muPlace = null;
 
   function initMuhuratDates() {
-    const today = new Date();
-    const future = new Date();
-    future.setDate(today.getDate() + 30);
-    const toIso = (d) => d.toISOString().slice(0, 10);
-    if (!q('#mu-from').value) q('#mu-from').value = toIso(today);
-    if (!q('#mu-to').value) q('#mu-to').value = toIso(future);
+    const today = todayIn((muPlace || muPick())?.timezone);
+    if (!q('#mu-from').value) q('#mu-from').value = today;
+    if (!q('#mu-to').value) q('#mu-to').value = addDaysIso(today, 30);
   }
 
   q('#mu-place')?.addEventListener('place:chosen', (e) => {
@@ -539,26 +562,26 @@
   // which exist: the home-page card did nothing (ReferenceError), typing a place
   // threw on every keystroke, and Hindi users always got English. Found by the
   // browser audit in tests/e2e/test_mobile_screens.py.
+  const getChoPlace = choPlaceInput ? placePicker(choPlaceInput, choResults, choChosen) : () => null;
+
   q('#open-choghadiya')?.addEventListener('click', () => {
     showStage('stage-choghadiya');
     if (!q('#cho-date').value) {
-      q('#cho-date').value = new Date().toISOString().slice(0, 10);
+      q('#cho-date').value = todayIn(getChoPlace()?.timezone);
     }
   });
-
-  const getChoPlace = choPlaceInput ? placePicker(choPlaceInput, choResults, choChosen) : () => null;
 
   q('#choghadiya-go')?.addEventListener('click', async () => {
     const err = q('#choghadiya-error');
     err.hidden = true; err.textContent = '';
     const btn = q('#choghadiya-go');
-    const targetDate = q('#cho-date').value || new Date().toISOString().slice(0, 10);
     const place = getChoPlace() || {
       label: 'New Delhi, India',
       latitude: 28.6139,
       longitude: 77.2090,
       timezone: 'Asia/Kolkata',
     };
+    const targetDate = q('#cho-date').value || todayIn(place.timezone);
     const lang = (typeof state !== 'undefined' && state.lang) ? state.lang : 'en';
 
     const params = new URLSearchParams({
@@ -683,6 +706,52 @@
     q('#choghadiya-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  /* ---------------------------------------- WhatsApp share (DIVASTRO-107) */
+  // Builders and the wa.me / navigator.share plumbing live in share.js. Only a
+  // score, today's public almanac values and a city ever go into a share text —
+  // never a name, birth date, time or place (the Milan form has all four).
+  let paSharePlace = null;
+  const SHARE = () => window.DAShare || null;
+  const shareLabel = () => tr('shareWa', 'Share on WhatsApp');
+  const shareSlot = (id) => (SHARE() ? `<div class="share-row">${SHARE().button(id, shareLabel())}</div>` : '');
+
+  function shareMilan(ak) {
+    const S = SHARE();
+    if (!S) return;
+    S.wire(q('#milan-share'), S.milanText(ak.total, ak.maximum), S.url('/kundali-milan', 'milan'));
+  }
+
+  function sharePanchang(p) {
+    const S = SHARE();
+    if (!S) return;
+    const hi = typeof state !== 'undefined' && state.lang === 'hi';
+    const today = !q('#pa-date').value;
+    const ti = today ? current(p.tithi) : (p.tithi || [])[0];
+    const nk = today ? current(p.nakshatra) : (p.nakshatra || [])[0];
+    const place = paSharePlace || DELHI;
+    const text = S.panchangText({
+      city: S.cityName(place),
+      date: p.date,
+      tithi: ti ? (hi ? `${PAKSHA_HI[ti.paksha] || ti.paksha || ''} ${TITHI_HI[ti.name] || ti.name}`.trim()
+                      : (ti.label || ti.name)) : '—',
+      nak: nk ? (hi ? NAK_HI[nk.name] || nk.name : nk.name) : '—',
+      rahu: (p.muhurta && p.muhurta.rahu_kaal) ? span(p.muhurta.rahu_kaal) : '—',
+    });
+    S.wire(q('#panchang-share'), text, S.url(S.cityPath('panchang', place, '/?open=panchang'), 'panchang'));
+  }
+
+  function shareToday(tithi, rahu) {
+    const S = SHARE();
+    const el = q('#today-share');
+    if (!S || !el) return;
+    q('#today-share-l').textContent = tr('shareShort', 'Share');
+    el.setAttribute('aria-label', shareLabel());
+    S.wire(el, S.todayText({ city: S.cityName(todayPlace), rahu, tithi }),
+      S.url(S.cityPath('rahu-kaal', todayPlace, '/?open=panchang'), 'rahukaal'));
+  }
+  // The SEO city list may arrive after today's panchang: relink once it does.
+  if (SHARE()) SHARE().ready.then(() => { if (todayData) renderTodayStrip(); });
+
   /* ------------------------------------------------------------- deep links */
   // The server-rendered /panchang, /rahu-kaal, /choghadiya and /kundali-milan
   // pages (app/seo_pages.py) link here as /?open=<tool>. Clicking the home card
@@ -692,6 +761,7 @@
     panchang: '#open-panchang', 'rahu-kaal': '#open-panchang',
     choghadiya: '#open-choghadiya', muhurat: '#open-muhurat',
     milan: '#open-milan', 'kundali-milan': '#open-milan',
+    kundali: '#home-cta',     // birth form: /free-kundali and rashifal CTAs, like the home CTA
   };
   const deepParams = new URLSearchParams(location.search);
   const deepTarget = DEEP_LINKS[deepParams.get('open')];

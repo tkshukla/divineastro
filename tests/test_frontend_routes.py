@@ -121,6 +121,75 @@ def home_value_checks() -> None:
     check("a failed load hides the strip", "todayStrip.hidden = true" in tools_js)
 
 
+# ---- DIVASTRO-107: WhatsApp share buttons ---------------------------------
+SHARE_KEYS = ("shareWa", "shareShort", "shareMilanText", "shareTodayText", "sharePanchangText")
+# Anything that could identify one of the two people in a Kundali Milan.
+PERSONAL = re.compile(r"\b(name|date|time|place|birth|dob|groom|bride|payload|readSide|label|"
+                      r"latitude|longitude)\b", re.I)
+
+
+def js_function(source: str, name: str) -> tuple[str, str]:
+    """(parameter list, body) of `function name(...) { ... }`, by brace matching."""
+    m = re.search(rf"function {name}\(([^)]*)\)\s*\{{", source)
+    if not m:
+        return "", ""
+    depth, i = 1, m.end()
+    while depth and i < len(source):
+        depth += {"{": 1, "}": -1}.get(source[i], 0)
+        i += 1
+    return m.group(1), source[m.end():i - 1]
+
+
+def share_checks() -> None:
+    """DIVASTRO-107: share buttons are wired, bilingual, UTM-tagged, and the
+    Kundali Milan share text cannot carry either person's details."""
+    print("\n4. WhatsApp share buttons (DIVASTRO-107)")
+    static = ROOT / "app" / "static"
+    html = (static / "index.html").read_text(encoding="utf-8")
+    app_js = (static / "app.js").read_text(encoding="utf-8")
+    tools_js = (static / "tools.js").read_text(encoding="utf-8")
+    share_js = (static / "share.js").read_text(encoding="utf-8")
+
+    check("the Today strip has a share button", 'id="today-share"' in html and 'id="today-share-l"' in html)
+    check("share.js loads before tools.js",
+          0 <= html.find('/static/share.js"') < html.find('/static/tools.js"'))
+    for slot in ("milan-share", "panchang-share"):
+        check(f"tools.js renders #{slot}", f"shareSlot('{slot}')" in tools_js)
+    for fn in ("shareMilan(ak)", "sharePanchang(p)", "shareToday(tithi, rahu)"):
+        check(f"tools.js calls {fn}", fn in tools_js)
+
+    en, hi = i18n_keys(app_js, "en"), i18n_keys(app_js, "hi")
+    check("every share string exists in English", not [k for k in SHARE_KEYS if k not in en],
+          str([k for k in SHARE_KEYS if k not in en]))
+    check("every share string exists in Hindi", not [k for k in SHARE_KEYS if k not in hi],
+          str([k for k in SHARE_KEYS if k not in hi]))
+    milan_tpl = re.findall(r'shareMilanText: "([^"]+)"', app_js)
+    holes = {h for tpl in milan_tpl for h in re.findall(r"\{(\w+)\}", tpl)}
+    check("the Milan share text has only {score} and {max} holes, in both languages",
+          len(milan_tpl) == 2 and holes == {"score", "max"}, str(holes))
+
+    # The builder takes two numbers and nothing else; the caller passes the score.
+    params, body = js_function(share_js, "milanText")
+    check("milanText(score, maximum) takes only the score", params.replace(" ", "") == "score,maximum", params)
+    hit = PERSONAL.search(body) if body else None
+    check("milanText uses no personal field", bool(body) and not hit, hit.group(0) if hit else "")
+    params, body = js_function(tools_js, "shareMilan")
+    hit = PERSONAL.search(body)
+    other = re.search(r"ak\.(?!total\b|maximum\b)\w+", body)
+    check("shareMilan passes only ak.total / ak.maximum",
+          "ak.total" in body and "ak.maximum" in body and not hit and not other,
+          (hit or other).group(0) if (hit or other) else "")
+
+    check("links are tagged utm_source=whatsapp & utm_medium=share",
+          "utm_source: 'whatsapp', utm_medium: 'share'" in share_js)
+    for campaign in ("'milan'", "'panchang'", "'rahukaal'"):
+        check(f"campaign {campaign} is used", f", {campaign})" in tools_js)
+    check("the wa.me text is URL-encoded", "wa.me/?text=${encodeURIComponent(" in share_js)
+    check("phones use navigator.share; anything else falls back to the wa.me link",
+          "navigator.share(" in share_js and "AbortError" in share_js and "target = '_blank'" in share_js)
+    check("the city list comes from /api/share/cities", "fetch('/api/share/cities')" in share_js)
+
+
 def main() -> int:
     from app.main import app
 
@@ -152,6 +221,7 @@ def main() -> int:
     check("the scan is not vacuous", total > 40, f"{total} calls read")
 
     home_value_checks()
+    share_checks()
 
     print("\n" + "=" * 60)
     if failures:

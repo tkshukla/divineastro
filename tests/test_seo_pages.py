@@ -163,7 +163,7 @@ def main() -> int:
     check("every curated city resolves", all(
         client.get(f"/panchang/{c.slug}").status_code == 200 for c in seo_cities.CITIES))
     check("city list is a sensible size, slugs unique",
-          25 <= len(seo_cities.CITIES) <= 40
+          90 <= len(seo_cities.CITIES) <= 130         # ~100 since DIVASTRO-106
           and len(seo_cities.BY_SLUG) == len(seo_cities.CITIES))
     check("slugs are URL-safe", all(re.fullmatch(r"[a-z]+(-[a-z]+)*", c.slug)
                                     for c in seo_cities.CITIES))

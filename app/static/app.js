@@ -11,7 +11,10 @@ const state = {
   sessionId: null,
   chart: null,
   busy: false,
-  lang: localStorage.getItem("astro.lang") || "en",
+  // ?lang=hi|en comes from the /hi/ SEO pages' links (seo_pages.py) and wins
+  // over the stored choice; applyLanguage() then stores it.
+  lang: ({ hi: "hi", en: "en" })[new URLSearchParams(location.search).get("lang")]
+    || localStorage.getItem("astro.lang") || "en",
   // Empty means "the visitor has never chosen" — the server decides in that
   // case (GET /api/llm -> default), so turning Claude on needs no client change.
   //
@@ -230,6 +233,11 @@ const I18N = {
            + "skills and keep your work visible.",
     sampleNote: "Every answer is read from the person's own chart and dashas.",
     sampleAsk: "Ask your own question",
+    // ---- DIVASTRO-107: WhatsApp share buttons (share.js). No personal details in these. ----
+    shareWa: "Share on WhatsApp", shareShort: "Share",
+    shareMilanText: "We got {score}/{max} in Kundali Milan 💍 — check yours free:",
+    shareTodayText: "Today's Rahu Kaal in {city}: {rahu} · Tithi {tithi} —",
+    sharePanchangText: "Panchang for {city}, {date}: Tithi {tithi} · Nakshatra {nak} · Rahu Kaal {rahu} —",
   },
   hi: {
     tagline: "स्विस एफ़ेमेरिस की सटीकता, वैदिक विवेचन — आपकी कुंडली, सही ढंग से।",
@@ -416,6 +424,11 @@ const I18N = {
            + "कौशल बढ़ाइए और अपने काम को सबके सामने रखिए।",
     sampleNote: "हर उत्तर व्यक्ति की अपनी कुंडली और दशाओं से पढ़ा जाता है।",
     sampleAsk: "अपना प्रश्न पूछें",
+    // ---- DIVASTRO-107: WhatsApp share buttons (share.js). No personal details in these. ----
+    shareWa: "WhatsApp पर भेजें", shareShort: "भेजें",
+    shareMilanText: "कुंडली मिलान में हमारे {score}/{max} गुण मिले 💍 — आप भी मुफ़्त में देखें:",
+    shareTodayText: "आज {city} में राहु काल: {rahu} · तिथि {tithi} —",
+    sharePanchangText: "{city} का पंचांग, {date}: तिथि {tithi} · नक्षत्र {nak} · राहु काल {rahu} —",
   },
 };
 
