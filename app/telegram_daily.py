@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import io
 import os
 import sys
 
@@ -86,11 +85,7 @@ def send_photo(token: str, chat_id: str, png: bytes, caption: str) -> int | None
     return result.get("message_id")
 
 
-def card_png(day: dt.date) -> bytes:
-    from . import social_card
-    buf = io.BytesIO()
-    social_card.make_card(*daily_message.card_text(day), buf)
-    return buf.getvalue()
+card_png = daily_message.card_png
 
 
 def _langs(raw: str) -> list[str]:

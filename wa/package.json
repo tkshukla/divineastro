@@ -1,0 +1,19 @@
+{
+  "name": "divineastro-wa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Posts the daily Panchang to the owner's own WhatsApp Channel (DIVASTRO-116)",
+  "type": "module",
+  "main": "src/index.js",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "7.0.0-rc14",
+    "pino": "9.6.0",
+    "qrcode": "1.5.4",
+    "qrcode-terminal": "0.12.0"
+  }
+}

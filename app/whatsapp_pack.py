@@ -3,11 +3,16 @@
     python -m app.whatsapp_pack [--date YYYY-MM-DD] [--to a@b.c] [--force]
                                 [--dry-run [--card-out card.png]]
 
-Meta does not allow automated posting to a WhatsApp Channel, so this is the
-half that can be automated: at 06:00 IST (host cron, see
-deploy/daily_channels.md) it mails the owner the Hindi and English messages,
-formatted with WhatsApp's *bold*, and the English-only image card as a PNG
-attachment. The owner opens the mail on the phone, saves the image, and posts.
+Meta has no official API for posting to a WhatsApp Channel, so this is the
+always-works half: at 06:01 IST (host cron, see deploy/daily_channels.md) it
+mails the owner the Hindi and English messages, formatted with WhatsApp's
+*bold*, and the English-only image card as a PNG attachment. The owner opens
+the mail on the phone, saves the image, and posts. Since DIVASTRO-116,
+app/whatsapp_channel.py posts the same Hindi post + card automatically through
+the linked-device connector; this email stays as the fallback.
+
+`post(day, lang)` is the one builder of "the WhatsApp post" (text + card PNG),
+shared with app/whatsapp_channel.py.
 
 Recipients: --to, else ASTRO_DAILY_PACK_TO, else ASTRO_SUPPORT_EMAIL (comma
 or space separated). Sent through app/mail.py (Brevo SMTP in production).
@@ -23,11 +28,10 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import io
 import os
 import sys
 
-from . import daily_message, daily_state, mail, social_card
+from . import daily_message, daily_state, mail
 
 JOB = "whatsapp_pack"
 
@@ -46,15 +50,22 @@ def card_name(day: dt.date) -> str:
     return f"divineastro-panchang-{day.isoformat()}.png"
 
 
-def card_png(day: dt.date) -> bytes:
-    buf = io.BytesIO()
-    social_card.make_card(*daily_message.card_text(day), buf)
-    return buf.getvalue()
+card_png = daily_message.card_png
+
+
+def text(day: dt.date, lang: str = "hi") -> str:
+    """The WhatsApp-formatted (*bold*) channel message for `day`."""
+    return daily_message.channel_message(day, lang=lang, channel="whatsapp")
+
+
+def post(day: dt.date, lang: str = "hi") -> tuple[str, bytes]:
+    """Today's WhatsApp Channel post: (message text, image card PNG)."""
+    return text(day, lang), card_png(day)
 
 
 def body(day: dt.date) -> str:
-    hi = daily_message.channel_message(day, lang="hi", channel="whatsapp")
-    en = daily_message.channel_message(day, lang="en", channel="whatsapp")
+    hi = text(day, "hi")
+    en = text(day, "en")
     return "\n".join([
         f"Today's WhatsApp Channel post ({day.isoformat()}).",
         "",
@@ -91,7 +102,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"whatsapp_pack: {exc}", file=sys.stderr)
         return 2
 
-    text = body(day)
+    mail_body = body(day)
     png = card_png(day)
     to = recipients(args.to)
 
@@ -100,7 +111,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Subject: {subject(day)}")
         print(f"Attachment: {card_name(day)} ({len(png)} bytes)")
         print()
-        print(text)
+        print(mail_body)
         if args.card_out:
             with open(args.card_out, "wb") as f:
                 f.write(png)
@@ -117,7 +128,7 @@ def main(argv: list[str] | None = None) -> int:
     if not mail.configured():
         print("whatsapp_pack: mail is not configured (ASTRO_SMTP_HOST)", file=sys.stderr)
         return 1
-    if not mail.send(to, subject(day), text, attachments=[(card_name(day), "image/png", png)]):
+    if not mail.send(to, subject(day), mail_body, attachments=[(card_name(day), "image/png", png)]):
         print(f"whatsapp_pack: FAILED to send for {day} (see the mail.send warning above)",
               file=sys.stderr)
         return 1
