@@ -49,7 +49,7 @@ jobs:
           set -e
           for m in \
             test_admin_api test_ashtakavarga test_api_dashboard test_choghadiya \
-            test_dashboard test_delineation test_frontend_routes test_jaimini \
+            test_daily_message test_dashboard test_delineation test_frontend_routes test_jaimini \
             test_life_book test_llm_date_audit test_llm_dignity_audit \
             test_llm_ollama_fallback test_logging test_mail test_match_api \
             test_festivals test_matching test_muhurat test_muhurat_pages test_panchang test_password_auth \
