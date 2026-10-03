@@ -662,10 +662,10 @@ def _ekadashi(index: int, span: tuple[float, float], lat: float, lon: float, tz:
     spec = Spec("ekadashi", en, hi, index, None, "udaya")
     o = _base(spec, fast, how, index, span, tz, month)
     o["name_en"], o["name_hi"] = en, hi
-    o["rule_en"] = ("Smarta: Ekadashi prevailing at sunrise (first day if at two sunrises); "
+    o["rule_en"] = ("Smarta: Ekadashi prevailing at sunrise (second day if at two sunrises); "
                     "parana next day after sunrise and after Hari Vasara, within Pratahkala "
                     "and before Dwadashi ends")
-    o["rule_hi"] = ("स्मार्त: सूर्योदय के समय एकादशी (दो सूर्योदय पर हो तो पहला दिन); पारण अगले दिन "
+    o["rule_hi"] = ("स्मार्त: सूर्योदय के समय एकादशी (दो सूर्योदय पर हो तो दूसरा दिन); पारण अगले दिन "
                     "सूर्योदय व हरि वासर के बाद, प्रातःकाल में और द्वादशी समाप्त होने से पहले")
     o["key"] = "ekadashi"
     o["slug"] = None
