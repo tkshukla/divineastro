@@ -1113,6 +1113,16 @@ def observances(start: dt.date, end: dt.date, latitude: float = DELHI[0],
     return out
 
 
+def window(start: dt.date, end: dt.date, latitude: float, longitude: float,
+           timezone: str) -> list[dict]:
+    """observances() for a short range WITHOUT computing (and caching) whole
+    years: ~40 ms for 31 days at any place, against ~0.4 s per year. For the
+    per-city /vrat-tyohar/<city> pages (DIVASTRO-114), which cache the result
+    per (city, day) themselves - 114 cities would thrash `_year`'s cache. Same
+    engine, same OMITTED filtering, same order as observances()."""
+    return _compute(start, end, round(float(latitude), 4), round(float(longitude), 4), timezone)
+
+
 @functools.lru_cache(maxsize=1024)
 def _on(day: dt.date, lat: float, lon: float, tz: str) -> tuple[dict, ...]:
     return tuple(_compute(day, day, lat, lon, tz))

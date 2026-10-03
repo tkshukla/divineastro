@@ -83,7 +83,11 @@ def seo_share_text(path: str) -> str | None:
         return "Today's vrat & festivals with puja muhurat · आज के व्रत और त्योहार:"
     if parts[0] == "vrat-tyohar" and len(parts) == 2:
         if not parts[1].isdigit():
-            return None
+            city = seo_cities.get(parts[1])        # /vrat-tyohar/<city> (DIVASTRO-114)
+            if city is None:
+                return None
+            return (f"Today's vrat & festivals in {city.name} with puja muhurat · "
+                    f"आज के व्रत और त्योहार — {city.name_hi}:")
         return f"Vrat & festival calendar {parts[1]} · व्रत-त्योहार {parts[1]} की पूरी सूची:"
     if parts[0].startswith("ekadashi-") and len(parts) == 1:
         year = parts[0].removeprefix("ekadashi-")

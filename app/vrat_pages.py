@@ -1,6 +1,8 @@
 """Vrat and tyohar (fasts and festivals) pages, English and Hindi (DIVASTRO-111).
 
-    /vrat-tyohar                 today's vrat/festival + the next 30 days
+    /vrat-tyohar                 today's vrat/festival + the next 30 days (New Delhi)
+    /vrat-tyohar/<city>          the same for each of the 114 seo_cities, timings for
+                                 that city (DIVASTRO-114; new-delhi = the bare URL)
     /vrat-tyohar/2026, /2027     the whole year, month by month
     /tyohar/<festival>-<year>    one major festival: date, puja muhurat, what/how
     /ekadashi-2026, -2027        every Ekadashi with its parana time
@@ -15,7 +17,15 @@ were checked against Drik Panchang (tests/test_festivals.py); anything that
 could not be validated is switched off there and never reaches a page.
 
 A year is ~0.4 s of ephemeris work, computed once per process per city
-(`festivals._year` is an lru_cache) - the first request warms it.
+(`festivals._year` is an lru_cache) - the first request warms it. The city
+pages compute only their 31 days (`festivals.window`, ~40 ms cold), cached per
+(city, day) here; nothing is precomputed at startup.
+
+Rich results (DIVASTRO-114): each festival page carries schema.org Event
+(startDate/endDate = the puja muhurat window for New Delhi when the festival
+has one, else the day itself) and a FAQPage whose answers are printed on the
+page; the year and Ekadashi lists carry an ItemList. Only validated values
+from astro.festivals are used - nothing OMITTED can reach the markup.
 
 The shell is seo_pages._render: same style, AdSense, visit.js beacon, share
 button, hreflang pair and footer(lang) as the other SEO pages.
@@ -24,6 +34,7 @@ button, hreflang pair and footer(lang) as the other SEO pages.
 from __future__ import annotations
 
 import datetime as dt
+import functools
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Query
@@ -32,7 +43,9 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from . import geo, seo_cities, seo_pages
 from .astro import festivals
 from .astro.muhurat import VARA_HI
-from .seo_pages import EN, HI, MONTHS_HI, _e, _long_date, _render, _short_date
+from .legal import BRAND
+from .seo_cities import City
+from .seo_pages import EN, HI, MONTHS_HI, SITE_URL, _e, _long_date, _render, _short_date
 
 router = APIRouter()
 
@@ -442,6 +455,11 @@ def year_path(year: int, lang: str = EN) -> str:
     return _pre(lang) + f"/vrat-tyohar/{year}"
 
 
+def city_path(city: City, lang: str = EN) -> str:
+    """The default city's page is the bare hub URL (like /panchang)."""
+    return hub_path(lang) + ("" if city == CITY else f"/{city.slug}")
+
+
 def ekadashi_path(year: int, lang: str = EN) -> str:
     return _pre(lang) + f"/ekadashi-{year}"
 
@@ -495,10 +513,12 @@ def page_paths() -> list[str]:
             out.append(year_path(y, lang))
             out.append(ekadashi_path(y, lang))
             out += [festival_path(s, y, lang) for s in _festival_slugs(y)]
+        out += [city_path(c, lang) for c in seo_cities.CITIES if c != CITY]
     return out
 
 
-_PUBLIC = frozenset(page_paths())
+# /vrat-tyohar/new-delhi renders (canonical: the bare URL) but is not in the sitemap.
+_PUBLIC = frozenset(page_paths() + [hub_path(lang) + f"/{CITY.slug}" for lang in (EN, HI)])
 
 
 def is_public_path(path: str) -> bool:
@@ -578,11 +598,11 @@ def _name_html(o: dict, lang: str) -> str:
     return f'<a href="{_e(href)}">{name}</a>' if href else name
 
 
-def _table(rows: list[dict], lang: str, with_date: bool = True) -> str:
+def _table(rows: list[dict], lang: str, city: City = CITY) -> str:
     if lang == HI:
-        th = "<tr><th>दिनांक</th><th>व्रत / त्योहार</th><th>समय (नई दिल्ली)</th></tr>"
+        th = f"<tr><th>दिनांक</th><th>व्रत / त्योहार</th><th>समय ({_e(city.name_hi)})</th></tr>"
     else:
-        th = "<tr><th>Date</th><th>Vrat / festival</th><th>Timing (New Delhi)</th></tr>"
+        th = f"<tr><th>Date</th><th>Vrat / festival</th><th>Timing ({_e(city.name)})</th></tr>"
     body = []
     for o in rows:
         day = _date(o)
@@ -594,16 +614,56 @@ def _table(rows: list[dict], lang: str, with_date: bool = True) -> str:
     return f'<div class="scroll"><table>{th}{"".join(body)}</table></div>'
 
 
-def _city_note(lang: str) -> str:
+def _city_note(lang: str, city: City = CITY) -> str:
     if lang == HI:
-        return ('<div class="box"><p><strong>समय शहर के अनुसार बदलते हैं।</strong> यहां दिए सभी '
-                "समय नई दिल्ली के सूर्योदय-सूर्यास्त और चंद्रोदय पर आधारित हैं; दूसरे शहर में कुछ "
+        return (f'<div class="box"><p><strong>समय शहर के अनुसार बदलते हैं।</strong> यहां दिए सभी '
+                f"समय {_e(city.name_hi)} के सूर्योदय-सूर्यास्त और चंद्रोदय पर आधारित हैं; दूसरे शहर में कुछ "
                 "मिनट और कभी-कभी तिथि भी बदल सकती है। तिथियां द्रिक पंचांग की स्मार्त (सामान्य) "
                 "गणना से मेल खाती हैं। अपने शहर के लिए पंचांग देखें।</p></div>")
     return ('<div class="box"><p><strong>Timings vary by city.</strong> Every time here is '
-            "for New Delhi's sunrise, sunset and moonrise; in another city they shift by a few "
+            f"for {_e(city.name)}'s sunrise, sunset and moonrise; in another city they shift by a few "
             "minutes and occasionally the date does too. Dates follow Drik Panchang's Smarta "
             "(default) reckoning. Check the Panchang for your own city.</p></div>")
+
+
+def _top_note(city: City, lang: str) -> str:
+    """Above the list on the hub and city pages: what changes from city to city."""
+    if lang == HI:
+        return (f'<p class="note"><small>अधिकांश व्रत-त्योहारों की तिथि पूरे भारत में एक ही होती है, '
+                f"पर पूजा मुहूर्त, पारण और चंद्रोदय का समय शहर के अनुसार बदलता है - यहां सभी समय "
+                f"<strong>{_e(city.name_hi)}</strong> के हैं। क्षेत्रीय परंपराएं भिन्न हो सकती हैं।</small></p>")
+    return ('<p class="note"><small>For most observances the date is the same across India, but '
+            "puja muhurat, parana and moonrise times differ from city to city - every time here is "
+            f"for <strong>{_e(city.name)}</strong>. Regional traditions may vary.</small></p>")
+
+
+def _city_index(lang: str, current: City | None = None) -> str:
+    """Every city's vrat-tyohar page, grouped by state (as on the /panchang pages)."""
+    hi = lang == HI
+    groups = []
+    for state, cities in seo_cities.by_state():
+        items = "".join(
+            f'<li><a href="{_e(city_path(c, lang))}"'
+            + (' aria-current="page"' if c == current else "")
+            + f">{_e(c.name_hi if hi else c.name)}</a></li>" for c in cities)
+        label = seo_cities.STATE_HI[state] if hi else state
+        groups.append(f'<dt>{_e(label)}</dt><dd><ul class="links">{items}</ul></dd>')
+    heading = "अपने शहर के व्रत-त्योहार" if hi else "Vrat & festivals in your city"
+    return f'<h2>{_e(heading)}</h2><dl class="cities">{"".join(groups)}</dl>'
+
+
+def _city_tools(city: City, lang: str) -> str:
+    """The same city's Panchang and Rahu Kaal pages."""
+    if lang == HI:
+        links = [(seo_pages._path("panchang", city, HI), f"{city.name_hi} का आज का पंचांग"),
+                 (seo_pages._path("rahu-kaal", city, HI), f"{city.name_hi} का राहु काल")]
+        heading = f"{city.name_hi} के लिए और"
+    else:
+        links = [(seo_pages._path("panchang", city), f"Today's Panchang in {city.name}"),
+                 (seo_pages._path("rahu-kaal", city), f"Rahu Kaal in {city.name}")]
+        heading = f"More for {city.name}"
+    items = "".join(f'<li><a href="{_e(h)}">{_e(t)}</a></li>' for h, t in links)
+    return f'<h2>{_e(heading)}</h2><ul class="links">{items}</ul>'
 
 
 def _cta(lang: str) -> str:
@@ -631,6 +691,109 @@ def _festival_links(year: int, lang: str, skip: str = "") -> str:
         if s != skip and s in _festival_slugs(year))
     heading = f"{year} के प्रमुख त्योहार" if lang == HI else f"Major festivals {year}"
     return f'<h2>{_e(heading)}</h2><ul class="links">{items}</ul>'
+
+
+# --------------------------------------------------------------------------
+# Structured data: Event, FAQPage, ItemList (DIVASTRO-114)
+# --------------------------------------------------------------------------
+#
+# Google's Event rich result: required name, startDate, location (a Place
+# with an address); recommended description, endDate, eventAttendanceMode,
+# eventStatus, image, organizer (offers/performer do not apply to a festival
+# and are left out rather than invented). Times are ISO 8601 with +05:30; a
+# festival with no validated puja window is a date-only, whole-day event.
+
+def _muhurat_window(o: dict) -> dict | None:
+    """The festival's main puja window on its own day, if it has one (not a
+    moment like moonrise, nor the next morning's parana)."""
+    for t in o["timings"]:
+        if (t.get("start") and t.get("end") and t["key"] != "parana"
+                and t.get("date", o["date"]) == o["date"] and t["start"][:10] == o["date"]):
+            return t
+    return None
+
+
+def _event_dates(o: dict) -> tuple[str, str]:
+    if o["slug"] == "pitru-paksha":                    # a fortnight: ends on Sarva Pitru Amavasya
+        last = festival_index(_date(o).year).get("sarva-pitru-amavasya")
+        return o["date"], last["date"] if last and last["date"] >= o["date"] else o["date"]
+    w = _muhurat_window(o)
+    return (w["start"], w["end"]) if w else (o["date"], o["date"])
+
+
+def event_ld(o: dict, lang: str) -> dict:
+    """schema.org Event for a festival page: an observance kept across India on
+    this date, with New Delhi's puja muhurat as its start/end when it has one."""
+    hi = lang == HI
+    year = _date(o).year
+    start, end = _event_dates(o)
+    about = ABOUT.get(o["slug"], ("", ""))[1 if hi else 0]
+    return {
+        "@type": "Event",
+        "name": f"{_name(o, lang)} {year}",
+        "startDate": start,
+        "endDate": end,
+        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+        "eventStatus": "https://schema.org/EventScheduled",
+        "location": {"@type": "Place", "name": "भारत" if hi else "India",
+                     "address": {"@type": "PostalAddress", "addressCountry": "IN"}},
+        "description": about or (o["rule_hi"] if hi else o["rule_en"]),
+        "image": [f"{SITE_URL}/static/icon-512.png"],
+        "organizer": {"@type": "Organization", "name": BRAND, "url": SITE_URL + "/"},
+        "url": SITE_URL + festival_path(o["slug"], year, lang),
+        "inLanguage": "hi-IN" if hi else "en-IN",
+    }
+
+
+# Timings that are moments or the next morning, not a muhurat to do the puja in.
+_NOT_MUHURAT = frozenset({"moonrise", "sandhya_arghya", "usha_arghya", "parana"})
+
+
+def faq_items(o: dict, lang: str) -> tuple[tuple[str, str], ...]:
+    """When / muhurat / why, answered only from the validated observance: no
+    timing question when the festival has no validated timing (OMITTED ones
+    were already stripped by the engine)."""
+    hi = lang == HI
+    day = _date(o)
+    year = day.year
+    name = _name(o, lang)
+    rule = o["rule_hi"] if hi else o["rule_en"]
+    when = _day_label(day, lang, year=True)
+    timings = "; ".join(_timing_text(t, day, lang) for t in o["timings"])
+    has_muhurat = any(t["key"] not in _NOT_MUHURAT for t in o["timings"])
+    out = []
+    if hi:
+        out.append((f"{name} {year} कब है?",
+                    f"{name} {year} {_weekday(day, HI)}, {_long_date(day, HI)} को है।"))
+        if timings:
+            q = (f"{name} {year} का पूजा मुहूर्त क्या है?" if has_muhurat
+                 else f"{name} {year} का समय क्या है?")
+            out.append((q, f"नई दिल्ली के लिए - {timings}। समय शहर के अनुसार कुछ मिनट बदलता है; "
+                           "अपने शहर के लिए पंचांग देखें।"))
+        out.append((f"{name} {year} {_short_date(day, HI)} को ही क्यों है?",
+                    f"तिथि का नियम: {rule}। {year} में यह {when} को पड़ता है (नई दिल्ली)।"))
+    else:
+        out.append((f"When is {name} {year}?",
+                    f"{name} {year} is on {_weekday(day, EN)}, {_long_date(day)}."))
+        if timings:
+            q = (f"What is the {name} {year} puja muhurat?" if has_muhurat
+                 else f"What are the {name} {year} timings?")
+            out.append((q, f"For New Delhi - {timings}. Timings vary by city by a few minutes; "
+                           "check the Panchang for your city."))
+        out.append((f"Why is {name} {year} observed on {_short_date(day)}?",
+                    f"The date follows the rule: {rule}. In {year} that is {when} (New Delhi)."))
+    return tuple(out)
+
+
+def item_list_ld(name: str, items: list[tuple[str, str | None]]) -> dict:
+    """A plain ItemList of (name, page path or None). Google shows Event rich
+    results only from each event's own page, so the list pages carry a summary
+    list, not Event items."""
+    return {"@type": "ItemList", "name": name, "numberOfItems": len(items),
+            "itemListElement": [
+                {"@type": "ListItem", "position": i + 1, "name": n,
+                 **({"url": SITE_URL + href} if href else {})}
+                for i, (n, href) in enumerate(items)]}
 
 
 # --------------------------------------------------------------------------
@@ -670,42 +833,74 @@ def _today_block(today: dt.date, todays: list[dict], nxt: dict | None, lang: str
     return f'<div class="box today"><p>{text}</p></div>'
 
 
-def render_hub(lang: str, today: dt.date | None = None) -> HTMLResponse:
+@functools.lru_cache(maxsize=512)
+def _city_upcoming(slug: str, today: dt.date) -> tuple[dict, ...]:
+    """A city's today + next 30 days, ~40 ms cold. Keyed on the day, so old
+    entries simply stop being asked for after midnight and age out (114 cities
+    x a couple of days fits). Read-only, like everything from festivals."""
+    c = seo_cities.BY_SLUG[slug]
+    return tuple(festivals.window(today, today + dt.timedelta(days=UPCOMING_DAYS),
+                                  c.latitude, c.longitude, c.timezone))
+
+
+def _upcoming(city: City, today: dt.date) -> list[dict]:
+    if city == CITY:                                   # the year cache, as before
+        return _obs_range(today, today + dt.timedelta(days=UPCOMING_DAYS))
+    return list(_city_upcoming(city.slug, today))
+
+
+def render_hub(lang: str, today: dt.date | None = None, city: City = CITY) -> HTMLResponse:
+    """/vrat-tyohar (New Delhi) and /vrat-tyohar/<city>: today + the next 30 days
+    with every timing for that city."""
     today = today or _today()
-    upcoming = _obs_range(today, today + dt.timedelta(days=UPCOMING_DAYS))
+    upcoming = _upcoming(city, today)
     todays = [o for o in upcoming if o["date"] == today.isoformat()]
     later = [o for o in upcoming if o["date"] > today.isoformat()]
     nxt = later[0] if later else None
     hi = lang == HI
-    path, alt = hub_path(lang), hub_path(HI if not hi else EN)
+    default = city == CITY
+    path, alt = city_path(city, lang), city_path(city, EN if hi else HI)
     names = ", ".join(_name(o, lang) for o in todays)
     if hi:
-        title = f"आज के व्रत और त्योहार ({_short_date(today, HI)}) - मुहूर्त सहित"
-        h1 = "आज के व्रत और त्योहार"
+        if default:
+            title = f"आज के व्रत और त्योहार ({_short_date(today, HI)}) - मुहूर्त सहित"
+            h1 = "आज के व्रत और त्योहार"
+        else:
+            title = f"{city.name_hi} में आज के व्रत और त्योहार ({_short_date(today, HI)}) - मुहूर्त सहित"
+            h1 = f"{city.name_hi} में आज के व्रत और त्योहार"
         description = ((f"आज {_long_date(today, HI)}: {names}। " if names else
                         f"{_long_date(today, HI)}: आज कोई प्रमुख व्रत नहीं। ")
-                       + "अगले 30 दिनों के व्रत-त्योहार, एकादशी पारण, प्रदोष, संकष्टी चंद्रोदय समय - नई दिल्ली।")
+                       + "अगले 30 दिनों के व्रत-त्योहार, एकादशी पारण, प्रदोष, संकष्टी चंद्रोदय समय - "
+                       + f"{city.name_hi}।")
         up_h = "अगले 30 दिन"
     else:
-        title = f"Aaj Ke Vrat aur Tyohar: Today's Vrat & Festivals ({_short_date(today)})"
-        h1 = "Today's vrat & festivals"
+        if default:
+            title = f"Aaj Ke Vrat aur Tyohar: Today's Vrat & Festivals ({_short_date(today)})"
+            h1 = "Today's vrat & festivals"
+        else:
+            title = f"Today's Vrat & Festivals in {city.name} ({_short_date(today)}) - Aaj Ke Vrat"
+            h1 = f"Today's vrat & festivals in {city.name}"
         description = ((f"Today, {_long_date(today)}: {names}. " if names else
                         f"{_long_date(today)}: no major vrat today. ")
                        + "Upcoming fasts and festivals for 30 days with Ekadashi parana, Pradosh "
-                         "and Sankashti moonrise times - New Delhi.")
+                         f"and Sankashti moonrise times - {city.name}.")
         up_h = "Next 30 days"
     sub = (f'<p class="hi" lang="en">Today\'s vrat &amp; festivals</p>' if hi
            else '<p class="hi" lang="hi">आज के व्रत और त्योहार</p>')
     body = (f"<h1>{_e(h1)}</h1>{sub}"
             f'<p class="date">{_e(_day_label(today, lang, year=True))} · '
-            f'{_e(CITY.name_hi if hi else CITY.label)}</p>'
+            f'{_e(city.name_hi if hi else city.label)}</p>'
+            + _top_note(city, lang)
             + _today_block(today, todays, nxt, lang)
             + f"<h2>{_e(up_h)}</h2>"
-            + (_table(later, lang) if later else "<p>—</p>")
-            + _city_note(lang) + _cta(lang)
+            + (_table(later, lang, city) if later else "<p>—</p>")
+            + _city_note(lang, city) + _cta(lang) + _city_tools(city, lang)
             + _festival_links(today.year if today.year in YEARS else YEARS[0], lang)
+            + _city_index(lang, city)
             + _more_links(lang, skip=path))
-    crumbs = [("व्रत और त्योहार" if hi else "Vrat & festivals", path)]
+    crumbs = [("व्रत और त्योहार" if hi else "Vrat & festivals", hub_path(lang))]
+    if not default:
+        crumbs.append((city.name_hi if hi else city.name, path))
     return _render(title=title, description=description, path=path, alt=alt, crumbs=crumbs,
                    body=body, lang=lang)
 
@@ -741,8 +936,12 @@ def render_year(year: int, lang: str) -> HTMLResponse:
             + _festival_links(year, lang) + _more_links(lang, skip=path))
     crumbs = [("व्रत और त्योहार" if hi else "Vrat & festivals", hub_path(lang)),
               (str(year), path)]
+    majors = [(f"{_name(o, lang)} - {_long_date(_date(o), lang)}", festival_path(s, year, lang))
+              for s, o in sorted(festival_index(year).items(), key=lambda kv: kv[1]["date"])
+              if s in _festival_slugs(year)]
+    items = item_list_ld(f"प्रमुख त्योहार {year}" if hi else f"Major Hindu festivals {year}", majors)
     return _render(title=title, description=description, path=path, alt=alt, crumbs=crumbs,
-                   body=body, lang=lang)
+                   body=body, lang=lang, extra_ld=(items,))
 
 
 def render_ekadashi(year: int, lang: str) -> HTMLResponse:
@@ -789,8 +988,10 @@ def render_ekadashi(year: int, lang: str) -> HTMLResponse:
             + _city_note(lang) + _cta(lang) + _more_links(lang, skip=path))
     crumbs = [("व्रत और त्योहार" if hi else "Vrat & festivals", hub_path(lang)),
               (f"एकादशी {year}" if hi else f"Ekadashi {year}", path)]
+    items = item_list_ld(h1, [(f"{_name(o, lang)} - {_long_date(_date(o), lang)}",
+                               _link_for(o, lang) if o.get("slug") else None) for o in eks])
     return _render(title=title, description=description, path=path, alt=alt, crumbs=crumbs,
-                   body=body, lang=lang)
+                   body=body, lang=lang, extra_ld=(items,))
 
 
 def render_festival(slug: str, year: int, lang: str) -> HTMLResponse:
@@ -823,6 +1024,8 @@ def render_festival(slug: str, year: int, lang: str) -> HTMLResponse:
     about = ABOUT.get(slug, ("", ""))[1 if hi else 0]
     note = TRADITION_NOTE.get(slug, TRADITION_NOTE.get(o["key"], ("", "")))[1 if hi else 0]
     rule = o["rule_hi"] if hi else o["rule_en"]
+    faq_html, faq_ld = seo_pages._faq(faq_items(o, lang))
+    faq_head = "अक्सर पूछे जाने वाले प्रश्न" if hi else "Frequently asked questions"
     sub = (f'<p class="hi" lang="en">{_e(o["name_en"])} {year}</p>' if hi
            else f'<p class="hi" lang="hi">{_e(o["name_hi"])} {year}</p>')
     body = (f"<h1>{_e(h1)}</h1>{sub}"
@@ -832,25 +1035,22 @@ def render_festival(slug: str, year: int, lang: str) -> HTMLResponse:
             + (f"<h2>{_e(about_head)}</h2><p>{_e(about)}</p>" if about else "")
             + f"<h2>{_e(rule_head)}</h2><p>{_e(rule)}.</p>"
             + (f"<p><small>{_e(note)}</small></p>" if note else "")
+            + f"<h2>{_e(faq_head)}</h2>{faq_html}"
             + _city_note(lang) + _cta(lang)
             + _festival_links(year, lang, skip=slug) + _more_links(lang))
     crumbs = [("व्रत और त्योहार" if hi else "Vrat & festivals", hub_path(lang)),
               (f"{name} {year}", path)]
-    event = {"@type": "Event", "name": f"{o['name_en']} {year}", "startDate": o["date"],
-             "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-             "location": {"@type": "Place", "name": "India",
-                          "address": {"@type": "PostalAddress", "addressCountry": "IN"}},
-             "description": ABOUT.get(slug, ("", ""))[0] or o["name_en"]}
     return _render(title=title, description=description, path=path, alt=alt, crumbs=crumbs,
-                   body=body, lang=lang, extra_ld=(event,), cache=True)
+                   body=body, lang=lang, extra_ld=(event_ld(o, lang), faq_ld), cache=True)
 
 
 def _not_found(lang: str) -> HTMLResponse:
     hi = lang == HI
+    cities = {city_path(c, lang) for c in seo_cities.CITIES}
     links = "".join(f'<li><a href="{_e(p)}">{_e(p)}</a></li>'
-                    for p in page_paths() if p.startswith("/hi/") == hi)
+                    for p in page_paths() if p.startswith("/hi/") == hi and p not in cities)
     body = (f"<h1>{'पृष्ठ नहीं मिला' if hi else 'Page not found'}</h1>"
-            f'<ul class="links">{links}</ul>')
+            f'<ul class="links">{links}</ul>' + _city_index(lang))
     return _render(title="Not found", description="", path=hub_path(lang), crumbs=[],
                    body=body, lang=lang, status=404, cache=False)
 
@@ -875,14 +1075,24 @@ def _year_or_404(year: str, lang: str, fn) -> HTMLResponse:
     return fn(int(year), lang)
 
 
-@router.get("/vrat-tyohar/{year}", response_class=HTMLResponse)
-def year_page(year: str) -> HTMLResponse:
-    return _year_or_404(year, EN, render_year)
+def _year_or_city(key: str, lang: str) -> HTMLResponse:
+    """/vrat-tyohar/<year> or /vrat-tyohar/<city> (one route: both are one segment)."""
+    if key.isdigit():
+        return _year_or_404(key, lang, render_year)
+    city = seo_cities.get(key)
+    if city is None:
+        return _not_found(lang)
+    return render_hub(lang, city=city)
 
 
-@router.get("/hi/vrat-tyohar/{year}", response_class=HTMLResponse)
-def year_page_hi(year: str) -> HTMLResponse:
-    return _year_or_404(year, HI, render_year)
+@router.get("/vrat-tyohar/{key}", response_class=HTMLResponse)
+def year_page(key: str) -> HTMLResponse:
+    return _year_or_city(key, EN)
+
+
+@router.get("/hi/vrat-tyohar/{key}", response_class=HTMLResponse)
+def year_page_hi(key: str) -> HTMLResponse:
+    return _year_or_city(key, HI)
 
 
 @router.get("/ekadashi-{year}", response_class=HTMLResponse)

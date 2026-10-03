@@ -391,7 +391,7 @@ def _tool_links(city: City, current: str, lang: str = EN) -> str:
             links.append(("/hi/free-kundali", "मुफ़्त जन्म कुंडली"))
         links.append((_app_link("muhurat", HI), "मुहूर्त खोजें"))
         links.append(("/hi/rashifal", "आज का राशिफल"))
-        links.append(("/hi/vrat-tyohar", "आज के व्रत और त्योहार"))
+        links.append((_path("vrat-tyohar", city, HI), f"{city.name_hi} के आज के व्रत और त्योहार"))
         heading = "और मुफ़्त टूल"
     else:
         links = [(_path(t, city), f"{TOOLS[t][0]} in {city.name}") for t in TOOLS if t != current]
@@ -401,7 +401,7 @@ def _tool_links(city: City, current: str, lang: str = EN) -> str:
             links.append(("/free-kundali", "Free Janam Kundali"))
         links.append(("/?open=muhurat", "Muhurat Finder"))
         links.append(("/rashifal", "Today's Rashifal"))
-        links.append(("/vrat-tyohar", "Today's Vrat & Festivals"))
+        links.append((_path("vrat-tyohar", city), f"Today's Vrat & Festivals in {city.name}"))
         heading = "More free tools"
     items = "".join(f'<li><a href="{_e(h)}">{_e(t)}</a></li>' for h, t in links)
     return f'<h2>{heading}</h2><ul class="links">{items}</ul>'
