@@ -549,6 +549,10 @@ def _build_prompt(analysis: dict, language: str, question: str, history: list[di
         f"(score {analysis.get('score')} on -1 to +1).\n\n"
         f"Chart evidence behind that verdict:\n{evidence}\n"
         f"{_timing_block(analysis.get('timing') or {}, question)}"
+        # DIVASTRO-119: a question naming a date window carries its computed
+        # day-by-day facts, every date written "10 Oct 2026" so that
+        # _allowed_dates_note lists it and _audit_dates accepts it.
+        f"{(analysis.get('timing') or {}).get('window_facts') or ''}"
         f"{_vedic_block(analysis.get('vedic') or {})}\n"
     )
     return (

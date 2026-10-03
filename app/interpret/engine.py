@@ -1354,11 +1354,69 @@ def compose(session: ChartSession, routing: Routing, evidence: list[Evidence],
 # Entry point
 # --------------------------------------------------------------------------
 
+def _analyse_period(session: ChartSession, question: str, routing: Routing,
+                    language: str) -> Analysis:
+    """A question that names a date window (DIVASTRO-119): read the window
+    day by day rather than the natal chart in the abstract."""
+    from . import window as win
+
+    topic, period = routing.topic, routing.period
+    weighted = topic.key not in ("period", "timing", "self")
+    w = win.analyse_window(session, period, topic if weighted else None)
+    body = win.render(w, "hi" if language == "hi" else "en")
+
+    evidence: list[Evidence] = []
+    if weighted and language != "hi":   # the natal evidence lines exist only in English
+        # The natal promise for the subject still matters — the window says
+        # *when* it is stirred, the chart says what there is to stir.
+        evidence = gather(session, topic, as_of=_localise(
+            session, dt.datetime.combine(period.start, dt.time(12))))
+        spine = f"{_ord(topic.primary_houses[0])} ruler"
+        lead = [e for e in evidence if e.factor == spine]
+        rest = sorted((e for e in evidence if e.factor != spine),
+                      key=lambda e: -abs(e.score) * e.weight)
+        natal = "\n".join([f"### The natal basis — {topic.blurb}"]
+                          + [f"- {e.text}" for e in (lead + rest)[:5]])
+        first, _, remainder = body.partition("\n\n")
+        body = f"{first}\n\n{natal}\n\n{remainder}"
+    elif weighted:
+        evidence = gather(session, topic, as_of=_localise(
+            session, dt.datetime.combine(period.start, dt.time(12))))
+
+    verdict = win.verdict_of(w["score"])[0]
+    # `window` is the JSON-safe fact set for API clients; `window_facts` is the
+    # same thing as dated lines for the narration prompt (llm._build_prompt).
+    timing = {"mode": "period", "period": period.to_dict(),
+              "window": win.json_safe(w), "window_facts": win.facts_block(w)}
+    return Analysis(
+        question=question,
+        topic=topic.key,
+        topic_label=topic.label,
+        intent="period",
+        verdict=verdict,
+        score=w["score"],
+        answer=body,
+        evidence=sorted(evidence, key=lambda e: -abs(e.score) * e.weight),
+        timing=timing,
+        used=sorted({e.detail for e in evidence if e.detail}),
+    )
+
+
 def analyse(session: ChartSession, question: str,
-            now: dt.datetime | None = None) -> Analysis:
-    now = _localise(session, now or dt.datetime.now())
-    routing = classify(question)
+            now: dt.datetime | None = None, language: str = "en") -> Analysis:
+    raw_now = now or dt.datetime.now()
+    # The window is anchored on the asker's (IST) calendar day, which is what
+    # "today" and "next week" mean to them. A naive `now` (main.py passes
+    # datetime.now()) is the server's local clock — UTC in the container — so
+    # it is converted, not relabelled, or "today" would be wrong for 5½ hours
+    # after IST midnight.
+    anchor = (raw_now if raw_now.tzinfo else raw_now.astimezone()).astimezone(
+        ZoneInfo("Asia/Kolkata")).date()
+    now = _localise(session, raw_now)
+    routing = classify(question, now=anchor)
     topic = routing.topic
+    if routing.period is not None:
+        return _analyse_period(session, question, routing, language)
 
     # A question may name its own moment ("in 2012", "when I was 25"). If it
     # does, that becomes the reference point instead of today.

@@ -129,6 +129,50 @@ def main() -> int:
            "When does my antardasha change?",
            "Is this a good time for anything important?")
 
+    # DIVASTRO-119: a question naming a date window. QuestionLog #54 ("how is
+    # my 10th oct to 20th oct") routed to `self` and was answered with a
+    # personality description.
+    print("\nDate windows (DIVASTRO-119)\n")
+    import datetime as dt
+    today = dt.date(2026, 10, 3)
+
+    def expect_period(topic_key: str, q: str, start: dt.date, end: dt.date) -> None:
+        r = classify(q, now=today)
+        p = r.period
+        check(f"[{topic_key}+window] {q!r}",
+              r.topic.key == topic_key and r.intent == "period" and p is not None
+              and (p.start, p.end) == (start, end),
+              f"routed to {r.topic.key!r}/{r.intent!r}, window "
+              f"{(p.start, p.end) if p else None}")
+
+    oct10, oct20 = dt.date(2026, 10, 10), dt.date(2026, 10, 20)
+    octs, octe = dt.date(2026, 10, 1), dt.date(2026, 10, 31)
+    novs, nove = dt.date(2026, 11, 1), dt.date(2026, 11, 30)
+    expect_period("period", "how is my 10th oct to 20th oct", oct10, oct20)
+    expect_period("period", "how is october for me", octs, octe)
+    expect_period("period", "what about 10 to 20 october", oct10, oct20)
+    expect_period("period", "kaisa rahega 10 se 20 october", oct10, oct20)
+    expect_period("period", "how will be my next week",
+                  dt.date(2026, 10, 5), dt.date(2026, 10, 11))
+    expect_period("period", "agle hafte kaisa rahega",
+                  dt.date(2026, 10, 5), dt.date(2026, 10, 11))
+    expect_period("period", "How am I doing this month?", octs, octe)
+    expect_period("career", "career in october", octs, octe)
+    expect_period("career", "Will I get promoted next month?", novs, nove)
+    expect_period("love", "शादी के लिए अगले महीने", novs, nove)
+    expect_period("health", "how is my health between 10 oct and 20 oct", oct10, oct20)
+    expect_period("money", "paisa kab aayega is mahine", octs, octe)
+
+    # Without a window nothing changes: a sample of the routing above, now
+    # with an explicit `now`, still lands where it did and has no period.
+    for key, q in (("career", "Should I quit my job?"), ("love", "Will I get married?"),
+                   ("self", "Describe my personality"), ("timing", "Which mahadasha am I in?"),
+                   ("timing", "What's happening in my life right now?"),
+                   ("travel", "Am I migrating this year?")):
+        r = classify(q, now=today)
+        check(f"[{key}, no window] {q!r}", r.topic.key == key and r.period is None
+              and r.intent != "period", f"routed to {r.topic.key!r}/{r.intent!r}")
+
     print("\n" + "=" * 60)
     if failures:
         print(f"{len(failures)} FAILURES")

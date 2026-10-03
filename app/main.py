@@ -101,21 +101,48 @@ class InsufficientCredits(HTTPException):
         })
 
 
-def _charge_and_log(db, user, question: str, result: dict, birth_id: int | None) -> int:
+def _charge_and_log(db, user, question: str, result: dict, birth_id: int | None,
+                    log_ids: list | None = None) -> int:
     """Debit one credit and record the Q&A. Called only after a successful answer.
 
     Charging after the analysis — never before — means a crash or a model
-    failure cannot take a customer's credit.
+    failure cannot take a customer's credit. `log_ids`, if given, receives the
+    new QuestionLog id (the stream endpoint updates its answer once the
+    rewrite has finished).
     """
     grant(db, user.id, -1, EntryKind.question, note=question[:200])
-    db.add(QuestionLog(
+    row = QuestionLog(
         user_id=user.id, birth_id=birth_id, question=question,
         answer=result.get("answer", ""), answer_engine=result.get("answer_engine", ""),
         topic=result.get("topic", ""), verdict=result.get("verdict", ""),
         score=float(result.get("score") or 0.0), language=result.get("language", "en"),
-    ))
+    )
+    db.add(row)
     db.commit()
+    if log_ids is not None:
+        log_ids.append(row.id)
     return balance(db, user.id)
+
+
+def _record_polished(log_id: int | None, text: str) -> None:
+    """Store the rewritten answer on an already-logged question (DIVASTRO-119).
+
+    /api/ask/stream logs and charges before the rewrite streams, so the row
+    held only the engine's wording — the admin stream and the next question's
+    conversation history never saw what the customer actually read.
+    `answer_engine` keeps the engine text. Best-effort: a failure here must
+    never break a stream the customer has already received.
+    """
+    if not log_id or not text.strip():
+        return
+    try:
+        with db_session() as db:
+            row = db.get(QuestionLog, log_id)
+            if row is not None:
+                row.answer = text.strip()
+                db.commit()
+    except Exception as exc:                     # noqa: BLE001 — never fatal
+        logging.getLogger(__name__).warning("could not store polished answer: %s", exc)
 
 # Chart sessions live in memory for the life of the process — nothing is written
 # to disk, which is the right default for birth data.
@@ -300,7 +327,7 @@ def ask(req: AskRequest, request: Request) -> dict:
         history = [{"question": r.question, "answer": r.answer} for r in reversed(history_rows)]
 
         session = _session(req.session_id, request)
-        result = analyse(session, question, when).to_dict()
+        result = analyse(session, question, when, language=req.language).to_dict()
         result["vedic"] = _vedic_context(session)
 
         # The engine's own wording is always kept, so the UI can show both and
@@ -368,7 +395,7 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
         history = [{"question": r.question, "answer": r.answer} for r in reversed(history_rows)]
 
     session = _session(req.session_id, request)
-    result = analyse(session, question, when).to_dict()
+    result = analyse(session, question, when, language=req.language).to_dict()
     # Every real chat answer goes through this endpoint (the frontend only
     # ever calls /api/ask/stream, never /api/ask), so without this the
     # narration prompt's _vedic_block() is always empty — no yogas, dashas,
@@ -378,9 +405,11 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
     result["answer_engine"] = result["answer"]
     result["language"] = req.language
 
+    log_ids: list[int] = []
     with db_session() as db:
         result["credits"] = _charge_and_log(
-            db, db.get(User, user_id), question, result, req.birth_id)
+            db, db.get(User, user_id), question, result, req.birth_id, log_ids=log_ids)
+    log_id = log_ids[0] if log_ids else None
 
     provider = req.provider if req.provider is not None else llm.default_provider()
 
@@ -391,17 +420,23 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
             return
         try:
             produced = 0
+            parts: list[str] = []
             meta: dict = {}
             for chunk in llm.stream_polish(result, req.language, provider, question,
                                             history=history, meta=meta):
                 produced += len(chunk)
+                parts.append(chunk)
                 yield f"event: delta\ndata: {json.dumps({'text': chunk})}\n\n"
             if produced < 120:
                 yield ("event: error\ndata: "
                        + json.dumps({"error": "The model returned too little text to trust."})
                        + "\n\n")
-            elif meta.get("truncated"):
-                yield "event: truncated\ndata: {}\n\n"
+            else:
+                # The customer read the rewrite, so that is what the log keeps
+                # (the same threshold the UI uses to accept it).
+                _record_polished(log_id, "".join(parts))
+                if meta.get("truncated"):
+                    yield "event: truncated\ndata: {}\n\n"
         except Exception as exc:
             yield ("event: error\ndata: "
                    + json.dumps({"error": f"{type(exc).__name__}: {exc}"}) + "\n\n")
