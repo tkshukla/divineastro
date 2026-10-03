@@ -1,0 +1,74 @@
+{
+  "slug": "vijayadashami",
+  "category": "ram",
+  "tags": [
+    "dussehra"
+  ],
+  "match_names": [],
+  "hi": {
+    "title": "विजयादशमी: राम द्वारा देवी की आराधना और रावण वध",
+    "source": "देवी आराधना (अकाल बोधन): कृत्तिवासी रामायण (बांग्ला परंपरा); रावण वध: वाल्मीकि रामायण, युद्ध कांड",
+    "summary": "रावण से अंतिम युद्ध से पहले श्रीराम की देवी-आराधना, एक खोया हुआ कमल, और धर्म की विजय।",
+    "teaser": [
+      "लंका का युद्ध अपने अंतिम चरण में था। कुंभकर्ण और मेघनाद जैसे महावीर मारे जा चुके थे। अब रावण स्वयं युद्धभूमि में था, और उसे हराना सहज नहीं लग रहा था।",
+      "बांग्ला भाषा में कवि कृत्तिवास की लिखी रामायण में एक प्रसंग आता है, जो वाल्मीकि रामायण में नहीं है। इसके अनुसार विजय के लिए श्रीराम ने देवी दुर्गा की आराधना करने का निश्चय किया।",
+      "पर समय शरद ऋतु का था, जब परंपरा के अनुसार देवता विश्राम में होते हैं। देवी की पूजा का यह समय नहीं था। फिर भी श्रीराम ने असमय ही देवी का आवाहन किया। इसी को *अकाल बोधन* कहते हैं, यानी असमय जगाना।",
+      "पूजा के लिए *108 नीले कमल* चाहिए थे। हनुमान दूर के एक सरोवर से 108 कमल ले आए। श्रीराम ने पूरी श्रद्धा से पूजा आरंभ की, और एक-एक मंत्र के साथ एक-एक कमल देवी के चरणों में अर्पित करने लगे।",
+      "एक, दो, दस, पचास, सौ… पूजा अपने अंत की ओर बढ़ रही थी। श्रीराम का मन देवी में डूबा था।",
+      "पर जब अंतिम कमल चढ़ाने के लिए उन्होंने हाथ बढ़ाया, तो थाल खाली था। गिनती में एक कमल कम था। कथा कहती है कि देवी ने स्वयं श्रीराम की परीक्षा लेने के लिए एक कमल छिपा लिया था।",
+      "पूजा अधूरी नहीं छोड़ी जा सकती थी। नया कमल लाने का समय भी नहीं था। श्रीराम एक पल ठहरे। फिर उन्हें याद आया कि लोग उन्हें *कमलनयन* कहते हैं, यानी कमल जैसे नेत्रों वाले। उन्होंने तरकश से एक बाण निकाला…"
+    ],
+    "hook": "क्या श्रीराम ने सचमुच अपना नेत्र अर्पित कर दिया? और रावण का अंत किस बाण से हुआ?",
+    "rest": [
+      "श्रीराम ने निश्चय किया कि अंतिम कमल के स्थान पर वे अपना एक नेत्र देवी को अर्पित करेंगे। जैसे ही उन्होंने बाण उठाया, देवी दुर्गा स्वयं प्रकट हुईं और उनका हाथ थाम लिया।",
+      "देवी ने कहा, “राम, मैं तुम्हारी भक्ति से प्रसन्न हूँ। तुम्हारी परीक्षा पूरी हुई। जाओ, युद्ध में तुम्हारी विजय होगी।” यहीं कृत्तिवासी रामायण का यह प्रसंग पूरा होता है। बंगाल की दुर्गा पूजा इसी अकाल बोधन की स्मृति से जुड़ी है।",
+      "अब वाल्मीकि रामायण के युद्ध कांड की कथा। राम और रावण का युद्ध चल रहा था, और श्रीराम थके हुए थे। तब महर्षि अगस्त्य वहाँ आए और उन्हें *आदित्य हृदय* स्तोत्र का उपदेश दिया, सूर्य देव की स्तुति, जिससे शत्रु पर विजय मिलती है। श्रीराम ने तीन बार उसका जप किया और नए उत्साह से भर उठे।",
+      "इंद्र ने अपने सारथी मातलि के साथ अपना दिव्य रथ श्रीराम के लिए भेजा। दोनों वीरों में ऐसा युद्ध हुआ जिसकी कोई उपमा नहीं थी। श्रीराम ने बाण से रावण का सिर काटा, पर उसकी जगह नया सिर उग आया। फिर काटा, फिर उग आया। ऐसा बार-बार हुआ।",
+      "तब मातलि ने याद दिलाया, “प्रभु, क्या आप भूल गए? इसके वध के लिए ब्रह्मास्त्र चलाइए।” श्रीराम ने वह ब्रह्मास्त्र उठाया जो उन्हें महर्षि अगस्त्य ने दिया था। उसके वेग में वायु थी, नोक पर अग्नि और सूर्य, और भार में मेरु और मंदर पर्वत।",
+      "श्रीराम ने मंत्र पढ़कर वह बाण छोड़ा। वह रावण की छाती में लगा, उसका हृदय भेदकर निकल गया और फिर लौटकर श्रीराम के तरकश में आ गया। रावण के हाथ से धनुष छूट गया, और वह रथ से धरती पर गिर पड़ा।",
+      "आकाश से फूल बरसे, देवताओं ने दुंदुभियाँ बजाईं। वायु सुगंधित होकर बहने लगी, और सूर्य निर्मल प्रकाश से चमक उठा। अधर्म पर धर्म की विजय हो चुकी थी।"
+    ],
+    "message": "विजय पहले भीतर जीती जाती है, *समर्पण और धैर्य* से; फिर बाहर का युद्ध जीता जाता है। विजयादशमी इसी धर्म की जीत का उत्सव है।",
+    "note": "आश्विन शुक्ल दशमी को विजयादशमी (दशहरा) मनाई जाती है। रावण वध को इस तिथि से जोड़ना परंपरा है; वाल्मीकि रामायण में तिथि का उल्लेख नहीं है। अकाल बोधन और 108 कमलों की कथा कृत्तिवासी रामायण की है; हिंदी में इसे निराला की कविता “राम की शक्ति-पूजा” ने भी प्रसिद्ध किया।"
+  },
+  "en": {
+    "title": "Vijayadashami: Rama's Worship of the Devi and the Slaying of Ravana",
+    "source": "The Devi worship (Akal Bodhan): Krittivasi Ramayana (Bengali tradition); the slaying of Ravana: Valmiki Ramayana, Yuddha Kanda",
+    "summary": "Shri Rama's worship of the Devi before the final battle with Ravana, a missing lotus, and the victory of dharma.",
+    "teaser": [
+      "The war at Lanka was in its final stage. Great warriors like Kumbhakarna and Meghanada had fallen. Now Ravana himself was on the battlefield, and defeating him did not look easy.",
+      "The Ramayana written in Bengali by the poet Krittivas contains an episode that is not in Valmiki's Ramayana. According to it, Shri Rama resolved to worship the Devi Durga for victory.",
+      "But it was autumn, when by tradition the gods are at rest. This was not the season for the Devi's worship. Even so, Shri Rama invoked the Devi out of season. This is called *Akal Bodhan*, the untimely awakening.",
+      "The worship needed *108 blue lotuses*. Hanuman brought 108 lotuses from a distant lake. Shri Rama began the worship with full devotion, offering one lotus at the Devi's feet with each mantra.",
+      "One, two, ten, fifty, a hundred… the worship moved towards its end. Shri Rama's mind was absorbed in the Devi.",
+      "But when he reached for the last lotus, the plate was empty. One lotus was missing. The story says the Devi herself had hidden one lotus to test Shri Rama.",
+      "The worship could not be left incomplete. There was no time to fetch another lotus. Shri Rama paused for a moment. Then he remembered that people call him *Kamalnayan*, the lotus-eyed. He drew an arrow from his quiver…"
+    ],
+    "hook": "Did Shri Rama really offer his own eye? And with which arrow was Ravana ended?",
+    "rest": [
+      "Shri Rama resolved to offer one of his eyes to the Devi in place of the last lotus. As he raised the arrow, the Devi Durga herself appeared and held his hand.",
+      "The Devi said, “Rama, I am pleased with your devotion. Your test is complete. Go; you will be victorious in battle.” Here this episode of the Krittivasi Ramayana ends. Bengal's Durga Puja is tied to the memory of this Akal Bodhan.",
+      "Now the story of Valmiki's Yuddha Kanda. Rama and Ravana were locked in battle, and Shri Rama was weary. Then the sage Agastya came and taught him the *Aditya Hridayam*, a hymn to the Sun god that brings victory over the enemy. Shri Rama recited it three times and was filled with new vigour.",
+      "Indra sent his divine chariot for Shri Rama with his charioteer Matali. The two heroes fought a battle beyond compare. Shri Rama cut off Ravana's head with an arrow, but a new head grew in its place. He cut it again, and again it grew. This happened again and again.",
+      "Then Matali reminded him, “Lord, have you forgotten? Use the Brahmastra to slay him.” Shri Rama took up the Brahmastra given to him by the sage Agastya. In its speed was the wind, at its point fire and the sun, and in its weight the mountains Meru and Mandara.",
+      "Reciting the mantra, Shri Rama released the arrow. It struck Ravana's chest, pierced his heart, and then returned to Shri Rama's quiver. The bow slipped from Ravana's hand, and he fell from his chariot to the earth.",
+      "Flowers rained from the sky and the gods sounded their drums. The wind blew fragrant, and the sun shone with a clear light. Dharma had triumphed over adharma."
+    ],
+    "message": "Victory is first won within, through *surrender and patience*; then the battle outside is won. Vijayadashami celebrates that victory of dharma.",
+    "note": "Vijayadashami (Dussehra) is celebrated on Ashwin Shukla Dashami. Linking Ravana's death to this date is tradition; Valmiki's Ramayana does not give the date. The Akal Bodhan and the 108 lotuses come from the Krittivasi Ramayana; in Hindi, Nirala's poem “Ram ki Shakti-Puja” also made the episode famous."
+  },
+  "links": [
+    [
+      "व्रत और त्योहार",
+      "/hi/vrat-tyohar",
+      "Vrats and festivals",
+      "/vrat-tyohar"
+    ],
+    [
+      "आज का पंचांग",
+      "/hi/panchang",
+      "Today's panchang",
+      "/panchang"
+    ]
+  ]
+}
