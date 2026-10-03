@@ -99,9 +99,27 @@ stop and report it rather than guessing a platform.
    with a dead image.
 6. **Write the caption.** An English paragraph, then 2-3 lines of
    independently-phrased Hindi (not machine-translated word for word) making
-   the same point, then a CTA line ("divineastro.org" or "Link in bio →
-   divineastro.org"). Instagram gets 6-8 relevant hashtags at the end;
-   Facebook gets none (a bare link instead). Tone: warm, respectful of the
+   the same point, then a CTA line. Instagram gets 6-8 relevant hashtags at
+   the end and "Link in bio → divineastro.org" (Instagram captions can't
+   carry clickable links). Facebook gets no hashtags and a **deep link to the
+   page that matches the topic**, not the home page — those pages are what
+   Google indexes, so social visits to them also help search ranking:
+
+   | Topic | Facebook link path |
+   |---|---|
+   | Rahu Kaal / Choghadiya / Panchang | `/rahu-kaal`, `/choghadiya`, `/panchang` (or `/rahu-kaal/<city>` if the post names one of the cities in `app/seo_cities.py`) |
+   | Kundali Milan / Manglik | `/kundali-milan` |
+   | Mahadasha, Sade Sati, any "your chart" topic | `/free-kundali` |
+   | Daily horoscope / Moon sign | `/rashifal` |
+   | First 10 questions free / AI astrologer | `/` |
+
+   Append `?utm_source=facebook&utm_medium=social&utm_campaign=<YYYY-MM-DD>-<slug>`
+   (same slug as the image) so the admin Traffic panel attributes the visits
+   and sign-ups to that post. **Before using it, `curl -s -o /dev/null -w
+   "%{http_code}"` the URL (without the query string) and require 200**; if it
+   isn't 200, fall back to `https://divineastro.org/` with the same UTM tags.
+   Use the Hindi page (`/hi/...`) instead only if that post's caption leads
+   with Hindi. Tone: warm, respectful of the
    tradition, never fear-based or hard-sell ("your problems will be solved"
    is not the voice — "a real answer grounded in your actual chart" is).
 7. **Schedule exactly 1 post**, on the platform computed above, via
@@ -146,6 +164,12 @@ stop and report it rather than guessing a platform.
 - Kaal Sarp dosha explained simply
 - Navamsa (D9) chart: what it adds beyond the main chart
 - Choghadiya: the short auspicious/inauspicious windows across a day
+
+**SEO pages to promote (link to them, see step 6)**
+- Today's Rahu Kaal for a big city (rotate: Delhi, Mumbai, Lucknow, Jaipur,
+  Patna, Kolkata, Bengaluru…) → `/rahu-kaal/<city>`
+- Today's Rashifal: "what does the Moon in <sign> mean for you" → `/rashifal`
+- Free janam kundali, what it shows → `/free-kundali`
 
 **Timely / trust**
 - Any festival within 30 days (verified per step 3)
