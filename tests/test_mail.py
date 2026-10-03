@@ -69,6 +69,35 @@ def test_mail_module() -> None:
             check("both recipients addressed", "ops@example.com" in sent["To"] and
                   "owner@example.com" in sent["To"], sent["To"])
 
+        # Attachments (DIVASTRO-113, the daily WhatsApp pack's PNG card).
+        with patch("smtplib.SMTP", return_value=fake_smtp):
+            png = b"\x89PNG\r\n\x1a\nfake"
+            ok = mail.send(["owner@example.com"], "With file", "See attached",
+                           attachments=[("card.png", "image/png", png)])
+            sent = fake_smtp.send_message.call_args[0][0]
+            parts = list(sent.iter_attachments())
+            check("attachment: send returns True", ok is True)
+            check("attachment: one image/png part named card.png",
+                  len(parts) == 1 and parts[0].get_content_type() == "image/png"
+                  and parts[0].get_filename() == "card.png", str([p.get_content_type() for p in parts]))
+            check("attachment: bytes intact", parts and parts[0].get_content() == png)
+            check("attachment: text body still there",
+                  sent.get_body(("plain",)).get_content().strip() == "See attached")
+
+    # Console transport keeps the 4-tuple shape callers unpack, plus .attachments.
+    with patch.dict(os.environ, {"ASTRO_SMTP_HOST": "console", "ASTRO_COOKIE_SECURE": "0"}):
+        mail.OUTBOX.clear()
+        mail.send(["a@example.com"], "s", "b", attachments=[("x.png", "image/png", b"123")])
+        to, subject, body, html = mail.OUTBOX[-1]
+        check("console: unpacks as (to, subject, body, html)",
+              (to, subject, body, html) == (["a@example.com"], "s", "b", None))
+        check("console: .attachments kept", mail.OUTBOX[-1].attachments == [("x.png", "image/png", b"123")])
+        mail.OUTBOX.clear()
+
+    with patch.dict(os.environ, {
+        "ASTRO_SMTP_HOST": "smtp.example.com", "ASTRO_SMTP_PORT": "587",
+        "ASTRO_SMTP_USER": "bot@example.com", "ASTRO_SMTP_PASS": "secret",
+    }):
         # A broken transport must not raise out of send() — the customer-
         # facing caller (submit_utr) depends on this never becoming a 500.
         with patch("smtplib.SMTP", side_effect=OSError("connection refused")):
