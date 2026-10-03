@@ -1360,7 +1360,8 @@ def sitemap_paths() -> list[str]:
     from .muhurat_pages import page_paths as muhurat_paths  # same: imports this module
     from .vrat_pages import page_paths as vrat_paths  # same: imports this module
     from .nakshatra_pages import sitemap_paths as nakshatra_paths  # same (DIVASTRO-115)
-    return paths + rashifal_paths() + muhurat_paths() + vrat_paths() + nakshatra_paths()
+    from .katha import sitemap_paths as katha_paths  # same
+    return paths + rashifal_paths() + muhurat_paths() + vrat_paths() + nakshatra_paths() + katha_paths()
 
 
 @router.get("/sitemap.xml")

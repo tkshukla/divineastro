@@ -34,6 +34,7 @@ from .legal import router as legal_router
 from .seo_pages import router as seo_router
 from .rashifal_pages import router as rashifal_router
 from .nakshatra_pages import router as nakshatra_router
+from .katha import router as katha_router
 from .naam_milan import router as naam_milan_router
 from .share import router as share_router
 from .muhurat_pages import router as muhurat_pages_router
@@ -85,6 +86,7 @@ app.include_router(legal_router)
 app.include_router(seo_router)     # /panchang, /rahu-kaal, /choghadiya, /kundali-milan, sitemap, robots
 app.include_router(rashifal_router)  # /rashifal, /hi/rashifal (DIVASTRO-105)
 app.include_router(nakshatra_router)  # /nakshatra, /rashi + /hi/ copies (DIVASTRO-115)
+app.include_router(katha_router)      # /katha, /katha/<slug> (evening channel story)
 app.include_router(naam_milan_router)  # /naam-se-kundali-milan + /hi/ (DIVASTRO-115)
 app.include_router(share_router)   # /api/share/cities (DIVASTRO-107 WhatsApp share buttons)
 app.include_router(muhurat_pages_router)  # /muhurat/vivah-2026 etc. + /hi/ copies (DIVASTRO-109)
