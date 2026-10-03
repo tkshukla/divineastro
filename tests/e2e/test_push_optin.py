@@ -173,6 +173,9 @@ def keys_on(browser) -> None:
               len(resync) >= 2 and resync[-1]["body"].get("lang") == "hi")
         pg.page.click("#push-unsubscribe")
         pg.page.wait_for_selector("#push-subscribe", timeout=5000)
+        # The button swaps back first (render() runs before the awaits in
+        # unsubscribe()), so wait for the browser unsubscribe to finish too.
+        pg.page.wait_for_function("window.__pushUnsubscribed === true", timeout=5000)
         # The request event that fills `posts` can land a beat after the DOM swap.
         for _ in range(50):
             un = [p for p in posts if p["url"].endswith("/api/push/unsubscribe")]
@@ -181,7 +184,9 @@ def keys_on(browser) -> None:
             pg.page.wait_for_timeout(100)
         check("Unsubscribe POSTs the endpoint and drops the browser subscription",
               un and un[0]["body"].get("endpoint") == b.get("subscription", {}).get("endpoint")
-              and pg.page.evaluate("window.__pushUnsubscribed === true"))
+              and pg.page.evaluate("window.__pushUnsubscribed === true"),
+              f"posts={len(un)} body={un[0]['body'] if un else None} "
+              f"unsub={pg.page.evaluate('window.__pushUnsubscribed')}")
         check("Hindi button text", "रोज़ व्रत और राहु काल की सूचना" in pg.page.inner_text("#push-subscribe"))
         check("no console errors", not pg.console_errors, str(pg.console_errors[:3]))
         check("no CSP violations", not pg.csp_violations(), str(pg.csp_violations()))
