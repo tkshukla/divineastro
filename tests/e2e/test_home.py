@@ -283,6 +283,9 @@ def today_and_sample(p, browser, base: str) -> None:
     pg = Page(ctx.new_page(), base)
     pg.sign_in("sampleask@example.com", "Sample Ask")
     pg.open_home()
+    # The account loads asynchronously (/api/me); a tap before it lands is, correctly,
+    # treated as signed out. Wait for it, or the test races the page.
+    pg.page.wait_for_function("typeof acct !== 'undefined' && !!acct.user", timeout=15000)
     pg.page.tap("#sample-ask")
     pg.page.wait_for_selector("#stage-birth.active", timeout=5000)
     check("signed in with no chart: 'Ask your own question' opens the birth form", True)
@@ -326,6 +329,29 @@ def vrat_line(p, browser, base: str) -> None:
     check("Hindi: 'आज: पापांकुशा एकादशी' linking to /hi/vrat-tyohar",
           pg.page.inner_text("#today-vrat").strip() == "आज: पापांकुशा एकादशी"
           and pg.page.get_attribute("#today-vrat", "href") == "/hi/vrat-tyohar")
+    pg.page.click('.lang[data-lang="en"]')
+    ctx.close()
+
+    ctx = browser.new_context(**phone)
+    pg = Page(ctx.new_page(), base)
+    nxt = json.dumps({"date": "2026-10-03", "items": [], "url": "/vrat-tyohar", "url_hi": "/hi/vrat-tyohar",
+                      "next": {"date": "2026-10-06", "name_en": "Indira Ekadashi", "name_hi": "इंदिरा एकादशी",
+                               "day_en": "6 Oct", "day_hi": "6 अक्टूबर"}})
+    pg.page.route("**/api/vrat/today?*", lambda route: route.fulfill(
+        status=200, body=nxt, headers={"content-type": "application/json"}))
+    pg.open_home()
+    pg.page.wait_for_selector("#today-vrat:not([hidden])", timeout=15000)
+    check("ordinary day with an upcoming one: 'Next vrat/festival: Indira Ekadashi · 6 Oct'",
+          pg.page.inner_text("#today-vrat").strip() == "Next vrat/festival: Indira Ekadashi · 6 Oct",
+          pg.page.inner_text("#today-vrat"))
+    check("home has a Vrat & Tyohar card linking to /vrat-tyohar",
+          pg.page.get_attribute("#open-vrat", "href") == "/vrat-tyohar" and pg.page.is_visible("#open-vrat"))
+    pg.page.click('.lang[data-lang="hi"]')
+    pg.page.wait_for_timeout(500)
+    check("Hindi: card links to /hi/vrat-tyohar and the line reads 'अगला व्रत/त्योहार: …'",
+          pg.page.get_attribute("#open-vrat", "href") == "/hi/vrat-tyohar"
+          and pg.page.inner_text("#today-vrat").strip() == "अगला व्रत/त्योहार: इंदिरा एकादशी · 6 अक्टूबर",
+          pg.page.inner_text("#today-vrat"))
     pg.page.click('.lang[data-lang="en"]')
     ctx.close()
 

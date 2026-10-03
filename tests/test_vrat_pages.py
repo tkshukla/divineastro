@@ -197,6 +197,10 @@ def main() -> int:
     check("festivals.on(22 Oct 2026) -> Papankusha, with Hindi name",
           [(o["name_en"], o["name_hi"]) for o in items]
           == [("Papankusha Ekadashi", "पापांकुशा एकादशी")])
+    check("'next' is null or the next observance with EN/HI names and short dates",
+          j.get("next") is None if j.get("items") else
+          (j.get("next") is not None and set(j["next"]) >= {"date", "name_en", "name_hi", "day_en", "day_hi"}
+           and j["next"]["date"] > j["date"]), str(j.get("next")))
     r = client.get("/api/vrat/today?lat=19.076&lon=72.8777&tz=Asia/Kolkata")
     check("another city works", r.status_code == 200 and isinstance(r.json().get("items"), list))
     r = client.get("/api/vrat/today?lat=10&lon=10&tz=Not/AZone")

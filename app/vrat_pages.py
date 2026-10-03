@@ -721,6 +721,7 @@ def vrat_today(
     """Today's vrat/festival names for the home Today strip. Never errors: a
     failure is an empty list, and the strip simply shows nothing."""
     items: list[dict] = []
+    upcoming = None
     day = None
     try:
         zone = tz or geo.timezone_for(lat, lon)
@@ -728,8 +729,18 @@ def vrat_today(
         items = [{"key": o["key"], "name_en": o["name_en"], "name_hi": o["name_hi"],
                   "major": o["major"]}
                  for o in festivals.on(day, lat, lon, zone)]
+        # On an ordinary day the strip says what is coming next instead of
+        # nothing, so the vrat-tyohar page is always one tap from home.
+        if not items:
+            nxt = next(iter(festivals.observances(day + dt.timedelta(days=1),
+                                                   day + dt.timedelta(days=30), lat, lon, zone)), None)
+            if nxt:
+                when = dt.date.fromisoformat(nxt["date"])
+                upcoming = {"date": nxt["date"], "name_en": nxt["name_en"],
+                            "name_hi": nxt["name_hi"], "day_en": _short_date(when, EN),
+                            "day_hi": _short_date(when, HI)}
     except Exception:                                  # pragma: no cover - defensive
         items = []
-    body = {"date": day.isoformat() if day else None, "items": items,
+    body = {"date": day.isoformat() if day else None, "items": items, "next": upcoming,
             "url": hub_path(EN), "url_hi": hub_path(HI)}
     return JSONResponse(body, headers={"Cache-Control": "private, max-age=1800"})
