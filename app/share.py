@@ -23,6 +23,7 @@ places of birth. The in-app Milan text carries the score only.
 from __future__ import annotations
 
 import html
+import re
 from urllib.parse import quote, urlencode
 
 from fastapi import APIRouter
@@ -62,8 +63,16 @@ def _parts(path: str) -> list[str]:
     return parts[1:] if parts[:1] == ["hi"] else parts
 
 
+def _is_katha(path: str) -> bool:
+    """/katha… is Hindi (canonical), /en/katha… its English twin."""
+    return re.match(r"^(?:/en)?/katha(?:/|$)", path) is not None
+
+
 def seo_share_text(path: str) -> str | None:
     """The message for an SEO page, from its path alone (/tool or /tool/<city>)."""
+    if _is_katha(path):
+        from .katha import share_text as katha_text   # lazy: katha imports seo_pages (DIVASTRO-120)
+        return katha_text(path)
     parts = _parts(path)
     if not parts:
         return None
@@ -120,11 +129,12 @@ def seo_share(path: str) -> str:
     text = seo_share_text(path)
     if text is None:
         return ""
-    tool = _parts(path)[0]
+    tool = "katha" if _is_katha(path) else _parts(path)[0]
     if tool.startswith("ekadashi-"):
         tool = "ekadashi"
     href = whatsapp_href(text, share_url(path, f"seo-{tool}"))
-    label = "WhatsApp पर भेजें" if path.startswith("/hi/") else "Share on WhatsApp"
+    hindi = path.startswith("/hi/") or (tool == "katha" and not path.startswith("/en/"))
+    label = "WhatsApp पर भेजें" if hindi else "Share on WhatsApp"
     return (f'<a class="share-wa" href="{html.escape(href)}" target="_blank" rel="noopener" '
             f'data-share="seo-{tool}">{_ICON}<span>{label}</span></a>')
 

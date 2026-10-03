@@ -134,6 +134,12 @@ before installing.
 Add the third line only after the WhatsApp connector is linked and tested
 (section 5).
 
+The evening katha (section 6) goes to the same WhatsApp Channel at 19:00:
+
+```cron
+0 19 * * * docker compose -f /srv/divineastro/docker-compose.yml exec -T app python -m app.katha --daily >> /srv/divineastro/deploy/daily_channels.log 2>&1 # divineastro-katha-daily
+```
+
 Add `--with-card` to the Telegram line to post the image card above the text.
 A retry line such as `30 6 * * *` with the same command is safe: each job
 records what it already sent and posts only what is missing.
@@ -347,3 +353,82 @@ two containers: run both `up -d` commands from step b3 again.
    optionally `docker compose -f /srv/divineastro/docker-compose.yml rm -f wa`
    and `docker volume rm divineastro_wadata` (deletes the stored link; check
    the exact name with `docker volume ls`).
+
+---
+
+## 6. Evening katha on the WhatsApp Channel (DIVASTRO-120)
+
+At 19:00 `python -m app.katha --daily` posts one story teaser to the same
+channel, through the same `wa` connector and the same `ASTRO_WA_*` settings
+as section 5. The teaser stops at the story's turning point and links to the
+whole story on the site (`/katha/<slug>`, Hindi; the English copy is at
+`/en/katha/<slug>`), tagged `utm_campaign=katha`.
+
+**Which story** (`app/katha.py`, `pick()`):
+
+1. If today (New Delhi) has an observance that a story belongs to (its
+   `match_names` hold the observance's exact name, e.g. "Indira Ekadashi",
+   or its `tags` hold the observance key, e.g. `karwa_chauth`), that story,
+   unless it was posted in the last 300 days. A name match beats a tag, a
+   major festival beats a minor one.
+2. Otherwise the next evergreen story (no tags, no match_names) that has never
+   been posted, in file-name order; once all have gone out, the one posted
+   longest ago.
+3. Festival stories are never used on other days, unless every evergreen
+   story was posted within the last 60 days.
+
+Preview, post, re-post:
+
+```bash
+docker compose -f /srv/divineastro/docker-compose.yml exec -T app python -m app.katha --daily --dry-run
+docker compose -f /srv/divineastro/docker-compose.yml exec -T app python -m app.katha --daily --dry-run --date 2026-10-29
+docker compose -f /srv/divineastro/docker-compose.yml exec -T app python -m app.katha --slug savitri-satyavan --dry-run
+```
+
+`--daily` posts once per date (a retry or a second run does nothing; `--force`
+re-sends that date's story). `--slug <slug>` posts one particular story once
+(`--force` to repeat). Exit codes as in section 4. If the connector is
+unlinked, the owner gets the same once-a-day "unlinked" email as the morning
+post.
+
+**State:** `/srv/data/daily_channels/katha.json` (what went out per date) and
+`katha.cache.json` (`{slug: {"posted": ..., "id": ..., "day": ...}}`, the
+history the picker reads; never pruned). Deleting a slug from the cache file
+makes that story count as never posted.
+
+### Adding a story
+
+One story is one file, `app/katha_stories/<slug>.json`; nothing else to edit.
+The index, the two pages, the sitemap, the share button and the rotation pick
+it up after a deploy.
+
+```json
+{
+  "slug": "savitri-satyavan",
+  "category": "vrat-katha",
+  "tags": ["vat_savitri", "vat_purnima"],
+  "match_names": [],
+  "hi": {"title": "...", "source": "...", "summary": "...", "teaser": ["para", "..."],
+         "hook": "...", "rest": ["para", "..."], "message": "...", "note": ""},
+  "en": {"title": "...", "source": "...", "summary": "...", "teaser": ["..."],
+         "hook": "...", "rest": ["..."], "message": "...", "note": ""},
+  "links": [["हिंदी लेबल", "/hi/path", "English label", "/path"]]
+}
+```
+
+- `slug`: lowercase words joined by hyphens, the same as the file name.
+- `category`: one of `vrat-katha devi shiva vishnu krishna ram ganesh
+  mahabharata rishi other` (the index groups by it).
+- `tags`: observance keys from `app/astro/festivals.py` (`karwa_chauth`,
+  `ekadashi`, `diwali`, ...); `[]` for an evergreen story.
+- `match_names` (optional): exact observance names from the same file, for a
+  story that belongs to one particular day, e.g. `["Indira Ekadashi"]`.
+- `hi` / `en`: every field present; all but `note` non-empty; `teaser` and
+  `rest` non-empty lists of paragraphs; the Hindi title in Devanagari, the
+  English one not. Markup is `*bold*` only (no `**`, HTML or Markdown
+  links). The teaser post must stay under 4000 characters.
+- `links` (optional): closing links, `[hindi label, hindi path, english label,
+  english path]`.
+
+Check before committing: `python -m tests.test_katha`. The app refuses to start
+on a bad file, and the error names the file and the field.

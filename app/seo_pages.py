@@ -269,16 +269,18 @@ def _footer(lang: str = EN) -> str:
     the link text but points at the same pages."""
     reg = registration_inline()
     if lang == HI:
-        labels = ("नियम और शर्तें", "गोपनीयता नीति", "रिफ़ंड और रद्दीकरण", "संपर्क करें", "सुझाव")
+        labels = ("कथाएँ", "नियम और शर्तें", "गोपनीयता नीति", "रिफ़ंड और रद्दीकरण", "संपर्क करें",
+                  "सुझाव")
         disclaimer = ("ज्योतिषीय जानकारी मार्गदर्शन और मनोरंजन के लिए है। यह चिकित्सा, "
                       "कानूनी या वित्तीय सलाह नहीं है।")
     else:
-        labels = ("Terms &amp; Conditions", "Privacy Policy", "Refund &amp; Cancellation",
+        labels = ("Kathas", "Terms &amp; Conditions", "Privacy Policy", "Refund &amp; Cancellation",
                   "Contact Us", "Feedback")
         disclaimer = ("Astrological readings are provided for guidance and\n    entertainment. "
                       "They are not medical, legal or financial advice.")
     links = "\n    ".join(f'<a href="{href}">{label}</a>' for href, label in zip(
-        ("/terms", "/privacy", "/refund", "/contact", "/feedback"), labels))
+        ("/katha" if lang == HI else "/en/katha", "/terms", "/privacy", "/refund", "/contact",
+         "/feedback"), labels))
     return f"""<footer class="site-footer">
   <nav>
     {links}
@@ -290,18 +292,20 @@ def _footer(lang: str = EN) -> str:
 </footer>"""
 
 
-def _alternates(en_path: str, hi_path: str) -> str:
+def _alternates(en_path: str, hi_path: str, x_default: str = EN) -> str:
     """Reciprocal hreflang: both copies carry the identical set, which is what
     makes Google treat them as one page in two languages rather than two
-    competing pages (a one-way hreflang is ignored)."""
+    competing pages (a one-way hreflang is ignored). x-default is the English
+    copy except where Hindi is the canonical one (the katha pages)."""
+    default = hi_path if x_default == HI else en_path
     return "".join(
         f'<link rel="alternate" hreflang="{code}" href="{_e(SITE_URL + p)}"/>\n'
-        for code, p in (("en", en_path), ("hi", hi_path), ("x-default", en_path)))
+        for code, p in (("en", en_path), ("hi", hi_path), ("x-default", default)))
 
 
 def _render(*, title: str, description: str, path: str, crumbs: list[tuple[str, str]],
             body: str, lang: str = EN, alt: str | None = None, extra_ld: tuple = (),
-            status: int = 200, cache: bool = True) -> HTMLResponse:
+            status: int = 200, cache: bool = True, x_default: str = EN) -> HTMLResponse:
     """`path` is this page's canonical path; `alt` its other-language twin
     (None for pages with no twin, i.e. the 404s)."""
     hi = lang == HI
@@ -328,7 +332,7 @@ def _render(*, title: str, description: str, path: str, crumbs: list[tuple[str, 
     alternates, switch = "", ""
     if alt:
         en_path, hi_path = (alt, path) if hi else (path, alt)
-        alternates = _alternates(en_path, hi_path)
+        alternates = _alternates(en_path, hi_path, x_default)
         switch = (f'<a class="lang-switch" href="{_e(alt)}" hreflang="en" lang="en">Read in English</a>'
                   if hi else
                   f'<a class="lang-switch" href="{_e(alt)}" hreflang="hi" lang="hi">हिन्दी में पढ़ें</a>')
