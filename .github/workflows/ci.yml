@@ -53,10 +53,10 @@ jobs:
             test_life_book test_llm_date_audit test_llm_dignity_audit \
             test_llm_ollama_fallback test_logging test_mail test_match_api \
             test_festivals test_matching test_muhurat test_muhurat_pages test_naam_milan \
-            test_nakshatra_rashi_pages test_panchang test_password_auth \
+            test_nakshatra_rashi_pages test_panchang test_password_auth test_period_answer test_periods \
             test_payu test_pdf_direct test_phone_auth test_email_auth test_push \
             test_rashifal_pages test_remedies_doshas test_rich_results test_seo_pages test_seo_pages_hi test_share test_single_question test_sudarshana \
-            test_topic_routing test_varga_svg test_vargas test_vrat_pages test_watchdog test_whatsapp_channel \
+            test_topic_routing test_varga_svg test_vargas test_vrat_pages test_watchdog test_whatsapp_channel test_window \
             test_yogini_dasha; do
             echo "::group::$m"
             python -u -m tests.$m

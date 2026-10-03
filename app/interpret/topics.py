@@ -231,6 +231,38 @@ TOPICS: tuple[Topic, ...] = (
 TOPIC_BY_KEY = {t.key: t for t in TOPICS}
 DEFAULT_TOPIC = TOPIC_BY_KEY["self"]
 
+# DIVASTRO-119: a question that names a date window ("how is my 10th oct to
+# 20th oct", "agle hafte kaisa rahega") but no subject is a forecast for that
+# window. Kept out of TOPICS on purpose: it has no keywords of its own (it is
+# chosen by periods.parse_period, never by word count) and /api/topics lists
+# TOPICS as the subjects a user can ask about.
+PERIOD_TOPIC = Topic(
+    key="period",
+    label="the dates you asked about",
+    primary_houses=(1, 10),
+    support_houses=(4, 7, 11),
+    significators=("Moon", "Sun", "Saturn", "Jupiter"),
+    keywords=(),
+    blurb="the Moon's daily transit, tara bala and the running dasha across the window",
+)
+TOPIC_BY_KEY["period"] = PERIOD_TOPIC
+
+# Hindi (Devanagari) and Hinglish subject words, scored as strong keywords.
+# Devanagari terms are matched as plain substrings (see _hits): Python's \b
+# does not sit reliably next to Devanagari vowel signs, which are not \w.
+HINDI_STRONG: dict[str, tuple[str, ...]] = {
+    "career": ("नौकरी", "करियर", "कैरियर", "व्यापार", "व्यवसाय", "पदोन्नति", "naukri", "naukari",
+               "vyapar", "karobar"),
+    "money": ("पैसा", "पैसे", "धन-दौलत", "आर्थिक", "कर्ज़", "कर्ज", "paisa", "paise", "karz", "karza"),
+    "love": ("शादी", "विवाह", "प्रेम", "पति", "पत्नी", "रिश्ता", "shaadi", "shadi", "vivah",
+             "pyaar", "pyar", "patni", "rishta"),
+    "family": ("परिवार", "माता", "पिता", "मकान", "pariwar", "parivar"),
+    "children": ("संतान", "बच्चे", "बच्चा", "santan", "bachcha", "bacche"),
+    "health": ("स्वास्थ्य", "सेहत", "बीमारी", "रोग", "sehat", "swasthya", "bimari", "beemari"),
+    "education": ("पढ़ाई", "परीक्षा", "शिक्षा", "padhai", "pariksha"),
+    "travel": ("विदेश", "यात्रा", "videsh", "yatra"),
+}
+
 # --------------------------------------------------------------------------
 # Intent
 # --------------------------------------------------------------------------
@@ -295,6 +327,8 @@ class Routing:
     score: float
     matched: list[str] = field(default_factory=list)
     secondary: Topic | None = None
+    # DIVASTRO-119: the date window the question names (periods.Period), if any.
+    period: object | None = None
 
 
 def _stem(term: str) -> str:
@@ -312,23 +346,57 @@ def _stem(term: str) -> str:
 def _hits(text: str, terms: tuple[str, ...]) -> list[str]:
     found = []
     for term in terms:
+        if not term.isascii():
+            # Devanagari: a start-of-word lookbehind only, so inflections
+            # (शादी -> शादियों) still match but "पति" never matches inside a
+            # longer word.
+            if re.search(r"(?<![ऀ-ॿ])" + re.escape(term), text):
+                found.append(term)
+            continue
         pattern = r"\b" + re.escape(_stem(term)).replace(r"\ ", r"\s+") + r"\w{0,4}\b"
         if re.search(pattern, text, re.I):
             found.append(term)
     return found
 
 
-def classify(question: str) -> Routing:
+# With a date window present these words are about the calendar, not a
+# subject ("the date 10 oct" is not a love question).
+_CALENDAR_WORDS = frozenset({"date"})
+
+
+def classify(question: str, now=None) -> Routing:
+    """Topic + intent for a question. `now` (datetime/date, default today in
+    IST) anchors any date window the question names (DIVASTRO-119)."""
+    from .periods import parse_period   # local: periods has no deps, but keep import cost lazy
+
     text = question.lower()
     intent = detect_intent(question)
+    period = parse_period(question, now)
 
     scored: list[tuple[float, Topic, list[str]]] = []
     for topic in TOPICS:
-        strong = _hits(text, topic.strong_keywords)
+        strong = _hits(text, topic.strong_keywords) + _hits(text, HINDI_STRONG.get(topic.key, ()))
         weak = _hits(text, topic.keywords)
+        if period is not None:
+            weak = [w for w in weak if w not in _CALENDAR_WORDS]
         score = 3.0 * len(strong) + 1.0 * len(weak)
         if score:
             scored.append((score, topic, strong + weak))
+
+    if period is not None:
+        # A named window is always answered for that window: never the
+        # personality reading, and never the generic long-range timing read.
+        # A real subject ("career in october") keeps its topic and gains the
+        # window.
+        scored = [s for s in scored if s[1].key not in ("self", "timing")]
+        scored.sort(key=lambda s: -s[0])
+        if not scored:
+            return Routing(topic=PERIOD_TOPIC, intent="period", score=0.0, matched=[],
+                           period=period)
+        best = scored[0]
+        second = scored[1][1] if len(scored) > 1 and scored[1][0] >= best[0] * 0.6 else None
+        return Routing(topic=best[1], intent="period", score=best[0], matched=best[2],
+                       secondary=second, period=period)
 
     if not scored:
         # No subject word at all — a bare "when?" or "what's coming?" is a

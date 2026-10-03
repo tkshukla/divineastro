@@ -11,6 +11,7 @@ Also asserts the two properties that protect real money:
 
 from __future__ import annotations
 
+import os
 import random
 import sys
 from pathlib import Path
@@ -19,7 +20,9 @@ import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-BASE = "http://127.0.0.1:8600"
+# ASTRO_TEST_BASE points the run at a server on another port, as in
+# test_session_isolation and test_traffic.
+BASE = os.environ.get("ASTRO_TEST_BASE", "http://127.0.0.1:8600").rstrip("/")
 # A fresh identity each run so repeated runs don't collide on the same account.
 EMAIL = f"tester{random.randint(10000, 99999)}@example.com"
 

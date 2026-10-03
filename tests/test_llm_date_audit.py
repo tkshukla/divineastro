@@ -62,6 +62,44 @@ def main() -> int:
     check("no dates in the answer raises no violation",
           "date_violations" not in meta, f"got {meta}")
 
+    # DIVASTRO-119: a date-window answer. Every date the engine prints for the
+    # window must be in the polish prompt, so the auditor passes a narration
+    # that quotes them — and still catches one it made up.
+    print("\nDate-window answer (DIVASTRO-119)")
+    import datetime as dt
+    from zoneinfo import ZoneInfo
+
+    from app.chart_service import BirthData, build
+    from app.interpret import analyse
+
+    session = build(BirthData(
+        name="Sanskruti", date="1999-08-14", time="14:07",
+        latitude=18.5204, longitude=73.8567, timezone="Asia/Kolkata",
+        place="Pune, Maharashtra, India"))
+    q = "how is my 10th oct to 20th oct"
+    result = analyse(session, q, dt.datetime(2026, 10, 3, 10, 0,
+                                             tzinfo=ZoneInfo("Asia/Kolkata"))).to_dict()
+    window_prompt = llm._build_prompt(result, "en", q)
+    check("the window facts reach the polish prompt",
+          "Date-window evidence" in window_prompt and "10 Oct 2026" in window_prompt
+          and "20 Oct 2026" in window_prompt)
+    check("Oct 2026 is on the allowed-dates list",
+          "Oct 2026" in llm._allowed_dates_note(window_prompt))
+    meta = {}
+    llm._audit_dates(meta, window_prompt, result["answer"])
+    check("every date in the engine's own window answer passes the auditor",
+          "date_violations" not in meta, f"got {meta}")
+    meta = {}
+    llm._audit_dates(meta, window_prompt,
+                     "Your best day is 14 Oct 2026; Navratri runs from 11 Oct 2026 and "
+                     "Dussehra falls on 20 Oct 2026. Rahu mahadasha runs to Jul 2037.")
+    check("a narration quoting the window's dates passes", "date_violations" not in meta,
+          f"got {meta}")
+    meta = {}
+    llm._audit_dates(meta, window_prompt, "Things pick up in Nov 2026.")
+    check("a month outside the window's facts is still flagged",
+          meta.get("date_violations") == ["Nov 2026"], f"got {meta}")
+
     print("\n" + "=" * 60)
     if failures:
         print(f"{len(failures)} FAILURES")
