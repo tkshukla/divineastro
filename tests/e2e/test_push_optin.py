@@ -173,7 +173,12 @@ def keys_on(browser) -> None:
               len(resync) >= 2 and resync[-1]["body"].get("lang") == "hi")
         pg.page.click("#push-unsubscribe")
         pg.page.wait_for_selector("#push-subscribe", timeout=5000)
-        un = [p for p in posts if p["url"].endswith("/api/push/unsubscribe")]
+        # The request event that fills `posts` can land a beat after the DOM swap.
+        for _ in range(50):
+            un = [p for p in posts if p["url"].endswith("/api/push/unsubscribe")]
+            if un:
+                break
+            pg.page.wait_for_timeout(100)
         check("Unsubscribe POSTs the endpoint and drops the browser subscription",
               un and un[0]["body"].get("endpoint") == b.get("subscription", {}).get("endpoint")
               and pg.page.evaluate("window.__pushUnsubscribed === true"))
