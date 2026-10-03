@@ -329,6 +329,29 @@ def vrat_line(p, browser, base: str) -> None:
     pg.page.click('.lang[data-lang="en"]')
     ctx.close()
 
+    ctx = browser.new_context(**phone)
+    pg = Page(ctx.new_page(), base)
+    nxt = json.dumps({"date": "2026-10-03", "items": [], "url": "/vrat-tyohar", "url_hi": "/hi/vrat-tyohar",
+                      "next": {"date": "2026-10-06", "name_en": "Indira Ekadashi", "name_hi": "इंदिरा एकादशी",
+                               "day_en": "6 Oct", "day_hi": "6 अक्टूबर"}})
+    pg.page.route("**/api/vrat/today?*", lambda route: route.fulfill(
+        status=200, body=nxt, headers={"content-type": "application/json"}))
+    pg.open_home()
+    pg.page.wait_for_selector("#today-vrat:not([hidden])", timeout=15000)
+    check("ordinary day with an upcoming one: 'Next vrat/festival: Indira Ekadashi · 6 Oct'",
+          pg.page.inner_text("#today-vrat").strip() == "Next vrat/festival: Indira Ekadashi · 6 Oct",
+          pg.page.inner_text("#today-vrat"))
+    check("home has a Vrat & Tyohar card linking to /vrat-tyohar",
+          pg.page.get_attribute("#open-vrat", "href") == "/vrat-tyohar" and pg.page.is_visible("#open-vrat"))
+    pg.page.click('.lang[data-lang="hi"]')
+    pg.page.wait_for_timeout(500)
+    check("Hindi: card links to /hi/vrat-tyohar and the line reads 'अगला व्रत/त्योहार: …'",
+          pg.page.get_attribute("#open-vrat", "href") == "/hi/vrat-tyohar"
+          and pg.page.inner_text("#today-vrat").strip() == "अगला व्रत/त्योहार: इंदिरा एकादशी · 6 अक्टूबर",
+          pg.page.inner_text("#today-vrat"))
+    pg.page.click('.lang[data-lang="en"]')
+    ctx.close()
+
     for label, handler in (
             ("an ordinary day (empty list)", lambda route: route.fulfill(
                 status=200, body=json.dumps({"date": "2026-10-03", "items": []}),
