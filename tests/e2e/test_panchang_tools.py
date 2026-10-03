@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -38,8 +39,34 @@ def panchang(p, browser, base: str) -> None:
     limbs_text = pg.page.locator("#panchang-result .pa-limbs").inner_text()
     check("tithi/nakshatra/yoga/karana render with real content", limbs_text.strip() != "",
           limbs_text[:200])
-    times_text = pg.page.locator("#panchang-result .pa-times").inner_text()
+    times_text = pg.page.locator("#panchang-result .pa-times").first.inner_text()
     check("Rahu Kaal / Abhijit Muhurta times render", times_text.strip() != "", times_text[:200])
+
+    # DIVASTRO-111: a festival date shows its vrat/festivals with their timings.
+    pg.page.fill("#pa-date", "2026-11-08")
+    pg.page.wait_for_function(
+        "(document.querySelector('#pa-vrat')||{}).innerText?.includes('8 November 2026')", timeout=15000)
+    vrat = pg.page.locator("#pa-vrat").inner_text()
+    check("8 Nov 2026: 'Vrat & Festivals on 8 November 2026' section",
+          "Vrat & Festivals on 8 November 2026" in vrat, vrat[:300])
+    check("... Diwali with its Lakshmi puja muhurat window",
+          "Diwali (Lakshmi Puja)" in vrat
+          and re.search(r"Lakshmi puja muhurat\s+\d\d:\d\d – \d\d:\d\d", vrat) is not None, vrat[:300])
+    check("... and Pradosh kaal", "Pradosh kaal" in vrat, vrat[:300])
+    check("... Diwali links to its festival page",
+          pg.page.locator("#pa-vrat a[href='/tyohar/diwali-2026']").count() == 1)
+    pg.page.fill("#pa-date", "2026-11-20")
+    pg.page.wait_for_function(
+        "(document.querySelector('#pa-vrat')||{}).innerText?.includes('Devutthana')", timeout=15000)
+    vrat = pg.page.locator("#pa-vrat").inner_text()
+    check("20 Nov 2026: Devutthana Ekadashi with its parana on the next day",
+          re.search(r"Parana \(breaking the fast\)\s+21 Nov, \d\d:\d\d – \d\d:\d\d", vrat) is not None,
+          vrat[:300])
+    pg.page.fill("#pa-date", "2026-11-12")
+    pg.page.wait_for_function(
+        "document.querySelector('#panchang-result h2').textContent.includes('2026-11-12')", timeout=15000)
+    check("an ordinary date (12 Nov 2026) has no vrat section",
+          pg.page.locator("#pa-vrat").count() == 0)
 
     check("no console errors", not pg.console_errors, "; ".join(pg.console_errors[:3]))
     check("no CSP violations", not pg.csp_violations(), str(pg.csp_violations()[:2]))

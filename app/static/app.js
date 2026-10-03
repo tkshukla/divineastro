@@ -244,6 +244,10 @@ const I18N = {
     evGeneral: "General Auspicious (सर्वकार्य शुभ)",
     replyUnreadable: "The server sent a reply this page could not read. Please try again.",
     serverProblem: "The server ran into a problem (error {n}). Please try again in a moment.",
+    // ---- DIVASTRO-111: Panchang tool's vrat/festival section; header labels ----
+    vratDayToday: "Vrat & Festivals today", vratDayOn: "Vrat & Festivals on {d}",
+    hdrHome: "Divine Astro — home", hdrTheme: "Toggle theme", hdrThemeTitle: "Toggle light / dark theme",
+    hdrLang: "Language",
     // ---- DIVASTRO-101: home screen Today strip + sample question ----
     todayTitle: "Today", todayTithi: "Tithi", todayNak: "Nakshatra", todayRahu: "Rahu Kaal",
     todayNow: "now", todayChange: "Change city", todayCityPh: "Start typing a city…",
@@ -459,6 +463,10 @@ const I18N = {
     evGeneral: "सर्वकार्य शुभ",
     replyUnreadable: "सर्वर का उत्तर पढ़ा नहीं जा सका। कृपया फिर से प्रयास करें।",
     serverProblem: "सर्वर में समस्या आई (त्रुटि {n})। कृपया थोड़ी देर बाद फिर प्रयास करें।",
+    // ---- DIVASTRO-111: Panchang tool's vrat/festival section; header labels ----
+    vratDayToday: "आज के व्रत-त्योहार", vratDayOn: "{d} के व्रत-त्योहार",
+    hdrHome: "Divine Astro — मुख्य पृष्ठ", hdrTheme: "हल्का / गहरा रंग", hdrThemeTitle: "हल्का / गहरा रंग बदलें",
+    hdrLang: "भाषा",
     // ---- DIVASTRO-101: home screen Today strip + sample question ----
     todayTitle: "आज", todayTithi: "तिथि", todayNak: "नक्षत्र", todayRahu: "राहु काल",
     todayNow: "अभी", todayChange: "शहर बदलें", todayCityPh: "शहर का नाम लिखना शुरू करें…",
@@ -1158,6 +1166,14 @@ function applyLanguage() {
   // tools.js: Panchang / Muhurat / Choghadiya labels, and any result already on
   // screen, follow the switch (tools.js loads after this file, hence the check).
   if (typeof window.applyToolsLanguage === "function") window.applyToolsLanguage();
+  // DIVASTRO-111: the header's Sign in / account menu (account.js, which loads after
+  // this file) and its own labels follow the switch too — they used to stay in the
+  // language the page was loaded in.
+  $("#go-home")?.setAttribute("aria-label", t("hdrHome"));
+  $("#theme-toggle")?.setAttribute("aria-label", t("hdrTheme"));
+  $("#theme-toggle")?.setAttribute("title", t("hdrThemeTitle"));
+  $(".site-header .lang-switch")?.setAttribute("aria-label", t("hdrLang"));
+  if (typeof renderAccountBar === "function") renderAccountBar();
 
   if (state.sessionId) {
     loadAndShowDashboard();

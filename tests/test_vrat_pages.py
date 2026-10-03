@@ -263,6 +263,85 @@ def main() -> int:
     r = client.get("/api/vrat/today?lat=999&lon=0")
     check("out-of-range coordinates are rejected by validation", r.status_code == 422)
 
+    print("9. GET /api/vrat/day (Panchang tool: one date's vrat/festivals with timings)")
+    vrat_pages.dt = type("dtshim", (), {"datetime": _Oct3, "date": dt.date,
+                                        "timedelta": dt.timedelta})
+    try:
+        delhi = "lat=28.6139&lon=77.209&tz=Asia/Kolkata"
+        j = client.get(f"/api/vrat/day?date=2026-11-08&{delhi}").json()
+        diwali = next((o for o in j.get("items", []) if o["key"] == "diwali"), {})
+        lakshmi = next((t for t in diwali.get("timings", []) if t["key"] == "lakshmi_puja"), {})
+        check("8 Nov 2026, New Delhi -> Diwali, linked to its EN/HI pages",
+              diwali.get("name_hi") == "दीपावली (लक्ष्मी पूजा)" and diwali.get("url") == "/tyohar/diwali-2026"
+              and diwali.get("url_hi") == "/hi/tyohar/diwali-2026", str(diwali)[:300])
+        check("... Lakshmi puja muhurat 5:54-7:50 PM with both labels",
+              lakshmi.get("start", "").startswith("2026-11-08T17:54")
+              and lakshmi.get("end", "").startswith("2026-11-08T19:50")
+              and lakshmi.get("label_en") == "Lakshmi puja muhurat"
+              and lakshmi.get("label_hi") == "लक्ष्मी पूजा मुहूर्त", str(lakshmi))
+        check("... headed with the date in EN and HI",
+              j.get("day_en") == "8 November 2026" and j.get("day_hi") == "8 नवंबर 2026", str(j)[:200])
+        j = client.get(f"/api/vrat/day?date=2026-11-20&{delhi}").json()
+        parana = (j.get("items") or [{}])[0].get("timings", [{}])[0]
+        check("20 Nov 2026: Ekadashi parana is the next day, with its short date",
+              parana.get("key") == "parana" and parana.get("date") == "2026-11-21"
+              and parana.get("day_en") == "21 Nov" and parana.get("day_hi") == "21 नवंबर", str(parana))
+        j = client.get(f"/api/vrat/day?date=2026-10-29&{delhi}").json()
+        sank = next((o for o in j.get("items", []) if o["key"] == "sankashti"), {})
+        check("a minor vrat without a page links to the vrat-tyohar hub; moonrise is a single time",
+              sank.get("url") == "/vrat-tyohar" and sank.get("url_hi") == "/hi/vrat-tyohar"
+              and [t["key"] for t in sank.get("timings", [])] == ["moonrise"]
+              and "at" in sank["timings"][0], str(sank))
+        j = client.get(f"/api/vrat/day?date=2026-11-12&{delhi}").json()
+        check("an ordinary date (12 Nov 2026) -> []", j.get("items") == [], str(j))
+        for bad in ("2026-13-45", "yesterday", "2031-01-01", "1990-01-01"):
+            r = client.get(f"/api/vrat/day?date={bad}&{delhi}")
+            check(f"bad or far-off date {bad!r} -> 200 with an empty list",
+                  r.status_code == 200 and r.json().get("items") == [], r.text[:120])
+        r = client.get("/api/vrat/day?date=2026-11-08&lat=10&lon=10&tz=Not/AZone")
+        check("a bad timezone -> 200 with an empty list",
+              r.status_code == 200 and r.json().get("items") == [])
+        j = client.get(f"/api/vrat/day?{delhi}").json()
+        check("no date -> today at the place (3 Oct 2026: Jivitputrika)",
+              j.get("date") == "2026-10-03"
+              and any(o["key"] == "jivitputrika" for o in j.get("items", [])), str(j)[:200])
+        j = client.get(f"/api/vrat/today?{delhi}").json()
+        check("/api/vrat/today unchanged (names only, no timings)",
+              set(j) >= {"date", "items", "next", "url", "url_hi"}
+              and all(set(o) == {"key", "name_en", "name_hi", "major"} for o in j["items"]), str(j)[:200])
+    finally:
+        vrat_pages.dt = real_dt
+
+    print("10. /panchang pages show today's vrat/festivals with their timings")
+    real_today = seo_pages._today
+    try:
+        seo_pages._today = lambda: dt.date(2026, 11, 8)
+        h = client.get("/panchang").text
+        block = re.search(r"<h2>Vrat &amp; Festivals today</h2>(.*?)</div>", h, re.S)
+        check("/panchang on Diwali: 'Vrat & Festivals today' block",
+              block is not None, h[:200])
+        block = block.group(1) if block else ""
+        check("... Diwali linked to its page, Lakshmi puja muhurat 5:54 PM – 7:50 PM",
+              '<a href="/tyohar/diwali-2026">Diwali (Lakshmi Puja)</a>' in block
+              and "Lakshmi puja muhurat: 5:54 PM – 7:50 PM" in block, block[:400])
+        h = client.get("/hi/panchang").text
+        block = re.search(r"<h2>आज के व्रत-त्योहार</h2>(.*?)</div>", h, re.S)
+        block = block.group(1) if block else ""
+        check("/hi/panchang on Diwali: Devanagari block, Hindi link and times",
+              '<a href="/hi/tyohar/diwali-2026">दीपावली (लक्ष्मी पूजा)</a>' in block
+              and "लक्ष्मी पूजा मुहूर्त: शाम 5:54 – शाम 7:50" in block, block[:400])
+        check("... with no Latin-script words in the block",
+              not re.findall(r"[A-Za-z]{2,}", re.sub(r"<[^>]+>", "", block)), block[:400])
+        h = client.get("/panchang/mumbai").text
+        check("/panchang/mumbai on Diwali: the block with Mumbai's own times",
+              "Vrat &amp; Festivals today" in h and "Lakshmi puja muhurat" in h)
+        seo_pages._today = lambda: dt.date(2026, 11, 12)
+        h = client.get("/panchang").text + client.get("/hi/panchang").text
+        check("an ordinary day: no block at all",
+              "Festivals today" not in h and "आज के व्रत-त्योहार" not in h)
+    finally:
+        seo_pages._today = real_today
+
     print()
     if failures:
         print(f"FAILURES ({len(failures)}):")

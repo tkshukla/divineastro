@@ -6,6 +6,7 @@
     /ekadashi-2026, -2027        every Ekadashi with its parana time
     /hi/...                      a Hindi copy of each
     GET /api/vrat/today          the home Today strip's one-liner (any city)
+    GET /api/vrat/day            one date's observances with their timings (Panchang tool)
 
 "aaj kaun sa vrat hai", "ekadashi kab hai", "diwali puja muhurat 2026" are
 daily searches; the answer is a date and a time, so both are in the raw HTML.
@@ -942,4 +943,78 @@ def vrat_today(
         items = []
     body = {"date": day.isoformat() if day else None, "items": items, "next": upcoming,
             "url": hub_path(EN), "url_hi": hub_path(HI)}
+    return JSONResponse(body, headers={"Cache-Control": "private, max-age=1800"})
+
+
+# --------------------------------------------------------------------------
+# One day's observances with their timings: the Panchang tool and pages
+# --------------------------------------------------------------------------
+
+DAY_RANGE_DAYS = 2 * 366              # /api/vrat/day answers within ~2 years of today
+
+
+def _timing_json(t: dict, day: dt.date) -> dict:
+    """A timing exactly as the engine validated it (nothing added, nothing
+    invented), plus the other day's short label in EN/HI when it falls on
+    another date (Ekadashi parana is the next morning)."""
+    out = {k: t[k] for k in ("key", "label_en", "label_hi", "start", "end", "at", "date")
+           if t.get(k)}
+    if t.get("date") and t["date"] != day.isoformat():
+        ref = dt.date.fromisoformat(t["date"])
+        out["day_en"], out["day_hi"] = _short_date(ref, EN), _short_date(ref, HI)
+    return out
+
+
+def day_items(day: dt.date, lat: float, lon: float, tz: str) -> list[dict]:
+    """The observances of `day` at a place, each with its timings and the page it
+    links to (its festival or Ekadashi page, else the vrat-tyohar hub)."""
+    return [{
+        "key": o["key"], "name_en": o["name_en"], "name_hi": o["name_hi"], "major": o["major"],
+        "url": _link_for(o, EN) or hub_path(EN), "url_hi": _link_for(o, HI) or hub_path(HI),
+        "timings": [_timing_json(t, day) for t in o["timings"]],
+    } for o in festivals.on(day, lat, lon, tz)]
+
+
+def panchang_block(day: dt.date, lat: float, lon: float, tz: str, lang: str) -> str:
+    """'Vrat & festivals today' for the server-rendered /panchang pages: each
+    observance linked to its page, with its timings for this city. Empty on an
+    ordinary day, and on any failure (the panchang itself must still render)."""
+    try:
+        rows = festivals.on(day, lat, lon, tz)
+    except Exception:                                  # pragma: no cover - defensive
+        return ""
+    if not rows:
+        return ""
+    parts = []
+    for o in rows:
+        href = _link_for(o, lang) or hub_path(lang)
+        times = "".join(f"<li>{_e(_timing_text(t, _date(o), lang))}</li>" for t in o["timings"])
+        parts.append(f'<h3><a href="{_e(href)}">{_e(_name(o, lang))}</a></h3>'
+                     + (f"<ul>{times}</ul>" if times else ""))
+    heading = "आज के व्रत-त्योहार" if lang == HI else "Vrat &amp; Festivals today"
+    return f'<h2>{heading}</h2><div class="box today vrat-day">{"".join(parts)}</div>'
+
+
+@router.get("/api/vrat/day")
+def vrat_day(
+    date: str = "",
+    lat: float = Query(CITY.latitude, ge=-90, le=90),
+    lon: float = Query(CITY.longitude, ge=-180, le=180),
+    tz: str = "",
+) -> JSONResponse:
+    """One date's vrat/festivals at a place with every validated timing (puja
+    muhurat, parana, moonrise, pradosh, nishita...) labelled in English and
+    Hindi, for the Panchang tool's "Vrat & festivals" section. Never errors: a
+    bad or far-off date, or any failure, is an empty list."""
+    body: dict = {"date": None, "items": []}
+    try:
+        zone = tz or geo.timezone_for(lat, lon)
+        today = dt.datetime.now(ZoneInfo(zone)).date()
+        day = dt.date.fromisoformat(date) if date else today
+        items = (day_items(day, lat, lon, zone)
+                 if abs((day - today).days) <= DAY_RANGE_DAYS else [])
+        body = {"date": day.isoformat(), "day_en": _long_date(day, EN),
+                "day_hi": _long_date(day, HI), "items": items}
+    except Exception:
+        body = {"date": None, "items": []}
     return JSONResponse(body, headers={"Cache-Control": "private, max-age=1800"})
