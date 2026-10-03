@@ -79,6 +79,24 @@ def seo_share_text(path: str) -> str | None:
             return None
         name, name_hi = names[kind]
         return f"{name} {year} — all dates · {name_hi} {year} की तिथियां:"
+    if parts[0] == "vrat-tyohar" and len(parts) == 1:
+        return "Today's vrat & festivals with puja muhurat · आज के व्रत और त्योहार:"
+    if parts[0] == "vrat-tyohar" and len(parts) == 2:
+        if not parts[1].isdigit():
+            return None
+        return f"Vrat & festival calendar {parts[1]} · व्रत-त्योहार {parts[1]} की पूरी सूची:"
+    if parts[0].startswith("ekadashi-") and len(parts) == 1:
+        year = parts[0].removeprefix("ekadashi-")
+        if not year.isdigit():
+            return None
+        return f"All Ekadashi {year} dates with parana time · एकादशी {year} व्रत और पारण समय:"
+    if parts[0] == "tyohar" and len(parts) == 2:
+        from .vrat_pages import festival_names   # lazy: vrat_pages imports this module
+        slug, _, year = parts[1].rpartition("-")
+        names = festival_names().get(slug)
+        if names is None or not year.isdigit():
+            return None
+        return f"{names[0]} {year} — date & puja muhurat · {names[1]} {year} — तिथि और मुहूर्त:"
     if parts[0] not in SEO_TOOLS:
         return None
     name, name_hi = SEO_TOOLS[parts[0]]
@@ -96,6 +114,8 @@ def seo_share(path: str) -> str:
     if text is None:
         return ""
     tool = _parts(path)[0]
+    if tool.startswith("ekadashi-"):
+        tool = "ekadashi"
     href = whatsapp_href(text, share_url(path, f"seo-{tool}"))
     label = "WhatsApp पर भेजें" if path.startswith("/hi/") else "Share on WhatsApp"
     return (f'<a class="share-wa" href="{html.escape(href)}" target="_blank" rel="noopener" '

@@ -269,6 +269,9 @@ def is_public_page(path: str) -> bool:
         path = path[3:]
     if path in SEO_TOOLS:
         return True
+    if path.startswith(("/vrat-tyohar", "/tyohar/", "/ekadashi-")):
+        from .vrat_pages import is_public_path   # lazy, like muhurat_pages below
+        return is_public_path(path)
     if path.startswith(("/muhurat/", "/hi/muhurat/")):
         from .muhurat_pages import page_paths   # lazy: muhurat_pages pulls in the engines
         return path in page_paths()

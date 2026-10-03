@@ -334,6 +334,7 @@
   let todayPlace = DELHI;
   let todayData = null;
   let todaySeq = 0;                       // a slow reply for an old city must not overwrite a newer one
+  let todayVrat = null;                   // DIVASTRO-111: today's vrat/festival names, or null
 
   // Anything in storage was written by an older page (or by hand): use it only if it
   // still looks like a place, else quietly fall back to Delhi.
@@ -364,6 +365,7 @@
     q('#today-place')?.setAttribute('placeholder', tr('todayCityPh', 'Start typing a city…'));
     const shareEl = q('#today-share');     // DIVASTRO-107: hidden until there is something to share
     if (shareEl) shareEl.hidden = !todayData;
+    renderVratLine(hi);
     if (!todayData) return;               // still loading: the skeleton stays
 
     const ti = current(todayData.tithi);
@@ -387,10 +389,39 @@
   // app.js calls this from applyLanguage, so the strip follows the EN / हिं switch.
   window.renderTodayStrip = renderTodayStrip;
 
+  // DIVASTRO-111: one short line under the strip when today is a vrat or festival
+  // ("Today: Papankusha Ekadashi"), linking to the vrat-tyohar page. Nothing at all
+  // on an ordinary day or if the lookup fails.
+  function renderVratLine(hi) {
+    const el = q('#today-vrat');
+    if (!el) return;
+    const items = (todayVrat && Array.isArray(todayVrat.items)) ? todayVrat.items : [];
+    if (!todayData || !items.length) { el.hidden = true; return; }
+    const names = items.slice(0, 2).map((v) => (hi ? v.name_hi : v.name_en)).join(', ');
+    el.textContent = `${hi ? 'आज' : 'Today'}: ${names}`;
+    el.setAttribute('href', hi ? '/hi/vrat-tyohar' : '/vrat-tyohar');
+    el.hidden = false;
+  }
+
+  async function loadVrat(seq) {
+    try {
+      const params = new URLSearchParams({
+        lat: todayPlace.latitude, lon: todayPlace.longitude, tz: todayPlace.timezone || '',
+      });
+      const res = await fetch(`/api/vrat/today?${params}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (seq !== todaySeq) return;
+      todayVrat = data;
+      renderTodayStrip();
+    } catch { /* silent: the line simply does not appear */ }
+  }
+
   async function loadToday() {
     if (!todayStrip) return;
     const seq = ++todaySeq;
     todayData = null;
+    todayVrat = null;
     todayStrip.classList.add('loading');
     renderTodayStrip();
     const params = new URLSearchParams({
@@ -404,6 +435,7 @@
       todayData = data;
       todayStrip.classList.remove('loading');
       renderTodayStrip();
+      loadVrat(seq);                      // DIVASTRO-111, after the strip: never delays it
     } catch {
       // A home screen that shows a broken box is worse than one without it.
       if (seq === todaySeq) todayStrip.hidden = true;

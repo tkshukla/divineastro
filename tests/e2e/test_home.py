@@ -299,6 +299,53 @@ def today_and_sample(p, browser, base: str) -> None:
     ctx.close()
 
 
+def vrat_line(p, browser, base: str) -> None:
+    """DIVASTRO-111: on a vrat/festival day the Today strip carries one short line
+    linking to /vrat-tyohar (Hindi page in Hindi); on other days, or if the
+    lookup fails, nothing. The endpoint is stubbed so the check holds any day."""
+    import json
+    print("\n[Today strip: vrat / festival line]")
+    phone = {"viewport": {"width": 412, "height": 915}, "is_mobile": True, "has_touch": True}
+    body = json.dumps({"date": "2026-10-22", "url": "/vrat-tyohar", "url_hi": "/hi/vrat-tyohar",
+                       "items": [{"key": "ekadashi", "name_en": "Papankusha Ekadashi",
+                                  "name_hi": "पापांकुशा एकादशी", "major": False}]})
+    ctx = browser.new_context(**phone)
+    pg = Page(ctx.new_page(), base)
+    pg.page.route("**/api/vrat/today?*", lambda route: route.fulfill(
+        status=200, body=body, headers={"content-type": "application/json"}))
+    pg.open_home()
+    pg.page.wait_for_selector("#today-vrat:not([hidden])", timeout=15000)
+    check("the line reads 'Today: Papankusha Ekadashi'",
+          pg.page.inner_text("#today-vrat").strip() == "Today: Papankusha Ekadashi",
+          pg.page.inner_text("#today-vrat"))
+    check("...and links to /vrat-tyohar", pg.page.get_attribute("#today-vrat", "href") == "/vrat-tyohar")
+    strip = pg.rect("#today-strip")
+    check("the strip still fits the first screen", strip["bottom"] <= 915, f"bottom {strip['bottom']:.0f}")
+    pg.page.click('.lang[data-lang="hi"]')
+    pg.page.wait_for_timeout(300)
+    check("Hindi: 'आज: पापांकुशा एकादशी' linking to /hi/vrat-tyohar",
+          pg.page.inner_text("#today-vrat").strip() == "आज: पापांकुशा एकादशी"
+          and pg.page.get_attribute("#today-vrat", "href") == "/hi/vrat-tyohar")
+    pg.page.click('.lang[data-lang="en"]')
+    ctx.close()
+
+    for label, handler in (
+            ("an ordinary day (empty list)", lambda route: route.fulfill(
+                status=200, body=json.dumps({"date": "2026-10-03", "items": []}),
+                headers={"content-type": "application/json"})),
+            ("a failing endpoint", lambda route: route.fulfill(status=500, body="boom"))):
+        ctx = browser.new_context(**phone)
+        pg = Page(ctx.new_page(), base)
+        pg.page.route("**/api/vrat/today?*", handler)
+        pg.open_home()
+        pg.page.wait_for_selector("#today-strip:not(.loading)", timeout=15000)
+        pg.page.wait_for_timeout(800)
+        check(f"{label}: no line, strip intact",
+              pg.page.is_hidden("#today-vrat") and pg.page.is_visible("#today-strip")
+              and pg.page.inner_text("#today-tithi").strip() not in ("", "—"))
+        ctx.close()
+
+
 def main() -> int:
     phones = {
         "pixel7_412x915": {"viewport": {"width": 412, "height": 915}, "is_mobile": True, "has_touch": True},
@@ -317,6 +364,7 @@ def main() -> int:
                 tappable(p, browser, base)
                 festival_lights(p, browser, base)
                 today_and_sample(p, browser, base)
+                vrat_line(p, browser, base)
             # A server configured for 25: the page must say 25 — proof it is not hard-coded.
             with server({"ASTRO_FREE_QUESTIONS": "25"}) as base:
                 run_profile(p, browser, base, "server says 25 (pixel7)", phones["pixel7_412x915"], expect_n=25)
