@@ -12,6 +12,9 @@ from zoneinfo import ZoneInfo
 
 from . import panchang
 from .panchang import daily_panchang
+# The Hindi names live in names_hi.py (the one copy). TITHI_HI, NAKSHATRAS_HI and
+# VARA_HI stay importable from here: festivals.py reads them from this module.
+from .names_hi import KARANA_HI, NAKSHATRAS_HI, TITHI_HI, VARA_HI, YOGA_HI  # noqa: F401
 
 MAX_SCAN_DAYS = 90
 
@@ -110,35 +113,6 @@ EVENT_RULES: dict[str, EventRule] = {
         excluded_varas={"Tuesday"},
         excluded_yogas={"Vyatipata", "Vaidhriti"},
     ),
-}
-
-TITHI_HI = {
-    "Pratipada": "प्रतिपदा", "Dwitiya": "द्वितीया", "Tritiya": "तृतीया",
-    "Chaturthi": "चतुर्थी", "Panchami": "पंचमी", "Shashthi": "षष्ठी",
-    "Saptami": "सप्तमी", "Ashtami": "अष्टमी", "Navami": "नवमी",
-    "Dashami": "दशमी", "Ekadashi": "एकादशी", "Dwadashi": "द्वादशी",
-    "Trayodashi": "त्रयोदशी", "Chaturdashi": "चतुर्दशी", "Purnima": "पूर्णिमा",
-    "Amavasya": "अमावस्या"
-}
-
-NAKSHATRAS_HI = {
-    "Ashwini": "अश्विनी", "Bharani": "भरणी", "Krittika": "कृत्तिका",
-    "Rohini": "रोहिणी", "Mrigashira": "मृगशिरा", "Ardra": "आर्द्रा",
-    "Punarvasu": "पुनर्वसु", "Pushya": "पुष्य", "Ashlesha": "आश्लेषा",
-    "Magha": "मघा", "Purva Phalguni": "पूर्वा फाल्गुनी",
-    "Uttara Phalguni": "उत्तरा फाल्गुनी", "Hasta": "हस्त", "Chitra": "चित्रा",
-    "Swati": "स्वाति", "Vishakha": "विशाखा", "Anuradha": "अनुराधा",
-    "Jyeshtha": "ज्येष्ठा", "Mula": "मूल", "Purva Ashadha": "पूर्वाषाढ़ा",
-    "Uttara Ashadha": "उत्तराषाढ़ा", "Shravana": "श्रवण",
-    "Dhanishta": "धनिष्ठा", "Shatabhisha": "शतभिषा",
-    "Purva Bhadrapada": "पूर्व भाद्रपद", "Uttara Bhadrapada": "उत्तर भाद्रपद",
-    "Revati": "रेवती"
-}
-
-VARA_HI = {
-    "Sunday": "रविवार", "Monday": "सोमवार", "Tuesday": "मंगलवार",
-    "Wednesday": "बुधवार", "Thursday": "गुरुवार", "Friday": "शुक्रवार",
-    "Saturday": "शनिवार"
 }
 
 
@@ -418,7 +392,7 @@ def evaluate_day(
         score -= 25
         is_bad = True
         reasons.append(f"Inauspicious yoga ({y_name})")
-        reasons_hi.append(f"अशुभ योग ({y_name})")
+        reasons_hi.append(f"अशुभ योग ({YOGA_HI.get(y_name, y_name)})")
 
     # 5. Vishti Karana (Bhadra)
     if k_name == "Vishti":
@@ -462,8 +436,8 @@ def evaluate_day(
         "vara": VARA_HI.get(vara_eng, vara_eng) if hi else vara_eng,
         "tithi": TITHI_HI.get(t_name, t_name) if hi else t_name,
         "nakshatra": NAKSHATRAS_HI.get(n_name, n_name) if hi else n_name,
-        "yoga": y_name,
-        "karana": k_name,
+        "yoga": YOGA_HI.get(y_name, y_name) if hi else y_name,
+        "karana": KARANA_HI.get(k_name, k_name) if hi else k_name,
         "score": score,
         "verdict": verdict,
         "badge": verdict_badge,

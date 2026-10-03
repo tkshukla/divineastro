@@ -222,6 +222,28 @@ const I18N = {
     timingsL: "Timings",
     until: "until",
     none: "none today",
+    // ---- Hindi Panchang: tool-page labels, values and messages (tools.js) ----
+    panchangTitle: "Panchang",
+    panchangSub: "The five limbs of the day, with Rahu Kaal and the auspicious windows.",
+    lblDate: "Date", lblPlace: "Place",
+    rahuKaalL: "Rahu Kaal", yamagandaL: "Yamaganda", gulikaL: "Gulika Kaal",
+    abhijitL: "Abhijit Muhurta", abhijitShort: "Abhijit",
+    sunL: "Sunrise – sunset", moonL: "Moonrise – moonset",
+    reckonedMidnight: "reckoned from midnight",
+    paErr: "Could not compute the panchang.",
+    muErr: "Could not calculate muhurat.",
+    choErr: "Could not calculate Choghadiya.",
+    muNeedDates: "Please choose both from and to dates.",
+    muNone: "No dates found for this range.",
+    muColDate: "Date / Day", muColVerdict: "Verdict", muColLimbs: "Tithi & Nakshatra",
+    muColAbhijit: "Abhijit", muColReasons: "Evaluation / Reasons",
+    evMarriage: "Marriage / Vivaha (विवाह)",
+    evGrihaPravesh: "House Warming / Griha Pravesh (गृह प्रवेश)",
+    evMundan: "Tonsure / Mundan (मुंडन संस्कार)",
+    evNamkaran: "Naming / Namkaran (नामकरण)",
+    evGeneral: "General Auspicious (सर्वकार्य शुभ)",
+    replyUnreadable: "The server sent a reply this page could not read. Please try again.",
+    serverProblem: "The server ran into a problem (error {n}). Please try again in a moment.",
     // ---- DIVASTRO-101: home screen Today strip + sample question ----
     todayTitle: "Today", todayTithi: "Tithi", todayNak: "Nakshatra", todayRahu: "Rahu Kaal",
     todayNow: "now", todayChange: "Change city", todayCityPh: "Start typing a city…",
@@ -415,6 +437,28 @@ const I18N = {
     timingsL: "शुभ-अशुभ समय",
     until: "तक",
     none: "आज नहीं है",
+    // ---- Hindi Panchang: tool-page labels, values and messages (tools.js) ----
+    panchangTitle: "पंचांग",
+    panchangSub: "दिन के पाँच अंग — तिथि, वार, नक्षत्र, योग और करण — राहु काल व शुभ मुहूर्त के साथ।",
+    lblDate: "दिनांक", lblPlace: "स्थान",
+    rahuKaalL: "राहु काल", yamagandaL: "यमगण्ड", gulikaL: "गुलिक काल",
+    abhijitL: "अभिजित मुहूर्त", abhijitShort: "अभिजित",
+    sunL: "सूर्योदय – सूर्यास्त", moonL: "चंद्रोदय – चंद्रास्त",
+    reckonedMidnight: "मध्यरात्रि से गणना",
+    paErr: "पंचांग की गणना नहीं हो सकी। कृपया फिर से प्रयास करें।",
+    muErr: "मुहूर्त की गणना नहीं हो सकी। तिथियाँ जाँचें (अधिकतम 90 दिन) और फिर से प्रयास करें।",
+    choErr: "चौघड़िया की गणना नहीं हो सकी। कृपया फिर से प्रयास करें।",
+    muNeedDates: "कृपया आरंभ और अंतिम, दोनों तिथियाँ चुनें।",
+    muNone: "इस अवधि में कोई तिथि नहीं मिली।",
+    muColDate: "दिनांक / वार", muColVerdict: "निर्णय", muColLimbs: "तिथि व नक्षत्र",
+    muColAbhijit: "अभिजित", muColReasons: "मूल्यांकन / कारण",
+    evMarriage: "विवाह",
+    evGrihaPravesh: "गृह प्रवेश",
+    evMundan: "मुंडन संस्कार",
+    evNamkaran: "नामकरण",
+    evGeneral: "सर्वकार्य शुभ",
+    replyUnreadable: "सर्वर का उत्तर पढ़ा नहीं जा सका। कृपया फिर से प्रयास करें।",
+    serverProblem: "सर्वर में समस्या आई (त्रुटि {n})। कृपया थोड़ी देर बाद फिर प्रयास करें।",
     // ---- DIVASTRO-101: home screen Today strip + sample question ----
     todayTitle: "आज", todayTithi: "तिथि", todayNak: "नक्षत्र", todayRahu: "राहु काल",
     todayNow: "अभी", todayChange: "शहर बदलें", todayCityPh: "शहर का नाम लिखना शुरू करें…",
@@ -1111,6 +1155,9 @@ function applyLanguage() {
   renderSavedCharts();
   describeProvider();   // the Hindi caveat depends on the active language
   localStorage.setItem("astro.lang", state.lang);
+  // tools.js: Panchang / Muhurat / Choghadiya labels, and any result already on
+  // screen, follow the switch (tools.js loads after this file, hence the check).
+  if (typeof window.applyToolsLanguage === "function") window.applyToolsLanguage();
 
   if (state.sessionId) {
     loadAndShowDashboard();

@@ -129,6 +129,19 @@ DURGASHTAMI = ["2026-01-26", "2026-02-24", "2026-03-26", "2026-04-24", "2026-05-
                "2026-06-22", "2026-07-21", "2026-08-20", "2026-09-19", "2026-10-19",
                "2026-11-17", "2026-12-17"]
 
+# Drik /vrats/masik-kalashtami-dates.html?year=2026 (New Delhi), incl. the
+# adhika one (8 Jun) and Kalabhairav Jayanti (1 Dec). Nishita would give 9 Apr
+# and 30 Nov; Pradosh gives all 13.
+KALASHTAMI = ["2026-01-10", "2026-02-09", "2026-03-11", "2026-04-10", "2026-05-09",
+              "2026-06-08", "2026-07-07", "2026-08-05", "2026-09-04", "2026-10-03",
+              "2026-11-01", "2026-12-01", "2026-12-30"]
+
+# Drik /vrats/skanda-sashti-dates.html?year=2026 (New Delhi), incl. adhika
+# (21 May), Soora Samharam (15 Nov) and Subrahmanya Sashti (15 Dec).
+SKANDA = ["2026-01-24", "2026-02-22", "2026-03-24", "2026-04-22", "2026-05-21",
+          "2026-06-19", "2026-07-19", "2026-08-17", "2026-09-16", "2026-10-16",
+          "2026-11-15", "2026-12-15"]
+
 
 # Major festivals: key, date, {timing key: (start, end) | at}, source note.
 # All Drik Panchang (New Delhi). "PK" = Prokerala (New Delhi) agrees on the date.
@@ -192,7 +205,66 @@ FESTIVAL_REF = [
     ("govardhan", "2027-10-30", {}, "web consensus 2027"),
     ("bhai_dooj", "2027-10-31", {}, "web consensus 2027"),
     ("chhath", "2027-11-04", {}, "web consensus 2027"),
+
+    # ---- Added after the Jivitputrika report (searched/fetched 2026-10-03).
+    # "Drik" = drikpanchang.com New Delhi page (fetched, or its own search
+    # snippet); "PK" = prokerala.com /astrology/panchang/2026.html agrees.
+    ("jivitputrika", "2026-10-03", {},
+     "Drik /vrats/jivitputrika/...?year=2026 (Ashtami 07:59 3 Oct - 05:51 4 Oct; no parana "
+     "time); Prabhat Khabar, India TV, Punjab Kesari: nahay-khay 2 Oct, vrat 3 Oct, parana 4 Oct"),
+    ("sakat_chauth", "2026-01-06", {"moonrise": "20:59"}, "Drik; PK agrees"),
+    ("lohri", "2026-01-13", {}, "Drik ('one day before Makara Sankranti'); PK agrees"),
+    ("mauni_amavasya", "2026-01-18", {}, "Drik; PK agrees"),
+    ("sheetala_ashtami", "2026-03-11", {"puja": ("06:36", "18:27")}, "Drik; PK agrees"),
+    ("gudi_padwa", "2026-03-19", {}, "Drik (Gudi Padwa and Ugadi); PK agrees"),
+    ("gangaur", "2026-03-21", {}, "Drik; PK agrees"),
+    ("vat_savitri", "2026-05-16", {}, "Drik; PK agrees"),
+    ("ganga_dussehra", "2026-05-25", {},
+     "Drik (adhika Jyeshtha Dashami); PK and Aaj Tak agree"),
+    ("vat_purnima", "2026-06-29", {}, "Drik; PK agrees"),
+    ("hariyali_teej", "2026-08-15", {}, "Drik; PK agrees"),
+    ("nag_panchami", "2026-08-17", {}, "Drik (North India); PK agrees"),
+    ("kajari_teej", "2026-08-31", {}, "Drik; PK agrees"),
+    ("hal_shashthi", "2026-09-02", {}, "Drik; Amar Ujala agrees"),
+    ("hartalika_teej", "2026-09-14", {"pratah": ("06:05", "07:06")}, "Drik; PK agrees"),
+    ("rishi_panchami", "2026-09-15", {"madhyahna": ("11:02", "13:30")}, "Drik; PK agrees"),
+    ("anant_chaturdashi", "2026-09-25", {"puja": ("06:11", "23:06")}, "Drik; PK agrees"),
+    ("pitru_paksha", "2026-09-27", {"kutup": ("11:48", "12:36"), "rohina": ("12:36", "13:24"),
+                                    "aparahna_kaal": ("13:24", "15:48")},
+     "Drik Pratipada Shraddha page; PK agrees"),
+    ("sarva_pitru_amavasya", "2026-10-10", {"kutup": ("11:45", "12:31")},
+     "Drik Amavasya Shraddha; Pitru Paksha listings (astrovachmi, sanatanajourney) agree"),
+    ("narak_chaturdashi", "2026-11-08", {"abhyang": ("05:41", "06:38")}, "Drik; PK agrees"),
+    ("tulsi_vivah", "2026-11-21", {}, "Drik; PK agrees"),
+    ("kartik_purnima", "2026-11-24", {}, "Drik; PK agrees"),
+    ("dev_deepawali", "2026-11-24", {}, "Drik (Varanasi); PK agrees"),
+    # 2027 and the years where the candidate rules disagree.
+    ("rishi_panchami", "2027-09-04", {"madhyahna": ("12:25", "13:36")},
+     "Drik New Delhi 2027 (Madhyahna, earlier day - not the 5 Sep sunrise day)"),
+    ("tulsi_vivah", "2027-11-11", {}, "Drik New Delhi 2027 (Dwadashi at sunrise)"),
+    ("kartik_purnima", "2027-11-14", {}, "Drik New Delhi 2027 (upavasa 13 Nov)"),
+    ("dev_deepawali", "2027-11-13", {}, "Drik 2027 (Varanasi; Purnima in Pradosh)"),
+    ("sarva_pitru_amavasya", "2027-09-29", {"kutup": ("11:47", "12:35"),
+                                            "rohina": ("12:35", "13:23"),
+                                            "aparahna_kaal": ("13:23", "15:46")},
+     "Drik New Delhi 2027 (Aparahna - not the 30 Sep sunrise day)"),
+    ("sheetala_ashtami", "2027-03-30", {"puja": ("06:14", "18:38")}, "Drik 2027"),
+    ("kajari_teej", "2027-08-20", {}, "samvat.in 2027"),
+    ("narak_chaturdashi", "2027-10-28", {}, "samvat.in, drrpsharma 2027"),
+    ("vat_savitri", "2025-05-26", {}, "Drik 2025 (Madhyahna - not the 27 May sunrise day)"),
+    ("vat_purnima", "2025-06-10", {}, "Drik 2025 (Madhyahna, earlier day)"),
+    ("ganga_dussehra", "2022-06-09", {}, "Drik 2022 page; India TV agrees"),
+    ("hal_shashthi", "2023-09-05", {}, "Times Now Hindi 2023 (not the 4 Sep sayahna day)"),
 ]
+
+# Jivitputrika: Drik's own New Delhi pages, ?year=YYYY (fetched 2026-10-03).
+# 2023 is the year that rules out "Ashtami at sunrise" (6 Oct, not 7 Oct) and
+# 2022/2029 the ones that rule out "Ashtami at Pradosh/sunset" (18 Sep, 1 Oct).
+# Hartalika 2029: Tritiya at sunrise for 4 minutes, still the day (Drik).
+NEW_DRIK_YEARS = {
+    "jivitputrika": ["2022-09-18", "2023-10-06", "2024-09-25", "2026-10-03", "2029-10-01"],
+    "hartalika_teej": ["2026-09-14", "2029-09-11"],
+}
 
 
 # Drik Panchang's own date for each festival, New Delhi: 2022-2030 read from
@@ -276,6 +348,7 @@ DRIK_YEARS = {
         "2031-11-14", "2032-11-02", "2033-10-22",
     ],
 }
+DRIK_YEARS.update(NEW_DRIK_YEARS)
 
 # --------------------------------------------------------------------------
 
@@ -356,6 +429,11 @@ def recurring(obs: list[dict]) -> None:
         check(f"  {d} {s}-{e}", bool(t and _near(t["start"], s) and _near(t["end"], e)),
               f"{t['start'][11:16]}-{t['end'][11:16]}" if t else "missing")
 
+    print("6b. Kalashtami and Skanda Shashthi dates")
+    check("kalashtami dates", _dates(obs, "kalashtami") == KALASHTAMI, str(_dates(obs, "kalashtami")))
+    check("skanda shashthi dates", _dates(obs, "skanda_shashthi") == SKANDA,
+          str(_dates(obs, "skanda_shashthi")))
+
 
 def festivals(obs: list[dict]) -> None:
     print("7. Major festivals: dates and puja timings")
@@ -414,6 +492,30 @@ def rules_and_flags(obs: list[dict]) -> None:
     check("Mumbai Diwali 8 Nov with its own (later) pradosh",
           d["date"] == "2026-11-08" and _timing(d, "pradosh_kaal")["start"][11:16] > "17:45",
           _timing(d, "pradosh_kaal")["start"])
+
+    print("9b. The bug report: Jivitputrika on 3 Oct 2026")
+    day = F.on(dt.date(2026, 10, 3))
+    names = [o["name_en"] for o in day]
+    check("on(3 Oct 2026) -> Jivitputrika Vrat (Jitiya) first, then Kalashtami",
+          names == ["Jivitputrika Vrat (Jitiya)", "Kalashtami"], str(names))
+    j = day[0] if day else {}
+    check("  Hindi name जीवित्पुत्रिका व्रत (जितिया), slug jivitputrika, no parana time",
+          j.get("name_hi") == "जीवित्पुत्रिका व्रत (जितिया)" and j.get("slug") == "jivitputrika"
+          and not j.get("timings"), str(j.get("timings")))
+    patna = [o["key"] for o in F.on(dt.date(2026, 10, 3), 25.5941, 85.1376, "Asia/Kolkata")]
+    check("  Patna (another city) also has it on 3 Oct", "jivitputrika" in patna, str(patna))
+    h29 = [o for o in F.observances(dt.date(2029, 9, 1), dt.date(2029, 9, 30))
+           if o["key"] == "hartalika_teej"]
+    t = _timing(h29[0], "pratah") if h29 else None
+    check("Hartalika 2029: 11 Sep, Pratahkala 06:04-06:08 (Tritiya 4 minutes past sunrise)",
+          bool(t and h29[0]["date"] == "2029-09-11" and _near(t["start"], "06:04")
+               and _near(t["end"], "06:08")), str(t))
+    for y, ref in ((2026, ("17:08", "19:47")), (2027, ("17:11", "19:48"))):
+        vns = [o for o in F.observances(dt.date(y, 11, 1), dt.date(y, 11, 30), 25.3176, 82.9739,
+                                        "Asia/Kolkata") if o["key"] == "dev_deepawali"]
+        t = _timing(vns[0], "pradosh_kaal") if vns else None
+        check(f"Dev Deepawali {y}, Varanasi pradoshkal {ref[0]}-{ref[1]} (Drik prints Varanasi)",
+              bool(t and _near(t["start"], ref[0]) and _near(t["end"], ref[1])), str(t))
 
 
 def multi_year() -> None:

@@ -95,6 +95,10 @@ a.tool-card { text-decoration: none; }
 .muted-line { color: var(--ink-faint); font-size: 12.5px; margin: 12px 0 0; line-height: 1.55; }
 
 /* ---------- panchang ---------- */
+/* .card's backdrop-filter makes each card its own stacking context, so the result
+   cards below a tool's form painted over the form's city suggestions: once a
+   Panchang was on screen, a city could not be picked on a phone. */
+#panchang-form, #muhurat-form, #choghadiya-form { position: relative; z-index: 5; }
 .pa-card { margin-bottom: 14px; padding: 20px 22px; }
 .pa-head { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .pa-head h2 {

@@ -132,6 +132,71 @@ CLASSICAL_GULIKA = {"Sunday": 7, "Monday": 6, "Tuesday": 5, "Wednesday": 4,
                     "Thursday": 3, "Friday": 2, "Saturday": 1}
 
 
+def hindi_checks() -> None:
+    """The in-app Panchang, the home Today strip and the WhatsApp share text read
+    `name_hi` / `label_hi` / `notes_hi` from /api/panchang; nothing may be left in
+    Latin script, and the English fields must be untouched."""
+    import re
+
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+
+    from app.api_tools import router
+    from app.astro import muhurat, names_hi
+    from app.astro.panchang import FIXED_KARANAS, VARA_ENGLISH
+
+    latin = re.compile(r"[A-Za-z]")
+    for table, names in ((names_hi.TITHI_HI, TITHI_NAMES + ["Amavasya"]),
+                         (names_hi.NAKSHATRAS_HI, NAKSHATRAS),
+                         (names_hi.YOGA_HI, YOGA_NAMES),
+                         (names_hi.KARANA_HI, MOVABLE_KARANAS + FIXED_KARANAS),
+                         (names_hi.VARA_HI, VARA_ENGLISH)):
+        missing = [n for n in names if n not in table or latin.search(table[n])]
+        check(f"every {names[0]}... name has a Devanagari entry", not missing, str(missing))
+    check("muhurat.py re-exports the one copy, not its own",
+          muhurat.TITHI_HI is names_hi.TITHI_HI and muhurat.YOGA_HI is names_hi.YOGA_HI)
+
+    api = FastAPI()
+    api.include_router(router)
+    client = TestClient(api)
+    lat, lon, tz = DELHI
+    for date in ("2026-01-15", "2026-08-05", "2026-10-03"):
+        r = client.get("/api/panchang", params={"latitude": lat, "longitude": lon,
+                                                 "timezone": tz, "date": date})
+        check(f"{date}: /api/panchang answers", r.status_code == 200, str(r.status_code))
+        p = r.json()
+        rows = [(limb, row) for limb in ("tithi", "nakshatra", "yoga", "karana") for row in p[limb]]
+        bad = [f"{limb}:{row.get('name_hi')}" for limb, row in rows
+               if not row.get("name_hi") or latin.search(row["name_hi"])]
+        check(f"{date}: every limb row has a Devanagari name_hi", not bad, str(bad))
+        check(f"{date}: English names untouched",
+              all(row["name"] in (TITHI_NAMES + ["Amavasya"] + NAKSHATRAS + YOGA_NAMES
+                                  + MOVABLE_KARANAS + FIXED_KARANAS) for _, row in rows))
+        t0 = p["tithi"][0]
+        check(f"{date}: tithi label_hi is paksha + tithi ({t0.get('label_hi')})",
+              t0.get("label_hi") == f"{names_hi.PAKSHA_HI[t0['paksha']]} {names_hi.TITHI_HI[t0['name']]}")
+        check(f"{date}: vara name_hi is the Hindi weekday ({p['vara'].get('name_hi')})",
+              p["vara"].get("name_hi") == names_hi.VARA_HI[p["vara"]["weekday"]])
+        check(f"{date}: notes_hi mirrors notes", len(p["notes_hi"]) == len(p["notes"])
+              and not any(latin.search(n) for n in p["notes_hi"]), str(p["notes_hi"]))
+    wed = client.get("/api/panchang", params={"latitude": lat, "longitude": lon, "timezone": tz,
+                                               "date": "2026-08-05"}).json()
+    check("Wednesday's no-Abhijit note comes in Hindi too",
+          wed["notes_hi"] == [names_hi.NOTE_WEDNESDAY_HI], str(wed["notes_hi"]))
+    polar = names_hi.add_hindi(daily_panchang("2026-06-21", 78.2232, 15.6267, "Arctic/Longyearbyen"))
+    check("a polar day gets the reckoned-from-midnight note in Hindi",
+          polar["reckoned_from"] == "midnight" and polar["notes_hi"][:1] == [names_hi.NOTE_POLAR_HI],
+          str(polar["notes_hi"]))
+
+    day = muhurat.evaluate_day("general", dt.date(2026, 10, 28), lat, lon, tz, language="hi")
+    leftovers = [v for v in [day["vara"], day["tithi"], day["nakshatra"], day["yoga"], day["karana"],
+                             day["verdict"], *day["reasons"]] if latin.search(v or "")]
+    check("Muhurat in Hindi: no Latin left in names, verdict or reasons (yoga included)",
+          not leftovers, str(leftovers))
+    day_en = muhurat.evaluate_day("general", dt.date(2026, 10, 28), lat, lon, tz)
+    check("Muhurat in English keeps the English yoga", day_en["yoga"] in YOGA_NAMES, day_en["yoga"])
+
+
 def main() -> int:
     print("\n1. The limbs are always in range and always end in the future")
     spread = [
@@ -559,6 +624,9 @@ def main() -> int:
           "(the bug this exists to avoid)",
           not (sunrise_tithi["paksha"] == "Shukla" and sunrise_tithi["number"] == 10),
           f"sunrise tithi on 2026-10-20 was {sunrise_tithi['paksha']} {sunrise_tithi['number']}")
+
+    print("\n9. Hindi names beside the English ones (/api/panchang, names_hi.add_hindi)")
+    hindi_checks()
 
     print("\n" + "=" * 60)
     if failures:

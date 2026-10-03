@@ -149,6 +149,35 @@ def main() -> int:
     check("Janmashtami page states the Smarta/Vaishnava convention",
           "Smarta" in pages["/tyohar/janmashtami-2026"]
           and "स्मार्त" in pages["/hi/tyohar/janmashtami-2026"])
+    jp = pages["/tyohar/jivitputrika-2026"]
+    check("Jivitputrika 2026 page: 3 October 2026, Saturday, nahay-khay/parana explained, "
+          "no parana clock time",
+          "3 October 2026, Saturday" in jp and "nahay-khay" in jp and "Parana (breaking" not in jp)
+    jh = pages["/hi/tyohar/jivitputrika-2026"]
+    check("Hindi Jivitputrika page: जीवित्पुत्रिका व्रत (जितिया), 3 अक्टूबर 2026, नहाय-खाय",
+          "जीवित्पुत्रिका व्रत (जितिया)" in jh and "3 अक्टूबर 2026" in jh and "नहाय-खाय" in jh)
+    new_slugs = ["jivitputrika", "hartalika-teej", "hariyali-teej", "kajari-teej", "nag-panchami",
+                 "rishi-panchami", "anant-chaturdashi", "pitru-paksha", "sarva-pitru-amavasya",
+                 "vat-savitri", "vat-purnima", "sheetala-ashtami", "gangaur", "ganga-dussehra",
+                 "tulsi-vivah", "kartik-purnima", "dev-deepawali", "narak-chaturdashi", "lohri",
+                 "gudi-padwa", "sakat-chauth", "mauni-amavasya", "hal-shashthi"]
+    missing = [f"{pre}/tyohar/{s}-{y}" for s in new_slugs for y in vrat_pages.YEARS
+               for pre in ("", "/hi") if f"{pre}/tyohar/{s}-{y}" not in pages]
+    check(f"all {len(new_slugs)} new festivals have EN + HI pages for 2026 and 2027", not missing,
+          str(missing[:4]))
+    no_about = [s for s in new_slugs if s not in vrat_pages.ABOUT]
+    check("each new festival page has its what/how text", not no_about, str(no_about))
+    y26 = pages["/vrat-tyohar/2026"]
+    check("2026 calendar lists Jivitputrika on 3 Oct, Kalashtami, Skanda Shashthi, Lohri",
+          '<tr data-date="2026-10-03" data-key="jivitputrika">' in y26
+          and 'data-key="kalashtami"' in y26 and 'data-key="skanda_shashthi"' in y26
+          and 'href="/tyohar/lohri-2026"' in y26)
+    sp = pages["/tyohar/sarva-pitru-amavasya-2026"]
+    check("Sarva Pitru Amavasya 2026: 10 October, Kutup muhurat 11:44/11:45 AM",
+          "10 October 2026" in sp and re.search(r"Kutup muhurat: 11:4[456] AM", sp) is not None)
+    check("Vat Savitri and Vat Purnima pages label the two traditions",
+          "Two traditions" in pages["/tyohar/vat-savitri-2026"]
+          and "Two traditions" in pages["/tyohar/vat-purnima-2026"])
     check("every festival page says timings are for New Delhi and links to the Panchang tool",
           all("/?open=panchang" in pages[p] for p in paths if "/tyohar/" in p))
 
@@ -175,13 +204,21 @@ def main() -> int:
     h = r.body.decode()
     check("on 22 Oct 2026 the hub leads with Papankusha Ekadashi and its parana",
           re.search(r'class="box today">.*?Papankusha Ekadashi.*?Parana', h, re.S) is not None)
-    r = vrat_pages.render_hub("hi", today=dt.date(2026, 10, 3))
+    # 3 Oct 2026 used to be the "ordinary day" here - it is Jivitputrika (the
+    # bug report that added it). 4 Oct 2026 has nothing.
+    r = vrat_pages.render_hub("hi", today=dt.date(2026, 10, 4))
     h = r.body.decode()
-    check("on an ordinary day the Hindi hub says so and names the next one",
+    check("on an ordinary day (4 Oct 2026) the Hindi hub says so and names the next one",
           "आज कोई प्रमुख व्रत या त्योहार नहीं है" in h and "अगला:" in h)
     rows = re.findall(r'<tr data-date="([0-9-]+)"', h)
-    check("the next-30-days table runs 4 Oct - 2 Nov",
-          rows and min(rows) >= "2026-10-04" and max(rows) <= "2026-11-02", f"{rows[:1]}..{rows[-1:]}")
+    check("the next-30-days table runs 5 Oct - 3 Nov",
+          rows and min(rows) >= "2026-10-05" and max(rows) <= "2026-11-03", f"{rows[:1]}..{rows[-1:]}")
+    for lang, name in (("en", "Jivitputrika Vrat (Jitiya)"), ("hi", "जीवित्पुत्रिका व्रत (जितिया)")):
+        h = vrat_pages.render_hub(lang, today=dt.date(2026, 10, 3)).body.decode()
+        pre = "/hi" if lang == "hi" else ""
+        check(f"3 Oct 2026 ({lang}): the hub leads with {name}, linked to its page",
+              re.search(r'class="box today">.*?<a href="' + pre + r'/tyohar/jivitputrika-2026">'
+                        + re.escape(name), h, re.S) is not None)
     r = vrat_pages.render_hub("en", today=dt.date(2026, 12, 20))
     check("late December's next 30 days reach into 2027",
           "2027-01-" in r.body.decode())
@@ -201,6 +238,23 @@ def main() -> int:
           j.get("next") is None if j.get("items") else
           (j.get("next") is not None and set(j["next"]) >= {"date", "name_en", "name_hi", "day_en", "day_hi"}
            and j["next"]["date"] > j["date"]), str(j.get("next")))
+    # The endpoint on 3 Oct 2026 in New Delhi (clock pinned, whatever today is).
+    class _Oct3(dt.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return dt.datetime(2026, 10, 3, 9, 0, tzinfo=tz)
+    real_dt = vrat_pages.dt
+    vrat_pages.dt = type("dtshim", (), {"datetime": _Oct3, "date": dt.date,
+                                        "timedelta": dt.timedelta})
+    try:
+        j = client.get("/api/vrat/today?lat=28.6139&lon=77.209&tz=Asia/Kolkata").json()
+    finally:
+        vrat_pages.dt = real_dt
+    first = (j.get("items") or [{}])[0]
+    check("GET /api/vrat/today on 3 Oct 2026, New Delhi -> Jivitputrika first (the strip line)",
+          j.get("date") == "2026-10-03" and first.get("key") == "jivitputrika"
+          and first.get("name_hi") == "जीवित्पुत्रिका व्रत (जितिया)" and first.get("major") is True,
+          str(j))
     r = client.get("/api/vrat/today?lat=19.076&lon=72.8777&tz=Asia/Kolkata")
     check("another city works", r.status_code == 200 and isinstance(r.json().get("items"), list))
     r = client.get("/api/vrat/today?lat=10&lon=10&tz=Not/AZone")

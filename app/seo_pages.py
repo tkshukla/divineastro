@@ -51,7 +51,8 @@ from . import seo_cities
 from .astro import choghadiya as chog
 from .astro import matching
 from .astro import panchang as panchang_engine
-from .astro.muhurat import NAKSHATRAS_HI, TITHI_HI, VARA_HI
+# The Hindi limb names: one copy, shared with main.py, muhurat.py and /api/panchang.
+from .astro.names_hi import KARANA_HI, NAKSHATRAS_HI, TITHI_HI, VARA_HI, YOGA_HI
 from .astro.vargas import DEFAULT_DIVISIONS
 from .legal import ADDRESS, BRAND, EMAIL, LEGAL_NAME, PHONE, SITE, registration_inline
 from .seo_cities import City
@@ -77,24 +78,6 @@ TOOLS = {
 
 PAKSHA_HI = {"Shukla": "शुक्ल पक्ष", "Krishna": "कृष्ण पक्ष"}
 
-# Copies of main.py's tables (importing main from here is circular). The
-# test checks they still match main's, and that every yoga and karana name
-# the engine can produce has an entry.
-YOGA_HI = {
-    "Vishkambha": "विष्कम्भ", "Priti": "प्रीति", "Ayushman": "आयुष्मान",
-    "Saubhagya": "सौभाग्य", "Shobhana": "शोभन", "Atiganda": "अतिगण्ड",
-    "Sukarma": "सुकर्मा", "Dhriti": "धृति", "Shula": "शूल", "Ganda": "गण्ड",
-    "Vriddhi": "वृद्धि", "Dhruva": "ध्रुव", "Vyaghata": "व्याघात",
-    "Harshana": "हर्षण", "Vajra": "वज्र", "Siddhi": "सिद्धि",
-    "Vyatipata": "व्यतीपात", "Variyana": "वरीयान", "Parigha": "परिघ",
-    "Shiva": "शिव", "Siddha": "सिद्ध", "Sadhya": "साध्य", "Shubha": "शुभ",
-    "Shukla": "शुक्ल", "Brahma": "ब्रह्म", "Indra": "इन्द्र", "Vaidhriti": "वैधृति"
-}
-KARANA_HI = {
-    "Bava": "बव", "Balava": "बालव", "Kaulava": "कौलव", "Taitila": "तैतिल",
-    "Gara": "गर", "Vanija": "वणिज", "Vishti": "विष्टि (भद्रा)", "Shakuni": "शकुनि",
-    "Chatushpada": "चतुष्पाद", "Naga": "नाग", "Kimstughna": "किंस्तुघ्न"
-}
 MONTHS_HI = ("जनवरी", "फ़रवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त",
              "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर")
 
