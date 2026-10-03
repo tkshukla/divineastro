@@ -195,6 +195,8 @@ const I18N = {
     toolChoghadiyaSub: "Real-time auspicious & inauspicious hours",
     toolVratName: "Vrat & Tyohar",
     toolVratSub: "Today's & upcoming fasts and festivals, with puja muhurat",
+    toolKathaName: "Kathas",
+    toolKathaSub: "Stories from the Ramayana, Mahabharata & Puranas",
     choghadiyaTitle: "Choghadiya Muhurta",
     choghadiyaSub: "Real-time 16-slot Day and Night Vedic intervals for immediate decision making.",
     lblChoghadiyaDate: "Date",
@@ -414,6 +416,8 @@ const I18N = {
     toolChoghadiyaSub: "शुभ व अशुभ समय का वास्तविक समय चक्र",
     toolVratName: "व्रत और त्योहार",
     toolVratSub: "आज और आने वाले व्रत-त्योहार, पूजा मुहूर्त सहित",
+    toolKathaName: "कथाएँ",
+    toolKathaSub: "रामायण, महाभारत और पुराणों की कथाएँ",
     choghadiyaTitle: "चौघड़िया मुहूर्त",
     choghadiyaSub: "दिन व रात के 16 चौघड़िया मुहूर्त: अमृत, शुभ, लाभ, चर, रोग, काल, उद्वेग।",
     lblChoghadiyaDate: "दिनांक",
@@ -1049,6 +1053,10 @@ function applyLanguage() {
   set("#tool-vrat-sub", t("toolVratSub"));
   const vratCard = document.querySelector("#open-vrat");
   if (vratCard) vratCard.setAttribute("href", state.lang === "hi" ? "/hi/vrat-tyohar" : "/vrat-tyohar");
+  set("#tool-katha-name", t("toolKathaName"));
+  set("#tool-katha-sub", t("toolKathaSub"));
+  const kathaCard = document.querySelector("#open-katha");
+  if (kathaCard) kathaCard.setAttribute("href", state.lang === "hi" ? "/katha" : "/en/katha");
 
   // Muhurat stage
   set("#muhurat-title", t("muhuratTitle"));

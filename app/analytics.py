@@ -268,7 +268,7 @@ def is_public_page(path: str) -> bool:
     from .nakshatra_pages import is_public_path as nakshatra_public   # lazy (DIVASTRO-115)
     if nakshatra_public(path):
         return True
-    if path.startswith("/katha"):
+    if path.startswith(("/katha", "/en/katha")):
         from .katha import is_public_path as katha_public   # lazy, like the others
         return katha_public(path)
     if path.startswith("/hi/"):
