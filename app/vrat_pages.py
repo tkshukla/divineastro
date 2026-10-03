@@ -40,7 +40,7 @@ from zoneinfo import ZoneInfo
 from fastapi import APIRouter, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 
-from . import geo, seo_cities, seo_pages
+from . import geo, push, seo_cities, seo_pages
 from .astro import festivals
 from .astro.muhurat import VARA_HI
 from .legal import BRAND
@@ -668,7 +668,9 @@ def _city_tools(city: City, lang: str) -> str:
 
 def _cta(lang: str) -> str:
     text = "अपने शहर का पंचांग देखें — मुफ़्त" if lang == HI else "See the Panchang for your city — free"
-    return f'<a class="cta" href="{_e(seo_pages._app_link("panchang", lang))}">{_e(text)}</a>'
+    # DIVASTRO-112: the opt-in daily push button ("" while push is switched off).
+    return (f'<a class="cta" href="{_e(seo_pages._app_link("panchang", lang))}">{_e(text)}</a>'
+            + push.optin_html(lang))
 
 
 def _more_links(lang: str, skip: str = "") -> str:

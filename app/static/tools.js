@@ -527,6 +527,7 @@
       const p = e.detail;
       todayPlace = { latitude: p.latitude, longitude: p.longitude, timezone: p.timezone, label: p.label };
       try { localStorage.setItem(TODAY_KEY, JSON.stringify(todayPlace)); } catch { /* private mode */ }
+      window.dispatchEvent(new CustomEvent('today:city', { detail: todayPlace }));  // DIVASTRO-112 push.js
       closePicker();
       loadToday();
     });

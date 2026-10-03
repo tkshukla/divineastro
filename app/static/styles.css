@@ -2418,3 +2418,15 @@ button.free-badge:focus-visible { outline: 3px solid var(--gold); outline-offset
 .today-vrat[hidden] { display: none; }
 /* SEO pages: top-right, on the line of the "← Divine Astro" back link. */
 .seo > .share-wa { float: right; margin: -10px 0 6px 10px; text-decoration: none; color: var(--ink); }
+
+/* DIVASTRO-112: opt-in daily push, under the home Today strip and on /vrat-tyohar pages */
+.push-optin { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px;
+  margin: 10px auto 0; font-size: 13.5px; color: var(--ink-dim); max-width: 820px; }
+.push-optin[hidden] { display: none; }
+.push-optin .push-btn { font: inherit; font-size: 13.5px; padding: 6px 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: transparent; color: var(--gold); cursor: pointer; }
+.push-optin .push-btn:hover { border-color: var(--gold); }
+.push-optin .push-btn:disabled { opacity: .6; cursor: progress; }
+.push-optin .push-hint, .push-optin .push-note { flex-basis: 100%; color: var(--ink-faint); font-size: 12.5px; }
+.push-optin .push-on { color: var(--gold); }
+.push-optin .push-off { color: var(--ink-faint); }
