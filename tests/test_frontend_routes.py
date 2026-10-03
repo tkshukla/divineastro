@@ -119,6 +119,21 @@ def home_value_checks() -> None:
     check("the chosen city is remembered, inside try/catch",
           re.search(r"try \{ localStorage\.setItem\(TODAY_KEY", tools_js) is not None)
     check("a failed load hides the strip", "todayStrip.hidden = true" in tools_js)
+    # Hindi Panchang: the Hindi names come from /api/panchang (app/astro/names_hi.py),
+    # not from a JavaScript copy of the tables, and EN / हिं reaches an open result.
+    check("tools.js keeps no copy of the tithi / nakshatra tables",
+          not re.search(r"\b(TITHI_HI|NAK_HI|PAKSHA_HI)\b", tools_js))
+    check("the strip and the Panchang tool read the API's Hindi names",
+          "ti.label_hi" in tools_js and "nk.name_hi" in tools_js and "r.label_hi || r.name_hi" in tools_js)
+    check("applyLanguage reaches the tools (window.applyToolsLanguage)",
+          "window.applyToolsLanguage()" in app_js and "window.applyToolsLanguage = applyToolsLanguage" in tools_js)
+    tool_keys = ("panchangTitle", "panchangSub", "lblDate", "lblPlace", "rahuKaalL", "yamagandaL",
+                 "gulikaL", "abhijitL", "abhijitShort", "paErr", "muErr", "choErr", "muNeedDates",
+                 "muNone", "muColDate", "muColVerdict", "muColLimbs", "muColAbhijit", "muColReasons",
+                 "evMarriage", "evGrihaPravesh", "evMundan", "evNamkaran", "evGeneral")
+    check("every Panchang-tool string exists in both languages",
+          not [k for k in tool_keys if k not in en or k not in hi],
+          str([k for k in tool_keys if k not in en or k not in hi]))
 
     # DIVASTRO-111: "Today: <vrat>" line, from its own tiny endpoint, failing silently.
     check("the strip has a hidden vrat line linking to /vrat-tyohar",

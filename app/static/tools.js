@@ -18,6 +18,28 @@
   const tr = (k, fallback) => {
     try { const v = t(k); return v && v !== k ? v : fallback; } catch { return fallback; }
   };
+  const isHi = () => typeof state !== 'undefined' && state.lang === 'hi';
+  const curLang = () => (typeof state !== 'undefined' && state.lang) ? state.lang : 'en';
+
+  // A place as a Hindi reader names it: an SEO city's Hindi name ("नई दिल्ली") when
+  // we have one (share.js holds that list), else the label exactly as picked.
+  function placeLabel(place) {
+    const label = (place && place.label) || '';
+    const S = window.DAShare;
+    const c = isHi() && S && S.cityFor ? S.cityFor(place) : null;
+    return c && c.name_hi ? c.name_hi : label;
+  }
+  // 'YYYY-MM-DD' as '3 अक्टूबर 2026' in Hindi; unchanged in English.
+  function showDate(iso) {
+    if (!isHi() || !/^\d{4}-\d{2}-\d{2}$/.test(String(iso || ''))) return iso || '';
+    try {
+      return new Intl.DateTimeFormat('hi-IN', { day: 'numeric', month: 'long', year: 'numeric',
+        timeZone: 'UTC', numberingSystem: 'latn' }).format(new Date(`${iso}T00:00:00Z`));
+    } catch { return iso; }
+  }
+  // The server's own error detail is English; a Hindi reader gets the tool's
+  // Hindi message instead.
+  const failText = (detail, key, fallback) => (isHi() ? tr(key, fallback) : (detail || fallback));
 
   // DIVASTRO-103: "today" is the calendar date at the chosen place (India by
   // default), not the UTC date — toISOString() showed yesterday 00:00-05:30 IST.
@@ -44,8 +66,9 @@
   async function readJson(res) {
     const text = await res.text();
     try { return text ? JSON.parse(text) : {}; } catch { /* not JSON */ }
-    if (res.ok) throw new Error('The server sent a reply this page could not read. Please try again.');
-    return { detail: `The server ran into a problem (error ${res.status}). Please try again in a moment.` };
+    if (res.ok) throw new Error(tr('replyUnreadable', 'The server sent a reply this page could not read. Please try again.'));
+    return { detail: tr('serverProblem', 'The server ran into a problem (error {n}). Please try again in a moment.')
+      .replace('{n}', res.status) };
   }
 
   // The server labels an unnamed person "—", which is truthy, so `name || 'Groom'`
@@ -53,6 +76,9 @@
   const named = (n) => (n && n.trim() && n.trim() !== '—' ? n.trim() : '');
 
   /* ---------------------------------------------------------- place picker */
+  // IANA zone ids are English; for India (the zone nearly every visitor picks) a
+  // Hindi reader is better off without one.
+  const tzNote = (tz) => (isHi() && tz === 'Asia/Kolkata' ? '' : (tz || ''));
   function placePicker(input, list, chosenEl) {
     let chosen = null;
     let timer = null;
@@ -73,15 +99,16 @@
         } catch { hide(); return; }
         if (!places.length) { hide(); return; }
         list.innerHTML = places.map((p, i) =>
-          `<li data-i="${i}">${esc(p.label)}<span>${esc(p.timezone)}</span></li>`).join('');
+          `<li data-i="${i}">${esc(p.label)}<span>${esc(tzNote(p.timezone))}</span></li>`).join('');
         list.hidden = false;
         qa('li', list).forEach((li) => {
           li.onclick = () => {
             chosen = places[Number(li.dataset.i)];
             input.value = chosen.label;
             if (chosenEl) {
+              const tz = tzNote(chosen.timezone);
               chosenEl.textContent = `${chosen.latitude.toFixed(4)}, ` +
-                `${chosen.longitude.toFixed(4)} · ${chosen.timezone}`;
+                `${chosen.longitude.toFixed(4)}${tz ? ` · ${tz}` : ''}`;
               chosenEl.hidden = false;
             }
             hide();
@@ -228,6 +255,7 @@
     loadPanchang();
   });
   q('#pa-date')?.addEventListener('change', () => loadPanchang());
+  let paShown = null;                      // {p, place}: re-rendered when the language changes
 
   async function loadPanchang() {
     const err = q('#panchang-error');
@@ -243,33 +271,41 @@
     try {
       const res = await fetch(`/api/panchang?${params}`);
       const data = await readJson(res);
-      if (!res.ok) throw new Error(data.detail || 'Could not compute the panchang.');
+      if (!res.ok) throw new Error(failText(data.detail, 'paErr', 'Could not compute the panchang.'));
       paSharePlace = place;                // DIVASTRO-107: the share link's city
-      renderPanchang(data, place.label);
+      paShown = { p: data, place };
+      renderPanchang(data, place);
     } catch (ex) {
-      err.textContent = ex.message; err.hidden = false;
+      err.textContent = ex.message || tr('paErr', 'Could not compute the panchang.'); err.hidden = false;
     }
   }
 
   const hhmm = (iso) => (iso ? String(iso).slice(11, 16) : '—');
   const span = (w) => (w ? `${hhmm(w.start)} – ${hhmm(w.end)}` : '—');
 
-  function renderPanchang(p, label) {
-    const limb = (rows, key) => (rows || []).map((r) =>
-      `<div class="limb-line"><b>${esc(r.label || r.name)}</b> ` +
-      `<span>${esc(tr('until', 'until'))} ${hhmm(r.ends)}</span></div>`).join('') || '—';
+  function renderPanchang(p, place) {
+    const hi = isHi();
+    // /api/panchang sends every name in both languages (app/astro/names_hi.py).
+    const name = (r) => (hi ? r.label_hi || r.name_hi : '') || r.label || r.name;
+    const until = (iso) => (hi ? `${hhmm(iso)} ${tr('until', 'तक')}` : `${tr('until', 'until')} ${hhmm(iso)}`);
+    const limb = (rows) => (rows || []).map((r) =>
+      `<div class="limb-line"><b>${esc(name(r))}</b> ` +
+      `<span>${esc(until(r.ends))}</span></div>`).join('') || '—';
+    const vara = (hi && p.vara && p.vara.name_hi) || p.summary.vara;
+    const notes = (hi ? p.notes_hi : p.notes) || [];
+    const reckoned = p.reckoned_from === 'sunrise' ? ''
+      : `(${esc(hi ? tr('reckonedMidnight', 'reckoned from midnight') : p.reckoned_from)})`;
 
     q('#panchang-result').innerHTML = `
       <div class="card pa-card">
         <div class="pa-head">
           <div>
-            <h2>${esc(p.summary.vara)} · ${esc(p.date)}</h2>
-            <p class="muted-line">${esc(label || '')} ${
-              p.reckoned_from === 'sunrise' ? '' : `(${esc(p.reckoned_from)})`}</p>
+            <h2>${esc(vara)} · ${esc(showDate(p.date))}</h2>
+            <p class="muted-line">${esc(placeLabel(place))} ${reckoned}</p>
           </div>
           <div class="pa-sun">
-            <div>☀ ${hhmm(p.sun.rise)} – ${hhmm(p.sun.set)}</div>
-            <div>☾ ${hhmm(p.moon.rise)} – ${hhmm(p.moon.set)}</div>
+            <div title="${esc(tr('sunL', 'Sunrise – sunset'))}">☀ ${hhmm(p.sun.rise)} – ${hhmm(p.sun.set)}</div>
+            <div title="${esc(tr('moonL', 'Moonrise – moonset'))}">☾ ${hhmm(p.moon.rise)} – ${hhmm(p.moon.set)}</div>
           </div>
         </div>
 
@@ -284,16 +320,16 @@
       <div class="card pa-card">
         <h3>${esc(tr('timingsL', 'Timings'))}</h3>
         <div class="pa-times">
-          <div class="bad"><span>Rahu Kaal</span><b>${span(p.muhurta.rahu_kaal)}</b></div>
-          <div class="bad"><span>Yamaganda</span><b>${span(p.muhurta.yamaganda)}</b></div>
-          <div class="bad"><span>Gulika Kaal</span><b>${span(p.muhurta.gulika_kaal)}</b></div>
-          <div class="good"><span>Abhijit Muhurta</span><b>${
+          <div class="bad"><span>${esc(tr('rahuKaalL', 'Rahu Kaal'))}</span><b>${span(p.muhurta.rahu_kaal)}</b></div>
+          <div class="bad"><span>${esc(tr('yamagandaL', 'Yamaganda'))}</span><b>${span(p.muhurta.yamaganda)}</b></div>
+          <div class="bad"><span>${esc(tr('gulikaL', 'Gulika Kaal'))}</span><b>${span(p.muhurta.gulika_kaal)}</b></div>
+          <div class="good"><span>${esc(tr('abhijitL', 'Abhijit Muhurta'))}</span><b>${
             p.muhurta.abhijit ? span(p.muhurta.abhijit) : esc(tr('none', 'none today'))}</b></div>
         </div>
       </div>
 
-      ${(p.notes || []).length
-        ? `<p class="muted-line">${esc(p.notes.join(' '))}</p>` : ''}
+      ${notes.length
+        ? `<p class="muted-line">${esc(notes.join(' '))}</p>` : ''}
       ${shareSlot('panchang-share')}`;
     sharePanchang(p);                      // DIVASTRO-107
     q('#panchang-result').hidden = false;
@@ -310,26 +346,6 @@
   // and opens the Panchang tool with the same city already chosen.
   const TODAY_KEY = 'astro.todayCity';
   const DELHI = { latitude: 28.6139, longitude: 77.2090, timezone: 'Asia/Kolkata', label: 'New Delhi, India' };
-  // The API speaks English names; Hindi visitors get the names they actually use.
-  // Same tables as app/astro/muhurat.py.
-  const PAKSHA_HI = { Shukla: 'शुक्ल', Krishna: 'कृष्ण' };
-  const TITHI_HI = {
-    Pratipada: 'प्रतिपदा', Dwitiya: 'द्वितीया', Tritiya: 'तृतीया', Chaturthi: 'चतुर्थी',
-    Panchami: 'पंचमी', Shashthi: 'षष्ठी', Saptami: 'सप्तमी', Ashtami: 'अष्टमी',
-    Navami: 'नवमी', Dashami: 'दशमी', Ekadashi: 'एकादशी', Dwadashi: 'द्वादशी',
-    Trayodashi: 'त्रयोदशी', Chaturdashi: 'चतुर्दशी', Purnima: 'पूर्णिमा', Amavasya: 'अमावस्या',
-  };
-  const NAK_HI = {
-    Ashwini: 'अश्विनी', Bharani: 'भरणी', Krittika: 'कृत्तिका', Rohini: 'रोहिणी',
-    Mrigashira: 'मृगशिरा', Ardra: 'आर्द्रा', Punarvasu: 'पुनर्वसु', Pushya: 'पुष्य',
-    Ashlesha: 'आश्लेषा', Magha: 'मघा', 'Purva Phalguni': 'पूर्वा फाल्गुनी',
-    'Uttara Phalguni': 'उत्तरा फाल्गुनी', Hasta: 'हस्त', Chitra: 'चित्रा', Swati: 'स्वाति',
-    Vishakha: 'विशाखा', Anuradha: 'अनुराधा', Jyeshtha: 'ज्येष्ठा', Mula: 'मूल',
-    'Purva Ashadha': 'पूर्वाषाढ़ा', 'Uttara Ashadha': 'उत्तराषाढ़ा', Shravana: 'श्रवण',
-    Dhanishta: 'धनिष्ठा', Shatabhisha: 'शतभिषा', 'Purva Bhadrapada': 'पूर्व भाद्रपद',
-    'Uttara Bhadrapada': 'उत्तर भाद्रपद', Revati: 'रेवती',
-  };
-
   const todayStrip = q('#today-strip');
   let todayPlace = DELHI;
   let todayData = null;
@@ -360,7 +376,7 @@
     set('#today-tithi-l', tr('todayTithi', 'Tithi'));
     set('#today-nak-l', tr('todayNak', 'Nakshatra'));
     set('#today-rahu-l', tr('todayRahu', 'Rahu Kaal'));
-    set('#today-city-name', String(todayPlace.label).split(',')[0]);
+    set('#today-city-name', String(placeLabel(todayPlace)).split(',')[0]);
     q('#today-city')?.setAttribute('aria-label', `${tr('todayChange', 'Change city')}: ${todayPlace.label}`);
     q('#today-place')?.setAttribute('placeholder', tr('todayCityPh', 'Start typing a city…'));
     const shareEl = q('#today-share');     // DIVASTRO-107: hidden until there is something to share
@@ -371,9 +387,9 @@
     const ti = current(todayData.tithi);
     const nk = current(todayData.nakshatra);
     const rk = todayData.muhurta && todayData.muhurta.rahu_kaal;
-    const tithi = ti ? (hi ? `${PAKSHA_HI[ti.paksha] || ti.paksha} ${TITHI_HI[ti.name] || ti.name}`
-                           : (ti.label || ti.name)) : '—';
-    const nak = nk ? (hi ? NAK_HI[nk.name] || nk.name : nk.name) : '—';
+    // /api/panchang sends the Hindi names beside the English (app/astro/names_hi.py).
+    const tithi = ti ? ((hi && ti.label_hi) || ti.label || ti.name) : '—';
+    const nak = nk ? ((hi && nk.name_hi) || nk.name) : '—';
     const now = Date.now();
     const inRahu = !!(rk && Date.parse(rk.start) <= now && now < Date.parse(rk.end));
     const rahu = rk ? `${hhmm(rk.start)}–${hhmm(rk.end)}` : '—';
@@ -486,7 +502,10 @@
     muPlace = e.detail;
   });
 
-  q('#muhurat-go')?.addEventListener('click', async () => {
+  let muShown = false;                     // a result is on screen: refetched on a language switch
+  q('#muhurat-go')?.addEventListener('click', () => findMuhurat(true));
+
+  async function findMuhurat(scroll) {
     const btn = q('#muhurat-go');
     const err = q('#muhurat-error');
     err.hidden = true;
@@ -495,7 +514,7 @@
     const fromDate = q('#mu-from').value;
     const toDate = q('#mu-to').value;
     if (!fromDate || !toDate) {
-      err.textContent = 'Please choose both from and to dates.';
+      err.textContent = tr('muNeedDates', 'Please choose both from and to dates.');
       err.hidden = false;
       return;
     }
@@ -503,7 +522,7 @@
     const place = muPlace || muPick() ||
       { latitude: 28.6139, longitude: 77.2090, timezone: 'Asia/Kolkata', label: 'New Delhi, India' };
 
-    const lang = (typeof state !== 'undefined' && state.lang) ? state.lang : 'en';
+    const lang = curLang();
     const params = new URLSearchParams({
       event,
       from_date: fromDate,
@@ -518,19 +537,20 @@
     try {
       const res = await fetch(`/api/muhurat?${params}`);
       const data = await readJson(res);
-      if (!res.ok) throw new Error(data.detail || 'Could not calculate muhurat.');
-      renderMuhurat(data, place.label);
+      if (!res.ok) throw new Error(failText(data.detail, 'muErr', 'Could not calculate muhurat.'));
+      renderMuhurat(data, place, scroll);
+      muShown = true;
     } catch (ex) {
-      err.textContent = ex.message; err.hidden = false;
+      err.textContent = ex.message || tr('muErr', 'Could not calculate muhurat.'); err.hidden = false;
     } finally {
       btn.disabled = false; btn.classList.remove('busy');
     }
-  });
+  }
 
-  function renderMuhurat(data, placeLabel) {
+  function renderMuhurat(data, place, scroll) {
     const days = data.days || [];
     if (!days.length) {
-      q('#muhurat-result').innerHTML = '<div class="card"><p>No dates found for this range.</p></div>';
+      q('#muhurat-result').innerHTML = `<div class="card"><p>${esc(tr('muNone', 'No dates found for this range.'))}</p></div>`;
       q('#muhurat-result').hidden = false;
       return;
     }
@@ -538,7 +558,7 @@
     const rows = days.map((d) => `
       <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
         <td style="padding: 10px 8px; white-space: nowrap;">
-          <b>${esc(d.date)}</b><br/>
+          <b>${esc(showDate(d.date))}</b><br/>
           <span style="font-size: 12px; color: var(--ink-dim);">${esc(d.vara)}</span>
         </td>
         <td style="padding: 10px 8px;">
@@ -549,7 +569,7 @@
           <span style="font-size: 12px; color: var(--ink-dim);">${esc(d.yoga)}</span>
         </td>
         <td style="padding: 10px 8px; font-size: 12px; color: var(--gold);">
-          ${d.abhijit ? `Abhijit: ${esc(d.abhijit)}` : '—'}
+          ${d.abhijit ? `${esc(tr('abhijitShort', 'Abhijit'))}: ${esc(d.abhijit)}` : '—'}
         </td>
         <td style="padding: 10px 8px; font-size: 12px;">
           ${(d.reasons || []).map(r => `<span style="display:block;">• ${esc(r)}</span>`).join('') || '—'}
@@ -560,16 +580,16 @@
     q('#muhurat-result').innerHTML = `
       <div class="card" style="margin-top: 20px; overflow-x: auto;">
         <h3 style="margin-bottom: 12px; color: var(--gold);">
-          ${esc(tr('muhuratResultsTitle', 'Auspicious Dates Summary'))} — ${esc(placeLabel)}
+          ${esc(tr('muhuratResultsTitle', 'Auspicious Dates Summary'))} — ${esc(placeLabel(place))}
         </h3>
         <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
           <thead>
             <tr style="border-bottom: 1px solid var(--line); color: var(--ink-dim);">
-              <th style="padding: 8px;">Date / Day</th>
-              <th style="padding: 8px;">Verdict</th>
-              <th style="padding: 8px;">Tithi &amp; Nakshatra</th>
-              <th style="padding: 8px;">Abhijit</th>
-              <th style="padding: 8px;">Evaluation / Reasons</th>
+              <th style="padding: 8px;">${esc(tr('muColDate', 'Date / Day'))}</th>
+              <th style="padding: 8px;">${esc(tr('muColVerdict', 'Verdict'))}</th>
+              <th style="padding: 8px;">${esc(tr('muColLimbs', 'Tithi & Nakshatra'))}</th>
+              <th style="padding: 8px;">${esc(tr('muColAbhijit', 'Abhijit'))}</th>
+              <th style="padding: 8px;">${esc(tr('muColReasons', 'Evaluation / Reasons'))}</th>
             </tr>
           </thead>
           <tbody>
@@ -579,7 +599,7 @@
       </div>
     `;
     q('#muhurat-result').hidden = false;
-    q('#muhurat-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (scroll) q('#muhurat-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   // --------------------------------------------------------------------------
@@ -603,7 +623,10 @@
     }
   });
 
-  q('#choghadiya-go')?.addEventListener('click', async () => {
+  let choShown = false;                    // a result is on screen: refetched on a language switch
+  q('#choghadiya-go')?.addEventListener('click', () => loadChoghadiya(true));
+
+  async function loadChoghadiya(scroll) {
     const err = q('#choghadiya-error');
     err.hidden = true; err.textContent = '';
     const btn = q('#choghadiya-go');
@@ -614,7 +637,7 @@
       timezone: 'Asia/Kolkata',
     };
     const targetDate = q('#cho-date').value || todayIn(place.timezone);
-    const lang = (typeof state !== 'undefined' && state.lang) ? state.lang : 'en';
+    const lang = curLang();
 
     const params = new URLSearchParams({
       date: targetDate,
@@ -628,16 +651,17 @@
     try {
       const res = await fetch(`/api/choghadiya?${params}`);
       const data = await readJson(res);
-      if (!res.ok) throw new Error(data.detail || 'Could not calculate Choghadiya.');
-      renderChoghadiya(data, place.label, lang);
+      if (!res.ok) throw new Error(failText(data.detail, 'choErr', 'Could not calculate Choghadiya.'));
+      renderChoghadiya(data, place, lang, scroll);
+      choShown = true;
     } catch (ex) {
-      err.textContent = ex.message; err.hidden = false;
+      err.textContent = ex.message || tr('choErr', 'Could not calculate Choghadiya.'); err.hidden = false;
     } finally {
       btn.disabled = false; btn.classList.remove('busy');
     }
-  });
+  }
 
-  function renderChoghadiya(data, placeLabel, lang) {
+  function renderChoghadiya(data, place, lang, scroll) {
     const isHi = lang === 'hi';
     const act = data.active_slot;
     const badgeColor = {
@@ -679,10 +703,10 @@
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 16px;">
           <div>
             <h3 style="color: var(--gold); margin: 0;">
-              ${isHi ? 'दैनिक चौघड़िया चक्र' : 'Choghadiya Muhurta Schedule'} — ${esc(placeLabel)}
+              ${isHi ? 'दैनिक चौघड़िया चक्र' : 'Choghadiya Muhurta Schedule'} — ${esc(placeLabel(place))}
             </h3>
             <p style="margin: 4px 0 0 0; font-size: 12.5px; color: var(--ink-dim);">
-              ${esc(isHi ? data.weekday_hi : data.weekday)} · ${esc(data.date)} · ${isHi ? 'सूर्योदय' : 'Sunrise'}: ${esc(data.sunrise)} · ${isHi ? 'सूर्यास्त' : 'Sunset'}: ${esc(data.sunset)}
+              ${esc(isHi ? data.weekday_hi : data.weekday)} · ${esc(showDate(data.date))} · ${isHi ? 'सूर्योदय' : 'Sunrise'}: ${esc(data.sunrise)} · ${isHi ? 'सूर्यास्त' : 'Sunset'}: ${esc(data.sunset)}
             </p>
           </div>
           ${act ? `
@@ -735,7 +759,7 @@
       </div>
     `;
     q('#choghadiya-result').hidden = false;
-    q('#choghadiya-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (scroll) q('#choghadiya-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   /* ---------------------------------------- WhatsApp share (DIVASTRO-107) */
@@ -764,9 +788,8 @@
     const text = S.panchangText({
       city: S.cityName(place),
       date: p.date,
-      tithi: ti ? (hi ? `${PAKSHA_HI[ti.paksha] || ti.paksha || ''} ${TITHI_HI[ti.name] || ti.name}`.trim()
-                      : (ti.label || ti.name)) : '—',
-      nak: nk ? (hi ? NAK_HI[nk.name] || nk.name : nk.name) : '—',
+      tithi: ti ? ((hi && ti.label_hi) || ti.label || ti.name) : '—',
+      nak: nk ? ((hi && nk.name_hi) || nk.name) : '—',
       rahu: (p.muhurta && p.muhurta.rahu_kaal) ? span(p.muhurta.rahu_kaal) : '—',
     });
     S.wire(q('#panchang-share'), text, S.url(S.cityPath('panchang', place, '/?open=panchang'), 'panchang'));
@@ -783,6 +806,33 @@
   }
   // The SEO city list may arrive after today's panchang: relink once it does.
   if (SHARE()) SHARE().ready.then(() => { if (todayData) renderTodayStrip(); });
+
+  /* ------------------------------------------------- EN / हिं switch (tools) */
+  // The tool pages' static labels, and any result already on screen: a Panchang
+  // re-renders from the bilingual data it holds; Muhurat and Choghadiya come back
+  // from the server already in one language, so they are asked again.
+  const MU_EVENTS = { marriage: 'evMarriage', griha_pravesh: 'evGrihaPravesh', mundan: 'evMundan',
+                      namkaran: 'evNamkaran', general: 'evGeneral' };
+  function applyToolsLanguage() {
+    const set = (sel, text) => { const el = q(sel); if (el) el.textContent = text; };
+    set('#panchang-title', tr('panchangTitle', 'Panchang'));
+    set('#panchang-sub', tr('panchangSub', 'The five limbs of the day, with Rahu Kaal and the auspicious windows.'));
+    set('#lbl-pa-date', tr('lblDate', 'Date'));
+    set('#lbl-pa-place', tr('lblPlace', 'Place'));
+    qa('#pa-place, #mu-place, #cho-place').forEach((el) => {
+      el.placeholder = tr('todayCityPh', 'Start typing a city…');
+    });
+    qa('#mu-event option').forEach((o) => {
+      if (MU_EVENTS[o.value]) o.textContent = tr(MU_EVENTS[o.value], o.textContent);
+    });
+    if (paShown) renderPanchang(paShown.p, paShown.place);
+    if (muShown && !q('#muhurat-result').hidden) findMuhurat(false);
+    if (choShown && !q('#choghadiya-result').hidden) loadChoghadiya(false);
+  }
+  window.applyToolsLanguage = applyToolsLanguage;
+  applyToolsLanguage();
+  // The SEO city list (Hindi city names) may arrive after the first render.
+  if (SHARE()) SHARE().ready.then(() => { if (paShown) renderPanchang(paShown.p, paShown.place); });
 
   /* ------------------------------------------------------------- deep links */
   // The server-rendered /panchang, /rahu-kaal, /choghadiya and /kundali-milan

@@ -35,6 +35,7 @@ from .rashifal_pages import router as rashifal_router
 from .share import router as share_router
 from .muhurat_pages import router as muhurat_pages_router
 from .vrat_pages import router as vrat_pages_router
+from .astro.names_hi import KARANA_HI, NAKSHATRAS_HI, TITHI_HI, YOGA_HI
 from .chart_service import BirthData, build, solar_return, timing_snapshot, transits, wheel_svg
 from .db import (
     EntryKind, QuestionLog, User, balance, grant, init_db, session as db_session,
@@ -479,46 +480,6 @@ def _vedic_context(session) -> dict:
 
     return out
 
-
-TITHI_HI = {
-    "Pratipada": "प्रतिपदा", "Dwitiya": "द्वितीया", "Tritiya": "तृतीया",
-    "Chaturthi": "चतुर्थी", "Panchami": "पंचमी", "Shashthi": "षष्ठी",
-    "Saptami": "सप्तमी", "Ashtami": "अष्टमी", "Navami": "नवमी",
-    "Dashami": "दशमी", "Ekadashi": "एकादशी", "Dwadashi": "द्वादशी",
-    "Trayodashi": "त्रयोदशी", "Chaturdashi": "चतुर्दशी", "Purnima": "पूर्णिमा",
-    "Amavasya": "अमावस्या"
-}
-
-YOGA_HI = {
-    "Vishkambha": "विष्कम्भ", "Priti": "प्रीति", "Ayushman": "आयुष्मान",
-    "Saubhagya": "सौभाग्य", "Shobhana": "शोभन", "Atiganda": "अतिगण्ड",
-    "Sukarma": "सुकर्मा", "Dhriti": "धृति", "Shula": "शूल", "Ganda": "गण्ड",
-    "Vriddhi": "वृद्धि", "Dhruva": "ध्रुव", "Vyaghata": "व्याघात",
-    "Harshana": "हर्षण", "Vajra": "वज्र", "Siddhi": "सिद्धि",
-    "Vyatipata": "व्यतीपात", "Variyana": "वरीयान", "Parigha": "परिघ",
-    "Shiva": "शिव", "Siddha": "सिद्ध", "Sadhya": "साध्य", "Shubha": "शुभ",
-    "Shukla": "शुक्ल", "Brahma": "ब्रह्म", "Indra": "इन्द्र", "Vaidhriti": "वैधृति"
-}
-
-KARANA_HI = {
-    "Bava": "बव", "Balava": "बालव", "Kaulava": "कौलव", "Taitila": "तैतिल",
-    "Gara": "गर", "Vanija": "वणिज", "Vishti": "विष्टि (भद्रा)", "Shakuni": "शकुनि",
-    "Chatushpada": "चतुष्पाद", "Naga": "नाग", "Kimstughna": "किंस्तुघ्न"
-}
-
-NAKSHATRAS_HI = {
-    "Ashwini": "अश्विनी", "Bharani": "भरणी", "Krittika": "कृत्तिका",
-    "Rohini": "रोहिणी", "Mrigashira": "मृगशिरा", "Ardra": "आर्द्रा",
-    "Punarvasu": "पुनर्वसु", "Pushya": "पुष्य", "Ashlesha": "आश्लेषा",
-    "Magha": "मघा", "Purva Phalguni": "पूर्वा फाल्गुनी",
-    "Uttara Phalguni": "उत्तरा फाल्गुनी", "Hasta": "हस्त", "Chitra": "चित्रा",
-    "Swati": "स्वाति", "Vishakha": "विशाखा", "Anuradha": "अनुराधा",
-    "Jyeshtha": "ज्येष्ठा", "Mula": "मूल", "Purva Ashadha": "पूर्वाषाढ़ा",
-    "Uttara Ashadha": "उत्तराषाढ़ा", "Shravana": "श्रवण",
-    "Dhanishta": "धनिष्ठा", "Shatabhisha": "शतभिषा",
-    "Purva Bhadrapada": "पूर्व भाद्रपद", "Uttara Bhadrapada": "उत्तर भाद्रपद",
-    "Revati": "रेवती"
-}
 
 PLANET_HI = {
     "Sun": "सूर्य", "Moon": "चंद्रमा", "Mars": "मंगल", "Mercury": "बुध",

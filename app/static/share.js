@@ -129,6 +129,6 @@
   }
 
   window.DAShare = {
-    ready, url, waHref, cityPath, cityName, milanText, todayText, panchangText, wire, button, ICON,
+    ready, url, waHref, cityFor, cityPath, cityName, milanText, todayText, panchangText, wire, button, ICON,
   };
 })();

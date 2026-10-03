@@ -20,6 +20,7 @@ from pydantic import BaseModel, Field
 from . import geo
 from .astro import matching
 from .astro import panchang as panchang_engine
+from .astro.names_hi import add_hindi
 from .chart_service import BirthData, build
 
 router = APIRouter(prefix="/api")
@@ -108,14 +109,19 @@ def daily_panchang(
     date: str | None = None,
     timezone: str = "",
 ) -> dict:
-    """The five limbs plus Rahu Kaal for a date and place. Defaults to today."""
+    """The five limbs plus Rahu Kaal for a date and place. Defaults to today.
+
+    Every name comes in English and Hindi side by side (`name` / `name_hi`,
+    `notes` / `notes_hi`, see names_hi.add_hindi), so the Panchang tool and the
+    home Today strip switch EN / हिं without a second request.
+    """
     tz = timezone or geo.timezone_for(latitude, longitude)
     # "Today" means today *where the panchang is for*, not on the server. The
     # container runs UTC, so between midnight and 05:30 UTC an Indian visitor
     # was being shown yesterday's panchang.
     when = date or dt.datetime.now(ZoneInfo(tz)).date().isoformat()
     try:
-        return panchang_engine.daily_panchang(when, latitude, longitude, tz)
+        return add_hindi(panchang_engine.daily_panchang(when, latitude, longitude, tz))
     except ValueError as exc:
         raise HTTPException(400, f"Could not compute the panchang: {exc}") from exc
 

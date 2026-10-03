@@ -275,8 +275,8 @@ def main() -> int:
         check(f"beacon rejects {path}", not analytics.is_public_page(path))
 
     print("\n10. Hindi tables and formatting")
-    check("YOGA_HI / KARANA_HI match main.py's copies",
-          seo_pages.YOGA_HI == app_main.YOGA_HI and seo_pages.KARANA_HI == app_main.KARANA_HI)
+    check("YOGA_HI / KARANA_HI are main.py's (one copy, app/astro/names_hi.py)",
+          seo_pages.YOGA_HI is app_main.YOGA_HI and seo_pages.KARANA_HI is app_main.KARANA_HI)
     check("every engine yoga has a Hindi name",
           set(panchang_engine.YOGA_NAMES) <= set(seo_pages.YOGA_HI))
     check("every engine karana has a Hindi name",
