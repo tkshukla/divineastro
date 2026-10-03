@@ -10,6 +10,12 @@
 #            11434 to the internet would let anyone run inference (and rack up
 #            your CPU bill) for free. mem_limit keeps a large model from
 #            starving the other apps on this shared box.
+#   wa     : WhatsApp Channel connector (DIVASTRO-116). Posts the daily
+#            Panchang to the owner's own channel as a linked device on a
+#            dedicated number (unofficial; see deploy/daily_channels.md
+#            section 5). No published port: only the app reaches it, as
+#            http://wa:3000, with the ASTRO_WA_TOKEN shared secret. Without
+#            that token it idles and never contacts WhatsApp.
 #
 #   docker compose up -d --build
 
@@ -70,6 +76,22 @@ services:
       retries: 5
       start_period: 20s
 
+  wa:
+    build: ./wa
+    restart: unless-stopped
+    environment:
+      # Only what it needs, not the whole .env (no DB password, no API keys).
+      # Interpolated from .env by compose; blank = idle.
+      ASTRO_WA_TOKEN: ${ASTRO_WA_TOKEN:-}
+    volumes:
+      # The linked-device credentials. Treat like a password: whoever has
+      # this volume can post as the number. `docker volume rm` = unlinked.
+      - wadata:/data
+    mem_limit: 300m
+    # Deliberately no `ports:` — reachable only on the compose network.
+    expose:
+      - "3000"
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -90,3 +112,4 @@ volumes:
   caddydata:
   caddyconfig:
   ollamadata:
+  wadata:

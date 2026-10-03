@@ -2,6 +2,7 @@
 
     channel_message(day, lat, lon, tz, lang, channel) -> str
     build(day, lat, lon, tz, lang)                    -> {"title", "body", "url"}
+    card_text(day) / card_png(day)                    -> the English image card
 
 One short, forwardable post a day, for New Delhi unless told otherwise:
 
@@ -244,3 +245,14 @@ def card_text(day: dt.date, lat: float = CITY.latitude, lon: float = CITY.longit
     sub = (f"Rahu Kaal {_compact_span(p['muhurta'].get('rahu_kaal'))}"
            f" · Sunrise {_at(p['sun']['rise'], day, EN)}")
     return eyebrow, headline, sub
+
+
+def card_png(day: dt.date) -> bytes:
+    """The day's image card as PNG bytes (app/social_card.py), shared by the
+    Telegram poster, the WhatsApp email pack and the WhatsApp channel poster."""
+    import io
+
+    from . import social_card               # Pillow; only the senders need it
+    buf = io.BytesIO()
+    social_card.make_card(*card_text(day), buf)
+    return buf.getvalue()
