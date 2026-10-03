@@ -71,6 +71,9 @@ def seo_share_text(path: str) -> str | None:
         return "Get your janam kundali free · अपनी जन्म कुंडली मुफ़्त में बनाएं:"
     if parts[0] == "rashifal":
         return "Today's Rashifal for every sign · आज का राशिफल:"
+    if parts[0] in ("nakshatra", "rashi", "naam-se-kundali-milan"):
+        from .nakshatra_pages import share_text   # lazy: it imports this module (DIVASTRO-115)
+        return share_text(path)
     if parts[0] == "muhurat" and len(parts) == 2:
         kind, _, year = parts[1].rpartition("-")
         names = {"vivah": ("Vivah muhurat", "विवाह मुहूर्त"),

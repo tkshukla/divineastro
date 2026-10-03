@@ -265,6 +265,9 @@ RASHIFAL_PAGES = rashifal_pages.PUBLIC_PATHS
 def is_public_page(path: str) -> bool:
     if path in PUBLIC_PAGES or path in RASHIFAL_PAGES:
         return True
+    from .nakshatra_pages import is_public_path as nakshatra_public   # lazy (DIVASTRO-115)
+    if nakshatra_public(path):
+        return True
     if path.startswith("/hi/"):
         path = path[3:]
     if path in SEO_TOOLS:

@@ -764,6 +764,7 @@ def _sign_page(day: dt.date, slug: str, lang: str) -> tuple[str, str, str, str]:
 {_panchang_line(s, day, lang)}
 {_personal_line(lang)}
 {_cta(lang)}
+<p><a href="{'/hi' if hi else ''}/rashi/{rashi.slug}">{_e(f"{rashi.name_hi} राशि — स्वभाव, नक्षत्र और नामाक्षर" if hi else f"About {rashi.name} rashi — traits, nakshatras and name letters")}</a></p>
 {_sign_links(rashi, lang)}
 {_method_note(lang)}
 {_more_links(rashi, lang)}"""

@@ -1016,6 +1016,7 @@ charts and scored out of <strong>{total} points (gunas)</strong>. Every one of t
 the <strong>Moon</strong> — its sign (rashi) and its nakshatra at birth — which is why
 the score needs an accurate birth date and place, but barely depends on the birth time.</p>
 {_cta("kundali-milan", "Match two kundalis now — free")}
+<p>Don't know the birth times? Try <a href="/naam-se-kundali-milan">Naam se Kundali Milan</a> — the traditional match by the first letter of each name.</p>
 <h2>The 8 kootas and their points</h2>
 <div class="scroll"><table><tr><th>Koota</th><th>Points</th><th>What it measures</th></tr>
 {rows}
@@ -1071,6 +1072,7 @@ def kundali_milan_hi() -> HTMLResponse:
 ये सभी <strong>चंद्रमा</strong> से देखे जाते हैं — जन्म के समय उसकी राशि और नक्षत्र से — इसलिए
 सही जन्म तिथि और स्थान ज़रूरी है, पर जन्म समय का असर बहुत कम पड़ता है।</p>
 {_cta("kundali-milan", "अभी दो कुंडलियाँ मिलाएँ — मुफ़्त", HI)}
+<p>जन्म समय पता नहीं? <a href="/hi/naam-se-kundali-milan">नाम से कुंडली मिलान</a> करें — नाम के पहले अक्षर से पारंपरिक गुण मिलान।</p>
 <h2>आठ कूट और उनके गुण</h2>
 <div class="scroll"><table><tr><th>कूट</th><th>गुण</th><th>क्या देखा जाता है</th></tr>
 {rows}
@@ -1357,7 +1359,8 @@ def sitemap_paths() -> list[str]:
     from .rashifal_pages import sitemap_paths as rashifal_paths  # lazy: it imports this module
     from .muhurat_pages import page_paths as muhurat_paths  # same: imports this module
     from .vrat_pages import page_paths as vrat_paths  # same: imports this module
-    return paths + rashifal_paths() + muhurat_paths() + vrat_paths()
+    from .nakshatra_pages import sitemap_paths as nakshatra_paths  # same (DIVASTRO-115)
+    return paths + rashifal_paths() + muhurat_paths() + vrat_paths() + nakshatra_paths()
 
 
 @router.get("/sitemap.xml")
