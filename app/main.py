@@ -198,6 +198,23 @@ def _engine_lang(lang: str | None) -> str:
     return "hi" if lang == "hi" else "en"
 
 
+def _pdf_lang(lang: str | None) -> str:
+    """The language a kundali (chart) PDF is printed in: English, Hindi, or one
+    of the regional languages whose script font this machine has
+    (pdf_report.pdf_languages(), DIVASTRO-124). Anything else gets English."""
+    code = i18n.normalize(lang)
+    return code if code in pdf_report.pdf_languages() else "en"
+
+
+def _fallback_note(lang: str | None) -> str | None:
+    """DIVASTRO-124: for a language the engine cannot write (kn/te/ta/ml/bn/or),
+    the one line, in that language, shown when the reading on screen is the
+    engine's English rather than the AI's answer in that language."""
+    if lang in llm.REGIONAL:
+        return i18n.get(lang).english_answer
+    return None
+
+
 class AskRequest(BaseModel):
     session_id: str
     question: str
@@ -352,6 +369,11 @@ def ask(req: AskRequest, request: Request) -> dict:
         result["polished_by"] = provider if not error and provider != "off" else None
         result["llm_error"] = error
         result["language"] = req.language
+        if error or provider in ("off", "", None):
+            # The engine's English is what this visitor reads; say so in their language.
+            note = _fallback_note(req.language)
+            if note:
+                result["fallback_note"] = note
 
         result["credits"] = _charge_and_log(db, user, question, result, req.birth_id)
     return result
@@ -417,6 +439,11 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
     result["vedic"] = _vedic_context(session)
     result["answer_engine"] = result["answer"]
     result["language"] = req.language
+    # Shown by the app only while the engine's English is what is on screen
+    # (narration off, or it failed) — never above the AI's answer.
+    note = _fallback_note(req.language)
+    if note:
+        result["fallback_note"] = note
 
     log_ids: list[int] = []
     with db_session() as db:
@@ -900,7 +927,7 @@ def pdf_chart(sid: str, request: Request, date: str | None = None, lang: str = "
             pass
 
     try:
-        data = pdf_report.chart_pdf(session, brand=BRAND, site=SITE_URL, when=when, language=_engine_lang(lang))
+        data = pdf_report.chart_pdf(session, brand=BRAND, site=SITE_URL, when=when, language=_pdf_lang(lang))
     except Exception as exc:
         raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
     return _pdf_response(
@@ -1015,7 +1042,9 @@ def _lang_inline(html: str, version: str) -> str:
                   for code in ("en", "hi")}
         payload = (f"window.DA_LANGS={json.dumps(i18n.client_registry(), ensure_ascii=False)};"
                    f"window.DA_I18N={json.dumps(tables, ensure_ascii=False)};"
-                   f"window.DA_I18N_V={json.dumps(version)};")
+                   f"window.DA_I18N_V={json.dumps(version)};"
+                   # DIVASTRO-124: the kundali PDF's language buttons offer these.
+                   f"window.DA_PDF_LANGS={json.dumps(pdf_report.pdf_languages())};")
         # "</" inside a JSON string would end the <script> element early.
         html = html.replace("<!--LANG_DATA-->", "<script>" + payload.replace("</", "<\\/") + "</script>", 1)
     return html

@@ -254,6 +254,29 @@ _TEXT = {
            "यह 10 मिनट तक मान्य है। अगर आपने यह कोड नहीं माँगा, तो इस ईमेल को "
            "अनदेखा करें — कोड के बिना कोई साइन इन नहीं कर सकता।"),
 }
+# DIVASTRO-124: the six regional languages. The code itself is never in a
+# subject line (it would show in every notification preview), only in the body.
+_TEXT.update({
+    "kn": ("Divine Astro ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ನಿಮ್ಮ ಕೋಡ್:\n\n    {code}\n\n"
+           "ಇದು 10 ನಿಮಿಷಗಳವರೆಗೆ ಮಾನ್ಯವಾಗಿರುತ್ತದೆ. ನೀವು ಈ ಕೋಡ್ ಕೇಳದಿದ್ದರೆ, ಈ ಇಮೇಲ್ ಅನ್ನು "
+           "ನಿರ್ಲಕ್ಷಿಸಿ — ಕೋಡ್ ಇಲ್ಲದೆ ಯಾರೂ ಸೈನ್ ಇನ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ."),
+    "te": ("Divine Astro లో సైన్ ఇన్ చేయడానికి మీ కోడ్:\n\n    {code}\n\n"
+           "ఇది 10 నిమిషాల పాటు చెల్లుతుంది. మీరు ఈ కోడ్ అడగకపోతే, ఈ ఇమెయిల్‌ను "
+           "పట్టించుకోకండి — కోడ్ లేకుండా ఎవరూ సైన్ ఇన్ చేయలేరు."),
+    "ta": ("Divine Astro-வில் உள்நுழைய உங்கள் குறியீடு:\n\n    {code}\n\n"
+           "இது 10 நிமிடங்களுக்குச் செல்லுபடியாகும். நீங்கள் இந்தக் குறியீட்டைக் கேட்கவில்லை "
+           "என்றால், இந்த மின்னஞ்சலைப் புறக்கணிக்கவும் — குறியீடு இல்லாமல் யாரும் உள்நுழைய முடியாது."),
+    "ml": ("Divine Astro-യിൽ സൈൻ ഇൻ ചെയ്യാനുള്ള നിങ്ങളുടെ കോഡ്:\n\n    {code}\n\n"
+           "ഇത് 10 മിനിറ്റ് സാധുവാണ്. നിങ്ങൾ ഈ കോഡ് ആവശ്യപ്പെട്ടില്ലെങ്കിൽ, ഈ ഇമെയിൽ "
+           "അവഗണിക്കുക — കോഡ് ഇല്ലാതെ ആർക്കും സൈൻ ഇൻ ചെയ്യാനാകില്ല."),
+    "bn": ("Divine Astro-তে সাইন ইন করার জন্য আপনার কোড:\n\n    {code}\n\n"
+           "এটি 10 মিনিট বৈধ থাকবে। আপনি এই কোড না চেয়ে থাকলে এই ইমেলটি উপেক্ষা করুন — "
+           "কোড ছাড়া কেউ সাইন ইন করতে পারবে না।"),
+    "or": ("Divine Astro ରେ ସାଇନ୍ ଇନ୍ କରିବା ପାଇଁ ଆପଣଙ୍କ କୋଡ୍:\n\n    {code}\n\n"
+           "ଏହା 10 ମିନିଟ୍ ପର୍ଯ୍ୟନ୍ତ ବୈଧ। ଆପଣ ଏହି କୋଡ୍ ମାଗି ନଥିଲେ, ଏହି ଇମେଲ୍‌କୁ ଅଣଦେଖା "
+           "କରନ୍ତୁ — କୋଡ୍ ବିନା କେହି ସାଇନ୍ ଇନ୍ କରିପାରିବେ ନାହିଁ।"),
+})
+
 _HTML_LEAD = {
     "en": ("Your sign-in code",
            "Valid for 10 minutes. If you didn't ask for it, ignore this email — "
@@ -264,11 +287,51 @@ _HTML_LEAD = {
 }
 
 
+_HTML_LEAD.update({
+    "kn": ("ನಿಮ್ಮ ಸೈನ್-ಇನ್ ಕೋಡ್",
+           "10 ನಿಮಿಷಗಳವರೆಗೆ ಮಾನ್ಯ. ನೀವು ಈ ಕೋಡ್ ಕೇಳದಿದ್ದರೆ, ಈ ಇಮೇಲ್ ಅನ್ನು ನಿರ್ಲಕ್ಷಿಸಿ — "
+           "ಕೋಡ್ ಇಲ್ಲದೆ ಯಾರೂ ಸೈನ್ ಇನ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ."),
+    "te": ("మీ సైన్-ఇన్ కోడ్",
+           "10 నిమిషాల పాటు చెల్లుతుంది. మీరు ఈ కోడ్ అడగకపోతే, ఈ ఇమెయిల్‌ను పట్టించుకోకండి — "
+           "కోడ్ లేకుండా ఎవరూ సైన్ ఇన్ చేయలేరు."),
+    "ta": ("உங்கள் உள்நுழைவுக் குறியீடு",
+           "10 நிமிடங்களுக்குச் செல்லுபடியாகும். நீங்கள் கேட்கவில்லை என்றால், இந்த மின்னஞ்சலைப் "
+           "புறக்கணிக்கவும் — குறியீடு இல்லாமல் யாரும் உள்நுழைய முடியாது."),
+    "ml": ("നിങ്ങളുടെ സൈൻ-ഇൻ കോഡ്",
+           "10 മിനിറ്റ് സാധുവാണ്. നിങ്ങൾ ആവശ്യപ്പെട്ടില്ലെങ്കിൽ, ഈ ഇമെയിൽ അവഗണിക്കുക — "
+           "കോഡ് ഇല്ലാതെ ആർക്കും സൈൻ ഇൻ ചെയ്യാനാകില്ല."),
+    "bn": ("আপনার সাইন-ইন কোড",
+           "10 মিনিট বৈধ। আপনি এই কোড না চেয়ে থাকলে এই ইমেলটি উপেক্ষা করুন — "
+           "কোড ছাড়া কেউ সাইন ইন করতে পারবে না।"),
+    "or": ("ଆପଣଙ୍କ ସାଇନ୍-ଇନ୍ କୋଡ୍",
+           "10 ମିନିଟ୍ ପର୍ଯ୍ୟନ୍ତ ବୈଧ। ଆପଣ ମାଗି ନଥିଲେ, ଏହି ଇମେଲ୍‌କୁ ଅଣଦେଖା କରନ୍ତୁ — "
+           "କୋଡ୍ ବିନା କେହି ସାଇନ୍ ଇନ୍ କରିପାରିବେ ନାହିଁ।"),
+})
+
+# "Your sign-in code" in each regional language, for the subject line
+# (which keeps the English beside it, as the Hindi one does).
+_SUBJECT_LEAD = {
+    "kn": "ನಿಮ್ಮ ಸೈನ್-ಇನ್ ಕೋಡ್", "te": "మీ సైన్-ఇన్ కోడ్", "ta": "உங்கள் உள்நுழைவுக் குறியீடு",
+    "ml": "നിങ്ങളുടെ സൈൻ-ഇൻ കോഡ്", "bn": "আপনার সাইন-ইন কোড", "or": "ଆପଣଙ୍କ ସାଇନ୍-ଇନ୍ କୋଡ୍",
+}
+
+
+def subject(lang: str = "en") -> str:
+    """The email's subject: bilingual English + Hindi as before, or the
+    visitor's regional language first with the English beside it. Never the code."""
+    lead = _SUBJECT_LEAD.get(lang)
+    return f"{lead} · Your Divine Astro sign-in code" if lead else SUBJECT
+
+
 def compose(code: str, lang: str = "en") -> tuple[str, str]:
     """(plain text, html) for one code. Both languages are always included,
     the visitor's own first: the person reading it may not be the one who
-    chose the sheet's language, and a code is useless if it can't be read."""
-    order = ["hi", "en"] if lang == "hi" else ["en", "hi"]
+    chose the sheet's language, and a code is useless if it can't be read.
+    A regional-language visitor (DIVASTRO-124) gets their language, then English."""
+    if lang in _SUBJECT_LEAD:
+        order = [lang, "en"]
+    else:
+        order = ["hi", "en"] if lang == "hi" else ["en", "hi"]
     text = "\n\n—\n\n".join(_TEXT[lg].format(code=code) for lg in order)
     text += "\n\nDivine Astro · https://divineastro.org\n"
 
@@ -324,7 +387,7 @@ def start(raw_email: str, ip: str, lang: str = "en") -> dict:
         # still have used the provider's quota.
         auth.note_hit(_ALL_SENDS, "all")
         text, html = compose(code, lang)
-        ok = mail.send([addr], SUBJECT, text, html)
+        ok = mail.send([addr], subject(lang), text, html)
         if not ok:
             log.error("Email sign-in: sending a code to %s failed", mask(addr))
         return ok

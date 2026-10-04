@@ -76,7 +76,30 @@ def _hm(moment: dt.datetime) -> str:
 
 
 def _short_date(day: dt.date, lang: str) -> str:
+    if lang in REGIONAL:
+        from .astro.names_i18n import names_for
+        return f"{day.day} {names_for(lang).MONTHS[day.month - 1]}"
     return f"{day.day} {MONTHS_HI[day.month - 1] if lang == 'hi' else day.strftime('%b')}"
+
+
+# DIVASTRO-124: the message in Kannada, Telugu, Tamil, Malayalam, Bengali and
+# Odia. Festival, timing and Rahu Kaal names come from the names tables
+# (app/astro/names_<code>.py); these are only the sentences around them.
+REGIONAL = ("kn", "te", "ta", "ml", "bn", "or")
+_PUSH = {
+    "kn": {"today": "ಇಂದು: {names}", "rk_title": "{city} ಇಂದಿನ ರಾಹು ಕಾಲ: {rk}",
+           "rk_body": "ಈ ಸಮಯದಲ್ಲಿ ಹೊಸ ಕೆಲಸ ಆರಂಭಿಸಬೇಡಿ. ಇಂದಿನ ಪೂರ್ಣ ಪಂಚಾಂಗ ನೋಡಿ."},
+    "te": {"today": "ఈరోజు: {names}", "rk_title": "{city}లో ఈరోజు రాహుకాలం: {rk}",
+           "rk_body": "ఈ సమయంలో కొత్త పని ప్రారంభించకండి. ఈరోజు పూర్తి పంచాంగం చూడండి."},
+    "ta": {"today": "இன்று: {names}", "rk_title": "{city} இன்றைய ராகு காலம்: {rk}",
+           "rk_body": "இந்த நேரத்தில் புதிய செயலைத் தொடங்க வேண்டாம். இன்றைய முழு பஞ்சாங்கத்தைப் பாருங்கள்."},
+    "ml": {"today": "ഇന്ന്: {names}", "rk_title": "{city} ഇന്നത്തെ രാഹുകാലം: {rk}",
+           "rk_body": "ഈ സമയത്ത് പുതിയ കാര്യങ്ങൾ തുടങ്ങരുത്. ഇന്നത്തെ മുഴുവൻ പഞ്ചാംഗം കാണുക."},
+    "bn": {"today": "আজ: {names}", "rk_title": "{city}-এ আজকের রাহুকাল: {rk}",
+           "rk_body": "এই সময়ে নতুন কাজ শুরু করবেন না। আজকের সম্পূর্ণ পঞ্জিকা দেখুন।"},
+    "or": {"today": "ଆଜି: {names}", "rk_title": "{city}ରେ ଆଜିର ରାହୁ କାଳ: {rk}",
+           "rk_body": "ଏହି ସମୟରେ ନୂଆ କାମ ଆରମ୍ଭ କରନ୍ତୁ ନାହିଁ। ଆଜିର ସମ୍ପୂର୍ଣ୍ଣ ପାଞ୍ଜି ଦେଖନ୍ତୁ।"},
+}
 
 
 def timing_text(t: dict, day: dt.date, tz: str, lang: str) -> str:
@@ -84,6 +107,9 @@ def timing_text(t: dict, day: dt.date, tz: str, lang: str) -> str:
     with the date added when it falls on another day (Ekadashi parana is the
     next morning)."""
     label = t.get("label_hi") if lang == "hi" else t.get("label_en")
+    if lang in REGIONAL:
+        from .astro.names_i18n import names_for
+        label = names_for(lang).FESTIVAL_TIMINGS.get(t.get("key"), label)
     if t.get("at"):
         first = _clock(t["at"], tz)
         value = _hm(first)
@@ -117,7 +143,10 @@ def build(day: dt.date, lat: float, lon: float, tz: str, lang: str, *, city: str
 
     Returns {title, body, url (absolute, UTM-tagged), path (same, site-relative)}.
     """
-    lang = "hi" if lang == "hi" else "en"
+    lang = lang if lang in REGIONAL else ("hi" if lang == "hi" else "en")
+    if lang in REGIONAL:
+        return _build_regional(day, lat, lon, tz, lang, city=city, source=source,
+                               medium=medium, campaign=campaign)
     hi = lang == "hi"
     name = city_name(lat, lon, city, lang)
     pre = "/hi" if hi else ""
@@ -153,6 +182,43 @@ def build(day: dt.date, lat: float, lon: float, tz: str, lang: str, *, city: str
     return {"title": title, "body": body, "url": SITE_URL + path, "path": path}
 
 
+def _build_regional(day: dt.date, lat: float, lon: float, tz: str, lang: str, *, city: str,
+                    source: str, medium: str, campaign: str) -> dict:
+    """build() for kn/te/ta/ml/bn/or. Same facts and same links as English;
+    the words come from _PUSH and the names tables. Links go to the language's
+    own copy of the page (/kn/vrat-tyohar, /kn/rahu-kaal/<city>)."""
+    from .astro.names_i18n import names_for
+
+    n = names_for(lang)
+    words = _PUSH[lang]
+    name = city_name(lat, lon, city, lang)
+    rk = rahu_kaal(day, lat, lon, tz)
+    rk_text = f"{rk[0]}–{rk[1]}" if rk else "—"
+    pre = f"/{lang}"
+
+    obs = festivals.on(day, lat, lon, tz)
+    if obs:
+        obs = sorted(obs, key=lambda o: not o.get("major"))
+        names = ", ".join(n.festival_name(o) for o in obs[:2])
+        title = words["today"].format(names=names)
+        timed = next((o for o in obs if o.get("timings")), None)
+        if timed:
+            body = f"{timing_text(timed['timings'][0], day, tz, lang)} · {name}"
+        else:
+            body = f"{n.TIMINGS['rahu_kaal']} {rk_text} · {name}"
+        path = f"{pre}/vrat-tyohar"
+    else:
+        title = words["rk_title"].format(city=name, rk=rk_text)
+        body = words["rk_body"]
+        c = seo_city(lat, lon)
+        if c:
+            path = f"{pre}/rahu-kaal" + ("" if c == seo_cities.DEFAULT else f"/{c.slug}")
+        else:
+            path = f"/?open=panchang&lang={lang}"
+    path = _with_utm(path, source, medium, campaign)
+    return {"title": title, "body": body, "url": SITE_URL + path, "path": path}
+
+
 if __name__ == "__main__":                              # pragma: no cover - manual preview
     import argparse
     import json
@@ -163,7 +229,7 @@ if __name__ == "__main__":                              # pragma: no cover - man
     ap.add_argument("--lon", type=float, default=77.2090)
     ap.add_argument("--tz", default="Asia/Kolkata")
     ap.add_argument("--city", default="New Delhi, Delhi")
-    ap.add_argument("--lang", default="en", choices=("en", "hi"))
+    ap.add_argument("--lang", default="en", choices=("en", "hi", *REGIONAL))
     a = ap.parse_args()
     print(json.dumps(build(dt.date.fromisoformat(a.date), a.lat, a.lon, a.tz, a.lang,
                            city=a.city), ensure_ascii=False, indent=2))
