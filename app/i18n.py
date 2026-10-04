@@ -303,6 +303,35 @@ def weekday(day, lang: str) -> str:
     return names(lang).VARA.get(english, english)
 
 
+# DIVASTRO-123: a namakshar syllable (astro/namakshar.py keeps them in
+# Devanagari) in the reader's script. Malayalam's Unicode block mirrors
+# Devanagari's letter for letter; Tamil's lacks the voiced and aspirated
+# stops, which fold to the plain letter as Tamil panchangs write them
+# (ख ग घ -> க, द ध थ -> த ...). Other languages: unchanged (Devanagari).
+_AKSHAR_BLOCK = {"ml": 0x0D00, "ta": 0x0B80}
+_TAMIL_FOLD = dict(zip("खगघछझठडढथदधफबभ", "கககசஜடடடதததபபப"))
+
+
+def akshar(text: str, lang: str) -> str:
+    base = _AKSHAR_BLOCK.get(lang)
+    if base is None:
+        return text
+    out = []
+    for c in text:
+        if lang == "ta" and c in _TAMIL_FOLD:
+            out.append(_TAMIL_FOLD[c])
+        elif "ऀ" <= c <= "ॿ":
+            out.append(chr(base + ord(c) - 0x0900))
+        else:
+            out.append(c)
+    return "".join(out)
+
+
+def akshar_lang(lang: str) -> str:
+    """The lang="" attribute for akshar(text, lang)."""
+    return lang if lang in _AKSHAR_BLOCK else "hi"
+
+
 # Strings for the chrome every server-rendered page shares (crumbs, footer,
 # share button). The translation agents fill the new languages' columns; until
 # then each key falls back to English.

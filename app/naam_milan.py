@@ -81,7 +81,7 @@ def _options(selected: Match | None, lang: str) -> str:
     def opt(n, p, sel=False):
         dev, lat = n.syllables[p - 1]
         sign = _sign_label(n.pada_sign(p), lang)
-        text = f"{dev} ({lat}) — {_nak_label(n, lang)} {p} · {sign}"
+        text = f"{i18n.akshar(dev, lang)} ({lat}) — {_nak_label(n, lang)} {p} · {sign}"
         return (f'<option value="{pada_id(n, p)}"' + (" selected" if sel else "")
                 + f">{_e(text)}</option>")
 
@@ -127,9 +127,10 @@ def _person_row(label: str, raw: str, m: Match | None, lang: str) -> str:
         msg = _tx("unreadable", lang)
         return f'<tr><th scope="row">{_e(label)}</th><td colspan="3" class="bad">{_e(msg)}</td></tr>'
     n, p = m.nakshatra, m.pada
-    used = f'<span class="syl" lang="hi">{_e(m.akshar)}</span>'
+    sl = i18n.akshar_lang(lang)
+    used = f'<span class="syl" lang="{sl}">{_e(i18n.akshar(m.akshar, lang))}</span>'
     if m.syllable != m.akshar:
-        used += f' → <span class="syl" lang="hi">{_e(m.syllable)}</span>'
+        used += f' → <span class="syl" lang="{sl}">{_e(i18n.akshar(m.syllable, lang))}</span>'
     return (f'<tr><th scope="row">{_e(label)}</th><td>{used}{_via_note(m, lang)}</td>'
             f'<td><a href="{nak_path(n, lang)}">{_e(_nak_label(n, lang))}</a> '
             f'<small>{_tx("pada", lang)} {p}</small></td>'
@@ -179,13 +180,14 @@ def _rashi_syllables(lang: str) -> str:
     head = _tx("syl.head", lang)
     rows = "".join(
         f'<tr><td><a href="{rashi_path(r, lang)}">{_e(_rashi_pill(r, lang))}'
-        f'</a></td><td lang="hi">{_e(" ".join(n.syllables[p - 1][0] for n, p in sign_padas(r.index)))}'
+        f'</a></td><td lang="{i18n.akshar_lang(lang)}">'
+        f'{_e(i18n.akshar(" ".join(n.syllables[p - 1][0] for n, p in sign_padas(r.index)), lang))}'
         "</td></tr>" for r in RASHIS)
     return f'<div class="scroll"><table>{head}{rows}</table></div>'
 
 
 def _explainer(lang: str) -> str:
-    abhijit = " ".join(d for d, _ in ABHIJIT)
+    abhijit = i18n.akshar(" ".join(d for d, _ in ABHIJIT), lang)
     return _tx("explainer", lang, abhijit=abhijit, syllables=_rashi_syllables(lang),
                href=nak_path(None, lang))
 

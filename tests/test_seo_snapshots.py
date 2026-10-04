@@ -64,7 +64,10 @@ def _keep(path: str) -> bool:
 
 
 def paths() -> list[str]:
-    out = [p for p in seo_pages.sitemap_paths() if _keep(p)]
+    from app import i18n
+    # en/hi only: a translated regional copy (ta, ml, ... in the sitemap since
+    # DIVASTRO-123) is checked by its own tests, never snapshotted.
+    out = [p for p in seo_pages.sitemap_paths() if _keep(p) and i18n.strip_prefix(p)[0] in LANGS]
     for pre in ("", "/hi"):
         out += [
             f"{pre}/naam-se-kundali-milan?boy=Rahul&girl=Priya",
@@ -169,7 +172,8 @@ def regional_names() -> list[str]:
     client = TestClient(app, raise_server_exceptions=True)
     p = seo_pages._panchang("bengaluru", DAY)
     failures = []
-    for lang in ("kn", "ta"):
+    # Two languages seo_pages has not been translated into yet (if any are left).
+    for lang in [c for c in i18n.EXTRA_CODES if c not in seo_pages.TRANSLATED][:2]:
         html = client.get(f"/{lang}/panchang/bengaluru").text
         n = i18n.names(lang)
         want = [n.TITHI[p["tithi"][0]["name"]], n.NAKSHATRAS[p["nakshatra"][0]["name"]],

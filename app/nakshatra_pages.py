@@ -41,7 +41,7 @@ from .chart_service import DOMICILE, ELEMENT, MODALITY, VIMSHOTTARI
 # DIVASTRO-123: every word of these pages is in nakshatra_page_text.TEXT (and the
 # trait paragraphs in nakshatra_text), per language; names from names_i18n.
 from .nakshatra_page_text import TEXT
-from .nakshatra_text import NAKSHATRA_TRAITS, RASHI_TRAITS
+from .nakshatra_text import FACTS, NAKSHATRA_TRAITS, RASHI_TRAITS
 from .rashifal_pages import BY_SLUG as RASHI_BY_SLUG, RASHIS, Rashi, path as rashifal_path
 from .seo_pages import (ADSENSE_CLIENT, BRAND, SITE_URL, _STYLE, _cache_headers, _e, _footer,
                         _panchang, _today, page_language_bits)
@@ -55,7 +55,7 @@ NAAM_MILAN = "/naam-se-kundali-milan"
 # shell) are really written in — see app/i18n.py. Other registry languages get
 # /<code>/nakshatra etc. with the English text, noindex, and no sitemap/hreflang
 # entry until their code is added here.
-TRANSLATED = i18n.BASE_TRANSLATED
+TRANSLATED = i18n.BASE_TRANSLATED | {"ta", "ml"}          # DIVASTRO-123
 i18n.LOCALIZABLE_ROOTS.update({"nakshatra", "rashi", NAAM_MILAN.strip("/")})
 
 DASHA_YEARS = dict(VIMSHOTTARI)
@@ -171,8 +171,11 @@ def _nak_label(n: Nakshatra, lang: str) -> str:
 
 
 def _own(obj, field: str, lang: str) -> str:
-    """`obj.<field>_<lang>` (deity_hi, symbol_hi) if the data has it, else English."""
-    return getattr(obj, f"{field}_{lang}", None) or getattr(obj, field)
+    """`obj.<field>_<lang>` (deity_hi, symbol_hi) if the data has it, else
+    nakshatra_text.FACTS[lang] (DIVASTRO-123), else English."""
+    return (getattr(obj, f"{field}_{lang}", None)
+            or FACTS.get(lang, {}).get(f"{field}.{getattr(obj, 'slug', '')}")
+            or getattr(obj, field))
 
 
 def today_nakshatra(day: dt.date) -> Nakshatra | None:
@@ -367,7 +370,7 @@ def _facts(n: Nakshatra, lang: str) -> str:
         ("f.yoni", f"{_e(names.YONI.get(yoni, yoni))} <small>{_tx(f'gender.{gender}', lang)}</small>"),
         ("f.nadi", f"{_e(names.NADI.get(nadi, nadi))} <small>{_tx(f'humour.{humour}', lang)}</small>"),
         ("f.varna", _e(varnas)),
-        ("f.syl", _tx("f.syl_v", lang, syl=_e(" ".join(d for d, _ in n.syllables)),
+        ("f.syl", _tx("f.syl_v", lang, syl=_e(i18n.akshar(" ".join(d for d, _ in n.syllables), lang)),
                       lat=_e(", ".join(l for _, l in n.syllables)))),
     ]
     body = "".join(f'<tr><th scope="row">{_tx(k, lang)}</th><td>{v}</td></tr>' for k, v in rows)
@@ -385,7 +388,7 @@ def _pada_table(n: Nakshatra, lang: str) -> str:
             f"<tr><td>{p}</td><td>{_e(_point(start, lang))} – "
             f"{_e(_point(start + PADA_MIN, lang, end=True))}</td>"
             f'<td><a href="{rashi_path(RASHIS[sign], lang)}">{_e(_sign_name(sign, lang))}</a></td>'
-            f'<td><span class="syl" lang="hi">{_e(dev)}</span> <small>{_e(lat)}</small></td></tr>')
+            f'<td><span class="syl" lang="{i18n.akshar_lang(lang)}">{_e(i18n.akshar(dev, lang))}</span> <small>{_e(lat)}</small></td></tr>')
     return (f"<h2>{_tx('pada.title', lang)}</h2><div class=\"scroll\"><table>{head}"
             f"{''.join(rows)}</table></div>" + _tx("pada.note", lang))
 
@@ -408,7 +411,7 @@ def _related(n: Nakshatra, lang: str) -> str:
 def _nak_page(day: dt.date, slug: str, lang: str) -> tuple[str, str, str]:
     n = BY_SLUG[slug]
     names = i18n.names(lang)
-    syl = " ".join(d for d, _ in n.syllables)
+    syl = i18n.akshar(" ".join(d for d, _ in n.syllables), lang)
     lat = ", ".join(l for _, l in n.syllables)
     deity = _own(n, "deity", lang)
     raw = {"name": _nak_label(n, lang), "name_en": n.name, "name_hi": n.name_hi, "syl": syl,
@@ -445,7 +448,8 @@ def _nak_index(day: dt.date, lang: str) -> tuple[str, str, str]:
             f'<tr><td>{n.index + 1}</td><td><a href="{nak_path(n, lang)}">'
             f"{_e(_nak_label(n, lang))}</a></td><td>{_e(signs)}</td>"
             f"<td>{_e(_planet(n.lord, lang))}</td><td>{_e(gana)}</td>"
-            f'<td lang="hi">{_e(" ".join(d for d, _ in n.syllables))}</td></tr>')
+            f'<td lang="{i18n.akshar_lang(lang)}">'
+            f'{_e(i18n.akshar(" ".join(d for d, _ in n.syllables), lang))}</td></tr>')
     title = _tx("ni.title", lang, brand=BRAND)
     description = _tx("ni.desc", lang)
     body = f"""
@@ -539,7 +543,7 @@ def _rashi_facts(r: Rashi, lang: str) -> str:
     naks = list(dict.fromkeys(n for n, _ in padas))
     nak_links = ", ".join(f'<a href="{nak_path(n, lang)}">{_e(_nak_label(n, lang))}</a>'
                           for n in naks)
-    syl = " ".join(n.syllables[p - 1][0] for n, p in padas)
+    syl = i18n.akshar(" ".join(n.syllables[p - 1][0] for n, p in padas), lang)
     rows = [("r.number", _tx("r.number_v", lang, n=r.index + 1)),
             ("r.span", span),
             ("r.lord", _e(_planet(lord, lang))),
@@ -560,7 +564,7 @@ def _rashi_padas(r: Rashi, lang: str) -> str:
         dev, lat = n.syllables[p - 1]
         rows.append(f'<tr><td><a href="{nak_path(n, lang)}">{_e(_nak_label(n, lang))}</a></td>'
                     f"<td>{p}</td><td>{_deg(lo)} – {_deg(hi_m)}</td>"
-                    f'<td><span class="syl" lang="hi">{_e(dev)}</span> <small>{_e(lat)}</small>'
+                    f'<td><span class="syl" lang="{i18n.akshar_lang(lang)}">{_e(i18n.akshar(dev, lang))}</span> <small>{_e(lat)}</small>'
                     "</td></tr>")
     return (f"<h2>{_tx('rp.title', lang)}</h2><div class=\"scroll\"><table>{head}"
             f"{''.join(rows)}</table></div>")
@@ -576,7 +580,7 @@ def _rashi_page(slug: str, lang: str) -> tuple[str, str, str]:
     raw = {"name": rashi_name(r, lang), "name_en": r.name, "name_hi": r.name_hi,
            "english": r.english, "lord": _planet(lord, lang), "element": element,
            "element_lower": element.lower(), "quality": quality, "quality_lower": quality.lower(),
-           "syl": " ".join(n.syllables[p - 1][0] for n, p in padas),
+           "syl": i18n.akshar(" ".join(n.syllables[p - 1][0] for n, p in padas), lang),
            "lat": ", ".join(n.syllables[p - 1][1] for n, p in padas), "brand": BRAND}
     title = _tx("rs.title", lang, **raw)
     description = _tx("rs.desc", lang, **raw)
@@ -610,7 +614,8 @@ def _rashi_index(lang: str) -> tuple[str, str, str]:
             f"<td>{_e(_planet(DOMICILE[r.english], lang))}</td>"
             f"<td>{_tx('element.' + ELEMENT[r.english], lang)}</td>"
             f"<td>{_e(', '.join(_nak_label(n, lang) for n in naks))}</td>"
-            f'<td lang="hi">{_e(" ".join(n.syllables[p - 1][0] for n, p in padas))}</td></tr>')
+            f'<td lang="{i18n.akshar_lang(lang)}">'
+            f'{_e(i18n.akshar(" ".join(n.syllables[p - 1][0] for n, p in padas), lang))}</td></tr>')
     title = _tx("ri.title", lang, brand=BRAND)
     description = _tx("ri.desc", lang)
     body = f"""

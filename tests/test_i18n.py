@@ -55,6 +55,8 @@ MODULE_PAGES = {
 }
 MODULES = {"seo_pages": seo_pages, "rashifal_pages": rashifal_pages, "vrat_pages": vrat_pages,
            "nakshatra_pages": nakshatra_pages, "muhurat_pages": muhurat_pages}
+# What the server-rendered modules are written in today (DIVASTRO-123: + ta, ml).
+TRANSLATED_NOW = {"en", "hi", "ta", "ml"}
 
 
 def check(label: str, ok: bool, detail: str = "") -> None:
@@ -155,9 +157,9 @@ def main() -> int:
     check("localize_links is a no-op for en and hi",
           i18n.localize_links(frag, "en") == frag and i18n.localize_links(frag, "hi") == frag)
 
-    print("\n3. Every module: TRANSLATED is {en, hi} today")
+    print("\n3. Every module: TRANSLATED is TRANSLATED_NOW today")
     for name, mod in MODULES.items():
-        check(f"{name}.TRANSLATED", set(mod.TRANSLATED) == {"en", "hi"}, str(mod.TRANSLATED))
+        check(f"{name}.TRANSLATED", set(mod.TRANSLATED) == TRANSLATED_NOW, str(mod.TRANSLATED))
     check("katha.TRANSLATED (Hindi canonical)", set(katha.TRANSLATED) == {"en", "hi"})
 
     print("\n4. Every module's pages in every language")
@@ -168,7 +170,7 @@ def main() -> int:
                 r = client.get(path)
                 h = r.text
                 ok = r.status_code == 200
-                translated = lang in ("en", "hi")
+                translated = lang in MODULES[name].TRANSLATED
                 ok = ok and html_lang(h).split("-")[0] == lang
                 ok = ok and (noindex(h) != translated or "boy=" in path)
                 ok = ok and (bool(alternates(h)) == translated)
@@ -225,7 +227,8 @@ def main() -> int:
     print("\n7. Sitemap and beacon")
     sm = client.get("/sitemap.xml").text
     locs = re.findall(r"<loc>([^<]+)</loc>", sm)
-    extra = [u for u in locs if i18n.strip_prefix(u.removeprefix(SITE))[0] in i18n.EXTRA_CODES]
+    extra = [u for u in locs if i18n.strip_prefix(u.removeprefix(SITE))[0]
+             in set(i18n.EXTRA_CODES) - TRANSLATED_NOW]
     check("sitemap lists no untranslated (/kn/ ...) URL", not extra, str(extra[:3]))
     check("sitemap still lists /hi/ pages", any("/hi/panchang" in u for u in locs))
     for path in ("/kn/panchang", "/ta/panchang/pune", "/or/rashifal/mesh", "/bn/vrat-tyohar/2026",
@@ -240,12 +243,13 @@ def main() -> int:
 
     print("\n8. Translating a module flips everything (simulated: seo_pages + kn)")
     saved = seo_pages.TRANSLATED
-    seo_pages.TRANSLATED = frozenset({"en", "hi", "kn"})
+    seo_pages.TRANSLATED = saved | {"kn"}
     try:
         h_kn, h_en = client.get("/kn/panchang").text, client.get("/panchang").text
         check("kn copy: indexable, no notice", not noindex(h_kn) and "lp-notice" not in h_kn)
-        want = {"en": SITE + "/panchang", "hi": SITE + "/hi/panchang", "kn": SITE + "/kn/panchang",
-                "x-default": SITE + "/panchang"}
+        want = {code: SITE + i18n.localized_path("/panchang", code)
+                for code in TRANSLATED_NOW | {"kn"}}
+        want["x-default"] = SITE + "/panchang"
         check("kn listed in hreflang on every copy",
               alternates(h_kn) == want == alternates(h_en), str(alternates(h_kn)))
         check("kn in the sitemap", f"<loc>{SITE}/kn/panchang</loc>" in client.get("/sitemap.xml").text)

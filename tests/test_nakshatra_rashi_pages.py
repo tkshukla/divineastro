@@ -171,7 +171,9 @@ def main() -> int:
                     if f'href="{npg.nak_path(n, lang)}"' not in html:
                         check(f"{path}: links {n.name}", False)
     titles = {title(client.get(p).text) for p in npg.sitemap_paths()}
-    check("titles are unique across all 84 pages", len(titles) == 84, str(len(titles)))
+    # 42 per TRANSLATED language (en, hi; + ta, ml since DIVASTRO-123)
+    total = 42 * len(npg.TRANSLATED)
+    check(f"titles are unique across all {total} pages", len(titles) == total, str(len(titles)))
 
     print("\n5. Facts on the page")
     html = client.get("/nakshatra/ashwini").text
@@ -225,7 +227,8 @@ def main() -> int:
     ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
     locs = [e.text for e in root.findall("s:url/s:loc", ns)]
     want = {SITE + p for p in npg.sitemap_paths()}
-    check("sitemap lists all 84 DIVASTRO-115 URLs", len(want) == 84 and want <= set(locs),
+    check(f"sitemap lists all {42 * len(npg.TRANSLATED)} DIVASTRO-115 URLs",
+          len(want) == 42 * len(npg.TRANSLATED) and want <= set(locs),
           str(sorted(want - set(locs))[:5]))
     check("sitemap has no duplicates", len(locs) == len(set(locs)))
     check("beacon still accepts /rashifal/mesh and rejects /rashi-foo",

@@ -111,7 +111,10 @@ def main() -> int:
     for en, hi in pairs:
         h_en, h_hi = client.get(en).text, client.get(hi).text
         want = {"en": SITE + en, "hi": SITE + hi, "x-default": SITE + en}
-        if not (alternates(h_en) == want == alternates(h_hi)
+        alts = alternates(h_en)
+        # DIVASTRO-123: the translated regional copies (ta, ml) are listed too.
+        if not (alts == alternates(h_hi) and set(alts) == set(seo_pages.TRANSLATED) | {"x-default"}
+                and {k: alts.get(k) for k in want} == want
                 and canonical(h_en) == SITE + en and canonical(h_hi) == SITE + hi
                 # DIVASTRO-121: the language picker links each copy to the other
                 and f'<a href="{hi}" hreflang="hi" lang="hi" data-lang="hi"' in h_en
