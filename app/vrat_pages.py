@@ -57,7 +57,7 @@ from .vrat_text import TEXT
 # /<code>/vrat-tyohar etc. exist for every registry language; one not listed here
 # renders the English text with noindex, no hreflang and no sitemap entry. Add a
 # code here once vrat_text has that language's text.
-TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te", "ta", "ml"}  # DIVASTRO-123
+TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te", "ta", "ml", "bn", "or"}  # DIVASTRO-123
 i18n.LOCALIZABLE_ROOTS.update({"vrat-tyohar", "tyohar", "ekadashi-"})
 
 
@@ -190,8 +190,10 @@ def _rule(o: dict, lang: str) -> str:
     (DIVASTRO-123); English otherwise."""
     if o.get(f"rule_{lang}"):
         return o[f"rule_{lang}"]
-    if lang in vrat_text.RULE:                    # kn, te (unified in a later commit)
+    if lang in ("kn", "te"):                      # unified in a later commit
         return _rule_knte(o, lang)
+    if lang in ("bn", "or"):
+        return _rule_bnor(o, lang)
     rules = vrat_text.RULES.get(lang, {})
     if rules.get(f"key.{o.get('key')}"):
         return rules[f"key.{o['key']}"]
@@ -205,6 +207,22 @@ def _rule(o: dict, lang: str) -> str:
     if month and o["rule_en"].startswith(f"{month['name']} (amanta) "):
         words = rules["head"].format(month=n.MASA.get(month["name"], month["name"])) + words
     return words + tail
+
+
+def _rule_bnor(o: dict, lang: str) -> str:
+    table = vrat_text.RULE[lang]
+    special = table.get(f"key.{o.get('key')}")
+    if special:
+        return special
+    tithi, kind = o.get("tithi"), table.get(f"rule.{o.get('rule')}")
+    if not tithi or not kind:
+        return o["rule_en"]
+    names = i18n.names(lang)
+    month = o.get("month") or {}
+    head = (table["month"].format(month=names.MASA.get(month["name"], month["name"]))
+            if month.get("name") and o["rule_en"].startswith(f"{month['name']} (amanta) ") else "")
+    return table["tithi"].format(month=head, paksha=names.PAKSHA.get(tithi["paksha"], tithi["paksha"]),
+                                 tithi=names.TITHI.get(tithi["name"], tithi["name"]), rule=kind)
 
 
 def _rule_knte(o: dict, lang: str) -> str:

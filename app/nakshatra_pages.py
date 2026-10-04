@@ -41,7 +41,7 @@ from .chart_service import DOMICILE, ELEMENT, MODALITY, VIMSHOTTARI
 # DIVASTRO-123: every word of these pages is in nakshatra_page_text.TEXT (and the
 # trait paragraphs in nakshatra_text), per language; names from names_i18n.
 from .nakshatra_page_text import TEXT
-from .nakshatra_text import FACTS, NAKSHATRA_TRAITS, RASHI_TRAITS
+from .nakshatra_text import FACTS, NAKSHATRA_LOCAL, NAKSHATRA_TRAITS, RASHI_TRAITS, SYLLABLE_SCRIPT
 from .rashifal_pages import BY_SLUG as RASHI_BY_SLUG, RASHIS, Rashi, path as rashifal_path
 from .seo_pages import (ADSENSE_CLIENT, BRAND, SITE_URL, _STYLE, _cache_headers, _e, _footer,
                         _panchang, _today, page_language_bits)
@@ -55,7 +55,7 @@ NAAM_MILAN = "/naam-se-kundali-milan"
 # shell) are really written in — see app/i18n.py. Other registry languages get
 # /<code>/nakshatra etc. with the English text, noindex, and no sitemap/hreflang
 # entry until their code is added here.
-TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te", "ta", "ml"}  # DIVASTRO-123
+TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te", "ta", "ml", "bn", "or"}  # DIVASTRO-123
 i18n.LOCALIZABLE_ROOTS.update({"nakshatra", "rashi", NAAM_MILAN.strip("/")})
 
 DASHA_YEARS = dict(VIMSHOTTARI)
@@ -172,10 +172,26 @@ def _nak_label(n: Nakshatra, lang: str) -> str:
 
 def _own(obj, field: str, lang: str) -> str:
     """`obj.<field>_<lang>` (deity_hi, symbol_hi) if the data has it, else
-    nakshatra_text.FACTS[lang] (DIVASTRO-123), else English."""
+    nakshatra_text.NAKSHATRA_LOCAL (the regional languages), else English."""
     return (getattr(obj, f"{field}_{lang}", None)
+            or NAKSHATRA_LOCAL.get(field, {}).get(lang, {}).get(getattr(obj, "slug", ""))
             or FACTS.get(lang, {}).get(f"{field}.{getattr(obj, 'slug', '')}")
             or getattr(obj, field))
+
+
+def _syl(dev: str, lang: str) -> str:
+    """A namakshar syllable (Devanagari in namakshar.py) in the page's script where
+    nakshatra_text.SYLLABLE_SCRIPT has one (bn, or); Devanagari otherwise."""
+    spec = SYLLABLE_SCRIPT.get(lang)
+    if not spec:
+        return dev
+    return "".join(spec["fix"].get(c) or (chr(ord(c) + spec["offset"])
+                                          if "\u0900" <= c <= "\u097f" else c) for c in dev)
+
+
+def _syl_lang(lang: str) -> str:
+    """The lang attribute for the syllables: their own script's code, else hi."""
+    return lang if lang in SYLLABLE_SCRIPT else "hi"
 
 
 def today_nakshatra(day: dt.date) -> Nakshatra | None:

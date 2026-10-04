@@ -55,8 +55,8 @@ MODULE_PAGES = {
 }
 MODULES = {"seo_pages": seo_pages, "rashifal_pages": rashifal_pages, "vrat_pages": vrat_pages,
            "nakshatra_pages": nakshatra_pages, "muhurat_pages": muhurat_pages}
-# What the server-rendered modules are written in today (DIVASTRO-123: + kn, te, ta, ml).
-TRANSLATED_NOW = {"en", "hi", "kn", "te", "ta", "ml"}
+# What the server-rendered modules are written in today (DIVASTRO-123: + kn, te, ta, ml, bn, or).
+TRANSLATED_NOW = {"en", "hi", "kn", "te", "ta", "ml", "bn", "or"}
 
 
 def check(label: str, ok: bool, detail: str = "") -> None:

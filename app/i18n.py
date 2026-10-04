@@ -315,6 +315,11 @@ _TAMIL_FOLD = dict(zip("खगघछझठडढथदधफबभ", "ககக�
 def akshar(text: str, lang: str) -> str:
     base = _AKSHAR_BLOCK.get(lang)
     if base is None:
+        from .nakshatra_text import SYLLABLE_SCRIPT  # bn, or (unified in a later commit)
+        if lang in SYLLABLE_SCRIPT:
+            spec = SYLLABLE_SCRIPT[lang]
+            return "".join(spec["fix"].get(c) or (chr(ord(c) + spec["offset"])
+                                                  if "\u0900" <= c <= "\u097f" else c) for c in text)
         from .astro.namakshar import syllable_text   # kn, te (unified in a later commit)
         return syllable_text(text, lang)
     out = []
@@ -330,7 +335,7 @@ def akshar(text: str, lang: str) -> str:
 
 def akshar_lang(lang: str) -> str:
     """The lang="" attribute for akshar(text, lang)."""
-    return lang if lang in _AKSHAR_BLOCK or lang in ("kn", "te") else "hi"
+    return lang if lang in _AKSHAR_BLOCK or lang in ("kn", "te", "bn", "or") else "hi"
 
 
 # Strings for the chrome every server-rendered page shares (crumbs, footer,

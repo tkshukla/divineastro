@@ -36,7 +36,7 @@ from .astro.namakshar import (ABHIJIT, Match, all_padas, from_pada_id, lookup,
 from . import seo_text
 from .naam_milan_text import ENGINE, TEXT
 from .nakshatra_pages import (RASHIS, kundali_cta, milan_path, nak_path, rashi_path, shell)
-from .nakshatra_pages import _nak_label, _rashi_pill, _sign_name
+from .nakshatra_pages import _nak_label, _rashi_pill, _sign_name, _syl, _syl_lang
 from .seo_pages import BRAND, _e
 
 router = APIRouter()

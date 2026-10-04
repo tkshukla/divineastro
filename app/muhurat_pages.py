@@ -89,7 +89,7 @@ def _kind_vars(kind: Kind, lang: str) -> dict:
 # DIVASTRO-121: the languages these pages are really written in (app/i18n.py).
 # /<code>/muhurat/... exists for every registry language; an untranslated one
 # shows the English text, noindex, outside the sitemap and hreflang.
-TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te", "ta", "ml"}  # DIVASTRO-123
+TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te", "ta", "ml", "bn", "or"}  # DIVASTRO-123
 i18n.LOCALIZABLE_ROOTS.add("muhurat")
 
 
