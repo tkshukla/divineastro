@@ -209,7 +209,7 @@ def test_pages() -> None:
                   f'<link rel="canonical" href="{SITE}{path}"/>' in body)
             check(f"{path}: reciprocal hreflang, x-default Hindi", hreflang(body) == want,
                   str(hreflang(body)))
-            check(f"{path}: language switch", f'class="lang-switch" href="{other}"' in body)
+            check(f"{path}: language switch", f'<a href="{other}" hreflang="{"en" if lang == "hi" else "hi"}"' in body)
             ld = re.search(r'"@type": "Article"[^}]*"inLanguage": "([\w-]+)"', body)
             check(f"{path}: Article JSON-LD in {lang}",
                   ld is not None and ld.group(1) == ("hi-IN" if lang == "hi" else "en-IN"))

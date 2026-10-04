@@ -47,7 +47,7 @@ from zoneinfo import ZoneInfo
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 
-from . import seo_cities
+from . import i18n, seo_cities
 from .astro import choghadiya as chog
 from .astro import matching
 from .astro import panchang as panchang_engine
@@ -68,6 +68,16 @@ SITE_URL = SITE.rstrip("/")
 ADSENSE_CLIENT = "ca-pub-1593974697916149"
 
 EN, HI = "en", "hi"
+
+# DIVASTRO-121: the languages this module's pages are really written in. Every
+# registry language gets a page (/kn/panchang ...), but one whose language is
+# not listed here renders the English text with noindex, no hreflang, no
+# sitemap entry and a "translation coming soon" note (see app/i18n.py). A
+# translation agent adds e.g. "kn" here once the Kannada pages are written.
+TRANSLATED = i18n.BASE_TRANSLATED
+# First path segments served in every language by this module.
+i18n.LOCALIZABLE_ROOTS.update({"panchang", "rahu-kaal", "choghadiya", "kundali-milan",
+                               "free-kundali"})
 
 # Tool slug -> (display name, Hindi name, the `?open=` key app.js deep-links to).
 TOOLS = {
@@ -176,10 +186,10 @@ def _long_date(day: dt.date, lang: str = EN) -> str:
 _STYLE = """
   body { overflow: auto; display: block; }
   .seo { max-width: 820px; margin: 0 auto; padding: 22px 16px 40px; }
-  .seo .top { display: flex; justify-content: space-between; align-items: baseline;
-              gap: 12px; margin-bottom: 14px; }
+  .seo .top { display: flex; justify-content: space-between; align-items: center;
+              flex-wrap: wrap; gap: 12px; margin-bottom: 14px; }
   .seo .back { display: inline-block; color: var(--ink-faint);
-               font-size: 13px; text-decoration: none; }
+               font-size: 13px; text-decoration: none; white-space: nowrap; }
   .seo .lang-switch { font-size: 13.5px; padding: 4px 12px; border: 1px solid var(--line);
                       border-radius: 999px; text-decoration: none; white-space: nowrap; }
   .seo .crumbs { font-size: 12.5px; color: var(--ink-faint); margin: 0 0 10px; }
@@ -228,7 +238,7 @@ _SHELL = """<!DOCTYPE html>
 <title>{title}</title>
 <meta name="description" content="{description}"/>
 <link rel="canonical" href="{canonical}"/>
-{alternates}<meta property="og:type" content="website"/>
+{alternates}{head_extras}<meta property="og:type" content="website"/>
 <meta property="og:site_name" content="{brand}"/>
 <meta property="og:title" content="{title}"/>
 <meta property="og:description" content="{description}"/>
@@ -248,8 +258,9 @@ _SHELL = """<!DOCTYPE html>
 </head>
 <body class="sacred">
 <main class="seo">
-  {share}<div class="top"><a class="back" href="{home}">&larr; {brand}</a>{switch}</div>
-  <nav class="crumbs" aria-label="{crumb_label}">{crumbs}</nav>
+  <div class="top"><a class="back" href="{home}">&larr; {brand}</a>{switch}</div>
+  {share}<nav class="crumbs" aria-label="{crumb_label}">{crumbs}</nav>
+  {notice}
   {body}
 </main>
 {footer}
@@ -265,19 +276,12 @@ def _share(path: str) -> str:
 def _footer(lang: str = EN) -> str:
     """The same public footer as index.html — the links AdSense and payment
     underwriters look for, from the same constants the legal pages use. The
-    legal pages themselves are English-only, so the Hindi footer translates
-    the link text but points at the same pages."""
+    legal pages themselves are English-only, so a translated footer translates
+    the link text but points at the same pages (labels: i18n.CHROME)."""
     reg = registration_inline()
-    if lang == HI:
-        labels = ("कथाएँ", "नियम और शर्तें", "गोपनीयता नीति", "रिफ़ंड और रद्दीकरण", "संपर्क करें",
-                  "सुझाव")
-        disclaimer = ("ज्योतिषीय जानकारी मार्गदर्शन और मनोरंजन के लिए है। यह चिकित्सा, "
-                      "कानूनी या वित्तीय सलाह नहीं है।")
-    else:
-        labels = ("Kathas", "Terms &amp; Conditions", "Privacy Policy", "Refund &amp; Cancellation",
-                  "Contact Us", "Feedback")
-        disclaimer = ("Astrological readings are provided for guidance and\n    entertainment. "
-                      "They are not medical, legal or financial advice.")
+    keys = ("f_katha", "f_terms", "f_privacy", "f_refund", "f_contact", "f_feedback")
+    labels = [i18n.chrome(k, lang) for k in keys]
+    disclaimer = i18n.chrome("disclaimer", lang)
     links = "\n    ".join(f'<a href="{href}">{label}</a>' for href, label in zip(
         ("/katha" if lang == HI else "/en/katha", "/terms", "/privacy", "/refund", "/contact",
          "/feedback"), labels))
@@ -292,25 +296,59 @@ def _footer(lang: str = EN) -> str:
 </footer>"""
 
 
-def _alternates(en_path: str, hi_path: str, x_default: str = EN) -> str:
-    """Reciprocal hreflang: both copies carry the identical set, which is what
-    makes Google treat them as one page in two languages rather than two
-    competing pages (a one-way hreflang is ignored). x-default is the English
-    copy except where Hindi is the canonical one (the katha pages)."""
-    default = hi_path if x_default == HI else en_path
-    return "".join(
-        f'<link rel="alternate" hreflang="{code}" href="{_e(SITE_URL + p)}"/>\n'
-        for code, p in (("en", en_path), ("hi", hi_path), ("x-default", default)))
+def _alternates(en_path: str, translated=None, x_default: str = EN,
+                lang_paths: dict | None = None) -> str:
+    """Reciprocal hreflang: every translated copy carries the identical set,
+    which is what makes Google treat them as one page in several languages
+    rather than competing pages (a one-way hreflang is ignored). x-default is
+    the English copy except where Hindi is the canonical one (the katha pages).
+    Only languages in `translated` are listed (i18n.alternates)."""
+    return i18n.alternates(en_path, translated or TRANSLATED, x_default, SITE_URL, lang_paths)
+
+
+def page_language_bits(*, lang: str, path: str, has_twin: bool, translated=None,
+                       x_default: str = EN, lang_paths: dict | None = None,
+                       region: bool = False) -> dict:
+    """The language-dependent parts of any server-rendered page, for every shell
+    that is not `_render` (rashifal, nakshatra, muhurat, naam milan):
+
+    alternates — hreflang links (only on a translated copy that has twins)
+    head       — noindex for an untranslated copy, the script's web font, langpick.js
+    picker     — the language picker for the top of the page
+    notice     — "translation coming soon" in the page's script, or ''
+    html_lang, og_locale, in_language — from the registry
+    en_path    — the English URL of this page
+    home       — the "← Divine Astro" link: the app, opened in `lang`
+    """
+    translated = translated or TRANSLATED
+    en_path = (lang_paths or {}).get(EN) or i18n.strip_prefix(path)[1]
+    L = i18n.get(lang)
+    indexable = lang in translated
+    return {
+        "alternates": (i18n.alternates(en_path, translated, x_default, SITE_URL, lang_paths,
+                                       region=region)
+                       if has_twin and indexable else ""),
+        "head": i18n.head_extras(lang, translated),
+        "picker": i18n.picker(lang, i18n.picker_links(en_path, lang_paths)),
+        "notice": i18n.notice(lang, translated),
+        "html_lang": L.html_lang, "og_locale": L.og_locale, "in_language": L.bcp47,
+        "en_path": en_path, "home": i18n.app_link(lang),
+    }
 
 
 def _render(*, title: str, description: str, path: str, crumbs: list[tuple[str, str]],
             body: str, lang: str = EN, alt: str | None = None, extra_ld: tuple = (),
-            status: int = 200, cache: bool = True, x_default: str = EN) -> HTMLResponse:
-    """`path` is this page's canonical path; `alt` its other-language twin
-    (None for pages with no twin, i.e. the 404s)."""
-    hi = lang == HI
+            status: int = 200, cache: bool = True, x_default: str = EN,
+            translated=None, lang_paths: dict | None = None) -> HTMLResponse:
+    """`path` is this page's canonical path; `alt` any other-language twin (None
+    for pages with no twin, i.e. the 404s — only its truthiness matters now:
+    the twins are derived from the English path, or given in `lang_paths`
+    for a module with its own URL scheme, like katha). `translated` is the
+    calling module's TRANSLATED set (this module's by default)."""
+    bits = page_language_bits(lang=lang, path=path, has_twin=bool(alt), translated=translated,
+                              x_default=x_default, lang_paths=lang_paths)
     canonical = SITE_URL + path
-    trail = [("होम" if hi else "Home", "/")] + crumbs
+    trail = [(i18n.chrome("home", lang), "/")] + crumbs
     crumb_html = " › ".join(
         f'<a href="{_e(href)}">{_e(name)}</a>' if i < len(trail) - 1 else _e(name)
         for i, (name, href) in enumerate(trail))
@@ -318,7 +356,7 @@ def _render(*, title: str, description: str, path: str, crumbs: list[tuple[str, 
         "@context": "https://schema.org",
         "@graph": [
             {"@type": "WebPage", "name": title, "description": description,
-             "url": canonical, "inLanguage": "hi-IN" if hi else "en-IN",
+             "url": canonical, "inLanguage": bits["in_language"],
              "dateModified": _today().isoformat(),
              "isPartOf": {"@type": "WebSite", "name": BRAND, "url": SITE_URL + "/"}},
             {"@type": "BreadcrumbList", "itemListElement": [
@@ -329,20 +367,15 @@ def _render(*, title: str, description: str, path: str, crumbs: list[tuple[str, 
     }
     # "</" inside a JSON string would close the <script> element early.
     jsonld = json.dumps(graph, ensure_ascii=False).replace("</", "<\\/")
-    alternates, switch = "", ""
-    if alt:
-        en_path, hi_path = (alt, path) if hi else (path, alt)
-        alternates = _alternates(en_path, hi_path, x_default)
-        switch = (f'<a class="lang-switch" href="{_e(alt)}" hreflang="en" lang="en">Read in English</a>'
-                  if hi else
-                  f'<a class="lang-switch" href="{_e(alt)}" hreflang="hi" lang="hi">हिन्दी में पढ़ें</a>')
     page = _SHELL.format(
-        html_lang="hi" if hi else "en-IN", og_locale="hi_IN" if hi else "en_IN",
+        html_lang=bits["html_lang"], og_locale=bits["og_locale"],
         title=_e(title), description=_e(description), canonical=_e(canonical),
-        alternates=alternates, switch=switch, home="/?lang=hi" if hi else "/",
-        crumb_label="ब्रेडक्रंब" if hi else "Breadcrumb",
+        alternates=bits["alternates"], head_extras=bits["head"], switch=bits["picker"],
+        notice=bits["notice"], home=_e(i18n.app_link(lang)),
+        crumb_label=_e(i18n.chrome("breadcrumb", lang)),
         brand=_e(BRAND), site=_e(SITE_URL), adsense=ADSENSE_CLIENT, style=_STYLE,
-        jsonld=jsonld, crumbs=crumb_html, body=body, footer=_footer(lang),
+        jsonld=jsonld, crumbs=i18n.localize_links(crumb_html, lang),
+        body=i18n.localize_links(body, lang), footer=_footer(lang),
         share=_share(path) if status == 200 else "")
     headers = _cache_headers() if cache else {"Cache-Control": "no-store"}
     return HTMLResponse(page, status_code=status, headers=headers)
@@ -353,21 +386,21 @@ def _render(*, title: str, description: str, path: str, crumbs: list[tuple[str, 
 # --------------------------------------------------------------------------
 
 def _prefix(lang: str) -> str:
-    return "/hi" if lang == HI else ""
+    return i18n.prefix(lang)
 
 
 def _path(tool: str, city: City, lang: str = EN) -> str:
     """The canonical URL for a tool in a city. The default city's page lives at
     the bare /tool URL, so /tool and /tool/new-delhi are one page to a search
-    engine rather than two competing copies. Hindi copies live under /hi/."""
+    engine rather than two competing copies. Other languages' copies live under
+    their prefix (/hi/, /kn/, ...)."""
     bare = f"/{tool}" if city == seo_cities.DEFAULT else f"/{tool}/{city.slug}"
     return _prefix(lang) + bare
 
 
 def _app_link(key: str, lang: str = EN) -> str:
     """A deep link into the app (tools.js handles ?open=, app.js ?lang=)."""
-    return f"/?open={key}" + ("&lang=hi" if lang == HI else "")
-
+    return i18n.app_link(lang, f"open={key}")
 
 def _city_links(tool: str, current: City, lang: str = EN) -> str:
     """Every city, grouped by state — ~100 pills in one cloud is unusable."""
@@ -494,7 +527,7 @@ def _vrat_block(city: City, day: dt.date, lang: str = EN) -> str:
     return vrat_pages.panchang_block(day, city.latitude, city.longitude, city.timezone, lang)
 
 
-def _panchang_page(city: City) -> HTMLResponse:
+def _panchang_page(city: City, lang: str = EN) -> HTMLResponse:
     day = _today()
     p = _panchang(city.slug, day)
     s, sun, moon, m = p["summary"], p["sun"], p["moon"], p["muhurta"]
@@ -552,7 +585,7 @@ from the combined longitudes of Sun and Moon, and <strong>Karana</strong> is hal
 <span lang="hi">पंचांग</span> (“five limbs”) consulted before any auspicious work.</p>
 {_city_links("panchang", city)}
 {_tool_links(city, "panchang")}"""
-    return _render(title=title, description=description, path=_path("panchang", city),
+    return _render(title=title, description=description, path=_path("panchang", city, lang), lang=lang,
                    alt=_path("panchang", city, HI), crumbs=_tool_crumbs("panchang", city),
                    body=body)
 
@@ -660,7 +693,7 @@ def _rahu_week(city: City, day: dt.date, lang: str = EN) -> str:
     return "".join(rows)
 
 
-def _rahu_page(city: City) -> HTMLResponse:
+def _rahu_page(city: City, lang: str = EN) -> HTMLResponse:
     day = _today()
     p = _panchang(city.slug, day)
     m, sun = p["muhurta"], p["sun"]
@@ -704,7 +737,7 @@ Yamaganda and Gulika Kaal are two further eighths of the day treated with simila
 </table></div>
 {_city_links("rahu-kaal", city)}
 {_tool_links(city, "rahu-kaal")}"""
-    return _render(title=title, description=description, path=_path("rahu-kaal", city),
+    return _render(title=title, description=description, path=_path("rahu-kaal", city, lang), lang=lang,
                    alt=_path("rahu-kaal", city, HI), crumbs=_tool_crumbs("rahu-kaal", city),
                    body=body)
 
@@ -827,7 +860,7 @@ def _chog_table(slots: list[dict], day: dt.date, lang: str = EN) -> str:
     return '<div class="scroll"><table>' + head + "".join(rows) + "</table></div>"
 
 
-def _choghadiya_page(city: City) -> HTMLResponse:
+def _choghadiya_page(city: City, lang: str = EN) -> HTMLResponse:
     day = _today()
     p = _panchang(city.slug, day)
     day_slots, night_slots = choghadiya_slots(p)
@@ -864,7 +897,7 @@ ruler, so it changes every day — and the length of each slot follows the real 
 {_e(city.name)}.</p>
 {_city_links("choghadiya", city)}
 {_tool_links(city, "choghadiya")}"""
-    return _render(title=title, description=description, path=_path("choghadiya", city),
+    return _render(title=title, description=description, path=_path("choghadiya", city, lang), lang=lang,
                    alt=_path("choghadiya", city, HI), crumbs=_tool_crumbs("choghadiya", city),
                    body=body)
 
@@ -997,6 +1030,10 @@ def _score_bands(lang: str = EN) -> str:
 
 @router.get("/kundali-milan", response_class=HTMLResponse)
 def kundali_milan() -> HTMLResponse:
+    return _kundali_milan_page()
+
+
+def _kundali_milan_page(lang: str = EN) -> HTMLResponse:
     rows = "".join(
         f"<tr><td><strong>{_e(name)}</strong> "
         f'<span lang="hi">({_e(matching.KOOTA_LABELS_HI[key])})</span></td>'
@@ -1048,7 +1085,7 @@ breakdown and both partners' Mangal Dosha status, in English or
 <span lang="hi">हिन्दी</span>, free and without signing up.</p>
 {_cta("kundali-milan", "Open Kundali Milan")}
 {_tool_links(seo_cities.DEFAULT, "kundali-milan")}"""
-    return _render(title=title, description=description, path="/kundali-milan",
+    return _render(title=title, description=description, path=_prefix(lang) + "/kundali-milan", lang=lang,
                    alt="/hi/kundali-milan", crumbs=[("Kundali Milan", "/kundali-milan")],
                    body=body)
 
@@ -1196,6 +1233,10 @@ def _faq(items: tuple) -> tuple[str, dict]:
 
 @router.get("/free-kundali", response_class=HTMLResponse)
 def free_kundali() -> HTMLResponse:
+    return _free_kundali_page()
+
+
+def _free_kundali_page(lang: str = EN) -> HTMLResponse:
     faq_html, faq_ld = _faq(FAQ_EN)
     title = f"Free Kundali Online — Janam Kundali (Birth Chart) in English & Hindi | {BRAND}"
     description = (
@@ -1264,7 +1305,7 @@ report names the cancellations it found.</p>
 <h2>Frequently asked questions</h2>
 {faq_html}
 {_tool_links(seo_cities.DEFAULT, "free-kundali")}"""
-    return _render(title=title, description=description, path="/free-kundali",
+    return _render(title=title, description=description, path=_prefix(lang) + "/free-kundali", lang=lang,
                    alt="/hi/free-kundali", crumbs=[("Free Kundali", "/free-kundali")],
                    body=body, extra_ld=(faq_ld,))
 
@@ -1343,11 +1384,72 @@ def free_kundali_hi() -> HTMLResponse:
 
 
 # --------------------------------------------------------------------------
+# DIVASTRO-121: the same pages in every other registry language
+# --------------------------------------------------------------------------
+# /{lang:xlang}/... matches exactly i18n.EXTRA_CODES (kn, te, ta, ml, bn, or);
+# English and Hindi keep their own routes above. Until a language is added to
+# TRANSLATED these render the English builders with that language's shell
+# (noindex + "translation coming soon"). To translate: give the builder real
+# text for that `lang` (the Hindi builders show the pattern) and add the code
+# to TRANSLATED.
+
+_CITY_BUILDERS = {"panchang": _panchang_page, "rahu-kaal": _rahu_page,
+                  "choghadiya": _choghadiya_page}
+
+
+def _city_page_lang(tool: str, lang: str, slug: str | None = None) -> HTMLResponse:
+    city = seo_cities.DEFAULT if slug is None else seo_cities.get(slug)
+    if city is None:
+        return _not_found(tool, slug or "", lang)
+    return _CITY_BUILDERS[tool](city, lang)
+
+
+@router.get("/{lang:xlang}/panchang", response_class=HTMLResponse)
+def panchang_default_lang(lang: str) -> HTMLResponse:
+    return _city_page_lang("panchang", lang)
+
+
+@router.get("/{lang:xlang}/panchang/{slug}", response_class=HTMLResponse)
+def panchang_city_lang(lang: str, slug: str) -> HTMLResponse:
+    return _city_page_lang("panchang", lang, slug)
+
+
+@router.get("/{lang:xlang}/rahu-kaal", response_class=HTMLResponse)
+def rahu_default_lang(lang: str) -> HTMLResponse:
+    return _city_page_lang("rahu-kaal", lang)
+
+
+@router.get("/{lang:xlang}/rahu-kaal/{slug}", response_class=HTMLResponse)
+def rahu_city_lang(lang: str, slug: str) -> HTMLResponse:
+    return _city_page_lang("rahu-kaal", lang, slug)
+
+
+@router.get("/{lang:xlang}/choghadiya", response_class=HTMLResponse)
+def choghadiya_default_lang(lang: str) -> HTMLResponse:
+    return _city_page_lang("choghadiya", lang)
+
+
+@router.get("/{lang:xlang}/choghadiya/{slug}", response_class=HTMLResponse)
+def choghadiya_city_lang(lang: str, slug: str) -> HTMLResponse:
+    return _city_page_lang("choghadiya", lang, slug)
+
+
+@router.get("/{lang:xlang}/kundali-milan", response_class=HTMLResponse)
+def kundali_milan_lang(lang: str) -> HTMLResponse:
+    return _kundali_milan_page(lang)
+
+
+@router.get("/{lang:xlang}/free-kundali", response_class=HTMLResponse)
+def free_kundali_lang(lang: str) -> HTMLResponse:
+    return _free_kundali_page(lang)
+
+
+# --------------------------------------------------------------------------
 # sitemap.xml and robots.txt
 # --------------------------------------------------------------------------
 
 STATIC_PATHS = ("/", "/kundali-milan", "/terms", "/privacy", "/refund", "/contact")
-# Explainer pages that exist in both languages (/x and /hi/x).
+# Explainer pages that exist in every translated language (/x, /hi/x, ...).
 BILINGUAL_PATHS = ("/kundali-milan", "/free-kundali")
 
 
@@ -1355,9 +1457,12 @@ def sitemap_paths() -> list[str]:
     """Every public URL this module serves that we want indexed, canonical
     form only. Other modules expose their own `sitemap_paths()`; `sitemap()`
     below just concatenates them."""
+    # Only TRANSLATED languages: an untranslated copy is noindex and must not
+    # be offered to crawlers (DIVASTRO-121).
+    langs = i18n.ordered(TRANSLATED)
     paths = list(STATIC_PATHS) + ["/free-kundali"]
-    paths += ["/hi" + p for p in BILINGUAL_PATHS]
-    for lang in (EN, HI):
+    paths += [i18n.prefix(lang) + p for lang in langs if lang != EN for p in BILINGUAL_PATHS]
+    for lang in langs:
         for tool in TOOLS:
             paths += [_path(tool, c, lang) for c in seo_cities.CITIES]
     from .rashifal_pages import sitemap_paths as rashifal_paths  # lazy: it imports this module
@@ -1374,7 +1479,7 @@ def sitemap() -> Response:
     urls = []
     for path in sitemap_paths():
         fields = f"<loc>{xml_escape(SITE_URL + path)}</loc>"
-        bare = path.removeprefix("/hi") if path.startswith("/hi/") else path
+        bare = i18n.strip_prefix(path)[1]
         # The tool pages genuinely change every day; the legal pages and the
         # explainers do not, and claiming they do only teaches crawlers to
         # ignore our lastmod.

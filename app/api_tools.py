@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field
 from . import geo
 from .astro import matching
 from .astro import panchang as panchang_engine
-from .astro.names_hi import add_hindi
+from .astro.names import add_all as add_names
 from .chart_service import BirthData, build
 
 router = APIRouter(prefix="/api")
@@ -81,7 +81,7 @@ def kundali_milan(body: MatchIn) -> dict:
     """36-point Ashtakoot Guna Milan plus Mangal Dosha for both people."""
     groom, bride = _chart(body.groom), _chart(body.bride)
     try:
-        result = matching.match(groom, bride, lang=body.lang)
+        result = matching.match(groom, bride, lang=body.lang if body.lang in ("en", "hi") else "en")
     except matching.MatchingError as exc:
         raise HTTPException(400, str(exc)) from exc
 
@@ -108,12 +108,16 @@ def daily_panchang(
     longitude: float = Query(..., ge=-180, le=180),
     date: str | None = None,
     timezone: str = "",
+    language: str = "en",
 ) -> dict:
     """The five limbs plus Rahu Kaal for a date and place. Defaults to today.
 
     Every name comes in English and Hindi side by side (`name` / `name_hi`,
     `notes` / `notes_hi`, see names_hi.add_hindi), so the Panchang tool and the
-    home Today strip switch EN / हिं without a second request.
+    home Today strip switch EN / हिं without a second request. DIVASTRO-121:
+    likewise `name_kn`, `name_ta`, ... for every language that has an
+    app/astro/names_<code>.py (astro/names.py). `language` is accepted for
+    symmetry with the other tools and changes nothing (any value, never a 422).
     """
     tz = timezone or geo.timezone_for(latitude, longitude)
     # "Today" means today *where the panchang is for*, not on the server. The
@@ -121,7 +125,7 @@ def daily_panchang(
     # was being shown yesterday's panchang.
     when = date or dt.datetime.now(ZoneInfo(tz)).date().isoformat()
     try:
-        return add_hindi(panchang_engine.daily_panchang(when, latitude, longitude, tz))
+        return add_names(panchang_engine.daily_panchang(when, latitude, longitude, tz))
     except ValueError as exc:
         raise HTTPException(400, f"Could not compute the panchang: {exc}") from exc
 
@@ -153,7 +157,8 @@ def get_muhurat(
             latitude=latitude,
             longitude=longitude,
             timezone=tz,
-            language=language
+            # en/hi text from the engine; any other code gets the English (DIVASTRO-121)
+            language=language if language in ("en", "hi") else "en",
         )
         return {
             "event": event,
@@ -183,7 +188,7 @@ def get_choghadiya(
             latitude=latitude,
             longitude=longitude,
             tz_name=tz,
-            lang=language,
+            lang=language if language in ("en", "hi") else "en",
         )
     except Exception as exc:
         raise HTTPException(400, f"Could not compute Choghadiya: {exc}") from exc

@@ -59,13 +59,13 @@ from dataclasses import dataclass
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from . import seo_cities
+from . import i18n, seo_cities
 from .astro import panchang as panchang_engine
 from .astro.muhurat import NAKSHATRAS_HI, TITHI_HI, VARA_HI
 from .chart_service import SIGNS
 from .seo_pages import (
     ADSENSE_CLIENT, BRAND, IST, PAKSHA_HI, SITE_URL, _STYLE, _cache_headers, _clock, _e,
-    _footer, _panchang, _today,
+    _footer, _panchang, _today, page_language_bits,
 )
 
 from .share import seo_share  # noqa: E402  (DIVASTRO-107 share button)
@@ -103,6 +103,12 @@ BY_SLUG = {r.slug: r for r in RASHIS}
 BY_ENGLISH = {r.english_slug: r for r in RASHIS}
 
 LANGS = ("en", "hi")
+# DIVASTRO-121: the languages these pages are really written in (see app/i18n.py).
+# Every registry language gets /<code>/rashifal; one not listed here shows the
+# English text with noindex + "translation coming soon", and stays out of the
+# sitemap and hreflang. Add a code once its rashifal strings are written.
+TRANSLATED = i18n.BASE_TRANSLATED
+i18n.LOCALIZABLE_ROOTS.add("rashifal")
 
 MONTHS_HI = ("जनवरी", "फ़रवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त",
              "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर")
@@ -122,13 +128,13 @@ def house_from(rashi_index: int, sign_index: int) -> int:
 
 
 def path(rashi: Rashi | None, lang: str) -> str:
-    base = "/hi/rashifal" if lang == "hi" else "/rashifal"
+    base = i18n.prefix(lang) + "/rashifal"
     return f"{base}/{rashi.slug}" if rashi else base
 
 
 def sitemap_paths() -> list[str]:
-    """All 26 canonical URLs (index + 12 signs, in both languages)."""
-    return [path(r, lang) for lang in LANGS for r in (None, *RASHIS)]
+    """All canonical URLs (index + 12 signs) in every TRANSLATED language."""
+    return [path(r, lang) for lang in i18n.ordered(TRANSLATED) for r in (None, *RASHIS)]
 
 
 PUBLIC_PATHS = frozenset(sitemap_paths())
@@ -478,10 +484,7 @@ _SHELL = """<!DOCTYPE html>
 <title>{title}</title>
 <meta name="description" content="{description}"/>
 <link rel="canonical" href="{canonical}"/>
-<link rel="alternate" hreflang="en-IN" href="{alt_en}"/>
-<link rel="alternate" hreflang="hi-IN" href="{alt_hi}"/>
-<link rel="alternate" hreflang="x-default" href="{alt_en}"/>
-<meta property="og:type" content="article"/>
+{alternates}{head_extras}<meta property="og:type" content="article"/>
 <meta property="og:site_name" content="{brand}"/>
 <meta property="og:title" content="{title}"/>
 <meta property="og:description" content="{description}"/>
@@ -501,8 +504,9 @@ _SHELL = """<!DOCTYPE html>
 </head>
 <body class="sacred">
 <main class="seo">
-  <a class="back" href="/">&larr; {brand}</a>
+  <div class="top"><a class="back" href="{home}">&larr; {brand}</a>{picker}</div>
   <nav class="crumbs" aria-label="Breadcrumb">{crumbs}</nav>
+  {notice}
   {body}
 </main>
 {footer}
@@ -524,11 +528,13 @@ def _shell(*, lang: str, rashi: Rashi | None, title: str, description: str,
            crumbs: list[tuple[str, str]], body: str, day: dt.date,
            status: int = 200, cache: bool = True) -> HTMLResponse:
     canonical = SITE_URL + path(rashi, lang)
-    trail = [("मुख्य पृष्ठ" if lang == "hi" else "Home", "/")] + crumbs
+    bits = page_language_bits(lang=lang, path=path(rashi, lang), has_twin=status == 200,
+                              translated=TRANSLATED, region=True)
+    trail = [("मुख्य पृष्ठ" if lang == "hi" else i18n.chrome("home", lang), "/")] + crumbs
     crumb_html = " › ".join(
         f'<a href="{_e(href)}">{_e(name)}</a>' if i < len(trail) - 1 else _e(name)
         for i, (name, href) in enumerate(trail))
-    in_lang = "hi-IN" if lang == "hi" else "en-IN"
+    in_lang = bits["in_language"]
     graph = {
         "@context": "https://schema.org",
         "@graph": [
@@ -544,11 +550,13 @@ def _shell(*, lang: str, rashi: Rashi | None, title: str, description: str,
     jsonld = json.dumps(graph, ensure_ascii=False).replace("</", "<\\/")
     page = _SHELL.format(
         html_lang=in_lang, title=_e(title), description=_e(description),
-        canonical=_e(canonical), alt_en=_e(SITE_URL + path(rashi, "en")),
-        alt_hi=_e(SITE_URL + path(rashi, "hi")), og_locale="hi_IN" if lang == "hi" else "en_IN",
+        canonical=_e(canonical), alternates=bits["alternates"], head_extras=bits["head"],
+        og_locale=bits["og_locale"], home=_e(bits["home"]), picker=bits["picker"],
+        notice=bits["notice"],
         brand=_e(BRAND), site=_e(SITE_URL), adsense=ADSENSE_CLIENT,
-        style=_STYLE + _EXTRA_STYLE, jsonld=jsonld, crumbs=crumb_html,
-        body=(seo_share(path(rashi, lang)) if status == 200 else "") + body,
+        style=_STYLE + _EXTRA_STYLE, jsonld=jsonld, crumbs=i18n.localize_links(crumb_html, lang),
+        body=(seo_share(path(rashi, lang)) if status == 200 else "")
+        + i18n.localize_links(body, lang),
         footer=_footer(lang))
     headers = _cache_headers() if cache else {"Cache-Control": "no-store"}
     return HTMLResponse(page, status_code=status, headers=headers)
@@ -632,8 +640,8 @@ def _moon_section(rashi: Rashi, r: dict, day: dt.date, lang: str) -> str:
                     f"<strong>From {t} IST:</strong> the Moon enters {_e(sign)} — your "
                     f"{_ordinal(h)} house.")
         tone = moon_tone(h)
-        parts.append(f'<p>{lead} <span class="tone {tone}">{_e(TONE_LABEL[lang][tone])}</span></p>'
-                     f"<p>{_e(MOON_HOUSE[h][lang])}</p>")
+        parts.append(f'<p>{lead} <span class="tone {tone}">{_e(i18n.pick(TONE_LABEL, lang)[tone])}</span></p>'
+                     f"<p>{_e(i18n.pick(MOON_HOUSE[h], lang))}</p>")
     if len(moon) > 1:
         intro = ("<p>आज दिन में चंद्रमा राशि बदलता है, इसलिए दिन के दो हिस्से अलग पढ़ें।</p>" if hi
                  else "<p>The Moon changes sign during the day, so the day reads in two parts.</p>")
@@ -654,12 +662,12 @@ def _backdrop_section(r: dict, s: dict, lang: str) -> str:
         rows.append(f'<tr><th scope="row">{_e(name)}<small>{where}</small></th>'
                     f"<td>{_e(text)}</td></tr>")
 
-    row("Saturn", s["saturn"]["sign"], r["saturn"], SATURN_HOUSE[r["saturn"]][lang],
+    row("Saturn", s["saturn"]["sign"], r["saturn"], i18n.pick(SATURN_HOUSE[r["saturn"]], lang),
         s["saturn"]["retrograde"])
-    row("Jupiter", s["jupiter"]["sign"], r["jupiter"], JUPITER_HOUSE[r["jupiter"]][lang],
+    row("Jupiter", s["jupiter"]["sign"], r["jupiter"], i18n.pick(JUPITER_HOUSE[r["jupiter"]], lang),
         s["jupiter"]["retrograde"])
-    row("Rahu", s["rahu"]["sign"], r["rahu"], RAHU_HOUSE[r["rahu"]][lang])
-    ketu = KETU_LINE[r["ketu"] in NODE_FAVOURABLE][lang].format(n=_house_word(r["ketu"], lang))
+    row("Rahu", s["rahu"]["sign"], r["rahu"], i18n.pick(RAHU_HOUSE[r["rahu"]], lang))
+    ketu = i18n.pick(KETU_LINE[r["ketu"] in NODE_FAVOURABLE], lang).format(n=_house_word(r["ketu"], lang))
     row("Ketu", s["ketu"]["sign"], r["ketu"], ketu)
 
     phase = r["sade_sati_phase"]
@@ -729,7 +737,7 @@ def _sign_page(day: dt.date, slug: str, lang: str) -> tuple[str, str, str, str]:
     r = reading(rashi, day)
     hi = lang == "hi"
     main = r["main_house"]
-    tone = TONE_LABEL[lang][r["tone"]]
+    tone = i18n.pick(TONE_LABEL, lang)[r["tone"]]
     if hi:
         title = (f"आज का {rashi.name_hi} राशिफल, {_date_text(day, lang)} — {rashi.name} Rashifal "
                  f"Today | {BRAND}")
@@ -787,7 +795,7 @@ def _index_page(day: dt.date, lang: str) -> tuple[str, str, str]:
             sade = "<small>साढ़ेसाती</small>" if hi else "<small>Sade Sati</small>"
         rows.append(f'<tr><td><a href="{path(rashi, lang)}">{name}</a></td><td>{where}</td>'
                     f'<td class="{"good" if r["tone"] == GOOD else "bad" if r["tone"] == EASY else ""}">'
-                    f'{_e(TONE_LABEL[lang][r["tone"]])}{sade}</td></tr>')
+                    f'{_e(i18n.pick(TONE_LABEL, lang)[r["tone"]])}{sade}</td></tr>')
     head_row = ("<tr><th>राशि</th><th>चंद्रमा</th><th>आज</th></tr>" if hi
                 else "<tr><th>Sign</th><th>Moon in your</th><th>Today</th></tr>")
     segs = s["moon"]
@@ -893,3 +901,15 @@ def rashifal_index_hi() -> HTMLResponse:
 @router.get("/hi/rashifal/{slug}", response_class=HTMLResponse)
 def rashifal_sign_hi(slug: str):
     return _resolve(slug, "hi")
+
+
+# DIVASTRO-121: /kn/rashifal, /te/rashifal, ... (i18n.EXTRA_CODES). The builders
+# take `lang`; until it is in TRANSLATED, their non-Hindi branch (English) shows.
+@router.get("/{lang:xlang}/rashifal", response_class=HTMLResponse)
+def rashifal_index_lang(lang: str) -> HTMLResponse:
+    return render_index(lang)
+
+
+@router.get("/{lang:xlang}/rashifal/{slug}", response_class=HTMLResponse)
+def rashifal_sign_lang(lang: str, slug: str):
+    return _resolve(slug, lang)

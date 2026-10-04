@@ -42,13 +42,20 @@ divineastro.org, www.divineastro.org {
 	# no way to wildcard a TLD. fundingchoicesmessages.google.com is the
 	# consent (GDPR) message AdSense shows to EU/UK visitors. As with PayU, a
 	# missing entry here fails silently: a blank ad slot and a console warning.
+	#
+	# Google Fonts (DIVASTRO-121): the Kannada, Telugu, Tamil, Malayalam,
+	# Bengali and Odia pages load one Noto Sans family for their script — the
+	# stylesheet from fonts.googleapis.com (style-src), the font files from
+	# fonts.gstatic.com (font-src; without it font-src falls back to
+	# default-src 'self' and the font is silently blocked, leaving whatever
+	# system font the phone has). Only the active language's font is loaded.
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 		X-Content-Type-Options    "nosniff"
 		X-Frame-Options           "SAMEORIGIN"
 		Referrer-Policy           "strict-origin-when-cross-origin"
 		Permissions-Policy        "geolocation=(), microphone=(), camera=(), payment=(self)"
-		Content-Security-Policy   "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.cashfree.com https://checkout.razorpay.com https://*.gstatic.com https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.google.co.in https://*.googleadservices.com https://*.adtrafficquality.google https://fundingchoicesmessages.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://sdk.cashfree.com https://api.cashfree.com https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.google.co.in https://*.googleadservices.com https://*.adtrafficquality.google https://fundingchoicesmessages.google.com; frame-src https://sdk.cashfree.com https://api.cashfree.com https://checkout.razorpay.com https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.google.co.in https://*.googleadservices.com https://*.adtrafficquality.google https://fundingchoicesmessages.google.com; base-uri 'self'; form-action 'self' https://accounts.google.com https://*.payu.in; frame-ancestors 'self'"
+		Content-Security-Policy   "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.cashfree.com https://checkout.razorpay.com https://*.gstatic.com https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.google.co.in https://*.googleadservices.com https://*.adtrafficquality.google https://fundingchoicesmessages.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://sdk.cashfree.com https://api.cashfree.com https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.google.co.in https://*.googleadservices.com https://*.adtrafficquality.google https://fundingchoicesmessages.google.com; frame-src https://sdk.cashfree.com https://api.cashfree.com https://checkout.razorpay.com https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.google.co.in https://*.googleadservices.com https://*.adtrafficquality.google https://fundingchoicesmessages.google.com; base-uri 'self'; form-action 'self' https://accounts.google.com https://*.payu.in; frame-ancestors 'self'"
 		-Server
 	}
 

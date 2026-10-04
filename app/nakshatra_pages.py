@@ -33,7 +33,7 @@ import json
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from . import seo_cities
+from . import i18n, seo_cities
 from .astro import matching
 from .astro.namakshar import (BY_NAME, BY_SLUG, NAK_MIN, NAKSHATRA_LIST, PADA_MIN, SIGN_MIN,
                               Nakshatra, sign_padas)
@@ -41,13 +41,19 @@ from .chart_service import DOMICILE, ELEMENT, MODALITY, VIMSHOTTARI
 from .nakshatra_text import NAKSHATRA_TRAITS, RASHI_TRAITS
 from .rashifal_pages import BY_SLUG as RASHI_BY_SLUG, RASHIS, Rashi, path as rashifal_path
 from .seo_pages import (ADSENSE_CLIENT, BRAND, SITE_URL, _STYLE, _cache_headers, _e, _footer,
-                        _panchang, _today)
+                        _panchang, _today, page_language_bits)
 from .share import seo_share
 
 router = APIRouter()
 
 LANGS = ("en", "hi")
 NAAM_MILAN = "/naam-se-kundali-milan"
+# DIVASTRO-121: the languages these pages (and naam_milan.py's, which share this
+# shell) are really written in — see app/i18n.py. Other registry languages get
+# /<code>/nakshatra etc. with the English text, noindex, and no sitemap/hreflang
+# entry until their code is added here.
+TRANSLATED = i18n.BASE_TRANSLATED
+i18n.LOCALIZABLE_ROOTS.update({"nakshatra", "rashi", NAAM_MILAN.strip("/")})
 
 ELEMENT_HI = {"Fire": "अग्नि", "Earth": "पृथ्वी", "Air": "वायु", "Water": "जल"}
 QUALITY = {"Cardinal": ("Movable (Chara)", "चर"), "Fixed": ("Fixed (Sthira)", "स्थिर"),
@@ -61,7 +67,7 @@ DASHA_YEARS = dict(VIMSHOTTARI)
 # --------------------------------------------------------------------------
 
 def _pre(lang: str) -> str:
-    return "/hi" if lang == "hi" else ""
+    return i18n.prefix(lang)
 
 
 def nak_path(n: Nakshatra | None, lang: str) -> str:
@@ -77,9 +83,9 @@ def milan_path(lang: str) -> str:
 
 
 def sitemap_paths() -> list[str]:
-    """All 84 canonical URLs of DIVASTRO-115: 28 + 13 + 1 per language."""
+    """All canonical URLs of DIVASTRO-115: 28 + 13 + 1 per TRANSLATED language."""
     out = []
-    for lang in LANGS:
+    for lang in i18n.ordered(TRANSLATED):
         out += [nak_path(n, lang) for n in (None, *NAKSHATRA_LIST)]
         out += [rashi_path(r, lang) for r in (None, *RASHIS)]
         out.append(milan_path(lang))
@@ -97,9 +103,7 @@ def is_public_path(p: str) -> bool:
 def share_text(path: str) -> str | None:
     """For share.seo_share_text. Built from the path alone — the Naam Milan
     result's names are in the query string and never reach here."""
-    parts = [p for p in path.split("/") if p]
-    if parts[:1] == ["hi"]:
-        parts = parts[1:]
+    parts = [p for p in i18n.strip_prefix(path)[1].split("/") if p]
     if parts == ["naam-se-kundali-milan"]:
         return "Naam se Kundali Milan — match by first letters, free · नाम से कुंडली मिलान:"
     if parts == ["nakshatra"]:
@@ -181,10 +185,7 @@ _SHELL = """<!DOCTYPE html>
 <title>{title}</title>
 <meta name="description" content="{description}"/>
 <link rel="canonical" href="{canonical}"/>
-<link rel="alternate" hreflang="en-IN" href="{alt_en}"/>
-<link rel="alternate" hreflang="hi-IN" href="{alt_hi}"/>
-<link rel="alternate" hreflang="x-default" href="{alt_en}"/>
-<meta property="og:type" content="article"/>
+{alternates}{head_extras}<meta property="og:type" content="article"/>
 <meta property="og:site_name" content="{brand}"/>
 <meta property="og:title" content="{title}"/>
 <meta property="og:description" content="{description}"/>
@@ -202,8 +203,9 @@ _SHELL = """<!DOCTYPE html>
 </head>
 <body class="sacred">
 <main class="seo">
-  <a class="back" href="/">&larr; {brand}</a>
+  <div class="top"><a class="back" href="{home}">&larr; {brand}</a>{picker}</div>
   <nav class="crumbs" aria-label="Breadcrumb">{crumbs}</nav>
+  {notice}
   {body}
 </main>
 {footer}
@@ -221,13 +223,15 @@ def shell(*, lang: str, en_path: str, hi_path: str, title: str, description: str
     Milan result uses it for its referrer policy, which must precede every
     subresource). `ads=False` drops the AdSense script — never load a third
     party on a URL that carries a person's name."""
-    own = hi_path if lang == "hi" else en_path
+    own = hi_path if lang == "hi" else i18n.localized_path(en_path, lang)
     canonical = SITE_URL + own
-    trail = [("मुख्य पृष्ठ" if lang == "hi" else "Home", "/")] + crumbs
+    bits = page_language_bits(lang=lang, path=own, has_twin=status == 200,
+                              translated=TRANSLATED, region=True, lang_paths={"en": en_path})
+    trail = [("मुख्य पृष्ठ" if lang == "hi" else i18n.chrome("home", lang), "/")] + crumbs
     crumb_html = " › ".join(
         f'<a href="{_e(href)}">{_e(name)}</a>' if i < len(trail) - 1 else _e(name)
         for i, (name, href) in enumerate(trail))
-    in_lang = "hi-IN" if lang == "hi" else "en-IN"
+    in_lang = bits["in_language"]
     graph = {
         "@context": "https://schema.org",
         "@graph": [
@@ -240,16 +244,19 @@ def shell(*, lang: str, en_path: str, hi_path: str, title: str, description: str
         ],
     }
     jsonld = json.dumps(graph, ensure_ascii=False).replace("</", "<\\/")
-    switch = (f'<p class="lang-switch"><a href="{_e(en_path)}" lang="en">Read in English</a></p>'
-              if lang == "hi" else
-              f'<p class="lang-switch"><a href="{_e(hi_path)}" lang="hi">हिन्दी में पढ़ें</a></p>')
     page = _SHELL.format(
         html_lang=in_lang, head_first=head_first, title=_e(title), description=_e(description),
-        canonical=_e(canonical), alt_en=_e(SITE_URL + en_path), alt_hi=_e(SITE_URL + hi_path),
-        og_locale="hi_IN" if lang == "hi" else "en_IN", brand=_e(BRAND), site=_e(SITE_URL),
+        canonical=_e(canonical), alternates=bits["alternates"],
+        # No web font either where there are no ads: a URL carrying a person's
+        # name loads nothing from a third party (system fonts render the script).
+        head_extras=(bits["head"] if ads else
+                     i18n.robots_meta(lang, TRANSLATED) + i18n.LANGPICK_SCRIPT),
+        og_locale=bits["og_locale"], brand=_e(BRAND), site=_e(SITE_URL),
+        home=_e(bits["home"]), picker=bits["picker"], notice=bits["notice"],
         adsense=ADSENSE_CLIENT, ads=_ADS.format(adsense=ADSENSE_CLIENT) if ads else "",
-        style=_STYLE + _EXTRA_STYLE, jsonld=jsonld, crumbs=crumb_html,
-        body=(seo_share(own) if share and status == 200 else "") + switch + body,
+        style=_STYLE + _EXTRA_STYLE, jsonld=jsonld, crumbs=i18n.localize_links(crumb_html, lang),
+        body=(seo_share(own) if share and status == 200 else "")
+        + i18n.localize_links(body, lang),
         footer=_footer(lang))
     out = _cache_headers() if cache else {"Cache-Control": "no-store"}
     out.update(headers or {})
@@ -445,7 +452,7 @@ def _nak_page(day: dt.date, slug: str, lang: str) -> tuple[str, str, str]:
 {_today_box(n, day, lang)}
 {_facts(n, lang)}
 <h2>{trait_head}</h2>
-<p>{_e(NAKSHATRA_TRAITS[n.slug][lang])}</p>
+<p>{_e(i18n.pick(NAKSHATRA_TRAITS[n.slug], lang))}</p>
 {trait_note}
 {_pada_table(n, lang)}
 {kundali_cta(lang)}
@@ -660,7 +667,7 @@ def _rashi_page(slug: str, lang: str) -> tuple[str, str, str]:
 <div class="box"><p><a href="{rashifal_path(r, lang)}"><strong>{_e(today)}</strong></a></p></div>
 {_rashi_facts(r, lang)}
 <h2>{trait_head}</h2>
-<p>{_e(RASHI_TRAITS[r.slug][lang])}</p>
+<p>{_e(i18n.pick(RASHI_TRAITS[r.slug], lang))}</p>
 {note}
 {_rashi_padas(r, lang)}
 {kundali_cta(lang)}
@@ -783,3 +790,24 @@ def rashi_page(slug: str):
 @router.get("/hi/rashi/{slug}", response_class=HTMLResponse)
 def rashi_page_hi(slug: str):
     return _resolve_rashi(slug, "hi")
+
+
+# DIVASTRO-121: the same pages under /kn/, /te/, ... (i18n.EXTRA_CODES).
+@router.get("/{lang:xlang}/nakshatra", response_class=HTMLResponse)
+def nakshatra_index_lang(lang: str) -> HTMLResponse:
+    return render_nak_index(lang)
+
+
+@router.get("/{lang:xlang}/nakshatra/{slug}", response_class=HTMLResponse)
+def nakshatra_page_lang(lang: str, slug: str):
+    return _resolve_nak(slug, lang)
+
+
+@router.get("/{lang:xlang}/rashi", response_class=HTMLResponse)
+def rashi_index_lang(lang: str) -> HTMLResponse:
+    return render_rashi_index(lang)
+
+
+@router.get("/{lang:xlang}/rashi/{slug}", response_class=HTMLResponse)
+def rashi_page_lang(lang: str, slug: str):
+    return _resolve_rashi(slug, lang)

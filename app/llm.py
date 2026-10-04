@@ -60,12 +60,23 @@ REPORT_MAX_TOKENS_HI = int(os.environ.get("ASTRO_REPORT_MAX_TOKENS_HI", "12000")
 
 
 def _report_max_tokens(language: str) -> int:
-    return REPORT_MAX_TOKENS_HI if language == "hi" else REPORT_MAX_TOKENS_EN
+    # Every Indic script costs Hindi's ~2.5x tokens per word, not English's.
+    return REPORT_MAX_TOKENS_EN if language not in LANGUAGES or language == "en" \
+        else REPORT_MAX_TOKENS_HI
 
 
 LANGUAGES = {
     "en": "English",
     "hi": "Hindi (हिन्दी, in Devanagari script)",
+    # DIVASTRO-121: the chat answer can be written in the reader's language even
+    # before the app's own labels are translated — the model writes the prose,
+    # the engine's facts stay the same. Any other code falls back to English.
+    "kn": "Kannada (ಕನ್ನಡ, in Kannada script)",
+    "te": "Telugu (తెలుగు, in Telugu script)",
+    "ta": "Tamil (தமிழ், in Tamil script)",
+    "ml": "Malayalam (മലയാളം, in Malayalam script)",
+    "bn": "Bengali (বাংলা, in Bengali script)",
+    "or": "Odia (ଓଡ଼ିଆ, in Odia script)",
 }
 
 SYSTEM_PROMPT = """You are the writing layer of an astrology application. You are \
@@ -141,6 +152,15 @@ to an Indian reader. Capricorn is मकर. If you are ever unsure of a term, k
 the English word in Latin script in brackets rather than inventing a spelling."""
 
 ENGLISH_NOTE = "Write in clear, natural English."
+
+# The new languages (DIVASTRO-121) get the Hindi note's rules without its
+# Devanagari table: the model knows each language's own words for the grahas
+# and rashis; what it must not do is transliterate the English names.
+INDIC_NOTE = """Write the entire response in {language}. Use that language's \
+standard Vedic names for the planets, signs and houses (the Sanskrit-derived terms \
+an astrologer writing in that language would use) — never spell an English sign \
+or planet name out in that script. Keep degrees in numerals (8°02'). A technical \
+English term with no natural equivalent may stay in English inside brackets."""
 
 
 @dataclass
@@ -570,7 +590,9 @@ def _build_prompt(analysis: dict, language: str, question: str, history: list[di
 def _system(language: str) -> str:
     return SYSTEM_PROMPT.format(
         language=LANGUAGES.get(language, "English"),
-        language_note=HINDI_NOTE if language == "hi" else ENGLISH_NOTE,
+        language_note=(HINDI_NOTE if language == "hi" else
+                       INDIC_NOTE.format(language=LANGUAGES[language])
+                       if language in LANGUAGES and language != "en" else ENGLISH_NOTE),
     )
 
 

@@ -37,7 +37,7 @@ from dataclasses import dataclass
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from . import seo_cities, seo_pages
+from . import i18n, seo_cities, seo_pages
 from .astro import muhurat
 from .astro import panchang as panchang_engine
 from .astro.muhurat import EVENT_PERIODS, NAKSHATRAS_HI, PERIODS, TITHI_HI, VARA_HI
@@ -72,13 +72,22 @@ MONTHS_HI = ["जनवरी", "फरवरी", "मार्च", "अप्
 PAKSHA_HI = {"Shukla": "शुक्ल", "Krishna": "कृष्ण"}
 
 
+# DIVASTRO-121: the languages these pages are really written in (app/i18n.py).
+# /<code>/muhurat/... exists for every registry language; an untranslated one
+# shows the English text, noindex, outside the sitemap and hreflang.
+TRANSLATED = i18n.BASE_TRANSLATED
+i18n.LOCALIZABLE_ROOTS.add("muhurat")
+
+
 def page_path(kind: str, year: int, lang: str = "en") -> str:
-    return ("/hi" if lang == "hi" else "") + f"/muhurat/{kind}-{year}"
+    return i18n.prefix(lang) + f"/muhurat/{kind}-{year}"
 
 
 def page_paths() -> list[str]:
-    """Every muhurat page, both languages - for the sitemap and the beacon."""
-    return [page_path(k, y, lang) for y in YEARS for k in KINDS for lang in ("en", "hi")]
+    """Every indexable muhurat page, every TRANSLATED language - for the sitemap
+    and the beacon."""
+    return [page_path(k, y, lang) for y in YEARS for k in KINDS
+            for lang in i18n.ordered(TRANSLATED)]
 
 
 # --------------------------------------------------------------------------
@@ -243,10 +252,7 @@ _SHELL = """<!DOCTYPE html>
 <title>{title}</title>
 <meta name="description" content="{description}"/>
 <link rel="canonical" href="{canonical}"/>
-<link rel="alternate" hreflang="en-IN" href="{href_en}"/>
-<link rel="alternate" hreflang="hi-IN" href="{href_hi}"/>
-<link rel="alternate" hreflang="x-default" href="{href_en}"/>
-<meta property="og:type" content="website"/>
+{alternates}{head_extras}<meta property="og:type" content="website"/>
 <meta property="og:site_name" content="{brand}"/>
 <meta property="og:title" content="{title}"/>
 <meta property="og:description" content="{description}"/>
@@ -266,9 +272,9 @@ _SHELL = """<!DOCTYPE html>
 </head>
 <body class="sacred">
 <main class="seo">
-  <a class="back" href="/">&larr; {brand}</a>
-  <a class="lang" href="{other}" hreflang="{other_lang}">{other_label}</a>
+  <div class="top"><a class="back" href="{home}">&larr; {brand}</a>{picker}</div>
   <nav class="crumbs" aria-label="Breadcrumb">{crumbs}</nav>
+  {notice}
   {body}
 </main>
 {footer}
@@ -283,7 +289,8 @@ def _page(kind_slug: str, year: int, lang: str) -> HTMLResponse:
     months_txt = ", ".join(
         (MONTHS_HI[m - 1] if hi else dt.date(year, m, 1).strftime("%B")) for m in open_months)
     path = page_path(kind_slug, year, lang)
-    href_en, href_hi = SITE_URL + page_path(kind_slug, year), SITE_URL + page_path(kind_slug, year, "hi")
+    bits = seo_pages.page_language_bits(lang=lang, path=path, has_twin=True,
+                                        translated=TRANSLATED, region=True)
 
     if hi:
         title = f"{kind.name_hi} {year}: शुभ तिथियां (नई दिल्ली) | {BRAND}"
@@ -302,7 +309,6 @@ def _page(kind_slug: str, year: int, lang: str) -> HTMLResponse:
                 "मुहूर्त खोजक में देखें।</p>")
         cta = "अपने शहर के लिए शुभ मुहूर्त खोजें"
         crumbs = [("होम", "/"), (f"{kind.name_hi} {year}", path)]
-        other, other_lang, other_label = page_path(kind_slug, year), "en", "Read in English"
         more_title = "और मुहूर्त"
     else:
         title = f"{kind.name_en} {year}: Auspicious {kind.noun_en.title()} Dates (New Delhi) | {BRAND}"
@@ -321,8 +327,7 @@ def _page(kind_slug: str, year: int, lang: str) -> HTMLResponse:
                 "The exact muhurat (lagna) for a wedding or griha pravesh should be fixed by "
                 "your family priest. Check your own city in the Muhurat Finder.</p>")
         cta = "Find muhurat for your city — free"
-        crumbs = [("Home", "/"), (f"{kind.name_en} {year}", path)]
-        other, other_lang, other_label = page_path(kind_slug, year, "hi"), "hi", "हिन्दी में पढ़ें"
+        crumbs = [(i18n.chrome("home", lang), "/"), (f"{kind.name_en} {year}", path)]
         more_title = "More muhurat dates"
 
     links = []
@@ -352,7 +357,7 @@ def _page(kind_slug: str, year: int, lang: str) -> HTMLResponse:
         for i, (n, h) in enumerate(crumbs))
     graph = {"@context": "https://schema.org", "@graph": [
         {"@type": "WebPage", "name": title, "description": description,
-         "url": SITE_URL + path, "inLanguage": "hi-IN" if hi else "en-IN",
+         "url": SITE_URL + path, "inLanguage": bits["in_language"],
          "isPartOf": {"@type": "WebSite", "name": BRAND, "url": SITE_URL + "/"}},
         {"@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": i + 1, "name": n, "item": SITE_URL + h}
@@ -360,19 +365,20 @@ def _page(kind_slug: str, year: int, lang: str) -> HTMLResponse:
     ]}
     jsonld = json.dumps(graph, ensure_ascii=False).replace("</", "<\\/")
     page = _SHELL.format(
-        html_lang="hi-IN" if hi else "en-IN", title=_e(title), description=_e(description),
-        canonical=_e(SITE_URL + path), href_en=_e(href_en), href_hi=_e(href_hi),
-        brand=_e(BRAND), site=_e(SITE_URL), og_locale="hi_IN" if hi else "en_IN",
+        html_lang=bits["in_language"], title=_e(title), description=_e(description),
+        canonical=_e(SITE_URL + path), alternates=bits["alternates"], head_extras=bits["head"],
+        brand=_e(BRAND), site=_e(SITE_URL), og_locale=bits["og_locale"],
         adsense=ADSENSE_CLIENT, style=seo_pages._STYLE + _EXTRA_STYLE, jsonld=jsonld,
-        other=_e(other), other_lang=other_lang, other_label=_e(other_label),
-        crumbs=crumb_html, body=seo_share(path) + body, footer=_footer("hi" if hi else "en"))
+        home=_e(bits["home"]), picker=bits["picker"], notice=bits["notice"],
+        crumbs=i18n.localize_links(crumb_html, lang),
+        body=seo_share(path) + i18n.localize_links(body, lang), footer=_footer(lang))
     # The list for a whole year does not change day to day.
     return HTMLResponse(page, headers={"Cache-Control": "public, max-age=86400"})
 
 
 def _not_found(lang: str) -> HTMLResponse:
     links = "".join(f'<li><a href="{p}">{_e(p)}</a></li>'
-                    for p in page_paths() if p.startswith("/hi") == (lang == "hi"))
+                    for p in (page_path(k, y, lang) for y in YEARS for k in KINDS))
     html = (f'<!DOCTYPE html><html lang="en-IN"><head><meta charset="utf-8"/>'
             f'<meta name="viewport" content="width=device-width, initial-scale=1"/>'
             f"<title>Muhurat page not found — {_e(BRAND)}</title>"
@@ -398,3 +404,9 @@ def muhurat_page(slug: str) -> HTMLResponse:
 @router.get("/hi/muhurat/{slug}", response_class=HTMLResponse)
 def muhurat_page_hi(slug: str) -> HTMLResponse:
     return _dispatch(slug, "hi")
+
+
+@router.get("/{lang:xlang}/muhurat/{slug}", response_class=HTMLResponse)
+def muhurat_page_lang(lang: str, slug: str) -> HTMLResponse:
+    """DIVASTRO-121: /kn/muhurat/vivah-2026 etc. (English text until translated)."""
+    return _dispatch(slug, lang)

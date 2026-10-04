@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from . import analytics, auth, billing, coupons, email_auth, mail, phone_auth
+from . import analytics, auth, billing, coupons, email_auth, i18n, mail, phone_auth
 from .db import (
     BirthProfile, Coupon, CouponKind, CouponRedemption, CreditEntry, EntryKind,
     Feedback, FulfilStatus, Order, OrderStatus, QuestionLog, User, balance, grant,
@@ -305,7 +305,7 @@ def update_me(body: ProfileIn, user: User = Depends(me),
         user.name = body.name.strip()[:120]
     if body.phone.strip():
         user.phone = body.phone.strip()[:20]
-    if body.language in ("en", "hi"):
+    if i18n.is_supported(body.language):      # any registry code (DIVASTRO-121); else unchanged
         user.language = body.language
     db.commit()
     return {"user": _user_dict(db, user)}

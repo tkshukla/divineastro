@@ -45,7 +45,20 @@ from .astro import festivals
 from .astro.muhurat import VARA_HI
 from .legal import BRAND
 from .seo_cities import City
-from .seo_pages import EN, HI, MONTHS_HI, SITE_URL, _e, _long_date, _render, _short_date
+from .seo_pages import EN, HI, MONTHS_HI, SITE_URL, _e, _long_date, _short_date
+from . import i18n
+
+# DIVASTRO-121: the languages these pages are really written in (app/i18n.py).
+# /<code>/vrat-tyohar etc. exist for every registry language; one not listed here
+# renders the English text with noindex, no hreflang and no sitemap entry. Add a
+# code here once _name/_cta/the page builders have that language's text.
+TRANSLATED = i18n.BASE_TRANSLATED
+i18n.LOCALIZABLE_ROOTS.update({"vrat-tyohar", "tyohar", "ekadashi-"})
+
+
+def _render(**kw):
+    """seo_pages._render with this module's TRANSLATED set."""
+    return seo_pages._render(translated=TRANSLATED, **kw)
 
 router = APIRouter()
 
@@ -444,7 +457,7 @@ TRADITION_NOTE = {
 # --------------------------------------------------------------------------
 
 def _pre(lang: str) -> str:
-    return "/hi" if lang == HI else ""
+    return i18n.prefix(lang)
 
 
 def hub_path(lang: str = EN) -> str:
@@ -505,9 +518,9 @@ def festival_names() -> dict[str, tuple[str, str]]:
 
 
 def page_paths() -> list[str]:
-    """Every page, both languages - for the sitemap and the beacon."""
+    """Every indexable page, every TRANSLATED language - for the sitemap and the beacon."""
     out = []
-    for lang in (EN, HI):
+    for lang in i18n.ordered(TRANSLATED):
         out.append(hub_path(lang))
         for y in YEARS:
             out.append(year_path(y, lang))
@@ -518,7 +531,8 @@ def page_paths() -> list[str]:
 
 
 # /vrat-tyohar/new-delhi renders (canonical: the bare URL) but is not in the sitemap.
-_PUBLIC = frozenset(page_paths() + [hub_path(lang) + f"/{CITY.slug}" for lang in (EN, HI)])
+_PUBLIC = frozenset(page_paths() + [hub_path(lang) + f"/{CITY.slug}"
+                                    for lang in i18n.ordered(TRANSLATED)])
 
 
 def is_public_path(path: str) -> bool:
@@ -861,7 +875,7 @@ def render_hub(lang: str, today: dt.date | None = None, city: City = CITY) -> HT
     nxt = later[0] if later else None
     hi = lang == HI
     default = city == CITY
-    path, alt = city_path(city, lang), city_path(city, EN if hi else HI)
+    path, alt = city_path(city, lang), city_path(city, EN if lang != EN else HI)
     names = ", ".join(_name(o, lang) for o in todays)
     if hi:
         if default:
@@ -1049,8 +1063,10 @@ def render_festival(slug: str, year: int, lang: str) -> HTMLResponse:
 def _not_found(lang: str) -> HTMLResponse:
     hi = lang == HI
     cities = {city_path(c, lang) for c in seo_cities.CITIES}
-    links = "".join(f'<li><a href="{_e(p)}">{_e(p)}</a></li>'
-                    for p in page_paths() if p.startswith("/hi/") == hi and p not in cities)
+    own = [p for p in page_paths() if i18n.strip_prefix(p)[0] == EN]
+    links = "".join(f'<li><a href="{_e(i18n.localized_path(p, lang))}">'
+                    f'{_e(i18n.localized_path(p, lang))}</a></li>'
+                    for p in own if i18n.localized_path(p, lang) not in cities)
     body = (f"<h1>{'पृष्ठ नहीं मिला' if hi else 'Page not found'}</h1>"
             f'<ul class="links">{links}</ul>' + _city_index(lang))
     return _render(title="Not found", description="", path=hub_path(lang), crumbs=[],
@@ -1122,6 +1138,27 @@ def festival_page(slug: str) -> HTMLResponse:
 @router.get("/hi/tyohar/{slug}", response_class=HTMLResponse)
 def festival_page_hi(slug: str) -> HTMLResponse:
     return _festival(slug, HI)
+
+
+# DIVASTRO-121: the same pages under /kn/, /te/, ... (i18n.EXTRA_CODES).
+@router.get("/{lang:xlang}/vrat-tyohar", response_class=HTMLResponse)
+def hub_lang(lang: str) -> HTMLResponse:
+    return render_hub(lang)
+
+
+@router.get("/{lang:xlang}/vrat-tyohar/{key}", response_class=HTMLResponse)
+def year_page_lang(lang: str, key: str) -> HTMLResponse:
+    return _year_or_city(key, lang)
+
+
+@router.get("/{lang:xlang}/ekadashi-{year}", response_class=HTMLResponse)
+def ekadashi_page_lang(lang: str, year: str) -> HTMLResponse:
+    return _year_or_404(year, lang, render_ekadashi)
+
+
+@router.get("/{lang:xlang}/tyohar/{slug}", response_class=HTMLResponse)
+def festival_page_lang(lang: str, slug: str) -> HTMLResponse:
+    return _festival(slug, lang)
 
 
 @router.get("/api/vrat/today")

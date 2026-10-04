@@ -113,8 +113,9 @@ def main() -> int:
         want = {"en": SITE + en, "hi": SITE + hi, "x-default": SITE + en}
         if not (alternates(h_en) == want == alternates(h_hi)
                 and canonical(h_en) == SITE + en and canonical(h_hi) == SITE + hi
-                and f'class="lang-switch" href="{hi}"' in h_en
-                and f'class="lang-switch" href="{en}"' in h_hi):
+                # DIVASTRO-121: the language picker links each copy to the other
+                and f'<a href="{hi}" hreflang="hi" lang="hi" data-lang="hi"' in h_en
+                and f'<a href="{en}" hreflang="en" lang="en-IN" data-lang="en"' in h_hi):
             bad.append((en, alternates(h_en), alternates(h_hi)))
     check(f"hreflang en/hi/x-default identical on both copies, switch links ({len(pairs)} pairs)",
           not bad, str(bad[:2]))

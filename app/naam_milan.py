@@ -26,6 +26,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Query
 from fastapi.responses import HTMLResponse
 
+from . import i18n
 from .astro import matching
 from .astro.namakshar import (ABHIJIT, Match, all_padas, from_pada_id, lookup,
                               match_for_pada, moon_bundle, pada_id, sign_padas)
@@ -300,7 +301,7 @@ def render(lang: str, boy: str | None, girl: str | None, boy_pada: str | None,
 {result}
 {'' if asked else _caveat(lang)}
 {_explainer(lang)}
-<a class="cta" href="{'/?open=milan&amp;lang=hi' if hi else '/?open=milan'}">{_e(
+<a class="cta" href="{_e(i18n.app_link(lang, 'open=milan'))}">{_e(
         'जन्म विवरण से कुंडली मिलान खोलें' if hi else 'Open birth-chart Kundali Milan')}</a>
 {kundali_cta(lang)}"""
     crumbs = [("नाम से कुंडली मिलान" if hi else "Naam se Kundali Milan", milan_path(lang))]
@@ -330,3 +331,14 @@ def naam_milan_hi(boy: str | None = Query(None),
                   boy_pada: str | None = Query(None),
                   girl_pada: str | None = Query(None)) -> HTMLResponse:
     return render("hi", boy, girl, boy_pada, girl_pada)
+
+
+# DIVASTRO-121: /kn/naam-se-kundali-milan etc. — the TRANSLATED set is
+# nakshatra_pages.TRANSLATED (this page shares its shell).
+@router.get("/{lang:xlang}/naam-se-kundali-milan", response_class=HTMLResponse)
+def naam_milan_lang(lang: str,
+                    boy: str | None = Query(None),
+                    girl: str | None = Query(None),
+                    boy_pada: str | None = Query(None),
+                    girl_pada: str | None = Query(None)) -> HTMLResponse:
+    return render(lang, boy, girl, boy_pada, girl_pada)
