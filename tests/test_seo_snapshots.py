@@ -25,6 +25,7 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import json
+import re
 import os
 import sys
 import tempfile
@@ -123,8 +124,13 @@ def render() -> dict[str, bytes]:
     return out
 
 
+_CACHE_BUST = re.compile(rb"\?v=\d+")
+
+
 def _digest(b: bytes) -> str:
-    return hashlib.sha256(b).hexdigest()
+    # Static asset URLs carry a ?v=<mtime> cache-buster that changes with every
+    # checkout; it is not page content, so it is left out of the comparison.
+    return hashlib.sha256(_CACHE_BUST.sub(b"?v=0", b)).hexdigest()
 
 
 def main(argv: list[str]) -> int:
