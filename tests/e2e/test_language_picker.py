@@ -141,8 +141,13 @@ def app_section(browser, base: str) -> None:
     keyish = [k for k, v in kn_text.items() if v and re.fullmatch(r"[a-z]+[A-Z][A-Za-z0-9]*", v)]
     check("no home label is blank in Kannada", not blank, str(blank))
     check("no home label shows a raw i18n key", not keyish, str({k: kn_text[k] for k in keyish}))
-    check("untranslated labels fall back to the English text", kn_text == en_text,
-          str({k: (en_text.get(k), v) for k, v in kn_text.items() if en_text.get(k) != v}))
+    # kn.json is translated now (DIVASTRO-122): the home labels must be in Kannada
+    # script, and none may still be the English text.
+    kannada = re.compile(r"[\u0C80-\u0CFF]")
+    untranslated = [k for k, v in kn_text.items() if v and v == en_text.get(k) and re.search("[A-Za-z]{3}", v)
+                    and not re.fullmatch(r"(Divine Astro|WhatsApp|Google|PDF|UPI)[^A-Za-z]*", v)]
+    check("home labels are in Kannada", not untranslated
+          and any(kannada.search(v or "") for v in kn_text.values()), str(untranslated[:6]))
     check("the Kannada JSON was fetched on demand",
           pg.page.evaluate("typeof I18N !== 'undefined' && !!I18N.kn"))
     pg.page.wait_for_timeout(800)
