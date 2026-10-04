@@ -2428,6 +2428,25 @@ button.free-badge:focus-visible { outline: 3px solid var(--gold); outline-offset
 .today-vrat[hidden] { display: none; }
 /* SEO pages: top-right, on the line of the "← Divine Astro" back link. */
 .seo > .share-wa { float: right; margin: -10px 0 6px 10px; text-decoration: none; color: var(--ink); }
+/* DIVASTRO-123: on a phone (320-400px) a floated share pill squeezed the
+   breadcrumb into a one-word column beside it and, with a long regional label,
+   ran into the breadcrumb and the H1. Below 640px it gets its own row,
+   right-aligned under the back link / language picker, and may wrap. */
+@media (max-width: 639px) {
+  .seo > .share-wa { float: none; display: flex; width: fit-content; max-width: 100%;
+                     margin: 0 0 12px auto; white-space: normal; text-align: center; }
+}
+/* DIVASTRO-123: SEO page tables on a phone. The fact tables (th scope=row:
+   nakshatra, rashi, panchang, koota) must fit the screen: a label column that
+   never wraps pushed them sideways. Labels wrap, cells break long words, and
+   the label column takes about a third. Wide multi-column grids still scroll
+   inside their own .scroll box, never the page. (`main.seo` outranks the
+   pages' inline `.seo th { white-space: nowrap }`.) */
+@media (max-width: 639px) {
+  main.seo th { white-space: normal; }
+  main.seo th, main.seo td { padding: 8px 6px; overflow-wrap: break-word; }
+  main.seo th[scope="row"] { width: 34%; }
+}
 
 /* DIVASTRO-112: opt-in daily push, under the home Today strip and on /vrat-tyohar pages */
 .push-optin { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px;
