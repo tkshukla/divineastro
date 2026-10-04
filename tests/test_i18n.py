@@ -155,9 +155,10 @@ def main() -> int:
     check("localize_links is a no-op for en and hi",
           i18n.localize_links(frag, "en") == frag and i18n.localize_links(frag, "hi") == frag)
 
-    print("\n3. Every module: TRANSLATED is {en, hi} today")
+    print("\n3. Every module: TRANSLATED is {en, hi, kn, te} (DIVASTRO-123)")
     for name, mod in MODULES.items():
-        check(f"{name}.TRANSLATED", set(mod.TRANSLATED) == {"en", "hi"}, str(mod.TRANSLATED))
+        check(f"{name}.TRANSLATED", set(mod.TRANSLATED) == {"en", "hi", "kn", "te"},
+              str(mod.TRANSLATED))
     check("katha.TRANSLATED (Hindi canonical)", set(katha.TRANSLATED) == {"en", "hi"})
 
     print("\n4. Every module's pages in every language")
@@ -168,7 +169,7 @@ def main() -> int:
                 r = client.get(path)
                 h = r.text
                 ok = r.status_code == 200
-                translated = lang in ("en", "hi")
+                translated = lang in MODULES[name].TRANSLATED
                 ok = ok and html_lang(h).split("-")[0] == lang
                 ok = ok and (noindex(h) != translated or "boy=" in path)
                 ok = ok and (bool(alternates(h)) == translated)
@@ -186,15 +187,31 @@ def main() -> int:
                 for f in failures))
 
     print("\n5. An untranslated copy is English with a note — never blank, never indexed")
+    # seo_pages is translated into kn/te (DIVASTRO-123); use a language it is not (yet) in.
+    ul = next((c for c in i18n.EXTRA_CODES if c not in seo_pages.TRANSLATED), None)
+    if ul is None:
+        print("  (every language translated: nothing to check here)")
+    else:
+        other = next(c for c in i18n.EXTRA_CODES if c != ul and i18n.get(c).font != i18n.get(ul).font)
+        h = client.get(f"/{ul}/panchang/pune").text
+        check(f"/{ul}/panchang/pune: English body", "Today's Panchang in Pune" in h)
+        check(f"/{ul}/panchang/pune: notice in its own script", i18n.get(ul).notice in h)
+        check(f"/{ul}/panchang/pune: its own font only",
+              i18n.get(ul).font.replace(" ", "+") in h
+              and i18n.get(other).font.replace(" ", "+") not in h)
+        check(f"/{ul}/panchang/pune: internal links stay in /{ul}/",
+              f'href="/{ul}/panchang/mumbai"' in h and 'href="/panchang/mumbai"' not in h)
+        check(f"/{ul}/panchang/pune: app links carry lang={ul}", f"/?open=panchang&amp;lang={ul}" in h)
+        check(f"/{ul}/panchang/pune: canonical is itself",
+              f'<link rel="canonical" href="{SITE}/{ul}/panchang/pune"/>' in h)
     h = client.get("/kn/panchang/pune").text
-    check("/kn/panchang/pune: English body", "Today's Panchang in Pune" in h)
-    check("/kn/panchang/pune: Kannada notice", i18n.get("kn").notice in h)
+    check("/kn/panchang/pune (translated): indexable, no notice",
+          "lp-notice" not in h and not noindex(h))
     check("/kn/panchang/pune: Kannada font only",
           "Noto+Sans+Kannada" in h and "Noto+Sans+Tamil" not in h)
     check("/panchang: no web font at all", "fonts.googleapis.com" not in client.get("/panchang").text)
     check("/kn/panchang/pune: internal links stay in /kn/",
           'href="/kn/panchang/mumbai"' in h and 'href="/panchang/mumbai"' not in h)
-    check("/kn/panchang/pune: app links carry lang=kn", "/?open=panchang&amp;lang=kn" in h)
     check("/kn/panchang/pune: canonical is itself",
           f'<link rel="canonical" href="{SITE}/kn/panchang/pune"/>' in h)
     check("/kn/... 404s stay 404", client.get("/kn/panchang/atlantis").status_code == 404
@@ -225,8 +242,15 @@ def main() -> int:
     print("\n7. Sitemap and beacon")
     sm = client.get("/sitemap.xml").text
     locs = re.findall(r"<loc>([^<]+)</loc>", sm)
-    extra = [u for u in locs if i18n.strip_prefix(u.removeprefix(SITE))[0] in i18n.EXTRA_CODES]
-    check("sitemap lists no untranslated (/kn/ ...) URL", not extra, str(extra[:3]))
+    done = set().union(*(m.TRANSLATED for m in MODULES.values()))
+    extra = [u for u in locs if i18n.strip_prefix(u.removeprefix(SITE))[0] in
+             set(i18n.EXTRA_CODES) - done]
+    check("sitemap lists no URL in a language no module is translated into", not extra, str(extra[:3]))
+    check("sitemap lists no /kn/katha", not any("/katha" in u and "/kn/" in u for u in locs))
+    for path in ("/kn/panchang", "/te/rahu-kaal/hyderabad", "/kn/rashifal/mesh", "/te/vrat-tyohar",
+                 "/kn/ekadashi-2026", "/te/nakshatra/ashwini", "/kn/naam-se-kundali-milan",
+                 "/te/muhurat/vivah-2026"):
+        check(f"sitemap lists {path}", f"<loc>{SITE}{path}</loc>" in sm)
     check("sitemap still lists /hi/ pages", any("/hi/panchang" in u for u in locs))
     for path in ("/kn/panchang", "/ta/panchang/pune", "/or/rashifal/mesh", "/bn/vrat-tyohar/2026",
                  "/ml/nakshatra/ashwini", "/te/muhurat/vivah-2026", "/kn/naam-se-kundali-milan",
@@ -238,20 +262,26 @@ def main() -> int:
     check("share: /kn/ page shares like its English twin",
           share.seo_share_text("/kn/panchang/pune") == share.seo_share_text("/panchang/pune"))
 
-    print("\n8. Translating a module flips everything (simulated: seo_pages + kn)")
+    print("\n8. Translating a module flips everything (simulated: seo_pages + one more language)")
     saved = seo_pages.TRANSLATED
-    seo_pages.TRANSLATED = frozenset({"en", "hi", "kn"})
-    try:
-        h_kn, h_en = client.get("/kn/panchang").text, client.get("/panchang").text
-        check("kn copy: indexable, no notice", not noindex(h_kn) and "lp-notice" not in h_kn)
-        want = {"en": SITE + "/panchang", "hi": SITE + "/hi/panchang", "kn": SITE + "/kn/panchang",
-                "x-default": SITE + "/panchang"}
-        check("kn listed in hreflang on every copy",
-              alternates(h_kn) == want == alternates(h_en), str(alternates(h_kn)))
-        check("kn in the sitemap", f"<loc>{SITE}/kn/panchang</loc>" in client.get("/sitemap.xml").text)
-        check("other modules unaffected", noindex(client.get("/kn/rashifal").text))
-    finally:
-        seo_pages.TRANSLATED = saved
+    new = next((c for c in i18n.EXTRA_CODES
+                if c not in saved and c not in rashifal_pages.TRANSLATED), None)
+    if new is None:
+        print("  (every language translated: nothing to simulate)")
+    else:
+        seo_pages.TRANSLATED = frozenset(saved | {new})
+        try:
+            h_new, h_en = client.get(f"/{new}/panchang").text, client.get("/panchang").text
+            check(f"{new} copy: indexable, no notice", not noindex(h_new) and "lp-notice" not in h_new)
+            want = {c: SITE + i18n.localized_path("/panchang", c) for c in seo_pages.TRANSLATED}
+            want["x-default"] = SITE + "/panchang"
+            check(f"{new} listed in hreflang on every copy",
+                  alternates(h_new) == want == alternates(h_en), str(alternates(h_new)))
+            check(f"{new} in the sitemap",
+                  f"<loc>{SITE}/{new}/panchang</loc>" in client.get("/sitemap.xml").text)
+            check("other modules unaffected", noindex(client.get(f"/{new}/rashifal").text))
+        finally:
+            seo_pages.TRANSLATED = saved
 
     print("\n9. API language parameters: every code accepted, never a 422")
     q = "latitude=12.97&longitude=77.59&timezone=Asia/Kolkata"

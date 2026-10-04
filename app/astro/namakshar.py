@@ -54,7 +54,7 @@ Name → syllable rules (the traditional shortcut, as Hindi panchangs apply it):
 from __future__ import annotations
 
 import unicodedata
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from ..chart_service import NAKSHATRAS, SIGNS, VIMSHOTTARI
 from . import matching
@@ -142,6 +142,11 @@ class Nakshatra:
     symbol: str
     symbol_hi: str
     syllables: tuple[tuple[str, str], ...]   # 4 x (Devanagari, Latin)
+    # DIVASTRO-123: Kannada / Telugu (nakshatra_pages._own reads <field>_<lang>)
+    deity_kn: str = ""
+    symbol_kn: str = ""
+    deity_te: str = ""
+    symbol_te: str = ""
 
     @property
     def start_min(self) -> int:
@@ -181,7 +186,98 @@ class Nakshatra:
 NAKSHATRA_LIST: tuple[Nakshatra, ...] = tuple(
     Nakshatra(i, NAKSHATRAS[i], slug, NAKSHATRAS_HI[NAKSHATRAS[i]], d, dh, s, sh, syl)
     for i, (slug, d, dh, s, sh, syl) in enumerate(_CURATED))
+
+# DIVASTRO-123: deity and symbol in Kannada and Telugu: slug -> (deity, symbol).
+_LOCAL = {
+    "kn": {
+        "ashwini": ("ಅಶ್ವಿನಿ ಕುಮಾರರು (ದೇವವೈದ್ಯರು)", "ಕುದುರೆಯ ಮುಖ"),
+        "bharani": ("ಯಮ (ಧರ್ಮರಾಜ)", "ಯೋನಿ (ಗರ್ಭ)"),
+        "krittika": ("ಅಗ್ನಿ ದೇವ", "ಕ್ಷೌರಕತ್ತಿ / ಅಗ್ನಿಜ್ವಾಲೆ"),
+        "rohini": ("ಬ್ರಹ್ಮ (ಪ್ರಜಾಪತಿ)", "ರಥ / ಎತ್ತಿನ ಬಂಡಿ"),
+        "mrigashira": ("ಸೋಮ (ಚಂದ್ರ)", "ಜಿಂಕೆಯ ಮುಖ"),
+        "ardra": ("ರುದ್ರ", "ಕಣ್ಣೀರಿನ ಹನಿ / ವಜ್ರ"),
+        "punarvasu": ("ಅದಿತಿ (ದೇವಮಾತೆ)", "ಬಿಲ್ಲು ಮತ್ತು ಬತ್ತಳಿಕೆ"),
+        "pushya": ("ಬೃಹಸ್ಪತಿ (ದೇವಗುರು)", "ಹಸುವಿನ ಕೆಚ್ಚಲು / ಕಮಲ"),
+        "ashlesha": ("ನಾಗ ದೇವತೆಗಳು", "ಸುರುಳಿ ಸುತ್ತಿದ ಸರ್ಪ"),
+        "magha": ("ಪಿತೃಗಳು (ಪೂರ್ವಜರು)", "ರಾಜಸಿಂಹಾಸನ"),
+        "purva-phalguni": ("ಭಗ ದೇವ (ಭಾಗ್ಯದಾತ)", "ಮಂಚದ ಮುಂದಿನ ಕಾಲುಗಳು"),
+        "uttara-phalguni": ("ಅರ್ಯಮ (ಸ್ನೇಹದ ಅಧಿದೇವತೆ)", "ಮಂಚದ ಹಿಂದಿನ ಕಾಲುಗಳು"),
+        "hasta": ("ಸವಿತೃ (ಸೂರ್ಯ)", "ಕೈ (ಹಸ್ತ)"),
+        "chitra": ("ತ್ವಷ್ಟೃ (ವಿಶ್ವಕರ್ಮ)", "ಹೊಳೆಯುವ ರತ್ನ"),
+        "swati": ("ವಾಯು ದೇವ", "ಗಾಳಿಗೆ ತೂಗುವ ಚಿಗುರು"),
+        "vishakha": ("ಇಂದ್ರ ಮತ್ತು ಅಗ್ನಿ (ಇಂದ್ರಾಗ್ನಿ)", "ತೋರಣ ದ್ವಾರ"),
+        "anuradha": ("ಮಿತ್ರ ದೇವ", "ಕಮಲ"),
+        "jyeshtha": ("ಇಂದ್ರ (ದೇವರಾಜ)", "ಕುಂಡಲ / ತಾಯಿತ"),
+        "mula": ("ನಿಋತಿ", "ಬೇರುಗಳ ಗೊಂಚಲು"),
+        "purva-ashadha": ("ಆಪಃ (ಜಲ ದೇವತೆ)", "ಮೊರ / ಆನೆಯ ದಂತ"),
+        "uttara-ashadha": ("ವಿಶ್ವೇದೇವರು", "ಆನೆಯ ದಂತ"),
+        "shravana": ("ಶ್ರೀ ವಿಷ್ಣು", "ಕಿವಿ / ಮೂರು ಹೆಜ್ಜೆಗುರುತುಗಳು"),
+        "dhanishta": ("ಅಷ್ಟ ವಸುಗಳು", "ಮೃದಂಗ"),
+        "shatabhisha": ("ವರುಣ ದೇವ", "ಖಾಲಿ ವೃತ್ತ"),
+        "purva-bhadrapada": ("ಅಜ ಏಕಪಾದ", "ಖಡ್ಗ / ಮಂಚದ ಮುಂದಿನ ಕಾಲುಗಳು"),
+        "uttara-bhadrapada": ("ಅಹಿರ್ಬುಧ್ನ್ಯ", "ಮಂಚದ ಹಿಂದಿನ ಕಾಲುಗಳು / ಅವಳಿಗಳು"),
+        "revati": ("ಪೂಷನ್ ದೇವ", "ಮೀನು (ಅಥವಾ ಮೃದಂಗ)"),
+    },
+    "te": {
+        "ashwini": ("అశ్విని కుమారులు (దేవ వైద్యులు)", "గుర్రపు ముఖం"),
+        "bharani": ("యముడు (ధర్మరాజు)", "యోని (గర్భం)"),
+        "krittika": ("అగ్ని దేవుడు", "కత్తి / అగ్నిజ్వాల"),
+        "rohini": ("బ్రహ్మ (ప్రజాపతి)", "రథం / ఎడ్లబండి"),
+        "mrigashira": ("సోముడు (చంద్రుడు)", "జింక ముఖం"),
+        "ardra": ("రుద్రుడు", "కన్నీటి బిందువు / వజ్రం"),
+        "punarvasu": ("అదితి (దేవమాత)", "విల్లు, అమ్ములపొది"),
+        "pushya": ("బృహస్పతి (దేవగురువు)", "ఆవు పొదుగు / పద్మం"),
+        "ashlesha": ("నాగ దేవతలు", "చుట్టుకున్న సర్పం"),
+        "magha": ("పితృదేవతలు (పూర్వీకులు)", "రాజ సింహాసనం"),
+        "purva-phalguni": ("భగుడు (అదృష్టప్రదాత)", "మంచం ముందు కాళ్లు"),
+        "uttara-phalguni": ("అర్యముడు (స్నేహానికి అధిపతి)", "మంచం వెనుక కాళ్లు"),
+        "hasta": ("సవిత (సూర్యుడు)", "చేయి (హస్తం)"),
+        "chitra": ("త్వష్ట (విశ్వకర్మ)", "మెరిసే రత్నం"),
+        "swati": ("వాయు దేవుడు", "గాలికి ఊగే మొలక"),
+        "vishakha": ("ఇంద్రుడు, అగ్ని (ఇంద్రాగ్ని)", "తోరణ ద్వారం"),
+        "anuradha": ("మిత్రుడు", "పద్మం"),
+        "jyeshtha": ("ఇంద్రుడు (దేవరాజు)", "కుండలం / తాయెత్తు"),
+        "mula": ("నిరృతి", "వేర్ల గుత్తి"),
+        "purva-ashadha": ("ఆపః (జల దేవత)", "చేట / ఏనుగు దంతం"),
+        "uttara-ashadha": ("విశ్వేదేవతలు", "ఏనుగు దంతం"),
+        "shravana": ("శ్రీ మహావిష్ణువు", "చెవి / మూడు పాదముద్రలు"),
+        "dhanishta": ("అష్ట వసువులు", "మృదంగం"),
+        "shatabhisha": ("వరుణ దేవుడు", "శూన్య వృత్తం"),
+        "purva-bhadrapada": ("అజ ఏకపాదుడు", "ఖడ్గాలు / మంచం ముందు కాళ్లు"),
+        "uttara-bhadrapada": ("అహిర్బుధ్న్యుడు", "మంచం వెనుక కాళ్లు / కవలలు"),
+        "revati": ("పూషుడు", "చేప (లేదా మృదంగం)"),
+    },
+}
+NAKSHATRA_LIST = tuple(
+    replace(n, **{f"{field}_{lang}": _LOCAL[lang][n.slug][i]
+                  for lang in _LOCAL for i, field in enumerate(("deity", "symbol"))})
+    for n in NAKSHATRA_LIST)
 BY_SLUG = {n.slug: n for n in NAKSHATRA_LIST}
+
+
+# DIVASTRO-123: the Kannada and Telugu pages print the namakshar syllables in
+# their own script. Every Devanagari letter and vowel sign the table uses has
+# its counterpart at a fixed offset in the Kannada and Telugu blocks (ए/े are
+# the long ಏ/ೇ, ఏ/ే - the vowel Hindi writes).
+_SCRIPT_OFFSET = {"kn": 0x0C80 - 0x0900, "te": 0x0C00 - 0x0900}
+
+
+def syllable_text(text: str, lang: str) -> str:
+    """`text` with its Devanagari moved into `lang`'s script (kn, te); unchanged otherwise."""
+    off = _SCRIPT_OFFSET.get(lang)
+    if not off:
+        return text
+    out = []
+    for c in text:
+        if 0x0900 <= ord(c) <= 0x097F and unicodedata.name(chr(ord(c) + off), ""):
+            c = chr(ord(c) + off)
+        out.append(c)
+    return "".join(out)
+
+
+def syllable_lang(lang: str) -> str:
+    """The lang="" attribute of a syllable: Hindi (Devanagari) except where moved."""
+    return lang if lang in _SCRIPT_OFFSET else "hi"
 BY_NAME = {n.name: n for n in NAKSHATRA_LIST}
 
 

@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import datetime as dt
 import functools
+import re
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Query
@@ -56,7 +57,7 @@ from .vrat_text import TEXT
 # /<code>/vrat-tyohar etc. exist for every registry language; one not listed here
 # renders the English text with noindex, no hreflang and no sitemap entry. Add a
 # code here once vrat_text has that language's text.
-TRANSLATED = i18n.BASE_TRANSLATED
+TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te"}  # DIVASTRO-123
 i18n.LOCALIZABLE_ROOTS.update({"vrat-tyohar", "tyohar", "ekadashi-"})
 
 
@@ -184,8 +185,28 @@ def _name(o: dict, lang: str) -> str:
 
 
 def _rule(o: dict, lang: str) -> str:
-    """How the date is fixed: festivals.py's `rule_<lang>`, English otherwise."""
-    return o.get(f"rule_{lang}") or o["rule_en"]
+    """How the date is fixed: festivals.py's `rule_<lang>`, else built from
+    vrat_text.RULE (DIVASTRO-123: kn, te), else English."""
+    own = o.get(f"rule_{lang}")
+    table = vrat_text.RULE.get(lang)
+    if own or not table:
+        return own or o["rule_en"]
+    en = o["rule_en"]
+    if en in table:
+        return table[en]
+    if o.get("key") == "ekadashi" and "ekadashi" in table:
+        return table["ekadashi"]
+    m = _RULE_EN.match(en)
+    if not m or o.get("rule") not in table:
+        return en
+    n = i18n.names(lang)
+    month, paksha, tithi = m.groups()
+    head = f"{n.MASA.get(month, month)} {table['amanta']} " if month else ""
+    return f"{head}{n.PAKSHA.get(paksha, paksha)} {n.TITHI.get(tithi, tithi)}: {table[o['rule']]}"
+
+
+# festivals._tithi_words + RULE_TEXT: "Ashwin (amanta) Krishna Amavasya: tithi prevailing ..."
+_RULE_EN = re.compile(r"^(?:(\S+) \(amanta\) )?(Shukla|Krishna) ([^:]+): ")
 
 
 def _local_text(table: dict, key: str, lang: str) -> str:

@@ -64,7 +64,11 @@ def _keep(path: str) -> bool:
 
 
 def paths() -> list[str]:
-    out = [p for p in seo_pages.sitemap_paths() if _keep(p)]
+    from app import i18n
+    # English and Hindi only: the sitemap also lists the translated regional
+    # copies (/kn/..., /te/... - DIVASTRO-123), which are not snapshotted.
+    out = [p for p in seo_pages.sitemap_paths() if _keep(p)
+           and i18n.strip_prefix(p.split("?")[0])[0] in LANGS]
     for pre in ("", "/hi"):
         out += [
             f"{pre}/naam-se-kundali-milan?boy=Rahul&girl=Priya",
@@ -75,7 +79,6 @@ def paths() -> list[str]:
         ]
     out += ["/sitemap.xml", "/robots.txt"]
     if os.environ.get("SNAP_KN"):     # for diffing a regional copy by hand; never recorded
-        from app import i18n
         out = [i18n.localized_path(p, "kn") if not p.startswith("/hi") else p for p in out
                if not p.startswith(("/sitemap", "/robots"))]
         out = [p for p in out if p.startswith("/kn")]
@@ -162,8 +165,9 @@ def main(argv: list[str]) -> int:
 
 
 def regional_names() -> list[str]:
-    """An untranslated language still prints astrology names in its own script:
-    /kn/panchang/bengaluru shows the day's tithi and nakshatra from names_kn."""
+    """A regional copy prints astrology names in its own script: /kn/panchang/bengaluru
+    shows the day's tithi and nakshatra from names_kn. It is noindex exactly when
+    seo_pages is not (yet) translated into that language (kn is since DIVASTRO-123)."""
     from app import i18n
     pin()
     client = TestClient(app, raise_server_exceptions=True)
@@ -175,9 +179,11 @@ def regional_names() -> list[str]:
         want = [n.TITHI[p["tithi"][0]["name"]], n.NAKSHATRAS[p["nakshatra"][0]["name"]],
                 n.TIMINGS["rahu_kaal"], n.VARA[p["vara"]["weekday"]], n.MONTHS[DAY.month - 1]]
         missing = [w for w in want if w not in html]
-        ok = not missing and 'content="noindex, follow"' in html
+        untranslated = lang not in seo_pages.TRANSLATED
+        ok = not missing and ('content="noindex, follow"' in html) == untranslated
         print(f"  {'PASS' if ok else 'FAIL'}  /{lang}/panchang/bengaluru: native tithi, nakshatra, "
-              f"Rahu Kaal, weekday, month; still noindex" + (f" — missing {missing}" if missing else ""))
+              f"Rahu Kaal, weekday, month; " + ("noindex" if untranslated else "indexable")
+              + (f" — missing {missing}" if missing else ""))
         if not ok:
             failures.append(lang)
     return failures

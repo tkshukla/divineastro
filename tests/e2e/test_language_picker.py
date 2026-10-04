@@ -259,14 +259,14 @@ def seo_pages_section(browser, base: str) -> None:
     pg.page.wait_for_load_state("networkidle")
     check("lands on /kn/panchang/pune", pg.page.url.endswith("/kn/panchang/pune"), pg.page.url)
     check("<html lang=kn>", pg.page.evaluate("document.documentElement.lang") == "kn")
-    note = pg.page.inner_text(".lp-notice") if pg.page.locator(".lp-notice").count() else ""
-    check("the 'translation coming soon' note is in Kannada", "ಅನುವಾದ" in note, note)
-    check("the body falls back to English (not blank)",
-          "Today's Panchang in Pune" in pg.page.inner_text("main.seo"))
+    # DIVASTRO-123: the SEO pages are translated into Kannada - no note, Kannada body.
+    check("no 'translation coming soon' note", pg.page.locator(".lp-notice").count() == 0)
+    check("the body is in Kannada", "ಇಂದಿನ ಪಂಚಾಂಗ" in pg.page.inner_text("main.seo")
+          and "Today's Panchang in Pune" not in pg.page.inner_text("main.seo"))
     check("the picker now says ಕನ್ನಡ",
           pg.page.inner_text(f"{SEO_PICKER} .lp-cur").strip() == NATIVE["kn"])
-    check("noindex on the untranslated copy",
-          pg.page.locator('meta[name="robots"][content^="noindex"]').count() == 1)
+    check("indexable (no noindex) now that it is translated",
+          pg.page.locator('meta[name="robots"][content^="noindex"]').count() == 0)
     check("the Kannada font, and only it, is requested",
           any("Noto+Sans+Kannada" in u for u in fonts)
           and not any(("Tamil" in u or "Telugu" in u) for u in fonts), str(fonts[:3]))

@@ -42,7 +42,7 @@ os.environ["ASTRO_DATABASE_URL"] = f"sqlite:///{Path(_tmp).as_posix()}/t.db"
 
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app import analytics, seo_cities, seo_pages, share, vrat_pages  # noqa: E402
+from app import analytics, i18n, seo_cities, seo_pages, share, vrat_pages  # noqa: E402
 from app.astro import festivals  # noqa: E402
 from app.main import app  # noqa: E402
 
@@ -140,7 +140,7 @@ def omitted_labels(path: str) -> set[str]:
     """EN + HI labels of the timings switched off for this festival page's observance.
     A timing is printed as "<label>: <time>", so that is what must not appear (the
     Makar Sankranti RULE text may still name the punya kaal period, with no time)."""
-    slug, _, year = path.removeprefix("/hi").removeprefix("/tyohar/").rpartition("-")
+    slug, _, year = i18n.strip_prefix(path)[1].removeprefix("/tyohar/").rpartition("-")
     key = vrat_pages.festival_index(int(year))[slug]["key"]
     return {lbl for (k, tk) in festivals.OMITTED_TIMINGS if k == key for lbl in festivals.LABELS[tk]}
 
