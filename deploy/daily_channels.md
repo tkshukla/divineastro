@@ -140,6 +140,12 @@ The evening katha (section 6) goes to the same WhatsApp Channel at 19:00:
 0 19 * * * docker compose -f /srv/divineastro/docker-compose.yml exec -T app python -m app.katha --daily >> /srv/divineastro/deploy/daily_channels.log 2>&1 # divineastro-katha-daily
 ```
 
+And the nightly reflection (section 7) at 22:00:
+
+```cron
+0 22 * * * docker compose -f /srv/divineastro/docker-compose.yml exec -T app python -m app.reflections --daily >> /srv/divineastro/deploy/daily_channels.log 2>&1 # divineastro-reflection-daily
+```
+
 Add `--with-card` to the Telegram line to post the image card above the text.
 A retry line such as `30 6 * * *` with the same command is safe: each job
 records what it already sent and posts only what is missing.
@@ -432,3 +438,81 @@ it up after a deploy.
 
 Check before committing: `python -m tests.test_katha`. The app refuses to start
 on a bad file, and the error names the file and the field.
+
+
+---
+
+## 7. Tonight's Reflection on the WhatsApp Channel (DIVASTRO-127)
+
+At 22:00 `python -m app.reflections --daily` posts a short reflection to the
+same channel (same `wa` connector, same `ASTRO_WA_*` settings as section 5):
+English on top, Hindi below, the source when it is a quotation, and good
+night. No links and no image.
+
+```
+*🌙 आज रात का विचार · Tonight's Reflection*
+
+<English, 2-3 lines>
+
+<Hindi, 2-3 lines>
+
+_— <source>_            (only for a quotation or paraphrase)
+
+🙏 शुभ रात्रि · Good night
+```
+
+**Which reflection** (`app/reflections.py`, `pick()`):
+
+0. A date listed in `PINNED` (in the code) gets that reflection, whatever
+   else is true (2026-10-04, the first post: Bhagavad Gita 2.47).
+1. If today (New Delhi) has an observance named in a reflection's `tags`
+   (`ekadashi`, `diwali`, `purnima`, ...), that reflection, unless it was posted
+   in the last 300 days or its theme was last night's. Tagged reflections are
+   used only on their days.
+2. Otherwise the next never-posted untagged reflection in a fixed shuffled
+   order that spreads the themes out; once all have gone out, the one posted
+   longest ago.
+3. Never the same theme two nights running; where possible not one of the
+   last three nights' themes, and not the theme tomorrow's festival reflection
+   needs.
+
+Preview, post, re-post:
+
+```bash
+docker compose -f /srv/divineastro/docker-compose.yml exec -T app python -m app.reflections --daily --dry-run
+docker compose -f /srv/divineastro/docker-compose.yml exec -T app python -m app.reflections --daily --dry-run --date 2026-11-08
+docker compose -f /srv/divineastro/docker-compose.yml exec -T app python -m app.reflections --id gita-2-47 --dry-run
+```
+
+`--daily` posts once per date (`--force` re-sends that date's reflection);
+`--id <id>` posts one reflection once (`--force` to repeat). Exit codes as in
+section 4: 0 posted or already posted, 1 send failure, 2 not configured. If
+the connector is unlinked the owner gets the same once-a-day "unlinked" email
+as the morning post (one email per day across all three posts).
+
+**State:** `/srv/data/daily_channels/reflection.json` (what went out per date)
+and `reflection.cache.json` (`{id: {"posted", "id", "day"}}`, the history the
+picker reads; never pruned).
+
+### Adding a reflection
+
+Append to `app/reflections.json`:
+
+```json
+{"id": "gita-2-48", "theme": "karma", "en": "line one\nline two", "hi": "पहली पंक्ति\nदूसरी पंक्ति",
+ "source": "Bhagavad Gita 2.48", "tags": []}
+```
+
+- `id`: unique, lowercase-words-with-hyphens.
+- `theme`: one of `mind attachment ego fear anger desire acceptance gratitude
+  stillness karma impermanence compassion self-knowledge relationships
+  discipline faith time silence forgiveness contentment`.
+- `en` / `hi`: 2-3 lines joined by `\n`; English at most 300 characters;
+  Hindi in Devanagari only (no Latin letters or digits); no `*` `_` `~` or links.
+- `source` (optional): only for a genuine quotation with exact attribution,
+  or a faithful paraphrase marked `(paraphrased)`. Never a quote you cannot
+  verify.
+- `tags` (optional): observance keys from `app/astro/festivals.py`; a tagged
+  reflection is posted only on those days.
+
+Check before committing: `python -m tests.test_reflections`.
