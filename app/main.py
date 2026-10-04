@@ -26,6 +26,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from . import auth, billing, geo, llm, pdf_report
+from . import i18n as i18n  # DIVASTRO-121: language registry (index.html picker + inline strings)
 from .api_account import router as account_router
 from .api_feedback import router as feedback_router
 from .api_traffic import router as traffic_router
@@ -190,11 +191,21 @@ class ChartRequest(BaseModel):
     time_known: bool = True
 
 
+def _engine_lang(lang: str | None) -> str:
+    """The language the deterministic engines and PDFs write: Hindi or English.
+    Every other registry language (DIVASTRO-121) gets the English text until
+    those engines are translated — accepted, never a 422."""
+    return "hi" if lang == "hi" else "en"
+
+
 class AskRequest(BaseModel):
     session_id: str
     question: str
     date: str | None = None       # analyse "as of" a date; defaults to today
-    language: str = "en"          # 'en' | 'hi'
+    # Any i18n registry code (DIVASTRO-121). The rule engine writes en/hi
+    # (_engine_lang); the narration is written in the asked language
+    # (llm.LANGUAGES), English for anything it doesn't know. Never a 422.
+    language: str = "en"
     # 'off' | 'ollama:<model>' | 'anthropic'. None means "not chosen" and
     # resolves to llm.default_provider() — distinct from an explicit 'off', so a
     # stale cached script that omits the field still gets the good narration.
@@ -329,7 +340,7 @@ def ask(req: AskRequest, request: Request) -> dict:
         history = [{"question": r.question, "answer": r.answer} for r in reversed(history_rows)]
 
         session = _session(req.session_id, request)
-        result = analyse(session, question, when, language=req.language).to_dict()
+        result = analyse(session, question, when, language=_engine_lang(req.language)).to_dict()
         result["vedic"] = _vedic_context(session)
 
         # The engine's own wording is always kept, so the UI can show both and
@@ -397,7 +408,7 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
         history = [{"question": r.question, "answer": r.answer} for r in reversed(history_rows)]
 
     session = _session(req.session_id, request)
-    result = analyse(session, question, when, language=req.language).to_dict()
+    result = analyse(session, question, when, language=_engine_lang(req.language)).to_dict()
     # Every real chat answer goes through this endpoint (the frontend only
     # ever calls /api/ask/stream, never /api/ask), so without this the
     # narration prompt's _vedic_block() is always empty — no yogas, dashas,
@@ -774,7 +785,7 @@ def ashtakavarga_endpoint(sid: str, request: Request, lang: str = "en") -> dict:
     """Sarvashtakavarga (337 bindus) and Bhinnashtakavarga matrix and house strengths."""
     from .astro.ashtakavarga import calculate_ashtakavarga
     session = _session(sid, request)
-    return calculate_ashtakavarga(session, lang=lang)
+    return calculate_ashtakavarga(session, lang=_engine_lang(lang))
 
 
 @app.get("/api/vargas/{sid}")
@@ -782,7 +793,7 @@ def shodashvarga_endpoint(sid: str, request: Request, lang: str = "en") -> dict:
     """Classical Parashari Shodashvarga divisional charts (D1 to D60)."""
     from .astro.vargas import get_shodashvarga_data
     session = _session(sid, request)
-    return get_shodashvarga_data(session, lang=lang)
+    return get_shodashvarga_data(session, lang=_engine_lang(lang))
 
 
 @app.get("/api/jaimini/{sid}")
@@ -790,7 +801,7 @@ def jaimini_endpoint(sid: str, request: Request, lang: str = "en") -> dict:
     """Jaimini 7 Chara Karakas, Karakamsha Lagna, and 12 Arudha Padas."""
     from .astro.jaimini import get_jaimini_data
     session = _session(sid, request)
-    return get_jaimini_data(session, lang=lang)
+    return get_jaimini_data(session, lang=_engine_lang(lang))
 
 
 @app.get("/api/sudarshana/{sid}")
@@ -798,7 +809,7 @@ def sudarshana_endpoint(sid: str, request: Request, lang: str = "en") -> dict:
     """Sudarshana Chakra 3-tier synthesis across Janma, Moon, and Sun Lagnas."""
     from .astro.sudarshana import get_sudarshana_data
     session = _session(sid, request)
-    return get_sudarshana_data(session, lang=lang)
+    return get_sudarshana_data(session, lang=_engine_lang(lang))
 
 
 @app.delete("/api/session/{sid}")
@@ -889,7 +900,7 @@ def pdf_chart(sid: str, request: Request, date: str | None = None, lang: str = "
             pass
 
     try:
-        data = pdf_report.chart_pdf(session, brand=BRAND, site=SITE_URL, when=when, language=lang)
+        data = pdf_report.chart_pdf(session, brand=BRAND, site=SITE_URL, when=when, language=_engine_lang(lang))
     except Exception as exc:
         raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
     return _pdf_response(
@@ -904,7 +915,7 @@ def pdf_remedies(sid: str, request: Request, lang: str = "en") -> Response:
     session = _session(sid, request)      # and it must be this user's chart
 
     try:
-        data = pdf_report.remedies_pdf(session, brand=BRAND, site=SITE_URL, language=lang)
+        data = pdf_report.remedies_pdf(session, brand=BRAND, site=SITE_URL, language=_engine_lang(lang))
     except Exception as exc:
         raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
     return _pdf_response(
@@ -922,7 +933,7 @@ def pdf_single_question(sid: str, request: Request, sku: str = "sq_career", lang
 
     session = _session(sid, request)
     try:
-        data = pdf_report.single_question_pdf(session, topic=sku, brand=BRAND, site=SITE_URL, language=lang)
+        data = pdf_report.single_question_pdf(session, topic=sku, brand=BRAND, site=SITE_URL, language=_engine_lang(lang))
     except Exception as exc:
         raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
     return _pdf_response(
@@ -940,7 +951,7 @@ def pdf_life_book(sid: str, request: Request, lang: str = "en") -> Response:
 
     session = _session(sid, request)
     try:
-        data = pdf_report.life_book_pdf(session, brand=BRAND, site=SITE_URL, language=lang)
+        data = pdf_report.life_book_pdf(session, brand=BRAND, site=SITE_URL, language=_engine_lang(lang))
     except Exception as exc:
         raise HTTPException(500, f"Could not build the Life Book PDF: {exc}") from exc
     return _pdf_response(
@@ -973,10 +984,41 @@ def _page(name: str) -> HTMLResponse:
     only then. The HTML itself must not be cached, or it would keep handing out
     the old stamp.
     """
-    version = str(max(int(p.stat().st_mtime) for p in STATIC.glob("*")))
+    version = _static_version()
     html = (STATIC / name).read_text(encoding="utf-8")
     html = _ASSET_REF.sub(rf"\1?v={version}", html)
+    html = _lang_inline(html, version)
     return HTMLResponse(html, headers={"Cache-Control": "no-store"})
+
+
+def _static_version() -> str:
+    """Newest mtime under static/ — the i18n/*.json files included (DIVASTRO-121),
+    since the app fetches those with this stamp too."""
+    files = [*STATIC.glob("*"), *STATIC.glob("i18n/*.json")]
+    return str(max(int(p.stat().st_mtime) for p in files))
+
+
+def _lang_inline(html: str, version: str) -> str:
+    """DIVASTRO-121: fill index.html's two language placeholders.
+
+    <!--LANG_PICKER--> becomes the header language picker, written by the same
+    i18n.picker() every server-rendered page uses (one component, one source).
+    <!--LANG_DATA--> becomes the language registry plus the English and Hindi UI
+    strings, inline, so the first paint never waits on a fetch; the other
+    languages' JSON is fetched on demand from /static/i18n/<code>.json?v=<version>."""
+    if "<!--LANG_PICKER-->" in html:
+        # English too carries ?lang=, so it overrides a stored choice even without JS.
+        links = {code: f"/?lang={code}" for code in i18n.CODES}
+        html = html.replace("<!--LANG_PICKER-->", i18n.picker("en", links), 1)
+    if "<!--LANG_DATA-->" in html:
+        tables = {code: json.loads((STATIC / "i18n" / f"{code}.json").read_text(encoding="utf-8"))
+                  for code in ("en", "hi")}
+        payload = (f"window.DA_LANGS={json.dumps(i18n.client_registry(), ensure_ascii=False)};"
+                   f"window.DA_I18N={json.dumps(tables, ensure_ascii=False)};"
+                   f"window.DA_I18N_V={json.dumps(version)};")
+        # "</" inside a JSON string would end the <script> element early.
+        html = html.replace("<!--LANG_DATA-->", "<script>" + payload.replace("</", "<\\/") + "</script>", 1)
+    return html
 
 
 @app.get("/")

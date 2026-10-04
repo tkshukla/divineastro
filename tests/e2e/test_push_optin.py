@@ -165,7 +165,7 @@ def keys_on(browser) -> None:
             " ? (r.active || r.installing || r.waiting).scriptURL : null)")
         check("service worker /sw.js registered with scope /", bool(sw) and sw.endswith("/sw.js"), str(sw))
         # Language switch while subscribed: the label follows, the server copy is updated.
-        pg.page.click('.lang[data-lang="hi"]')
+        pg.set_lang("hi")
         pg.page.wait_for_timeout(900)
         check("Hindi subscribed text", "बंद करें" in pg.page.inner_text("#push-optin"))
         resync = [p for p in posts if p["url"].endswith("/api/push/subscribe")]

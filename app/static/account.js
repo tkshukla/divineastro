@@ -12,217 +12,17 @@ const acct = {
   pendingQuestion: null,   // re-fired after a successful purchase
 };
 
-const A_I18N = {
-  en: {
-    signIn: "Sign in", signOut: "Sign out",
-    signInTitle: "Sign in to Divine Astro",
-    signInSub: "Takes about 10 seconds — and a username account needs no email at all.",
-    signInFree: "Your first {n} questions are free.",
-    continueWith: "Continue with",
-    noProviders: "Sign-in is not configured yet. Add OAuth credentials to enable it.",
-    devLogin: "Developer sign-in",
-    welcome: "Welcome. You have", freeQs: "free questions to start.",
-    credits: "questions left", creditsShort: "left", themeToggle: "Light / dark", buyMore: "Buy more",
-    adminPanel: "Admin panel",
-    feedback: "Send feedback",
-    upiTitle: "Pay by UPI",
-    upiSub: "Scan the code or pay to the ID below, then tell us the reference number. "
-          + "Your questions are added once we've matched it against our bank statement — "
-          + "usually within a few hours.",
-    upiRef: "Quote this reference:", upiOpenApp: "Open a UPI app",
-    upiUtr: "Last 5 characters of the UTR / UPI reference number",
-    upiSubmit: "I've paid", upiFailed: "That reference was not accepted.",
-    upiThanks: "Thank you. We'll confirm and add your questions shortly.",
-    upiHelpTitle: "Where do I find this?",
-    upiHelpApps: [
-      { app: "Google Pay", how: "Tap the payment in your Activity tab — the UTR is shown on the receipt screen." },
-      { app: "PhonePe", how: "Open History, tap the transaction — look for “UTR No.” under the details." },
-      { app: "Paytm", how: "Open Passbook, tap the transaction — look for “UPI Reference No.”" },
-      { app: "FamApp", how: "Open the transaction from your history — the reference number is on the payment detail screen." },
-      { app: "Any other UPI app / BHIM", how: "Look for “UPI Ref No.”, “UTR” or “Transaction ID” on the success screen or in your history." },
-    ],
-    upiHelpFallback: "Can't find it? Your bank's SMS or email for this payment shows the UTR too.",
-    outTitle: "You've used all your questions",
-    outSub: "Choose a pack to continue. Your charts and history stay saved.",
-    perQ: "per question", buy: "Buy", popular: "Most popular",
-    kundaliTitle: "Hand-written Kundali",
-    kundaliSub: "Written by hand by our astrologer and delivered as a scanned PDF.",
-    singleQuestionTitle: "Targeted Consultation Reports",
-    singleQuestionSub: "Dedicated 2-page deep dive on career, marriage, or wealth with specific planetary yogas & remedies.",
-    lifeBookTitle: "Flagship Vedic Life Book",
-    lifeBookSub: "Exhaustive 35+ page master horoscope book with deep Shodashvarga, full dasha ladders, 12-house readings, 5-year Varshphal and classical remedies.",
-    pages: "pages", plusQs: "questions included",
-    processing: "Opening payment…", paid: "Payment received —", added: "questions added.",
-    payFailed: "Payment could not be completed.",
-    testMode: "Test mode — no real payment will be taken.",
-    history: "My questions", orders: "My orders", close: "Close",
-    dev: "Development mode — your code is",
-    couponLabel: "Have a coupon?", couponPlaceholder: "Coupon code",
-    couponApply: "Apply", couponRemove: "Remove", couponChecking: "Checking…",
-    couponInvalid: "That coupon cannot be used.",
-    couponNotHere: "Not valid for this item",
-    bonusQs: "bonus questions",
-    coupons: "Coupons", couponsTitle: "Coupon administration",
-    couponsSub: "Codes, limits and usage. Changes take effect immediately.",
-    newCoupon: "New coupon", cCode: "Code", cKind: "Type", cValue: "Value",
-    cDesc: "Description", cApplies: "Applies to", cMinOrder: "Min order (₹)",
-    cMaxOff: "Max discount (₹)", cTotalLimit: "Total limit",
-    cPerUser: "Per user", cExpires: "Expires (YYYY-MM-DD)",
-    cCreate: "Create", cSave: "Save", cActivate: "Activate",
-    cDeactivate: "Deactivate", cDelete: "Delete", cUsed: "used",
-    cUnlimited: "unlimited", cActive: "Active", cInactive: "Inactive",
-    cNone: "No coupons yet.", cBlank: "blank = unlimited",
-    kPercent: "Percent off", kFlat: "Flat ₹ off", kExtra: "Bonus credits",
-    cConfirmDelete: "Delete this coupon? It stops working immediately. It is kept in the Deleted list in the admin panel and can be restored.",
-    orUsername: "Create an account with a username & password",
-    haveOneLogIn: "I already have a username — log in",
-    orDivider: "or",
-    usernameLabel: "Username", passwordLabel: "Password",
-    createAccount: "Create account", logIn: "Log in",
-    haveAccount: "Already have an account? Log in",
-    needAccount: "Need an account? Create one",
-    noRecoveryNote: "No email is attached to this account, so there is no way "
-                   + "to recover it if you forget your password — write it down somewhere safe.",
-    backToProviders: "Back",
-    phoneContinue: "Continue with phone number",
-    phoneLabel: "Mobile number", phoneHint: "We'll text you a 6-digit code. Standard SMS rates may apply.",
-    phoneSend: "Send code", phoneSending: "Sending…",
-    phoneCodeLabel: "Code from the SMS", phoneSentTo: "Code sent to {n}.",
-    phoneVerify: "Verify & continue", phoneVerifying: "Checking…",
-    phoneResend: "Resend code", phoneResendIn: "Resend in {s}s",
-    phoneChange: "Use a different number",
-    phoneNeedNumber: "Enter your mobile number.", phoneNeedCode: "Enter the 6-digit code.",
-    emailContinue: "Email me a sign-in code",
-    emailLabel: "Email address",
-    emailHint: "We'll email you a 6-digit code — no password needed.",
-    emailSend: "Send code", emailSending: "Sending…",
-    emailCodeLabel: "Code from the email",
-    emailSentTo: "Code sent to {e}. It can take a minute — check Spam or Promotions too.",
-    emailVerify: "Verify & continue", emailVerifying: "Checking…",
-    emailResend: "Resend code", emailResendIn: "Resend in {s}s",
-    emailChange: "Use a different email",
-    emailNeedAddress: "Enter your email address.", emailNeedCode: "Enter the 6-digit code.",
-    signInFailed: "Sign-in failed. Please try again.",
-    // DIVASTRO-111: the rest of the sheet and menu, so Hindi leaves no English behind.
-    account: "Account", emailPlaceholder: "name@gmail.com",
-    legalLine: "By continuing you accept our {terms} and {privacy}.",
-    terms: "Terms", privacy: "Privacy Policy",
-    devEmailPrompt: "Developer sign-in — email:",
-    status: {
-      created: "Not paid", awaiting_verification: "Awaiting verification", paid: "Paid",
-      failed: "Failed", refunded: "Refunded", rejected: "Rejected",
-      pending: "Pending", in_progress: "In progress", delivered: "Delivered",
-    },
-  },
-  hi: {
-    signIn: "साइन इन", signOut: "साइन आउट",
-    signInTitle: "Divine Astro में साइन इन करें",
-    signInSub: "लगभग 10 सेकंड लगते हैं — और यूज़रनेम वाले खाते के लिए ईमेल की ज़रूरत ही नहीं।",
-    signInFree: "आपके पहले {n} प्रश्न निःशुल्क हैं।",
-    continueWith: "जारी रखें",
-    noProviders: "साइन-इन अभी कॉन्फ़िगर नहीं है।",
-    devLogin: "डेवलपर साइन-इन",
-    welcome: "स्वागत है। आपके पास", freeQs: "निःशुल्क प्रश्न हैं।",
-    credits: "प्रश्न शेष", creditsShort: "शेष", themeToggle: "हल्का / गहरा रंग", buyMore: "और खरीदें",
-    adminPanel: "एडमिन पैनल",
-    feedback: "प्रतिक्रिया भेजें",
-    upiTitle: "UPI से भुगतान करें",
-    upiSub: "क्यूआर स्कैन करें या नीचे दी गई UPI आईडी पर भुगतान करें, फिर हमें रेफ़रेंस नंबर बताएं। "
-          + "बैंक स्टेटमेंट से मिलान होते ही आपके प्रश्न जुड़ जाएंगे — आमतौर पर कुछ घंटों में।",
-    upiRef: "यह रेफ़रेंस लिखें:", upiOpenApp: "UPI ऐप खोलें",
-    upiUtr: "UTR / UPI रेफ़रेंस नंबर के आख़िरी 5 अंक",
-    upiSubmit: "मैंने भुगतान कर दिया", upiFailed: "यह रेफ़रेंस स्वीकार नहीं हुआ।",
-    upiThanks: "धन्यवाद। पुष्टि के बाद आपके प्रश्न शीघ्र जोड़ दिए जाएंगे।",
-    upiHelpTitle: "यह कहाँ मिलेगा?",
-    upiHelpApps: [
-      { app: "Google Pay", how: "अपने Activity टैब में भुगतान पर टैप करें — रसीद स्क्रीन पर UTR दिखेगा।" },
-      { app: "PhonePe", how: "History खोलें, लेन-देन पर टैप करें — विवरण में “UTR No.” देखें।" },
-      { app: "Paytm", how: "Passbook खोलें, लेन-देन पर टैप करें — “UPI Reference No.” देखें।" },
-      { app: "FamApp", how: "अपनी हिस्ट्री से लेन-देन खोलें — भुगतान विवरण स्क्रीन पर रेफ़रेंस नंबर दिखेगा।" },
-      { app: "कोई भी अन्य UPI ऐप / BHIM", how: "सफलता स्क्रीन या हिस्ट्री में “UPI Ref No.”, “UTR” या “Transaction ID” देखें।" },
-    ],
-    upiHelpFallback: "नहीं मिल रहा? इस भुगतान के लिए आपके बैंक का SMS या ईमेल भी UTR दिखाता है।",
-    outTitle: "आपके सभी प्रश्न समाप्त हो गए",
-    outSub: "जारी रखने के लिए पैक चुनें। आपकी कुंडली और इतिहास सुरक्षित रहेंगे।",
-    perQ: "प्रति प्रश्न", buy: "खरीदें", popular: "सर्वाधिक लोकप्रिय",
-    kundaliTitle: "हस्तलिखित कुंडली",
-    kundaliSub: "हमारे ज्योतिषी द्वारा हाथ से लिखी, स्कैन की गई PDF के रूप में।",
-    singleQuestionTitle: "लक्षित परामर्श रिपोर्ट",
-    singleQuestionSub: "करियर, विवाह या धन पर समर्पित 2-पृष्ठीय गहन वैदिक विश्लेषण, योग एवं उपाय।",
-    lifeBookTitle: "सम्पूर्ण वैदिक जीवन कुंडली महाग्रन्थ",
-    lifeBookSub: "35+ पृष्ठों का सम्पूर्ण जीवन फल महाग्रन्थ: षोडशवर्ग, 120 वर्षीय दशाएं, द्वादश भाव फल, 5 वर्षीय वर्षफल व वैदिक उपाय।",
-    pages: "पृष्ठ", plusQs: "प्रश्न शामिल",
-    processing: "भुगतान खोला जा रहा है…", paid: "भुगतान प्राप्त —", added: "प्रश्न जोड़े गए।",
-    payFailed: "भुगतान पूरा नहीं हो सका।",
-    testMode: "परीक्षण मोड — कोई वास्तविक भुगतान नहीं लिया जाएगा।",
-    history: "मेरे प्रश्न", orders: "मेरे ऑर्डर", close: "बंद करें",
-    dev: "डेवलपमेंट मोड — आपका कोड है",
-    couponLabel: "कूपन है?", couponPlaceholder: "कूपन कोड",
-    couponApply: "लागू करें", couponRemove: "हटाएँ", couponChecking: "जाँच हो रही है…",
-    couponInvalid: "यह कूपन उपयोग नहीं किया जा सकता।",
-    couponNotHere: "इस वस्तु पर मान्य नहीं",
-    bonusQs: "बोनस प्रश्न",
-    coupons: "कूपन", couponsTitle: "कूपन प्रबंधन",
-    couponsSub: "कोड, सीमाएँ और उपयोग। परिवर्तन तुरंत लागू होते हैं।",
-    newCoupon: "नया कूपन", cCode: "कोड", cKind: "प्रकार", cValue: "मान",
-    cDesc: "विवरण", cApplies: "किस पर लागू", cMinOrder: "न्यूनतम ऑर्डर (₹)",
-    cMaxOff: "अधिकतम छूट (₹)", cTotalLimit: "कुल सीमा",
-    cPerUser: "प्रति उपयोगकर्ता", cExpires: "समाप्ति (YYYY-MM-DD)",
-    cCreate: "बनाएँ", cSave: "सहेजें", cActivate: "सक्रिय करें",
-    cDeactivate: "निष्क्रिय करें", cDelete: "हटाएँ", cUsed: "उपयोग",
-    cUnlimited: "असीमित", cActive: "सक्रिय", cInactive: "निष्क्रिय",
-    cNone: "अभी कोई कूपन नहीं।", cBlank: "खाली = असीमित",
-    kPercent: "प्रतिशत छूट", kFlat: "निश्चित ₹ छूट", kExtra: "बोनस क्रेडिट",
-    cConfirmDelete: "यह कूपन हटाएँ? यह तुरंत काम करना बंद कर देगा। यह एडमिन पैनल की 'Deleted' सूची में रहेगा और वापस लाया जा सकता है।",
-    orUsername: "यूज़रनेम और पासवर्ड से खाता बनाएँ",
-    haveOneLogIn: "मेरे पास पहले से यूज़रनेम है — लॉग इन करें",
-    orDivider: "या",
-    usernameLabel: "यूज़रनेम", passwordLabel: "पासवर्ड",
-    createAccount: "खाता बनाएँ", logIn: "लॉग इन करें",
-    haveAccount: "पहले से खाता है? लॉग इन करें",
-    needAccount: "खाता नहीं है? एक बनाएँ",
-    noRecoveryNote: "इस खाते से कोई ईमेल जुड़ा नहीं है, इसलिए पासवर्ड भूलने पर इसे वापस पाने "
-                   + "का कोई तरीका नहीं है — इसे कहीं सुरक्षित लिख लें।",
-    backToProviders: "वापस",
-    phoneContinue: "मोबाइल नंबर से जारी रखें",
-    phoneLabel: "मोबाइल नंबर", phoneHint: "हम आपको 6 अंकों का कोड SMS करेंगे। सामान्य SMS शुल्क लग सकता है।",
-    phoneSend: "कोड भेजें", phoneSending: "भेजा जा रहा है…",
-    phoneCodeLabel: "SMS में आया कोड", phoneSentTo: "कोड {n} पर भेजा गया।",
-    phoneVerify: "सत्यापित करें और जारी रखें", phoneVerifying: "जाँच हो रही है…",
-    phoneResend: "कोड दोबारा भेजें", phoneResendIn: "{s} सेकंड में दोबारा भेजें",
-    phoneChange: "दूसरा नंबर इस्तेमाल करें",
-    phoneNeedNumber: "अपना मोबाइल नंबर दर्ज करें।", phoneNeedCode: "6 अंकों का कोड दर्ज करें।",
-    emailContinue: "ईमेल पर साइन-इन कोड पाएँ",
-    emailLabel: "ईमेल पता",
-    emailHint: "हम आपको 6 अंकों का कोड ईमेल करेंगे — पासवर्ड की ज़रूरत नहीं।",
-    emailSend: "कोड भेजें", emailSending: "भेजा जा रहा है…",
-    emailCodeLabel: "ईमेल में आया कोड",
-    emailSentTo: "कोड {e} पर भेजा गया। इसमें एक मिनट लग सकता है — Spam या Promotions फ़ोल्डर भी देखें।",
-    emailVerify: "सत्यापित करें और जारी रखें", emailVerifying: "जाँच हो रही है…",
-    emailResend: "कोड दोबारा भेजें", emailResendIn: "{s} सेकंड में दोबारा भेजें",
-    emailChange: "दूसरा ईमेल इस्तेमाल करें",
-    emailNeedAddress: "अपना ईमेल पता दर्ज करें।", emailNeedCode: "6 अंकों का कोड दर्ज करें।",
-    signInFailed: "साइन-इन नहीं हो सका। कृपया फिर से कोशिश करें।",
-    account: "मेरा खाता", emailPlaceholder: "आपका ईमेल पता",
-    legalLine: "आगे बढ़कर आप हमारी {terms} और {privacy} स्वीकार करते हैं।",
-    terms: "शर्तें", privacy: "गोपनीयता नीति",
-    devEmailPrompt: "डेवलपर साइन-इन — ईमेल:",
-    status: {
-      created: "भुगतान नहीं हुआ", awaiting_verification: "पुष्टि की प्रतीक्षा", paid: "भुगतान हो गया",
-      failed: "विफल", refunded: "धनवापसी हो गई", rejected: "अस्वीकृत",
-      pending: "लंबित", in_progress: "प्रगति पर", delivered: "भेज दी गई",
-    },
-    // The server's sign-in errors are English; these are the ones a person can fix.
-    errors: {
-      "Invalid username or password.": "यूज़रनेम या पासवर्ड गलत है।",
-      "That username is already taken.": "यह यूज़रनेम पहले से लिया जा चुका है।",
-      "Username must be 3-30 characters: letters, numbers, _ or - only.":
-        "यूज़रनेम 3-30 अक्षरों का हो: केवल अंग्रेज़ी अक्षर, अंक, _ या -।",
-    },
-  },
+/* DIVASTRO-121: the account/checkout strings live in app/static/i18n/<code>.json
+   under "acct.<key>" (same files as app.js's, English fallback per key). A few
+   values are structured (acct.upiHelpApps is a list, acct.errors / acct.status
+   are maps) — a translation keeps the same shape. */
+const at = (k) => {
+  const key = `acct.${k}`;
+  const own = (I18N[state.lang] || {})[key];
+  if (own != null && own !== "") return own;
+  return I18N.en[key] ?? k;
 };
 
-const at = (k) => (A_I18N[state.lang] || A_I18N.en)[k] ?? A_I18N.en[k] ?? k;
 
 /* A sign-in error as the reader should see it. The email endpoints already answer
    in the sheet's language; the username and phone ones answer in English, so in
@@ -234,7 +34,7 @@ function authErr(detail) {
   const known = (at("errors") || {})[detail];
   if (known) return known;
   const m = /^Password must be at least (\d+) characters\.$/.exec(detail);
-  return m ? `पासवर्ड कम से कम ${m[1]} अक्षरों का हो।` : undefined;
+  return m ? at("pwMinLen").replace("{n}", m[1]) : undefined;
 }
 const statusText = (s) => (at("status") || {})[s] || s;
 
@@ -383,7 +183,6 @@ function renderAccountBar() {
         ${acct.user.is_admin
           ? `<button data-act="coupons">${escapeHtml(at("coupons"))}</button>
              <a class="drop-link" href="/admin">${escapeHtml(at("adminPanel"))}</a>` : ""}
-        <button class="only-narrow" data-act="lang">${state.lang === "hi" ? "English" : "हिन्दी"}</button>
         <button class="only-narrow" data-act="theme">${escapeHtml(at("themeToggle"))}</button>
         <button data-act="logout">${escapeHtml(at("signOut"))}</button>
       </div>
@@ -418,11 +217,12 @@ function renderAccountBar() {
         // a chart they no longer have an account for. Always land on home.
         closeModal();
         if (typeof showStage === "function") showStage("stage-home");
-      } else if (b.dataset.act === "lang") {
-        // On a 320px phone the header has no room for the switches; the same
-        // controls live here and simply press the real ones.
-        document.querySelector(`.lang[data-lang="${state.lang === "hi" ? "en" : "hi"}"]`)?.click();
-      } else if (b.dataset.act === "theme") { document.querySelector("#theme-toggle")?.click(); }
+      } else if (b.dataset.act === "theme") {
+        // On a 320px phone the header has no room for the theme switch; the same
+        // control lives here and simply presses the real one. (The language picker
+        // never moves in here: DIVASTRO-121 keeps it visible in the header.)
+        document.querySelector("#theme-toggle")?.click();
+      }
       else if (b.dataset.act === "history") { openHistory(); }
       else if (b.dataset.act === "coupons") { openCouponAdmin(); }
       else { openOrders(); }
@@ -766,7 +566,6 @@ function couponFor(sku) {
 }
 
 function packCard(p) {
-  const hi = state.lang === "hi";
   const cp = couponFor(p.sku);
   const applied = !!acct.coupon;
 
@@ -790,10 +589,10 @@ function packCard(p) {
 
   return `<div class="pack${p.highlight ? " featured" : ""}">
     ${p.highlight ? `<span class="pack-flag">${escapeHtml(at("popular"))}</span>` : ""}
-    <h4>${escapeHtml(hi ? p.title_hi : p.title)}</h4>
+    <h4>${escapeHtml(loc(p, "title"))}</h4>
     ${price}
     ${unit}
-    <p class="pack-blurb">${escapeHtml(hi ? p.blurb_hi : p.blurb)}</p>
+    <p class="pack-blurb">${escapeHtml(loc(p, "blurb"))}</p>
     <button class="primary buy-btn" data-sku="${p.sku}">${label}</button>
   </div>`;
 }

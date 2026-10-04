@@ -20,14 +20,35 @@
   };
   const isHi = () => typeof state !== 'undefined' && state.lang === 'hi';
   const curLang = () => (typeof state !== 'undefined' && state.lang) ? state.lang : 'en';
+  // DIVASTRO-121: a field of an API object in the reader's language. The APIs send
+  // `x_hi` beside the English `x` / `x_en` today and will add `x_<code>` as each
+  // language's tables land; anything missing is the English.
+  const pick = (o, base) => {
+    if (!o) return '';
+    const l = curLang();
+    return (l !== 'en' && o[`${base}_${l}`]) || o[`${base}_en`] || o[base] || '';
+  };
+  // A server page in the reader's language: /kn/vrat-tyohar for Kannada (English and
+  // Hindi pages carry their own URLs: `url` / `url_hi`).
+  const langPath = (p) => {
+    const l = curLang();
+    if (l === 'en' || l === 'hi' || !p || p[0] !== '/' || p.startsWith(`/${l}/`)) return p;
+    return `/${l}${p}`;
+  };
+  const linkFor = (o) => {
+    const l = curLang();
+    return (l !== 'en' && o[`url_${l}`]) || langPath(o.url);
+  };
+  const vratHub = () => (curLang() === 'en' ? '/vrat-tyohar' : `/${curLang()}/vrat-tyohar`);
 
-  // A place as a Hindi reader names it: an SEO city's Hindi name ("नई दिल्ली") when
-  // we have one (share.js holds that list), else the label exactly as picked.
+  // A place as the reader names it: an SEO city's name in their language ("नई दिल्ली")
+  // when we have one (share.js holds that list), else the label exactly as picked.
   function placeLabel(place) {
     const label = (place && place.label) || '';
     const S = window.DAShare;
-    const c = isHi() && S && S.cityFor ? S.cityFor(place) : null;
-    return c && c.name_hi ? c.name_hi : label;
+    const l = curLang();
+    const c = l !== 'en' && S && S.cityFor ? S.cityFor(place) : null;
+    return (c && c[`name_${l}`]) || label;
   }
   // 'YYYY-MM-DD' as '3 अक्टूबर 2026' in Hindi; unchanged in English.
   function showDate(iso) {
@@ -37,9 +58,9 @@
         timeZone: 'UTC', numberingSystem: 'latn' }).format(new Date(`${iso}T00:00:00Z`));
     } catch { return iso; }
   }
-  // The server's own error detail is English; a Hindi reader gets the tool's
-  // Hindi message instead.
-  const failText = (detail, key, fallback) => (isHi() ? tr(key, fallback) : (detail || fallback));
+  // The server's own error detail is English; a reader in another language gets the
+  // tool's own message in their language instead (English until it is translated).
+  const failText = (detail, key, fallback) => (curLang() !== 'en' ? tr(key, fallback) : (detail || fallback));
 
   // DIVASTRO-103: "today" is the calendar date at the chosen place (India by
   // default), not the UTC date — toISOString() showed yesterday 00:00-05:30 IST.
@@ -309,19 +330,18 @@
   function vratSection(v, p, place) {
     const items = (v && v.date === p.date && Array.isArray(v.items)) ? v.items : [];
     if (!items.length) return '';
-    const hi = isHi();
     const isToday = p.date === todayIn(place && place.timezone);
     const heading = isToday ? tr('vratDayToday', 'Vrat & Festivals today')
-      : tr('vratDayOn', 'Vrat & Festivals on {d}').replace('{d}', (hi ? v.day_hi : v.day_en) || showDate(p.date));
+      : tr('vratDayOn', 'Vrat & Festivals on {d}').replace('{d}', pick(v, 'day') || showDate(p.date));
     const when = (t) => {
-      const day = t.day_en ? `${hi ? t.day_hi : t.day_en}, ` : '';
+      const day = t.day_en ? `${pick(t, 'day')}, ` : '';
       return day + (t.at ? hhmm(t.at) : `${hhmm(t.start)} – ${hhmm(t.end)}`);
     };
     const rows = items.map((it) => {
       const times = (it.timings || []).map((t) =>
-        `<div class="good"><span>${esc(hi ? t.label_hi : t.label_en)}</span><b>${esc(when(t))}</b></div>`).join('');
+        `<div class="good"><span>${esc(pick(t, 'label'))}</span><b>${esc(when(t))}</b></div>`).join('');
       return `<div class="pa-vrat-item">
-          <h4><a href="${esc(hi ? it.url_hi : it.url)}">${esc(hi ? it.name_hi : it.name_en)}</a></h4>
+          <h4><a href="${esc(linkFor(it))}">${esc(pick(it, 'name'))}</a></h4>
           ${times ? `<div class="pa-times">${times}</div>` : ''}
         </div>`;
     }).join('');
@@ -329,17 +349,20 @@
   }
 
   function renderPanchang(p, place, vrat) {
-    const hi = isHi();
-    // /api/panchang sends every name in both languages (app/astro/names_hi.py).
-    const name = (r) => (hi ? r.label_hi || r.name_hi : '') || r.label || r.name;
-    const until = (iso) => (hi ? `${hhmm(iso)} ${tr('until', 'तक')}` : `${tr('until', 'until')} ${hhmm(iso)}`);
+    const l = curLang();
+    // /api/panchang sends every name in English and Hindi (app/astro/names_hi.py),
+    // and name_<code> / label_<code> for each language whose table has landed.
+    const name = (r) => (l !== 'en' ? r[`label_${l}`] || r[`name_${l}`] : '') || r.label || r.name;
+    // "until 3:54" / "3:54 तक": the word order is the language's, so it is a template.
+    const until = (iso) => tr('untilTpl', 'until {t}').replace('{t}', hhmm(iso));
     const limb = (rows) => (rows || []).map((r) =>
       `<div class="limb-line"><b>${esc(name(r))}</b> ` +
       `<span>${esc(until(r.ends))}</span></div>`).join('') || '—';
-    const vara = (hi && p.vara && p.vara.name_hi) || p.summary.vara;
-    const notes = (hi ? p.notes_hi : p.notes) || [];
+    const vara = (l !== 'en' && p.vara && p.vara[`name_${l}`]) || p.summary.vara;
+    const ownNotes = l !== 'en' ? p[`notes_${l}`] : null;
+    const notes = (l === 'en' ? p.notes : (ownNotes || (l === 'hi' ? [] : p.notes))) || [];
     const reckoned = p.reckoned_from === 'sunrise' ? ''
-      : `(${esc(hi ? tr('reckonedMidnight', 'reckoned from midnight') : p.reckoned_from)})`;
+      : `(${esc(l !== 'en' ? tr('reckonedMidnight', 'reckoned from midnight') : p.reckoned_from)})`;
 
     q('#panchang-result').innerHTML = `
       <div class="card pa-card">
@@ -417,7 +440,6 @@
 
   function renderTodayStrip() {
     if (!todayStrip) return;
-    const hi = typeof state !== 'undefined' && state.lang === 'hi';
     const set = (sel, text) => { const el = q(sel); if (el) el.textContent = text; };
     set('#today-title', tr('todayTitle', 'Today'));
     set('#today-tithi-l', tr('todayTithi', 'Tithi'));
@@ -428,15 +450,16 @@
     q('#today-place')?.setAttribute('placeholder', tr('todayCityPh', 'Start typing a city…'));
     const shareEl = q('#today-share');     // DIVASTRO-107: hidden until there is something to share
     if (shareEl) shareEl.hidden = !todayData;
-    renderVratLine(hi);
+    renderVratLine();
     if (!todayData) return;               // still loading: the skeleton stays
 
     const ti = current(todayData.tithi);
     const nk = current(todayData.nakshatra);
     const rk = todayData.muhurta && todayData.muhurta.rahu_kaal;
-    // /api/panchang sends the Hindi names beside the English (app/astro/names_hi.py).
-    const tithi = ti ? ((hi && ti.label_hi) || ti.label || ti.name) : '—';
-    const nak = nk ? ((hi && nk.name_hi) || nk.name) : '—';
+    // /api/panchang sends the names in each language beside the English (app/astro/names_<code>.py).
+    const l = curLang();
+    const tithi = ti ? ((l !== 'en' && ti[`label_${l}`]) || ti.label || ti.name) : '—';
+    const nak = nk ? ((l !== 'en' && nk[`name_${l}`]) || nk.name) : '—';
     const now = Date.now();
     const inRahu = !!(rk && Date.parse(rk.start) <= now && now < Date.parse(rk.end));
     const rahu = rk ? `${hhmm(rk.start)}–${hhmm(rk.end)}` : '—';
@@ -455,21 +478,21 @@
   // DIVASTRO-111: one short line under the strip when today is a vrat or festival
   // ("Today: Papankusha Ekadashi"), linking to the vrat-tyohar page. Nothing at all
   // on an ordinary day or if the lookup fails.
-  function renderVratLine(hi) {
+  function renderVratLine() {
     const el = q('#today-vrat');
     if (!el) return;
     const items = (todayVrat && Array.isArray(todayVrat.items)) ? todayVrat.items : [];
     const upcoming = todayVrat && todayVrat.next;
     if (!todayData || (!items.length && !upcoming)) { el.hidden = true; return; }
     if (items.length) {
-      const names = items.slice(0, 2).map((v) => (hi ? v.name_hi : v.name_en)).join(', ');
-      el.textContent = `${hi ? 'आज' : 'Today'}: ${names}`;
+      const names = items.slice(0, 2).map((v) => pick(v, 'name')).join(', ');
+      el.textContent = tr('vratLineToday', 'Today: {names}').replace('{names}', names);
     } else {
       // An ordinary day: say what is next, so the vrat calendar is always one tap away.
-      el.textContent = hi ? `अगला व्रत/त्योहार: ${upcoming.name_hi} · ${upcoming.day_hi}`
-                          : `Next vrat/festival: ${upcoming.name_en} · ${upcoming.day_en}`;
+      el.textContent = tr('vratLineNext', 'Next vrat/festival: {name} · {day}')
+        .replace('{name}', pick(upcoming, 'name')).replace('{day}', pick(upcoming, 'day'));
     }
-    el.setAttribute('href', hi ? '/hi/vrat-tyohar' : '/vrat-tyohar');
+    el.setAttribute('href', vratHub());
     el.hidden = false;
   }
 
@@ -717,7 +740,6 @@
   }
 
   function renderChoghadiya(data, place, lang, scroll) {
-    const isHi = lang === 'hi';
     const act = data.active_slot;
     const badgeColor = {
       auspicious: 'var(--green)',
@@ -733,11 +755,11 @@
           <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); ${bg}">
             <td style="padding: 10px 8px; font-weight: bold;">
               ${esc(s.start)} – ${esc(s.end)}
-              ${s.is_current ? `<span style="margin-left: 6px; font-size: 12px; color: var(--gold); border: 1px solid var(--gold); border-radius: 4px; padding: 1px 4px;">${isHi ? 'वर्तमान' : 'NOW'}</span>` : ''}
+              ${s.is_current ? `<span style="margin-left: 6px; font-size: 12px; color: var(--gold); border: 1px solid var(--gold); border-radius: 4px; padding: 1px 4px;">${esc(tr('choNow', 'NOW'))}</span>` : ''}
             </td>
             <td style="padding: 10px 8px;">
               <b>${esc(s.name_label)}</b><br/>
-              <span style="font-size: 12px; color: var(--ink-dim);">${isHi ? 'स्वामी: ' : 'Lord: '}${esc(s.ruler_label)}</span>
+              <span style="font-size: 12px; color: var(--ink-dim);">${esc(tr('choLordPrefix', 'Lord: '))}${esc(s.ruler_label)}</span>
             </td>
             <td style="padding: 10px 8px;">
               <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: ${dotColor};">
@@ -758,15 +780,15 @@
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 16px;">
           <div>
             <h3 style="color: var(--gold); margin: 0;">
-              ${isHi ? 'दैनिक चौघड़िया चक्र' : 'Choghadiya Muhurta Schedule'} — ${esc(placeLabel(place))}
+              ${esc(tr('choSchedTitle', 'Choghadiya Muhurta Schedule'))} — ${esc(placeLabel(place))}
             </h3>
             <p style="margin: 4px 0 0 0; font-size: 12.5px; color: var(--ink-dim);">
-              ${esc(isHi ? data.weekday_hi : data.weekday)} · ${esc(showDate(data.date))} · ${isHi ? 'सूर्योदय' : 'Sunrise'}: ${esc(data.sunrise)} · ${isHi ? 'सूर्यास्त' : 'Sunset'}: ${esc(data.sunset)}
+              ${esc(pick(data, 'weekday'))} · ${esc(showDate(data.date))} · ${esc(tr('choSunrise', 'Sunrise'))}: ${esc(data.sunrise)} · ${esc(tr('choSunset', 'Sunset'))}: ${esc(data.sunset)}
             </p>
           </div>
           ${act ? `
             <div style="padding: 8px 14px; border-radius: 8px; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold); text-align: right;">
-              <span style="font-size: 12px; color: var(--gold); text-transform: uppercase;">${isHi ? 'वर्तमान सक्रिय मुहूर्त' : 'Active Muhurta Now'}</span>
+              <span style="font-size: 12px; color: var(--gold); text-transform: uppercase;">${esc(tr('choActiveNow', 'Active Muhurta Now'))}</span>
               <div style="font-size: 16px; font-weight: bold; color: var(--ink);">
                 ${esc(act.name_label)} (${esc(act.start)} – ${esc(act.end)})
               </div>
@@ -775,16 +797,16 @@
         </div>
 
         <h4 style="margin: 18px 0 8px 0; color: var(--gold); font-size: 14px; border-bottom: 1px solid var(--line); padding-bottom: 4px;">
-          ☀️ ${isHi ? 'दिन का चौघड़िया (सूर्योदय से सूर्यास्त)' : 'Day Choghadiya (Sunrise to Sunset)'}
+          ☀️ ${esc(tr('choDayTitle', 'Day Choghadiya (Sunrise to Sunset)'))}
         </h4>
         <div style="overflow-x: auto;">
           <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; margin-bottom: 16px;">
             <thead>
               <tr style="border-bottom: 1px solid var(--line); color: var(--ink-dim);">
-                <th style="padding: 6px 8px;">${isHi ? 'समय' : 'Time'}</th>
-                <th style="padding: 6px 8px;">${isHi ? 'चौघड़िया / स्वामी' : 'Muhurta / Lord'}</th>
-                <th style="padding: 6px 8px;">${isHi ? 'प्रकृति' : 'Nature'}</th>
-                <th style="padding: 6px 8px;">${isHi ? 'उपयुक्त कार्य व परामर्श' : 'Recommended Activities'}</th>
+                <th style="padding: 6px 8px;">${esc(tr('choColTime', 'Time'))}</th>
+                <th style="padding: 6px 8px;">${esc(tr('choColName', 'Muhurta / Lord'))}</th>
+                <th style="padding: 6px 8px;">${esc(tr('choColNature', 'Nature'))}</th>
+                <th style="padding: 6px 8px;">${esc(tr('choColAct', 'Recommended Activities'))}</th>
               </tr>
             </thead>
             <tbody>
@@ -794,16 +816,16 @@
         </div>
 
         <h4 style="margin: 18px 0 8px 0; color: var(--gold); font-size: 14px; border-bottom: 1px solid var(--line); padding-bottom: 4px;">
-          🌙 ${isHi ? 'रात्रि का चौघड़िया (सूर्यास्त से सूर्योदय)' : 'Night Choghadiya (Sunset to Next Sunrise)'}
+          🌙 ${esc(tr('choNightTitle', 'Night Choghadiya (Sunset to Next Sunrise)'))}
         </h4>
         <div style="overflow-x: auto;">
           <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
             <thead>
               <tr style="border-bottom: 1px solid var(--line); color: var(--ink-dim);">
-                <th style="padding: 6px 8px;">${isHi ? 'समय' : 'Time'}</th>
-                <th style="padding: 6px 8px;">${isHi ? 'चौघड़िया / स्वामी' : 'Muhurta / Lord'}</th>
-                <th style="padding: 6px 8px;">${isHi ? 'प्रकृति' : 'Nature'}</th>
-                <th style="padding: 6px 8px;">${isHi ? 'उपयुक्त कार्य व परामर्श' : 'Recommended Activities'}</th>
+                <th style="padding: 6px 8px;">${esc(tr('choColTime', 'Time'))}</th>
+                <th style="padding: 6px 8px;">${esc(tr('choColName', 'Muhurta / Lord'))}</th>
+                <th style="padding: 6px 8px;">${esc(tr('choColNature', 'Nature'))}</th>
+                <th style="padding: 6px 8px;">${esc(tr('choColAct', 'Recommended Activities'))}</th>
               </tr>
             </thead>
             <tbody>
@@ -835,7 +857,7 @@
   function sharePanchang(p) {
     const S = SHARE();
     if (!S) return;
-    const hi = typeof state !== 'undefined' && state.lang === 'hi';
+    const l = curLang();
     const today = !q('#pa-date').value;
     const ti = today ? current(p.tithi) : (p.tithi || [])[0];
     const nk = today ? current(p.nakshatra) : (p.nakshatra || [])[0];
@@ -843,8 +865,8 @@
     const text = S.panchangText({
       city: S.cityName(place),
       date: p.date,
-      tithi: ti ? ((hi && ti.label_hi) || ti.label || ti.name) : '—',
-      nak: nk ? ((hi && nk.name_hi) || nk.name) : '—',
+      tithi: ti ? ((l !== 'en' && ti[`label_${l}`]) || ti.label || ti.name) : '—',
+      nak: nk ? ((l !== 'en' && nk[`name_${l}`]) || nk.name) : '—',
       rahu: (p.muhurta && p.muhurta.rahu_kaal) ? span(p.muhurta.rahu_kaal) : '—',
     });
     S.wire(q('#panchang-share'), text, S.url(S.cityPath('panchang', place, '/?open=panchang'), 'panchang'));

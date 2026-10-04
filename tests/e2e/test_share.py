@@ -78,7 +78,7 @@ def today_strip(p, browser, base: str) -> None:
     check("tapping share does not open the Panchang tool", pg.page.is_visible("#stage-home"))
 
     # A city with its own SEO page links there, in Hindi when the UI is Hindi.
-    pg.page.click('button.lang[data-lang="hi"]')
+    pg.set_lang("hi")
     pg.page.click("#today-city")
     pg.page.fill("#today-place", "Mumbai")
     pg.page.wait_for_selector("#today-results li", timeout=10000)

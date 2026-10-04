@@ -139,7 +139,7 @@ def milan_hindi(p, browser, base: str) -> None:
     ctx = browser.new_context(**DESKTOPS["desktop_1440x800"])
     pg = Page(ctx.new_page(), base)
     open_milan(pg)
-    pg.page.click('button.lang[data-lang="hi"]')
+    pg.set_lang("hi")
     pg.page.evaluate("showStage('stage-milan')")
 
     fill_side(pg, "groom", GROOM)

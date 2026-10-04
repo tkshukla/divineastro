@@ -223,9 +223,9 @@ def audit(profile: str, theme: str, ctx_args: dict, base: str, browser, shots: b
         check(f"{label}: page is exactly as wide as the screen (not zoomed out)", abs(page_w - screen_w) <= 1,
               f"page {page_w}px on a {screen_w}px screen")
         blank = pg.page.evaluate(
-            "[...document.querySelectorAll('.lang')].filter(b => b.getBoundingClientRect().width > 0 "
+            "[...document.querySelectorAll('.lp-btn')].filter(b => b.getBoundingClientRect().width > 0 "
             "&& b.innerText.trim().length === 0).length")
-        check(f"{label}: language buttons show their label", blank == 0, f"{blank} blank")
+        check(f"{label}: the language picker shows its label", blank == 0, f"{blank} blank")
         pushed = pg.page.evaluate(OVERFLOW_JS)
         check(f"{label}: nothing is pushed off the right edge", not pushed,
               "; ".join(f"{o['sel']} to x={o['right']}" for o in pushed[:3]) + (f" (+{len(pushed) - 3})" if len(pushed) > 3 else ""))

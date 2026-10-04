@@ -27,7 +27,7 @@ check = Checker()
 TOUCH_TARGETS = [
     ("#send", "send button"), ("#back", "back button"), (".vview", "Reading/Chart switch"),
     (".starter", "suggested question"), (".ghost-btn", "header button"),
-    (".lang", "language button"), (".theme-toggle", "theme toggle"),
+    (".lp-btn", "language picker"), (".theme-toggle", "theme toggle"),
     (".credit-pill", "credits pill"),
 ]
 MIN_TARGET = 44          # px — the common mobile guideline
