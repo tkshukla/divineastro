@@ -142,7 +142,9 @@ def omitted_labels(path: str) -> set[str]:
     Makar Sankranti RULE text may still name the punya kaal period, with no time)."""
     slug, _, year = i18n.strip_prefix(path)[1].removeprefix("/tyohar/").rpartition("-")
     key = vrat_pages.festival_index(int(year))[slug]["key"]
-    return {lbl for (k, tk) in festivals.OMITTED_TIMINGS if k == key for lbl in festivals.LABELS[tk]}
+    own = i18n.names(lang).FESTIVAL_TIMINGS
+    return {lbl for (k, tk) in festivals.OMITTED_TIMINGS if k == key
+            for lbl in (*festivals.LABELS[tk], own.get(tk)) if lbl}
 
 
 OMITTED_NAMES = {n for s in festivals.FESTIVALS if s.key in festivals.OMITTED

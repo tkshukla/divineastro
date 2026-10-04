@@ -112,7 +112,7 @@ LANGS = ("en", "hi")
 # Every registry language gets /<code>/rashifal; one not listed here shows the
 # English text with noindex + "translation coming soon", and stays out of the
 # sitemap and hreflang. Add a code once its rashifal strings are written.
-TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te"}  # DIVASTRO-123
+TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te", "ta", "ml"}  # DIVASTRO-123
 i18n.LOCALIZABLE_ROOTS.add("rashifal")
 
 

@@ -29,6 +29,8 @@ CHOGHADIYA_INFO = {
         "score": 95,
         "description": "Best time for all ceremonies, investments, agreements, and starting important endeavors.",
         "description_hi": "सभी प्रकार के मांगलिक कार्य, निवेश, समझौता एवं नवीन शुरुआत हेतु सर्वश्रेष्ठ समय।",
+        "description_ta": "எல்லாச் சடங்குகள், முதலீடு, ஒப்பந்தங்கள், முக்கியமான புதிய தொடக்கங்களுக்கு மிகச் சிறந்த நேரம்.",
+        "description_ml": "എല്ലാ ചടങ്ങുകൾക്കും നിക്ഷേപങ്ങൾക്കും കരാറുകൾക്കും പ്രധാന തുടക്കങ്ങൾക്കും ഏറ്റവും ഉത്തമമായ സമയം.",
     },
     "Shubh": {
         "name_hi": "शुभ",
@@ -39,6 +41,8 @@ CHOGHADIYA_INFO = {
         "score": 90,
         "description": "Highly auspicious for ceremonies, religious rituals, education, and purchasing property.",
         "description_hi": "विवाह, धार्मिक अनुष्ठान, शिक्षा आरंभ एवं संपत्ति क्रय हेतु अत्यंत शुभ मुहूर्त।",
+        "description_ta": "சடங்குகள், வழிபாடு, கல்வித் தொடக்கம், சொத்து வாங்குதல் ஆகியவற்றுக்கு மிகவும் சுபம்.",
+        "description_ml": "ചടങ്ങുകൾ, മതപരമായ കർമങ്ങൾ, വിദ്യാരംഭം, വസ്തു വാങ്ങൽ എന്നിവയ്ക്ക് ഏറെ ശുഭം.",
     },
     "Labh": {
         "name_hi": "लाभ",
@@ -49,6 +53,8 @@ CHOGHADIYA_INFO = {
         "score": 85,
         "description": "Favorable for business, trade, financial transactions, launching products, and interviews.",
         "description_hi": "व्यापार, आर्थिक लेनदेन, नवीन उत्पाद शुभारंभ एवं साक्षात्कार हेतु अनुकूल समय।",
+        "description_ta": "வணிகம், வர்த்தகம், பணப் பரிவர்த்தனை, புதிய பொருள் அறிமுகம், நேர்காணலுக்கு உகந்தது.",
+        "description_ml": "വ്യാപാരം, കച്ചവടം, സാമ്പത്തിക ഇടപാടുകൾ, പുതിയ ഉൽപ്പന്നങ്ങളുടെ തുടക്കം, അഭിമുഖങ്ങൾ എന്നിവയ്ക്ക് അനുകൂലം.",
     },
     "Char": {
         "name_hi": "चल",
@@ -59,6 +65,8 @@ CHOGHADIYA_INFO = {
         "score": 60,
         "description": "Neutral. Excellent for journeys, travel, vehicle purchases, and shifting places.",
         "description_hi": "सामान्य अनुकूल। यात्रा, वाहन क्रय एवं स्थान परिवर्तन हेतु उत्तम।",
+        "description_ta": "பயணம், வாகனம் வாங்குதல், இடம் மாறுதல் ஆகியவற்றுக்கு மிகவும் நல்லது.",
+        "description_ml": "യാത്രകൾക്കും വാഹനം വാങ്ങുന്നതിനും താമസം മാറുന്നതിനും വളരെ നല്ലത്.",
     },
     "Rog": {
         "name_hi": "रोग",
@@ -69,6 +77,8 @@ CHOGHADIYA_INFO = {
         "score": 25,
         "description": "Inauspicious. Avoid medical procedures or conflict. Only suitable for competitive sports or defeating rivals.",
         "description_hi": "अशुभ। मांगलिक कार्य वर्जित। प्रतिस्पर्धा व वाद-विवाद निवारण हेतु ही उपयोगी।",
+        "description_ta": "மருத்துவ நடைமுறைகளையும் வாக்குவாதத்தையும் தவிர்க்கவும். போட்டிகளுக்கும் எதிரிகளை வெல்வதற்கும் மட்டும் ஏற்றது.",
+        "description_ml": "ചികിത്സാ നടപടികളും തർക്കങ്ങളും ഒഴിവാക്കുക. മത്സരങ്ങൾക്കും എതിരാളികളെ മറികടക്കാനും മാത്രം യോജിച്ചത്.",
     },
     "Kaal": {
         "name_hi": "काल",
@@ -79,6 +89,8 @@ CHOGHADIYA_INFO = {
         "score": 20,
         "description": "Inauspicious. Ruled by Saturn; causes delays and setbacks. Avoid new ventures or signing documents.",
         "description_hi": "अशुभ। कार्यों में विलंब व हानि संभव। नए सौदों व अनुबंधों से बचें।",
+        "description_ta": "சனியின் ஆதிக்கம்; தாமதங்களும் தடைகளும் வரலாம். புதிய முயற்சிகளையும் ஆவணங்களில் கையெழுத்திடுவதையும் தவிர்க்கவும்.",
+        "description_ml": "ശനിയുടെ ആധിപത്യം; താമസവും തടസ്സങ്ങളും ഉണ്ടാകാം. പുതിയ സംരംഭങ്ങളും രേഖകളിൽ ഒപ്പിടലും ഒഴിവാക്കുക.",
     },
     "Udveg": {
         "name_hi": "उद्वेग",
@@ -89,6 +101,8 @@ CHOGHADIYA_INFO = {
         "score": 30,
         "description": "Inauspicious. Causes restlessness and anxiety. Favorable only for government filings or official duties.",
         "description_hi": "अशुभ। मानसिक तनाव व अशांति संभव। केवल राजकीय कार्यों व कर आदि हेतु उपयुक्त।",
+        "description_ta": "அமைதியின்மையும் பதற்றமும் தரலாம். அரசு விண்ணப்பங்கள், அலுவல் பணிகளுக்கு மட்டும் உகந்தது.",
+        "description_ml": "അസ്വസ്ഥതയും ഉത്കണ്ഠയും ഉണ്ടാക്കാം. സർക്കാർ അപേക്ഷകൾക്കും ഔദ്യോഗിക ജോലികൾക്കും മാത്രം അനുകൂലം.",
     },
 }
 

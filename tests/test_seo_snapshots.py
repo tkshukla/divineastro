@@ -173,7 +173,8 @@ def regional_names() -> list[str]:
     client = TestClient(app, raise_server_exceptions=True)
     p = seo_pages._panchang("bengaluru", DAY)
     failures = []
-    for lang in ("kn", "ta"):
+    # Two languages seo_pages has not been translated into yet (if any are left).
+    for lang in [c for c in i18n.EXTRA_CODES if c not in seo_pages.TRANSLATED][:2]:
         html = client.get(f"/{lang}/panchang/bengaluru").text
         n = i18n.names(lang)
         want = [n.TITHI[p["tithi"][0]["name"]], n.NAKSHATRAS[p["nakshatra"][0]["name"]],

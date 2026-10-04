@@ -55,6 +55,8 @@ MODULE_PAGES = {
 }
 MODULES = {"seo_pages": seo_pages, "rashifal_pages": rashifal_pages, "vrat_pages": vrat_pages,
            "nakshatra_pages": nakshatra_pages, "muhurat_pages": muhurat_pages}
+# What the server-rendered modules are written in today (DIVASTRO-123: + kn, te, ta, ml).
+TRANSLATED_NOW = {"en", "hi", "kn", "te", "ta", "ml"}
 
 
 def check(label: str, ok: bool, detail: str = "") -> None:
@@ -155,10 +157,9 @@ def main() -> int:
     check("localize_links is a no-op for en and hi",
           i18n.localize_links(frag, "en") == frag and i18n.localize_links(frag, "hi") == frag)
 
-    print("\n3. Every module: TRANSLATED is {en, hi, kn, te} (DIVASTRO-123)")
+    print("\n3. Every module: TRANSLATED is TRANSLATED_NOW today")
     for name, mod in MODULES.items():
-        check(f"{name}.TRANSLATED", set(mod.TRANSLATED) == {"en", "hi", "kn", "te"},
-              str(mod.TRANSLATED))
+        check(f"{name}.TRANSLATED", set(mod.TRANSLATED) == TRANSLATED_NOW, str(mod.TRANSLATED))
     check("katha.TRANSLATED (Hindi canonical)", set(katha.TRANSLATED) == {"en", "hi"})
 
     print("\n4. Every module's pages in every language")
