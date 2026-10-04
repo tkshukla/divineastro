@@ -1260,6 +1260,39 @@ function renderFunnel(f) {
     'Your own charts and questions are left out.';
 }
 
+function renderInApp(d) {
+  const steps = d.app_funnel || [];
+  barList($('#bl-appfunnel'), steps, {
+    raw: true,
+    value: (r) => {
+      const i = steps.indexOf(r), prev = i > 0 ? steps[i - 1].count : 0;
+      return i === 0 ? `${fmt(r.count)} people` : `${fmt(r.count)} people · ${prev ? pct(r.count / prev) : '—'} of the step before`;
+    },
+  });
+  $('#tr-appfunnel-note').textContent = 'People are counted once per day. In-app actions are reported by the browser, ' +
+    'so a visitor with tracking blocked is missing; steps can be skipped (a signed-in person never opens sign-in), so a step may be larger than the one before.';
+
+  const host = $('#tr-journeys');
+  host.textContent = '';
+  const js = d.journeys || [];
+  if (!js.length) { host.appendChild(el('p', 'empty', 'No visitors yet today or yesterday.')); return; }
+  js.forEach((j) => {
+    const box = el('details', 'tr-journey');
+    const sum = el('summary');
+    const camp = j.campaign ? ` · ${j.campaign}` : '';
+    sum.textContent = `${j.day.slice(5)} ${j.steps[0] ? j.steps[0].t : ''} · ${j.source}${camp} · ${j.device || '?'} · ${j.steps.length} steps · #${j.visitor}`;
+    box.appendChild(sum);
+    const ol = el('ol');
+    j.steps.forEach((s) => {
+      const li = el('li');
+      li.textContent = `${s.t}  ${s.kind === 'page' ? '📄' : '👆'} ${s.label}`;
+      ol.appendChild(li);
+    });
+    box.appendChild(ol);
+    host.appendChild(box);
+  });
+}
+
 function renderTraffic(d) {
   const tot = d.totals, w = d.windows;
   const tiles = $('#tr-tiles');
@@ -1286,7 +1319,7 @@ function renderTraffic(d) {
     'A visit is counted only when the page\'s own script runs, so scanners that fetch the page without running it are left out ' +
     '(visits before 3 Oct 2026 were counted on the page fetch and include them). ' +
     'Bots, Do-Not-Track requests and your own visits are excluded; no IP address or browser string is stored. ' +
-    'Only full page loads are counted, not clicks inside the app.';
+    'Page loads are visits; actions inside the app (screens, charts, questions, checkout) are the fixed list in the in-app funnel below.';
 
   const days = d.daily;
   const visitorsDetail = (x) => `${fmt(x.pageviews)} page views · ${fmt(x.new_users)} new users`;
@@ -1301,6 +1334,7 @@ function renderTraffic(d) {
   ['#chart-visitors', '#chart-new'].forEach((s) => { $(s)._redraw = draw; });
 
   renderFunnel(d.funnel);
+  renderInApp(d);
   barList($('#bl-sources'), d.sources.filter((r) => r.label !== 'internal'));
   barList($('#bl-signup'), d.signup_sources, { color: 'orange' });
   barList($('#bl-pages'), d.pages, {

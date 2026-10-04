@@ -503,6 +503,93 @@ def part2() -> None:
           gone >= 1 and "/old" not in left and "/fresh-keep" in left, f"deleted {gone}, left {left}")
 
 
+def events_now() -> list:
+    from sqlalchemy import select
+
+    from app.db import Event, session
+
+    with session() as db:
+        return db.execute(select(Event).order_by(Event.id)).scalars().all()
+
+
+def part3() -> None:
+    """DIVASTRO-128: in-app events."""
+    import json
+
+    print("\n6. In-app events")
+    ev_ip = f"198.19.{(RUN + 7) % 250}.{(RUN // 250 + 9) % 250 + 1}"
+
+    def post_event(name: str = "chart_cast", detail: str = "", ua: str = CHROME, headers=None, raw=None):
+        data = raw if raw is not None else json.dumps({"name": name, "detail": detail})
+        return requests.post(f"{BASE}/api/event", data=data, timeout=30,
+                             headers={"User-Agent": ua, "Content-Type": "text/plain;charset=UTF-8",
+                                      "Referer": f"{BASE}/", "X-Forwarded-For": ev_ip, **(headers or {})})
+
+    n = len(events_now())
+    r = post_event("screen", "birth")
+    check("an event answers 204", r.status_code == 204, str(r.status_code))
+    rows = events_now()
+    check("one event is one row", len(rows) == n + 1, f"{n} -> {len(rows)}")
+    e = rows[-1]
+    check("with its name, label and an anonymous visitor hash",
+          (e.name, e.detail) == ("screen", "birth") and len(e.visitor) == 16, str((e.name, e.detail, e.visitor)))
+    stored = " ".join(str(x) for x in (e.name, e.detail, e.visitor, e.source, e.campaign))
+    check("NO IP address and NO browser string in the row",
+          ev_ip not in stored and "Mozilla" not in stored and f"run{RUN}" not in stored, stored)
+    check("the label is cleaned to a short safe string",
+          (post_event("checkout_start", "<script>BAD sku!</script>").status_code == 204
+           and events_now()[-1].detail == "scriptbadskuscript"), events_now()[-1].detail)
+
+    n = len(events_now())
+    for label, kwargs in [
+        ("a bot", dict(ua="Googlebot/2.1 (+http://www.google.com/bot.html)")),
+        ("Do-Not-Track", dict(headers={"DNT": "1"})),
+        ("Global-Privacy-Control", dict(headers={"Sec-GPC": "1"})),
+        ("a prerender", dict(headers={"Sec-Purpose": "prefetch;prerender"})),
+        ("a Tencent Cloud address", dict(headers={"X-Forwarded-For": "43.157.38.228"})),
+        ("an unknown event name", dict(name="drop_table")),
+    ]:
+        r = post_event(**kwargs)
+        check(f"{label} is not recorded (and still gets a quiet 204)",
+              len(events_now()) == n and r.status_code == 204, f"{n} -> {len(events_now())}, {r.status_code}")
+    check("a body that is not JSON -> 400", post_event(raw="hello").status_code == 400)
+    check("an oversized body -> 413", post_event(raw='{"name": "screen", "detail": "' + "x" * 2000 + '"}').status_code == 413)
+    check("a GET to /api/event is not allowed", requests.get(f"{BASE}/api/event", timeout=10).status_code == 405)
+    check("none of that was recorded", len(events_now()) == n, f"{n} -> {len(events_now())}")
+
+    print("\n6b. The admin summary shows the in-app funnel and journeys")
+    jv = f"198.19.{(RUN + 11) % 250}.{(RUN // 250 + 13) % 250 + 1}"
+    jua = CHROME + " journey"
+    hdr = {"X-Forwarded-For": jv}
+    beacon("/panchang/bengaluru", ua=jua, q="?utm_source=whatsapp&utm_campaign=blr-test", headers=hdr)
+    for name, detail in [("screen", "birth"), ("chart_cast", ""), ("ask_sent", "")]:
+        requests.post(f"{BASE}/api/event", data=json.dumps({"name": name, "detail": detail}), timeout=30,
+                      headers={"User-Agent": jua, "Content-Type": "text/plain;charset=UTF-8",
+                               "X-Forwarded-For": jv})
+    admin = sign_in(f"admin{RUN}@example.com")
+    make_admin(f"admin{RUN}@example.com")
+    d = admin.get(f"{BASE}/api/admin/traffic?days=7", timeout=30).json()
+    steps = {x["label"]: x["count"] for x in d.get("app_funnel", [])}
+    check("the funnel counts people who cast a chart",
+          steps.get("Cast a chart", 0) >= 1 and steps.get("Asked the AI a question", 0) >= 1, str(steps))
+    mine = [j for j in d.get("journeys", []) if j["steps"] and j["steps"][0]["label"] == "/panchang/bengaluru"]
+    check("the journey lists the page, then each action in order",
+          bool(mine) and [x["label"] for x in mine[0]["steps"]] ==
+          ["/panchang/bengaluru", "screen: birth", "chart_cast", "ask_sent"],
+          str(mine[:1]))
+    check("the journey carries the visitor's source", bool(mine) and mine[0]["source"] == "whatsapp", str(mine[:1]))
+
+    print("\n6c. Events are purged with visits")
+    from app.db import Event, session
+    with session() as db:
+        db.add_all([Event(ts=an.utcnow() - dt.timedelta(days=an.RETENTION_DAYS + 30), name="screen", detail="old-ev"),
+                    Event(ts=an.utcnow(), name="screen", detail="fresh-ev")])
+        db.commit()
+        an.purge_old(db)
+        left = {x.detail for x in db.query(Event).filter(Event.detail.in_(["old-ev", "fresh-ev"]))}
+    check("old events are deleted, recent ones kept", left == {"fresh-ev"}, str(left))
+
+
 def main() -> int:
     part1()
     try:
@@ -511,6 +598,7 @@ def main() -> int:
         print("\n(server not reachable — part 2 skipped; start it to run the integration checks)")
         return 1 if failures else 0
     part2()
+    part3()
     print("\n" + "=" * 60)
     if failures:
         print(f"{len(failures)} FAILURES")

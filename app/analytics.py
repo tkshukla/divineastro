@@ -31,8 +31,14 @@ Where a visitor first came from is remembered in ONE small first-party cookie so
 it can be stamped on the account if they sign up later ("where do new users come
 from"). Nothing else is put in it. It is set on the beacon's response.
 
-Known limits (also shown in the admin panel): only full page loads are counted,
-not navigation inside the single-page app; and because the visitor hash rotates
+In-app actions (DIVASTRO-128): the single-page app also reports a short list of
+named events (screen opened, chart cast, question asked, store opened, checkout
+started, ...) to POST /api/event, stored in `events` under the same day-scoped
+visitor hash and with the same exclusions. They carry a label from a fixed
+vocabulary and nothing the visitor typed: no birth details, no question text.
+
+Known limits (also shown in the admin panel): a full page load is one visit, and
+in-app actions are the fixed event list above, not every click; and because the visitor hash rotates
 daily, a multi-day "visitors" total is a sum of daily uniques, not lifetime
 uniques.
 """
@@ -57,7 +63,7 @@ from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
 from . import auth, i18n, rashifal_pages, seo_cities
-from .db import BirthProfile, QuestionLog, User, Visit, session as db_session, utcnow
+from .db import BirthProfile, Event, QuestionLog, User, Visit, session as db_session, utcnow
 
 log = logging.getLogger(__name__)
 
@@ -431,10 +437,63 @@ def record_visit(request: Request, path: str, referrer: str,
         return None
 
 
+# --------------------------------------------------------------------------
+# In-app events (DIVASTRO-128)
+# --------------------------------------------------------------------------
+
+# Event names the app may report. Anything else is ignored, so a forged beacon
+# can only add a row that looks like a real one.
+EVENT_NAMES = frozenset({
+    "screen",          # detail: the screen id (home, birth, chat, ...)
+    "chart_cast",      # a chart was built
+    "signin_open",     # the sign-in sheet opened
+    "signup",          # an account was created (reported by the server)
+    "ask_sent",        # a question was sent to the AI
+    "store_open",      # the store opened (detail: "credits" when out of questions)
+    "checkout_start",  # an order was started (detail: the sku)
+    "paid",            # an order was confirmed paid (detail: the sku)
+    "lang",            # the language was changed (detail: the code)
+})
+MAX_EVENT_BYTES = 512
+
+
+def parse_event(data: object) -> tuple[str, str] | None:
+    """(name, detail) from an event body, or None if it is not one of ours."""
+    if not isinstance(data, dict):
+        return None
+    name, detail = data.get("name"), data.get("detail", "")
+    if not isinstance(name, str) or not isinstance(detail, str) or len(detail) > 200:
+        return None
+    if name not in EVENT_NAMES:
+        return None
+    return name, clean(detail, 40)
+
+
+def record_event(request: Request, name: str, detail: str = "") -> bool:
+    """Store one in-app event if this browser should be counted. Never raises."""
+    try:
+        seen = _countable(request)
+        if seen is None or name not in EVENT_NAMES:
+            return False
+        ua, ip = seen
+        with db_session() as db:
+            if _is_admin_session(db, request.cookies.get(auth.COOKIE)):
+                return False
+            source, _, campaign = request.cookies.get(SRC_COOKIE, "").partition("|")
+            db.add(Event(name=name, detail=clean(detail, 40), visitor=visitor_hash(ip, ua),
+                         source=clean(source), campaign=clean(campaign, 80)))
+            db.commit()
+        return True
+    except Exception:
+        log.warning("event tracking failed", exc_info=True)
+        return False
+
+
 def purge_old(db: Session) -> int:
     """Delete visits past the retention window. Returns how many."""
     cutoff = utcnow() - dt.timedelta(days=RETENTION_DAYS)
     n = db.execute(delete(Visit).where(Visit.ts < cutoff)).rowcount or 0
+    db.execute(delete(Event).where(Event.ts < cutoff))
     db.commit()
     return n
 
@@ -446,6 +505,8 @@ def attribute_signup(db: Session, user: User, request: Request) -> None:
     user.signup_source = clean(source) or "unknown"
     user.signup_campaign = clean(campaign, 80) or None
     db.commit()
+    if not user.is_admin:
+        record_event(request, "signup", user.provider or "")
 
 
 # --------------------------------------------------------------------------
@@ -520,6 +581,85 @@ def funnel(db: Session, start_utc: dt.datetime, visitors: int, new_users: int) -
     return {"visitors": visitors, "new_users": new_users,
             "chart_users": chart_users, "charts": charts,
             "question_users": question_users, "questions": questions}
+
+
+APP_FUNNEL = (   # (label, event name, detail or None)
+    ("Opened the birth form", "screen", "birth"),
+    ("Cast a chart", "chart_cast", None),
+    ("Opened sign-in", "signin_open", None),
+    ("Signed up", "signup", None),
+    ("Asked the AI a question", "ask_sent", None),
+    ("Opened the store", "store_open", None),
+    ("Started checkout", "checkout_start", None),
+    ("Paid", "paid", None),
+)
+
+
+def _event_label(name: str, detail: str) -> str:
+    return f"{name}: {detail}" if detail else name
+
+
+def in_app(db: Session, start_utc: dt.datetime, range_days: set, today: dt.date,
+           visit_rows: list) -> dict:
+    """The in-app funnel for the range, and the latest visitor journeys.
+
+    Both are keyed on (IST day, visitor hash): the hash is day-scoped, so that is
+    one person on one day. A journey is that person's page loads and events in
+    time order.
+    """
+    events = db.execute(
+        select(Event.ts, Event.name, Event.detail, Event.visitor, Event.source, Event.campaign)
+        .where(Event.ts >= start_utc).order_by(Event.ts, Event.id)).all()
+
+    people: dict[tuple, set] = defaultdict(set)      # (name, detail) -> {(day, visitor)}
+    for ts, name, detail, visitor, _src, _camp in events:
+        day = _local_day(ts)
+        if day in range_days and visitor:
+            people[(name, detail)].add((day, visitor))
+            people[(name, None)].add((day, visitor))
+    steps = [{"label": label, "count": len(people.get((name, detail), ()))}
+             for label, name, detail in APP_FUNNEL]
+
+    # Journeys: today and yesterday, newest activity first.
+    recent = {today, today - dt.timedelta(days=1)}
+    journeys: dict[tuple, dict] = {}
+
+    def journey(day, visitor):
+        return journeys.setdefault((day, visitor), {
+            "day": day.isoformat(), "visitor": visitor[:6], "source": "", "campaign": "",
+            "device": "", "steps": [], "last": None})
+
+    for ts, path, source, campaign, device, visitor in visit_rows:
+        day = _local_day(ts)
+        if day not in recent or not visitor:
+            continue
+        j = journey(day, visitor)
+        if not j["source"] or j["source"] == "internal":
+            j["source"], j["campaign"] = source, campaign
+        j["device"] = j["device"] or device
+        j["steps"].append((ts, "page", path))
+    for ts, name, detail, visitor, source, campaign in events:
+        day = _local_day(ts)
+        if day not in recent or not visitor:
+            continue
+        j = journey(day, visitor)
+        if not j["source"]:
+            j["source"], j["campaign"] = source, campaign
+        j["steps"].append((ts, "event", _event_label(name, detail)))
+
+    out = []
+    for j in journeys.values():
+        j["steps"].sort(key=lambda x: x[0])
+        compact: list[dict] = []
+        for ts, kind, label in j["steps"]:
+            if compact and compact[-1]["label"] == label and compact[-1]["kind"] == kind:
+                continue                                  # same screen twice in a row
+            compact.append({"t": ts.astimezone(IST).strftime("%H:%M"), "kind": kind, "label": label})
+        last = j["steps"][-1][0]
+        out.append({**j, "steps": compact[:40], "last": last.isoformat(),
+                    "source": j["source"] or "direct"})
+    out.sort(key=lambda x: x["last"], reverse=True)
+    return {"app_funnel": steps, "journeys": out[:40]}
 
 
 def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict:
@@ -629,4 +769,5 @@ def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict
                   for p, c in path_views.most_common(8)],
         "tracking_since": since_day.isoformat() if since_day else None,
         "users_total": users_total,
+        **in_app(db, start_utc, range_days, today, visits),
     }

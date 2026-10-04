@@ -65,6 +65,27 @@ async def visit(request: Request) -> Response:
     return ok
 
 
+@router.post("/event", status_code=204)
+async def event(request: Request) -> Response:
+    """One in-app action, reported by static/visit.js's daTrack() (DIVASTRO-128).
+    Guarded exactly like /api/visit: rate limit, tiny body cap, a fixed list of
+    event names, and a quiet 204 for anything ignored."""
+    ok = Response(status_code=204)
+    ip = request.client.host if request.client else ""
+    if not analytics.rate_ok(ip):
+        return ok
+    raw = await _read_capped(request, analytics.MAX_EVENT_BYTES)
+    if raw is None:
+        return Response(status_code=413)
+    try:
+        ev = analytics.parse_event(json.loads(raw or b"null"))
+    except (ValueError, RecursionError):
+        return Response(status_code=400)
+    if ev is not None:
+        await run_in_threadpool(analytics.record_event, request, *ev)
+    return ok
+
+
 @router.get("/admin/traffic")
 def admin_traffic(days: int = 30, _: User = Depends(admin),
                   db: Session = Depends(get_db)) -> dict:
