@@ -341,3 +341,24 @@ def add_names(p: dict, lang: str) -> dict:
         notes.append(n.NOTE_WEDNESDAY)
     p[f"notes_{code}"] = notes
     return p
+
+
+def available() -> list[str]:
+    """The regional languages that have a names module (all six today)."""
+    out = []
+    for code in REGIONAL_LANGS:
+        try:
+            _names(code)
+        except (ModuleNotFoundError, AttributeError):
+            continue
+        out.append(code)
+    return out
+
+
+def add_all(p: dict) -> dict:
+    """Hindi (always, as before) plus every regional language, so the app can
+    switch language without asking the server again (/api/panchang)."""
+    add_names(p, "hi")
+    for code in available():
+        add_names(p, code)
+    return p

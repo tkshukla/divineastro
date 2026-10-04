@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field
 from . import geo
 from .astro import matching
 from .astro import panchang as panchang_engine
-from .astro.names import add_all as add_names
+from .astro.names_i18n import add_all as add_names
 from .chart_service import BirthData, build
 
 router = APIRouter(prefix="/api")
