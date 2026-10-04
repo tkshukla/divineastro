@@ -56,7 +56,7 @@ from fastapi import Request
 from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
-from . import auth, rashifal_pages, seo_cities
+from . import auth, i18n, rashifal_pages, seo_cities
 from .db import BirthProfile, QuestionLog, User, Visit, session as db_session, utcnow
 
 log = logging.getLogger(__name__)
@@ -263,6 +263,20 @@ RASHIFAL_PAGES = rashifal_pages.PUBLIC_PATHS
 
 
 def is_public_page(path: str) -> bool:
+    """A real public page. DIVASTRO-121: /kn/, /te/, /ta/, /ml/, /bn/, /or/ copies
+    count too — every SEO page exists in every registry language (untranslated
+    ones are noindex but real pages people read) — except the app's home and the
+    katha pages, which have no such copies."""
+    lang, bare = i18n.strip_prefix(path)
+    if lang in i18n.EXTRA_CODES:
+        if (bare == "/" or bare in PUBLIC_PAGES or bare.startswith(("/katha", "/en/"))
+                or i18n.strip_prefix(bare)[0] != "en"):
+            return False
+        return _is_public_page(bare)
+    return _is_public_page(path)
+
+
+def _is_public_page(path: str) -> bool:
     if path in PUBLIC_PAGES or path in RASHIFAL_PAGES:
         return True
     from .nakshatra_pages import is_public_path as nakshatra_public   # lazy (DIVASTRO-115)

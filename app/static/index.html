@@ -46,10 +46,10 @@
     <button type="button" class="theme-toggle" id="theme-toggle" title="Toggle Light/Dark Theme" aria-label="Toggle theme">
       <span class="theme-icon">☀️</span>
     </button>
-    <div class="lang-switch" role="group" aria-label="Language">
-      <button class="lang active" data-lang="en" aria-label="English"><span class="l-full">English</span><span class="l-short">EN</span></button>
-      <button class="lang" data-lang="hi" aria-label="हिन्दी"><span class="l-full">हिन्दी</span><span class="l-short">हि</span></button>
-    </div>
+    <!-- DIVASTRO-121: the language picker (globe + current language's native name),
+         written by main.py _page() from app/i18n.py picker() — the same component
+         every server-rendered page carries. app.js keeps its label current. -->
+    <!--LANG_PICKER-->
     <!-- Account, credits and store -->
     <div id="account-bar" class="account-bar"></div>
   </div>
@@ -732,10 +732,14 @@
 </section>
 
 <script src="/static/visit.js"></script>
+<!-- DIVASTRO-121: the language registry and the English + Hindi UI strings, inlined
+     by main.py so the first paint needs no fetch (other languages load on demand). -->
+<!--LANG_DATA-->
 <script src="/static/app.js"></script>
 <script src="/static/account.js"></script>
 <script src="/static/share.js"></script>
 <script src="/static/tools.js"></script>
 <script src="/static/push.js"></script>
+<script src="/static/langpick.js"></script>
 </body>
 </html>

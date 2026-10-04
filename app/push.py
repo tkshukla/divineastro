@@ -248,7 +248,9 @@ def push_subscribe(body: SubscribeIn, request: Request, db: Session = Depends(ge
         raise HTTPException(400, "Invalid subscription keys.")
     if _zone(body.tz) is None:
         raise HTTPException(400, "Unknown timezone.")
-    lang = "hi" if body.lang == "hi" else "en"
+    # Any registry language (DIVASTRO-124: push_message writes all eight).
+    from . import i18n
+    lang = i18n.normalize(body.lang)
     label = " ".join(body.label.split())[:120]
     user = None
     try:

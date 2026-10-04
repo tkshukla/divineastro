@@ -75,12 +75,16 @@ HOME_KEYS = ("homeCta", "todayTitle", "todayTithi", "todayNak", "todayRahu", "to
              "sampleNote", "sampleAsk")
 
 
+def i18n_table(lang: str) -> dict:
+    """One language's UI strings (DIVASTRO-121 moved them out of app.js into
+    app/static/i18n/<code>.json)."""
+    import json
+    return json.loads((ROOT / "app" / "static" / "i18n" / f"{lang}.json").read_text(encoding="utf-8"))
+
+
 def i18n_keys(app_js: str, lang: str) -> set[str]:
-    """Keys of one language block of app.js's I18N table (`en: {` … `hi: {` / `};`)."""
-    start = app_js.index(f"\n  {lang}: {{")
-    nxt = re.search(r"\n  [a-z]{2}: \{|\n\};", app_js[start + 5:])
-    block = app_js[start:start + 5 + nxt.start()] if nxt else app_js[start:]
-    return set(re.findall(r"(?:^|[\s,{])([A-Za-z_]\w*):\s", block))
+    """Keys of one language's UI strings (`app_js` kept for the callers' shape)."""
+    return set(i18n_table(lang))
 
 
 def home_value_checks() -> None:
@@ -108,10 +112,9 @@ def home_value_checks() -> None:
     check("every new string exists in Hindi", not [k for k in HOME_KEYS if k not in hi],
           str([k for k in HOME_KEYS if k not in hi]))
 
-    cta = re.search(r'\n    homeCta: "([^"]+)"', app_js)
+    cta = i18n_table("en").get("homeCta", "")
     check("the main button says the kundali is free and needs no sign-in",
-          bool(cta) and "free" in cta.group(1).lower() and "sign-in" in cta.group(1).lower(),
-          cta.group(1) if cta else "no homeCta")
+          "free" in cta.lower() and "sign-in" in cta.lower(), cta or "no homeCta")
 
     # The strip must reuse the Panchang tool's API (no second computation) and
     # remember the city defensively (localStorage throws in some private modes).
@@ -123,8 +126,10 @@ def home_value_checks() -> None:
     # not from a JavaScript copy of the tables, and EN / हिं reaches an open result.
     check("tools.js keeps no copy of the tithi / nakshatra tables",
           not re.search(r"\b(TITHI_HI|NAK_HI|PAKSHA_HI)\b", tools_js))
-    check("the strip and the Panchang tool read the API's Hindi names",
-          "ti.label_hi" in tools_js and "nk.name_hi" in tools_js and "r.label_hi || r.name_hi" in tools_js)
+    # DIVASTRO-121: the field is chosen by language (label_hi, label_kn, ...).
+    check("the strip and the Panchang tool read the API's names in the UI language",
+          "ti[`label_${l}`]" in tools_js and "nk[`name_${l}`]" in tools_js
+          and "r[`label_${l}`] || r[`name_${l}`]" in tools_js)
     check("applyLanguage reaches the tools (window.applyToolsLanguage)",
           "window.applyToolsLanguage()" in app_js and "window.applyToolsLanguage = applyToolsLanguage" in tools_js)
     tool_keys = ("panchangTitle", "panchangSub", "lblDate", "lblPlace", "rahuKaalL", "yamagandaL",
@@ -144,8 +149,11 @@ def home_value_checks() -> None:
     check("the vrat lookup swallows every failure", "catch" in body and "hidden = true" not in body
           and "throw" not in body)
     _p, line = js_function(tools_js, "renderVratLine")
-    check("the vrat line says 'आज:' / 'Today:' and links to the Hindi page in Hindi",
-          "'आज'" in line and "'Today'" in line and "/hi/vrat-tyohar" in line)
+    _p, hub = js_function(tools_js, "vratHub") if "function vratHub" in tools_js else ("", "")
+    check("the vrat line says 'आज:' / 'Today:' and links to the page in the UI language",
+          "'vratLineToday'" in line and i18n_table("hi").get("vratLineToday", "").startswith("आज:")
+          and i18n_table("en").get("vratLineToday", "").startswith("Today:")
+          and "vratHub()" in line and "const vratHub = () => (curLang() === 'en' ? '/vrat-tyohar' : `/${curLang()}/vrat-tyohar`)" in tools_js)
     check("an ordinary day shows no line", "!items.length" in line and "el.hidden = true" in line)
 
 
@@ -191,7 +199,7 @@ def share_checks() -> None:
           str([k for k in SHARE_KEYS if k not in en]))
     check("every share string exists in Hindi", not [k for k in SHARE_KEYS if k not in hi],
           str([k for k in SHARE_KEYS if k not in hi]))
-    milan_tpl = re.findall(r'shareMilanText: "([^"]+)"', app_js)
+    milan_tpl = [i18n_table(code)["shareMilanText"] for code in ("en", "hi")]
     holes = {h for tpl in milan_tpl for h in re.findall(r"\{(\w+)\}", tpl)}
     check("the Milan share text has only {score} and {max} holes, in both languages",
           len(milan_tpl) == 2 and holes == {"score", "max"}, str(holes))
@@ -226,8 +234,9 @@ def vrat_card_checks() -> None:
     app_js = (static / "app.js").read_text(encoding="utf-8")
     check("index.html has #open-vrat linking to /vrat-tyohar", 'id="open-vrat" href="/vrat-tyohar"' in html)
     check("toolVratName/toolVratSub exist in English and Hindi",
-          app_js.count("toolVratName:") == 2 and app_js.count("toolVratSub:") == 2)
-    check("the card's link switches to /hi/vrat-tyohar in Hindi", '"/hi/vrat-tyohar"' in app_js)
+          all({"toolVratName", "toolVratSub"} <= set(i18n_table(c)) for c in ("en", "hi")))
+    check("the card's link switches to /<lang>/vrat-tyohar (e.g. /hi/) outside English",
+          '`/${state.lang}/vrat-tyohar`' in app_js)
 
 
 def main() -> int:

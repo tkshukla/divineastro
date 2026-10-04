@@ -60,12 +60,23 @@ REPORT_MAX_TOKENS_HI = int(os.environ.get("ASTRO_REPORT_MAX_TOKENS_HI", "12000")
 
 
 def _report_max_tokens(language: str) -> int:
-    return REPORT_MAX_TOKENS_HI if language == "hi" else REPORT_MAX_TOKENS_EN
+    # Every Indic script costs Hindi's ~2.5x tokens per word, not English's.
+    return REPORT_MAX_TOKENS_EN if language not in LANGUAGES or language == "en" \
+        else REPORT_MAX_TOKENS_HI
 
 
 LANGUAGES = {
     "en": "English",
     "hi": "Hindi (हिन्दी, in Devanagari script)",
+    # DIVASTRO-121: the chat answer can be written in the reader's language even
+    # before the app's own labels are translated — the model writes the prose,
+    # the engine's facts stay the same. Any other code falls back to English.
+    "kn": "Kannada (ಕನ್ನಡ, in Kannada script)",
+    "te": "Telugu (తెలుగు, in Telugu script)",
+    "ta": "Tamil (தமிழ், in Tamil script)",
+    "ml": "Malayalam (മലയാളം, in Malayalam script)",
+    "bn": "Bengali (বাংলা, in Bengali script)",
+    "or": "Odia (ଓଡ଼ିଆ, in Odia script)",
 }
 
 SYSTEM_PROMPT = """You are the writing layer of an astrology application. You are \
@@ -142,6 +153,71 @@ the English word in Latin script in brackets rather than inventing a spelling.""
 
 ENGLISH_NOTE = "Write in clear, natural English."
 
+# The new languages (DIVASTRO-121) get the Hindi note's rules; DIVASTRO-124
+# adds the glossary below (from the same names tables the panchang pages print),
+# so the model uses the regional word — Tamil செவ்வாய், Kannada ಕುಜ — rather
+# than guessing, and never transliterates the English name.
+INDIC_NOTE = """Write the entire response in {language}. Use that language's \
+standard Vedic names for the planets, signs and houses (the Sanskrit-derived terms \
+an astrologer writing in that language would use) — never spell an English sign \
+or planet name out in that script. Keep degrees in numerals (8°02'). A technical \
+English term with no natural equivalent may stay in English inside brackets."""
+
+# Languages whose answer the engine cannot write itself: it runs in English and
+# the model writes the final answer (main._engine_lang caps the engine to en/hi).
+REGIONAL = ("kn", "te", "ta", "ml", "bn", "or")
+_MONTHS_EN = ("January", "February", "March", "April", "May", "June", "July",
+              "August", "September", "October", "November", "December")
+_GRAHA_ORDER = ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu")
+_SIGN_ORDER = ("Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio",
+               "Sagittarius", "Capricorn", "Aquarius", "Pisces")
+_TIMING_EN = (("rahu_kaal", "Rahu Kaal"), ("yamaganda", "Yamaganda"),
+              ("gulika", "Gulika Kaal"), ("abhijit", "Abhijit Muhurta"))
+
+
+def _glossary(language: str) -> str:
+    """English -> regional terms for the words a reading uses, or "".
+
+    The evidence the model reads is in the engine's English. Handing it the
+    regional names (app/astro/names_<code>.py, the tables the panchang pages
+    print) plus the house/dasha vocabulary (app/astro_terms.py) means the answer
+    says ಕುಜ where a Kannada almanac does, and the dates come out in the month
+    spelling the date auditor can read back.
+    """
+    if language not in REGIONAL:
+        return ""
+    from .astro.names_i18n import names_for
+    from .astro_terms import TERMS
+    from . import i18n
+
+    n = names_for(language)
+    name = i18n.get(language).english
+
+    def pairs(items) -> str:
+        return "  ".join(f"{en}={loc}" for en, loc in items if loc)
+
+    lines = [
+        f"GLOSSARY — the evidence is in English; write these in {name} exactly as "
+        f"given here, never as a transliteration of the English word:",
+        "Planets: " + pairs((p, n.GRAHA.get(p)) for p in _GRAHA_ORDER),
+        "Signs: " + pairs((s, n.RASHI.get(s)) for s in _SIGN_ORDER),
+        "Nakshatras: " + pairs(n.NAKSHATRAS.items()),
+        "Terms: " + pairs(TERMS[language].items()),
+        "Timings: " + pairs((en, n.TIMINGS.get(key)) for key, en in _TIMING_EN),
+        "Months: " + pairs(zip(_MONTHS_EN, n.MONTHS)),
+        f"Write every month and year as the {name} month name from this list "
+        # The example carries no real year: a year printed here would be one
+        # the date auditor never saw in the facts.
+        f"followed by the year in Western digits (0-9) — \"Oct YYYY\" is written "
+        f"\"{n.MONTHS[9]} YYYY\". Only the dates the facts allow may appear.",
+    ]
+    return "\n".join(lines)
+
+
+def language_name(language: str) -> str:
+    """What a prompt calls the output language: 'Kannada (ಕನ್ನಡ, in Kannada script)'."""
+    return LANGUAGES.get(language, "English")
+
 
 @dataclass
 class Provider:
@@ -184,8 +260,11 @@ def _model_note(name: str) -> tuple[str, bool]:
     if any(tag in lower for tag in CODE_MODEL):
         return "Tuned for code — prose will be weak.", False
     if any(tag in lower for tag in GOOD_AT_HINDI):
-        return "Good multilingual support; the better choice for Hindi.", True
-    return "Weak at Devanagari — expect garbled Hindi. Fine for English.", False
+        return "Good multilingual support; the better choice for Indian languages.", True
+    # `hindi_ok` (the API field name is kept) now means "can write Indian
+    # scripts": a model that garbles Devanagari does no better at Kannada or
+    # Tamil, and the app warns for every non-English language (DIVASTRO-124).
+    return "Weak at Indian scripts — expect garbled Hindi, Kannada, Tamil… Fine for English.", False
 
 
 def default_provider() -> str:
@@ -223,7 +302,7 @@ def providers() -> list[Provider]:
     out.append(Provider(
         key="anthropic", label="Claude (Anthropic)", local=False,
         available=_anthropic_ready(),
-        detail=("Fast, and by far the best Hindi. Sends the chart analysis to "
+        detail=("Fast, and by far the best Hindi and regional languages. Sends the chart analysis to "
                 "Anthropic's API — the only option here that leaves your machine."
                 if _anthropic_ready() else
                 "Set ANTHROPIC_API_KEY (or run `ant auth login`) to enable."),
@@ -486,7 +565,77 @@ _DATE_RE = re.compile(
 )
 
 
-def _allowed_dates_note(body: str) -> str:
+# DIVASTRO-124: an answer in Hindi or a regional language writes its dates in
+# that script ("ಅಕ್ಟೋಬರ್ 2026", "অক্টোবর ২০২৬"). The facts the prompt carries
+# stay English, so the auditor reads the answer's dates back into "Oct 2026"
+# form before comparing. Month names come from names_for(lang).MONTHS (plus
+# the common alternative spellings in astro_terms.MONTH_VARIANTS); digits in
+# any Indic script are folded to ASCII first.
+_ABBR = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+_INDIC_ZEROS = (0x0966, 0x09E6, 0x0A66, 0x0AE6, 0x0B66, 0x0BE6, 0x0C66, 0x0CE6, 0x0D66)
+_DIGITS = str.maketrans({chr(z + i): str(i) for z in _INDIC_ZEROS for i in range(10)})
+# Any letter or sign of the Devanagari..Malayalam blocks, ZWJ/ZWNJ included.
+_INDIC = "\u0900-\u0D7F\u200C\u200D"
+_LOCAL_DATE_RES: tuple[re.Pattern, re.Pattern, dict[str, str]] | None = None
+
+
+def _local_date_res() -> tuple[re.Pattern, re.Pattern, dict[str, str]]:
+    """(month-first regex, year-first regex, localized month -> 'Oct'), built once."""
+    global _LOCAL_DATE_RES
+    if _LOCAL_DATE_RES is None:
+        from .astro.names_i18n import LANGS, names_for
+        from .astro_terms import MONTH_VARIANTS
+
+        month_of: dict[str, str] = {}
+        for code in LANGS:
+            if code == "en":
+                continue
+            for i, name in enumerate(names_for(code).MONTHS):
+                month_of[name] = _ABBR[i]
+            for number, names in MONTH_VARIANTS.get(code, {}).items():
+                for name in names:
+                    month_of[name] = _ABBR[number - 1]
+        alt = "|".join(re.escape(m) for m in sorted(month_of, key=len, reverse=True))
+        month_first = re.compile(
+            rf"(?<![{_INDIC}\w])({alt})\s*,?\s+((?:19|20)\d{{2}})(?!\d)")
+        # "2026ರ ಅಕ್ಟೋಬರ್" — a case ending may sit on the year; the month must end
+        # at a space, punctuation or a joiner (so ಮೇ is not read inside ಮೇಲೆ).
+        year_first = re.compile(
+            rf"(?<!\d)((?:19|20)\d{{2}})[{_INDIC}-]{{0,6}}\s+({alt})"
+            rf"(?=[\s\u200C\u200D.,;:!?)\-–—]|$)")
+        _LOCAL_DATE_RES = (month_first, year_first, month_of)
+    return _LOCAL_DATE_RES
+
+
+def _dates_in(text: str) -> set[str]:
+    """Every month-and-year in `text` as "Oct 2026", whatever script it is in."""
+    text = (text or "").translate(_DIGITS)
+    found = {f"{m[:3].title()} {y}" for m, y in _DATE_RE.findall(text)}
+    month_first, year_first, month_of = _local_date_res()
+    spans = []
+    for m in month_first.finditer(text):
+        found.add(f"{month_of[m.group(1)]} {m.group(2)}")
+        spans.append(m.span())
+    # Mask what was read month-first, so "ಜುಲೈ 2026 ಆಗಸ್ಟ್ 2027" does not also
+    # yield "Aug 2026" from the year-first reading of the same year.
+    masked = list(text)
+    for a, b in spans:
+        masked[a:b] = " " * (b - a)
+    for m in year_first.finditer("".join(masked)):
+        found.add(f"{month_of[m.group(2)]} {m.group(1)}")
+    return found
+
+
+def _localized_dates(dates: list[str], language: str) -> list[str]:
+    """['Oct 2026'] -> ['ಅಕ್ಟೋಬರ್ 2026'] for a regional language, else []."""
+    if language not in REGIONAL:
+        return []
+    from .astro.names_i18n import names_for
+    months = names_for(language).MONTHS
+    return [f"{months[_ABBR.index(d[:3])]} {d[-4:]}" for d in dates if d[:3] in _ABBR]
+
+
+def _allowed_dates_note(body: str, language: str = "en") -> str:
     """Enumerate the dates the answer is permitted to print.
 
     A general "do not invent dates" rule was not enough on its own: told the
@@ -501,8 +650,12 @@ def _allowed_dates_note(body: str) -> str:
                   key=lambda s: (s[-4:], s[:3]))
     if not seen:
         return ""
+    local = _localized_dates(seen, language)
     return (
-        "The ONLY dates you may print are: " + ", ".join(seen) + ". Any other "
+        "The ONLY dates you may print are: " + ", ".join(seen) + ". "
+        + (f"In {LANGUAGES[language].split(' (')[0]} write them as: " + ", ".join(local) + ". "
+           if local else "")
+        + "Any other "
         "month or year — including the month after one of these, or a point "
         "part-way through a period — is forbidden. If you need to refer to a "
         "time that is not on this list, describe it in words instead.\n\n"
@@ -557,7 +710,7 @@ def _build_prompt(analysis: dict, language: str, question: str, history: list[di
     )
     return (
         body
-        + _allowed_dates_note(body)
+        + _allowed_dates_note(body, language)
         + f"Write the answer in {LANGUAGES.get(language, 'English')}. These are your "
         f"facts; the words are yours. Do not describe what a planet 'is' or what it "
         f"'governs' in the abstract — say what it means for this person's life, in "
@@ -568,10 +721,13 @@ def _build_prompt(analysis: dict, language: str, question: str, history: list[di
 
 
 def _system(language: str) -> str:
-    return SYSTEM_PROMPT.format(
-        language=LANGUAGES.get(language, "English"),
-        language_note=HINDI_NOTE if language == "hi" else ENGLISH_NOTE,
-    )
+    if language == "hi":
+        note = HINDI_NOTE
+    elif language in REGIONAL:
+        note = INDIC_NOTE.format(language=LANGUAGES[language]) + "\n\n" + _glossary(language)
+    else:
+        note = ENGLISH_NOTE
+    return SYSTEM_PROMPT.format(language=LANGUAGES.get(language, "English"), language_note=note)
 
 
 def _brevity_note(provider: str) -> str:
@@ -604,8 +760,10 @@ def _audit_dates(meta: dict | None, prompt: str, produced_text: str) -> None:
     """
     if meta is None:
         return
+    # The prompt's facts are English; the answer may be in any of the site's
+    # scripts. The answer's dates are read into "Oct 2026" form (DIVASTRO-124).
     allowed = {f"{m} {y}" for m, y in _DATE_RE.findall(prompt)}
-    seen = {f"{m} {y}" for m, y in _DATE_RE.findall(produced_text)}
+    seen = _dates_in(produced_text)
     violations = sorted(seen - allowed)
     if violations:
         meta["date_violations"] = violations
@@ -870,7 +1028,7 @@ def generate_spiritual_guidance(analysis: dict, language: str = "en") -> str:
         f"remedies given into direct, actionable advice for making the most of this "
         f"period, rather than generic guidance.\n\n"
         + "\n".join(facts) +
-        f"\n\nWrite {'in Hindi (Devanagari script)' if language == 'hi' else 'in English'}. "
+        f"\n\nWrite in {_report_lang(language)}. "
         f"Do not output markdown headings or titles. Go straight into the text."
     )
 
@@ -1131,6 +1289,24 @@ Planets: Sun=सूर्य Moon=चंद्रमा Mars=मंगल Mercur
 Venus=शुक्र Saturn=शनि"""
 
 
+def _report_lang(language: str) -> str:
+    """How the report prompts name the output language."""
+    if language == "hi":
+        return "Hindi (Devanagari script)"
+    if language in REGIONAL:
+        return LANGUAGES[language]
+    return "English"
+
+
+def _report_glossary(language: str) -> str:
+    """The terms the report prose must use, so it matches the PDF's tables."""
+    if language == "hi":
+        return f"\n\n{REPORT_HINDI_GLOSSARY}"
+    if language in REGIONAL:
+        return "\n\n" + _glossary(language)
+    return ""
+
+
 REPORT_SYSTEM = (
     "You are a warm, wise, and highly experienced Vedic astrologer providing "
     "guidance in JSON format. The chart has already been calculated by a "
@@ -1178,6 +1354,11 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
             
         if language == "hi":
             lbl = f"{m_start.day} {month_names_hi[m_start.month - 1]} से {m_end.day} {month_names_hi[m_end.month - 1]}"
+        elif language in REGIONAL:
+            from .astro.names_i18n import names_for
+            months_local = names_for(language).MONTHS
+            lbl = (f"{m_start.day} {months_local[m_start.month - 1]} – "
+                   f"{m_end.day} {months_local[m_end.month - 1]}")
         else:
             lbl = f"{m_start.day} {month_names_en[m_start.month - 1]} to {m_end.day} {month_names_en[m_end.month - 1]}"
             
@@ -1225,7 +1406,9 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
     }
 
     lang_key = "hi" if language == "hi" else "en"
-    default_res = fallbacks[lang_key]
+    # `written_in` tells the PDF which language the text really is: a regional
+    # report whose model call failed gets the English text, and says so.
+    default_res = dict(fallbacks[lang_key], written_in=lang_key)
 
     if provider == "off":
         return default_res
@@ -1245,12 +1428,12 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
         f"You MUST format the output as a valid JSON object with the following three keys:\n"
         f"- 'varshphal': a JSON array of 12 objects, each having:\n"
         f"  - 'month': the exact month label string from the list above\n"
-        f"  - 'prediction': a monthly forecast written in {'Hindi (Devanagari script)' if language == 'hi' else 'English'} (around 30-40 words)\n"
-        f"- 'key_periods': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n"
-        f"- 'house_summary': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n\n"
+        f"  - 'prediction': a monthly forecast written in {_report_lang(language)} (around 30-40 words)\n"
+        f"- 'key_periods': write in {_report_lang(language)}\n"
+        f"- 'house_summary': write in {_report_lang(language)}\n\n"
         f"{REPORT_DATE_RULE}\n\n"
         f"Respond ONLY with the raw JSON block. Do not include any markdown fences, introduction, or notes."
-        + (f"\n\n{REPORT_HINDI_GLOSSARY}" if language == "hi" else "")
+        + _report_glossary(language)
     )
 
     system = REPORT_SYSTEM
@@ -1311,6 +1494,7 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
             "varshphal": formatted_varsh,
             "key_periods": parsed.get("key_periods", default_res["key_periods"]),
             "house_summary": parsed.get("house_summary", default_res["house_summary"]),
+            "written_in": language,
         }
     except Exception as exc:
         # Never let a narration failure break the PDF, but never let it
@@ -1402,7 +1586,9 @@ def generate_kundali_interpretations(analysis: dict, language: str = "en") -> di
     }
 
     lang_key = "hi" if language == "hi" else "en"
-    default_res = fallbacks[lang_key]
+    # `written_in` tells the PDF which language the text really is: a regional
+    # report whose model call failed gets the English text, and says so.
+    default_res = dict(fallbacks[lang_key], written_in=lang_key)
 
     if provider == "off":
         return default_res
@@ -1431,12 +1617,12 @@ def generate_kundali_interpretations(analysis: dict, language: str = "en") -> di
         f"by the prescribed remedies above, reproducing the mantra, stones, fingers and metals exactly "
         f"as given (yogas_remedies_detailed, around 250 words).\n\n"
         f"You MUST format the output as a valid JSON object with the following three keys:\n"
-        f"- 'houses_detailed': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n"
-        f"- 'planets_detailed': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n"
-        f"- 'yogas_remedies_detailed': write in {'Hindi (Devanagari script)' if language == 'hi' else 'English'}\n\n"
+        f"- 'houses_detailed': write in {_report_lang(language)}\n"
+        f"- 'planets_detailed': write in {_report_lang(language)}\n"
+        f"- 'yogas_remedies_detailed': write in {_report_lang(language)}\n\n"
         f"{REPORT_DATE_RULE}\n\n"
         f"Respond ONLY with the raw JSON block. Do not include markdown fences, preambles, or notes."
-        + (f"\n\n{REPORT_HINDI_GLOSSARY}" if language == "hi" else "")
+        + _report_glossary(language)
     )
 
     system = REPORT_SYSTEM
@@ -1482,6 +1668,7 @@ def generate_kundali_interpretations(analysis: dict, language: str = "en") -> di
             "houses_detailed": parsed.get("houses_detailed", default_res["houses_detailed"]),
             "planets_detailed": parsed.get("planets_detailed", default_res["planets_detailed"]),
             "yogas_remedies_detailed": parsed.get("yogas_remedies_detailed", default_res["yogas_remedies_detailed"]),
+            "written_in": language,
         }
     except Exception as exc:
         # Never let a narration failure break the PDF, but never let it

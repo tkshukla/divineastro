@@ -116,7 +116,7 @@ def hindi_answer(p, browser, base: str) -> None:
     pg.page.on("request", lambda r: bodies.append(r.post_data or "")
                if r.url.endswith("/api/ask/stream") else None)
 
-    pg.page.click('button.lang[data-lang="hi"]')
+    pg.set_lang("hi")
     # castChart() kicks off its own background loadAndShowDashboard() call
     # that can resolve after harness.open_chat() already moved to
     # stage-chat, flipping the active stage away from chat under this

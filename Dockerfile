@@ -38,7 +38,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Fail the build here rather than ship an image that silently prints
     # Hindi as empty boxes.
     && fc-list :lang=hi family | head -5 \
-    && test -n "$(fc-list :lang=hi family)"
+    && test -n "$(fc-list :lang=hi family)" \
+    # DIVASTRO-124: kundali PDFs in Kannada, Telugu, Tamil, Malayalam, Bengali
+    # and Odia. fonts-noto-core already ships Noto Sans (and, except Odia, Noto
+    # Serif) for all six scripts — verified with fc-list, so no extra package.
+    # A missing one only drops that language from the PDF picker
+    # (pdf_report.pdf_languages), but fail loudly rather than lose it silently.
+    && for l in kn te ta ml bn or; do test -n "$(fc-list :lang=$l family)" || exit 1; done
 
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH" \

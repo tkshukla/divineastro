@@ -2112,14 +2112,24 @@ details.reasoning summary:hover { color: var(--gold); }
   .upi-app:hover { filter: brightness(1.06); background: linear-gradient(120deg, var(--gold), #e8a94f); }
 }
 
-/* Narrowest phones (<= 360px): brand + theme + language + credits + account cannot
-   share one row — at 320px the page was 347px wide and the browser zoomed it out.
-   Signed in, the theme and language switches move into the account menu. */
+/* Phones: brand + theme + language + credits + account cannot share one row —
+   at 320px the page was 347px wide and the browser zoomed it out. Signed in, the
+   theme switch moves into the account menu. The language picker never does
+   (DIVASTRO-121: it must stay visible); it is wider than the old EN/हि toggle,
+   so the theme switch now moves up to 420px, and on the very narrowest
+   screens the account name is clipped a little more. */
 .only-narrow { display: none; }
-@media (max-width: 360px) {
-  body.signed-in .theme-toggle,
-  body.signed-in .lang-switch { display: none; }
+@media (max-width: 420px) {
+  body.signed-in .theme-toggle { display: none; }
   .acct-drop .only-narrow { display: block; }
+  /* The account menu opens leftwards from its button, so it stays on screen. */
+  .acct-drop { left: auto; right: 0; }
+}
+@media (max-width: 340px) {
+  body.signed-in .ghost-btn.has-menu { max-width: 58px; justify-content: flex-start; }
+  body.signed-in .ghost-btn.has-menu .caret { display: none; }
+  .site-header .lp-btn { padding: 0 7px; gap: 3px; font-size: 14px; }
+  .site-header .lp-btn .lp-globe { width: 16px; height: 16px; }
 }
 
 /* Very short phones (<= 600px tall, e.g. 320x568): header + title row + view switch
@@ -2430,3 +2440,89 @@ button.free-badge:focus-visible { outline: 3px solid var(--gold); outline-offset
 .push-optin .push-hint, .push-optin .push-note { flex-basis: 100%; color: var(--ink-faint); font-size: 12.5px; }
 .push-optin .push-on { color: var(--gold); }
 .push-optin .push-off { color: var(--ink-faint); }
+
+/* ============================================================
+   Language picker + per-script fonts (DIVASTRO-121)
+   One component for the app header and every server-rendered page:
+   app/i18n.py picker() writes the server copy, index.html the app's,
+   static/langpick.js wires both. Targets are >=44px (WCAG 2.5.5).
+   ============================================================ */
+.lang-picker { position: relative; display: inline-block; }
+.lang-picker > summary { list-style: none; }
+.lang-picker > summary::-webkit-details-marker { display: none; }
+.lp-btn { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; min-width: 44px;
+          box-sizing: border-box; padding: 0 16px; border-radius: 999px; cursor: pointer;
+          border: 1.5px solid var(--gold); color: var(--gold); background: rgba(var(--gold-rgb), 0.12);
+          font: 600 15px/1 var(--sans); white-space: nowrap; user-select: none; }
+.lp-btn:hover, .lang-picker[open] > .lp-btn { background: rgba(var(--gold-rgb), 0.22); }
+.lp-btn:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+.lp-caret { font-size: 12px; opacity: .85; }
+.lp-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 50; min-width: 220px;
+           max-width: calc(100vw - 24px); padding: 8px; border-radius: 14px;
+           border: 1px solid var(--line); background: var(--surface-pop);
+           box-shadow: 0 12px 32px rgba(0,0,0,.35); }
+.lp-title { margin: 4px 8px 6px; font-size: 12.5px; color: var(--ink-faint); }
+.lp-menu ul { list-style: none; margin: 0; padding: 0; }
+/* `.lang-picker .lp-menu a`, not `.lp-menu a`: the SEO pages' inline `.seo a` (cyan
+   link colour) comes later and would otherwise win the tie. */
+.lang-picker .lp-menu a { display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+             min-height: 44px; box-sizing: border-box; padding: 10px 12px; border-radius: 10px;
+             color: var(--ink); text-decoration: none; font-size: 16px; }
+.lang-picker .lp-menu a:hover, .lang-picker .lp-menu a:focus-visible { background: rgba(var(--gold-rgb), 0.14); outline: none; }
+.lang-picker .lp-menu a[aria-current] { color: var(--gold); font-weight: 600; }
+.lang-picker .lp-menu a[aria-current]::after { content: "✓"; margin-left: 6px; }
+.lp-en { font-size: 12px; color: var(--ink-faint); margin-left: auto; }
+.lp-notice { margin: 0 0 14px; padding: 10px 14px; border-radius: 10px; font-size: 14px;
+             border: 1px dashed var(--gold); color: var(--ink-dim); background: rgba(var(--gold-rgb), 0.07); }
+.lp-hint { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 60; max-width: 520px;
+           margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+           padding: 12px 14px; border-radius: 14px; border: 1px solid var(--gold);
+           background: var(--surface-pop); color: var(--ink); box-shadow: 0 10px 30px rgba(0,0,0,.4);
+           font-size: 15.5px; }
+.lp-hint p { margin: 0; flex: 1 1 200px; }
+.lp-hint a, .lp-hint button { min-height: 44px; padding: 0 14px; border-radius: 999px;
+           font: 600 14.5px var(--sans); cursor: pointer; display: inline-flex; align-items: center;
+           text-decoration: none; }
+.lp-hint a { color: #fff; background: linear-gradient(120deg, var(--primary-a), var(--primary-b));
+             border: 0; }
+.lp-hint button { color: var(--ink-dim); background: transparent; border: 1px solid var(--line); }
+
+/* The six new scripts: Latin families first (English words keep the site's
+   look), then the script's web font (loaded only for the active language:
+   i18n.font_link / app.js loadFont), then the system fonts that carry it.
+   Generated by app/i18n.py font_css(); tests/test_i18n.py keeps them equal. */
+html[lang="kn"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetica Neue", Arial, "Noto Sans Kannada", "Tunga", "Nirmala UI", sans-serif; --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Sans Kannada", "Tunga", "Nirmala UI", serif; }
+html[lang="te"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetica Neue", Arial, "Noto Sans Telugu", "Gautami", "Nirmala UI", sans-serif; --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Sans Telugu", "Gautami", "Nirmala UI", serif; }
+html[lang="ta"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetica Neue", Arial, "Noto Sans Tamil", "Latha", "Nirmala UI", sans-serif; --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Sans Tamil", "Latha", "Nirmala UI", serif; }
+html[lang="ml"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetica Neue", Arial, "Noto Sans Malayalam", "Kartika", "Nirmala UI", sans-serif; --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Sans Malayalam", "Kartika", "Nirmala UI", serif; }
+html[lang="bn"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetica Neue", Arial, "Noto Sans Bengali", "Vrinda", "Nirmala UI", sans-serif; --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Sans Bengali", "Vrinda", "Nirmala UI", serif; }
+html[lang="or"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetica Neue", Arial, "Noto Sans Oriya", "Kalinga", "Nirmala UI", sans-serif; --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Sans Oriya", "Kalinga", "Nirmala UI", serif; }
+
+/* ---- The picker in the app header (DIVASTRO-121) ----------------------
+   The owner's ask: "significantly visible". On the kumkum header it is an
+   ivory pill like the other header controls, but bolder (2px gold edge, the
+   language's own name at 15px), never folded into the account menu, and still
+   44px tall on a 320px phone. Its menu opens below the header, right-aligned,
+   and never runs off a narrow screen. */
+.site-header .lp-btn,
+.sacred .site-header .lp-btn {
+  background: var(--pill-bg); color: var(--pill-ink); border: 2px solid var(--pill-edge);
+  box-shadow: 0 2px 8px rgba(60, 10, 16, 0.25);
+}
+.site-header .lp-btn:hover,
+.site-header .lang-picker[open] > .lp-btn { background: #ffe3a6; color: var(--pill-ink); }
+.site-header .lp-btn .lp-globe { flex: none; }
+.site-header .lp-menu { width: max-content; max-height: calc(100vh - 90px); overflow-y: auto; }
+.site-header .lp-menu a { min-width: 200px; }
+[data-theme="light"] .site-header .lp-btn { background: #fff7e6; border-color: #c98a12; }
+@media (max-width: 700px) {
+  .site-header .lp-btn { padding: 0 11px; gap: 5px; font-size: 14.5px; }
+  /* On a phone the button is mid-header: pin the menu to the screen's right edge
+     (the header is its containing block) so it can never run off the left. */
+  .site-header .lp-menu { position: fixed; top: auto; right: 10px; left: auto; margin-top: 8px;
+                          max-width: calc(100vw - 20px); }
+}
+@media (max-width: 360px) {
+  .site-header .lp-btn { padding: 0 9px; gap: 4px; }
+  .site-header .lp-caret { display: none; }
+}

@@ -29,7 +29,7 @@ from urllib.parse import quote, urlencode
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from . import seo_cities
+from . import i18n, seo_cities
 from .legal import SITE
 
 router = APIRouter(prefix="/api/share")
@@ -58,9 +58,10 @@ def whatsapp_href(text: str, url: str) -> str:
 
 
 def _parts(path: str) -> list[str]:
-    """Path segments without the /hi/ language prefix: a Hindi copy shares like its English twin."""
-    parts = [p for p in path.split("/") if p]
-    return parts[1:] if parts[:1] == ["hi"] else parts
+    """Path segments without the language prefix (/hi/, /kn/, ...): every language's
+    copy shares like its English twin (the message is English · Hindi; the URL
+    keeps the reader's language)."""
+    return [p for p in i18n.strip_prefix(path)[1].split("/") if p]
 
 
 def _is_katha(path: str) -> bool:
@@ -133,8 +134,11 @@ def seo_share(path: str) -> str:
     if tool.startswith("ekadashi-"):
         tool = "ekadashi"
     href = whatsapp_href(text, share_url(path, f"seo-{tool}"))
-    hindi = path.startswith("/hi/") or (tool == "katha" and not path.startswith("/en/"))
-    label = "WhatsApp पर भेजें" if hindi else "Share on WhatsApp"
+    if tool == "katha":
+        lang = "en" if path.startswith("/en/") else "hi"
+    else:
+        lang = i18n.strip_prefix(path)[0]
+    label = i18n.chrome("share", lang)
     return (f'<a class="share-wa" href="{html.escape(href)}" target="_blank" rel="noopener" '
             f'data-share="seo-{tool}">{_ICON}<span>{label}</span></a>')
 

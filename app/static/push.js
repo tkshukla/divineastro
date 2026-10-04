@@ -46,8 +46,22 @@
   let busy = false;
   let note = '';            // a one-off message (error / denied)
 
-  const lang = () => (String(document.documentElement.lang || '').toLowerCase().startsWith('hi') ? 'hi' : 'en');
-  const tr = (k) => S[lang()][k];
+  // The page's language: the app's state.lang, else (a server page) <html lang>.
+  const lang = () => {
+    if (typeof state !== 'undefined' && state.lang) return state.lang;
+    return String(document.documentElement.lang || 'en').toLowerCase().split('-')[0];
+  };
+  // DIVASTRO-121: in the app these come from i18n/<code>.json ("push.<key>", English
+  // fallback per key). Server pages (/vrat-tyohar) load push.js without app.js, so
+  // the English and Hindi copies above stay as their source; other languages get
+  // English there until the server pages carry the app's tables.
+  const tr = (k) => {
+    if (typeof t === 'function') {
+      const v = t(`push.${k}`);
+      if (v && v !== `push.${k}`) return v;
+    }
+    return (S[lang()] || S.en)[k];
+  };
   const place = () => {
     try {
       const p = JSON.parse(localStorage.getItem(TODAY_KEY) || 'null');

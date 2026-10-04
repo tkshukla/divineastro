@@ -47,14 +47,14 @@ def run_profile(p, browser, base: str, name: str, args: dict, expect_n: int) -> 
           and pg.page.locator(".om").count() == 1)
 
     # Hindi
-    pg.page.click('.lang[data-lang="hi"]')
+    pg.set_lang("hi")
     pg.page.wait_for_timeout(300)
     hi = pg.page.inner_text("#free-badge-main")
     check("Hindi badge carries the same number", str(expect_n) in hi and "मुफ़्त" in hi, repr(hi))
     check("Hindi button text", "निःशुल्क" in pg.page.inner_text("#home-cta"))
     hi_feats = pg.page.eval_on_selector_all("#feat-grid .feat span", "els => els.map(e => e.textContent.trim())")
     check("Hindi features differ from English and are all filled", all(hi_feats) and hi_feats != feats)
-    pg.page.click('.lang[data-lang="en"]')
+    pg.set_lang("en")
 
     # Signed in: the badge shows what the person actually has, not the promotion.
     pg.sign_in()
@@ -243,13 +243,13 @@ def today_and_sample(p, browser, base: str) -> None:
     check("the sample is labelled as an example", pg.page.inner_text("#sample-qa-tag").strip().lower() == "example")
 
     # Hindi
-    pg.page.click('.lang[data-lang="hi"]')
+    pg.set_lang("hi")
     pg.page.wait_for_timeout(300)
     check("Hindi: strip labels and names switch", pg.page.inner_text("#today-rahu-l").strip() == "राहु काल"
           and any("ऀ" <= ch <= "ॿ" for ch in pg.page.inner_text("#today-tithi")))
     check("Hindi: the sample is in Hindi", pg.page.inner_text("#sample-qa-tag").strip() == "उदाहरण"
           and "अपना प्रश्न" in pg.page.inner_text("#sample-ask"))
-    pg.page.click('.lang[data-lang="en"]')
+    pg.set_lang("en")
 
     # Change the city: remembered across a reload.
     pg.page.click("#today-city")
@@ -324,12 +324,12 @@ def vrat_line(p, browser, base: str) -> None:
     check("...and links to /vrat-tyohar", pg.page.get_attribute("#today-vrat", "href") == "/vrat-tyohar")
     strip = pg.rect("#today-strip")
     check("the strip still fits the first screen", strip["bottom"] <= 915, f"bottom {strip['bottom']:.0f}")
-    pg.page.click('.lang[data-lang="hi"]')
+    pg.set_lang("hi")
     pg.page.wait_for_timeout(300)
     check("Hindi: 'आज: पापांकुशा एकादशी' linking to /hi/vrat-tyohar",
           pg.page.inner_text("#today-vrat").strip() == "आज: पापांकुशा एकादशी"
           and pg.page.get_attribute("#today-vrat", "href") == "/hi/vrat-tyohar")
-    pg.page.click('.lang[data-lang="en"]')
+    pg.set_lang("en")
     ctx.close()
 
     ctx = browser.new_context(**phone)
@@ -346,13 +346,13 @@ def vrat_line(p, browser, base: str) -> None:
           pg.page.inner_text("#today-vrat"))
     check("home has a Vrat & Tyohar card linking to /vrat-tyohar",
           pg.page.get_attribute("#open-vrat", "href") == "/vrat-tyohar" and pg.page.is_visible("#open-vrat"))
-    pg.page.click('.lang[data-lang="hi"]')
+    pg.set_lang("hi")
     pg.page.wait_for_timeout(500)
     check("Hindi: card links to /hi/vrat-tyohar and the line reads 'अगला व्रत/त्योहार: …'",
           pg.page.get_attribute("#open-vrat", "href") == "/hi/vrat-tyohar"
           and pg.page.inner_text("#today-vrat").strip() == "अगला व्रत/त्योहार: इंदिरा एकादशी · 6 अक्टूबर",
           pg.page.inner_text("#today-vrat"))
-    pg.page.click('.lang[data-lang="en"]')
+    pg.set_lang("en")
     ctx.close()
 
     for label, handler in (

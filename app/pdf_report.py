@@ -53,6 +53,7 @@ try:                                    # typst ships as a stellium dependency
 except ImportError:                     # pragma: no cover - defensive
     typst = None                        # type: ignore[assignment]
 
+from . import pdf_i18n
 from .chart_service import SIDEREAL_YEAR, VIMSHOTTARI, dms, vimshottari, wheel_svg
 
 # --------------------------------------------------------------------------
@@ -65,10 +66,17 @@ _DEVANAGARI = ("Nirmala UI", "Noto Sans Devanagari", "Noto Serif Devanagari",
                "Mangal", "Sanskrit Text", "Aparajita", "Kokila", "Utsaah",
                "Lohit Devanagari", "Samyak Devanagari", "FreeSerif")
 
-BODY_FONTS = ("EB Garamond", "IBM Plex Serif", *_DEVANAGARI,
+# DIVASTRO-124: the six regional scripts, Noto serif then sans for each
+# (pdf_i18n.SCRIPT_FONTS). Typst picks the first family in the list that has
+# a glyph, per character, so a Kannada run lands on Noto Serif Kannada while
+# the Latin digits and punctuation around it stay EB Garamond. Shaping
+# (conjuncts, reordered vowel signs) is HarfBuzz's, via Typst's rustybuzz.
+_REGIONAL_FONTS = tuple(f for fams in pdf_i18n.SCRIPT_FONTS.values() for f in fams)
+
+BODY_FONTS = ("EB Garamond", "IBM Plex Serif", *_DEVANAGARI, *_REGIONAL_FONTS,
               "Noto Sans Symbols", "Noto Sans Symbols 2")
-DISPLAY_FONTS = ("Cinzel", "EB Garamond", *_DEVANAGARI)
-MONO_FONTS = ("IBM Plex Mono", *_DEVANAGARI)
+DISPLAY_FONTS = ("Cinzel", "EB Garamond", *_DEVANAGARI, *_REGIONAL_FONTS)
+MONO_FONTS = ("IBM Plex Mono", *_DEVANAGARI, *_REGIONAL_FONTS)
 
 
 def font_paths() -> list[str]:
@@ -146,6 +154,31 @@ def devanagari_font() -> str | None:
     return None
 
 
+def script_font(code: str) -> str | None:
+    """The first Noto family for a regional language's script that is present
+    on this machine (file-name match, as devanagari_font), or None."""
+    keys = _font_file_keys()
+    for family in pdf_i18n.SCRIPT_FONTS.get(code, ()):
+        wanted = _squash(family)
+        if any(key.startswith(wanted) for key in keys):
+            return family
+    return None
+
+
+def pdf_languages() -> list[str]:
+    """Languages a kundali (chart) PDF can be printed in on this machine:
+    English, Hindi, and each regional language whose script font is installed.
+    A language without its font would print as empty boxes, so it is simply
+    not offered (main._pdf_lang sends it English; the app hides the button)."""
+    global _PDF_LANGS
+    if _PDF_LANGS is None:
+        _PDF_LANGS = ["en", "hi"] + [c for c in pdf_i18n.REGIONAL if script_font(c)]
+    return list(_PDF_LANGS)
+
+
+_PDF_LANGS: list[str] | None = None
+
+
 def pdf_font_report() -> dict:
     """Diagnostics for the export — surfaced by /api/pdf/fonts."""
     found = devanagari_font()
@@ -155,6 +188,8 @@ def pdf_font_report() -> dict:
         "font_paths": font_paths(),
         "devanagari_font": found,
         "devanagari_ok": bool(found),
+        "script_fonts": {c: script_font(c) for c in pdf_i18n.REGIONAL},
+        "pdf_languages": pdf_languages(),
         "note": (
             f"Hindi answers render with {found}."
             if found else
@@ -348,8 +383,8 @@ _PRELUDE = r"""
 #let MONO = @@MONO@@
 
 #set document(title: d.title, author: d.brand)
-#set text(font: BODY, size: if d.at("lang", default: "en") == "hi" { 11.2pt } else { 10.2pt }, fill: INK, lang: d.at("lang", default: "en"))
-#set par(leading: if d.at("lang", default: "en") == "hi" { 0.85em } else { 0.74em }, spacing: 1em)
+#set text(font: BODY, size: if d.at("lang", default: "en") != "en" { 11.2pt } else { 10.2pt }, fill: INK, lang: d.at("lang", default: "en"))
+#set par(leading: if d.at("lang", default: "en") != "en" { 0.85em } else { 0.74em }, spacing: 1em)
 #set block(spacing: 1em)
 
 #let spans(ss) = {
@@ -400,8 +435,8 @@ _PRELUDE = r"""
   columns: (auto, 1fr), stroke: none, align: left,
   inset: (x: 0pt, y: 4.5pt), column-gutter: 18pt,
   ..rows.map(r => (
-    text(fill: MUTED, size: if d.lang == "hi" { 11.2pt } else { 9.2pt }, r.at(0)),
-    text(size: if d.lang == "hi" { 11.2pt } else { 10pt }, r.at(1))
+    text(fill: MUTED, size: if d.lang != "en" { 11.2pt } else { 9.2pt }, r.at(0)),
+    text(size: if d.lang != "en" { 11.2pt } else { 10pt }, r.at(1))
   )).flatten())
 
 // `cols` is one number per column: 0 means auto, n means n*1fr. Giving at least
@@ -414,8 +449,8 @@ _PRELUDE = r"""
   align: left,
   fill: (x, y) => if y == 0 { WASH } else { none },
   table.header(..t.headers.map(h =>
-    text(size: if d.lang == "hi" { 10.5pt } else { 8.8pt }, weight: "semibold", fill: MUTED, upper(h)))),
-  ..t.rows.flatten().map(c => text(size: if d.lang == "hi" { 10.5pt } else { 9.2pt }, c)))
+    text(size: if d.lang != "en" { 10.5pt } else { 8.8pt }, weight: "semibold", fill: MUTED, upper(h)))),
+  ..t.rows.flatten().map(c => text(size: if d.lang != "en" { 10.5pt } else { 9.2pt }, c)))
 
 #let cover(subtitle) = page(margin: (x: 62pt, y: 96pt), header: none, footer: none)[
   #align(center)[
@@ -925,6 +960,8 @@ class VargaChartWrapper:
 
 
 def _translate_svg(svg_code: str, language: str) -> str:
+    # Regional languages keep the squares' Latin labels: Typst does not shape
+    # Indic text inside SVG (see the note at the end of pdf_i18n.py).
     if language != "hi":
         return svg_code
 
@@ -1321,6 +1358,13 @@ def _yogas_pdf_table(session, language: str = "en") -> dict:
             group = _YOGA_GROUPS_HI.get(group_eng, group_eng)
             note = trans.get("note", note_eng)
             planets_str = ", ".join([_PLANETS_HI.get(p, p) for p in planets_eng]) if planets_eng else "\u2014"
+        elif language in pdf_i18n.REGIONAL:
+            # The yoga names and their classical notes exist in English and
+            # Hindi only; the regional edition keeps them in English and
+            # translates the planets (DIVASTRO-124).
+            name, group, note = name_eng, group_eng, note_eng
+            planets_str = (", ".join(pdf_i18n.translate(p, language) for p in planets_eng)
+                           if planets_eng else "\u2014")
         else:
             name = name_eng
             group = group_eng
@@ -1330,12 +1374,17 @@ def _yogas_pdf_table(session, language: str = "en") -> dict:
         rows.append([name, group, planets_str, note])
         
     if not rows:
-        if language == "hi":
+        if language in pdf_i18n.REGIONAL:
+            rows = [[pdf_i18n.label(language, "no_yogas"), "\u2014", "\u2014",
+                     pdf_i18n.label(language, "no_yogas_note")]]
+        elif language == "hi":
             rows = [["कोई मुख्य योग नहीं", "\u2014", "\u2014", "ग्रहों की शांति हेतु नित्य प्रार्थना एवं मंत्र जाप करें।"]]
         else:
             rows = [["No major yogas formed", "\u2014", "\u2014", "Continue daily prayers for planetary strength"]]
             
     headers = ["योग का नाम", "श्रेणी", "संबद्ध ग्रह", "प्रभाव / शास्त्रीय फल"] if language == "hi" else ["Yoga Name", "Category", "Planets", "Effect / Description"]
+    if language in pdf_i18n.REGIONAL:
+        headers = list(pdf_i18n.label(language, "yogas_headers"))
     return {
         "headers": headers,
         "cols": [1, 1, 1, 2],
@@ -1583,6 +1632,8 @@ def _month_year_hi(text: str) -> str:
 
 
 def _translate_val(val: str, language: str) -> str:
+    if language in pdf_i18n.REGIONAL:
+        return pdf_i18n.translate(val, language)
     if language != "hi":
         return val
     if not isinstance(val, str):
@@ -1697,7 +1748,13 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
     birth = session.birth
     meta = bundle["meta"]
     
-    texts = _LOCALIZED_TEXTS.get(language, _LOCALIZED_TEXTS["en"])
+    regional = language in pdf_i18n.REGIONAL
+    texts = (pdf_i18n.texts(language) if regional
+             else _LOCALIZED_TEXTS.get(language, _LOCALIZED_TEXTS["en"]))
+
+    def L(key: str, hindi):
+        """A label: the regional table's, else the Hindi literal used before."""
+        return pdf_i18n.label(language, key) if regional else hindi
 
     files: dict[str, str] = {}
     try:
@@ -1708,20 +1765,22 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
         files[f"{name}.svg"] = svg
 
     birth_rows = []
-    if language == "hi":
+    if language == "hi" or regional:
         birth_rows = [
-            ["नाम", meta["name"]],
-            ["जन्म तिथि व समय", meta["local_time"] if birth.time_known else f"{meta['local_time']} (समय अज्ञात)"],
-            ["जन्म स्थान", f"{meta['place']}  ({meta['latitude']:.4f}, {meta['longitude']:.4f})"],
-            ["समय क्षेत्र", f"{meta['timezone']} (UTC{meta['utc_offset'][:3]}:{meta['utc_offset'][3:]})"],
-            ["यूनीवर्सल समय (UT)", str(meta["utc_time"])],
+            [L("name", "नाम"), meta["name"]],
+            [L("date_time", "जन्म तिथि व समय"), meta["local_time"] if birth.time_known
+             else f"{meta['local_time']} ({L('time_unknown', 'समय अज्ञात')})"],
+            [L("place", "जन्म स्थान"), f"{meta['place']}  ({meta['latitude']:.4f}, {meta['longitude']:.4f})"],
+            [L("time_zone", "समय क्षेत्र"), f"{meta['timezone']} (UTC{meta['utc_offset'][:3]}:{meta['utc_offset'][3:]})"],
+            [L("universal_time", "यूनीवर्सल समय (UT)"), str(meta["utc_time"])],
             # Was hardcoded to sidereal regardless of the chart, and left the
             # ayanamsa's own name in English inside the composite string.
-            ["अयन चक्र / अयन", _translate_val(meta["zodiac"], language) + (
-                f" · {_translate_val(str(meta['ayanamsa']), language)} अयनांश "
+            [L("zodiac", "अयन चक्र / अयन"), _translate_val(meta["zodiac"], language) + (
+                f" · {_translate_val(str(meta['ayanamsa']), language)} {L('ayanamsa', 'अयनांश')} "
                 f"{meta['ayanamsa_value']}°" if meta.get("ayanamsa_value") else "")],
-            ["भाव पद्धति", meta["house_system"]],
-            ["वर्ग", "दिन की कुंडली" if meta["sect"] == "diurnal" else "रात्रि की कुंडली"],
+            [L("house_system", "भाव पद्धति"), meta["house_system"]],
+            [L("sect", "वर्ग"), L("day_chart", "दिन की कुंडली") if meta["sect"] == "diurnal"
+             else L("night_chart", "रात्रि की कुंडली")],
         ]
     else:
         birth_rows = [
@@ -1756,12 +1815,17 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
                 start, end = p["start"], p["end"]
                 if hi:
                     start, end = _month_year_hi(start), _month_year_hi(end)
+                elif regional:
+                    lord = pdf_i18n.translate(lord, language)
+                    start = pdf_i18n.month_year(start, language)
+                    end = pdf_i18n.month_year(end, language)
                 return f"{lord}  {start} \u2013 {end}"
 
             nak = summary["nakshatra"]
             nak_label = (
                 f"{_NAKSHATRAS_HI.get(nak, nak)} (\u092a\u093e\u0926 {summary['pada']})" if hi
-                else f"{nak} (pada {summary['pada']})")
+                else f"{pdf_i18n.translate(nak, language)} ({L('pada', '')} {summary['pada']})"
+                if regional else f"{nak} (pada {summary['pada']})")
 
             # Yogini Dasha \u2014 a second, distinct dasha system (see
             # docs/sources/ravana_samhita_notes.md), shown alongside
@@ -1780,6 +1844,11 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
                     start, end = p["start"], p["end"]
                     if hi:
                         start, end = _month_year_hi(start), _month_year_hi(end)
+                    elif regional:
+                        name = pdf_i18n.translate(name, language)
+                        graha = pdf_i18n.translate(graha, language)
+                        start = pdf_i18n.month_year(start, language)
+                        end = pdf_i18n.month_year(end, language)
                     return f"{name} \u2014 {graha}  {start} \u2013 {end}"
 
                 yogini_summary_rows = [
@@ -1804,6 +1873,15 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
                     "rows": _dasha_ladder(session, when),
                 },
             }
+            if regional:
+                sum_map = {
+                    "Moon": L("moon", ""), "Nakshatra": L("nakshatra", ""),
+                    "Mahadasha": L("mahadasha_now", ""), "Antardasha": L("antardasha_now", ""),
+                    "Yogini Dasha": L("yogini_dasha", ""),
+                    "Yogini Antardasha": L("yogini_antardasha", ""), "As of": L("as_of", ""),
+                }
+                for row in dasha["summary"]:
+                    row[0] = sum_map.get(row[0], row[0])
             if language == "hi":
                 dasha["table"]["headers"] = ["महादशा", "वर्ष", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"]
                 sum_map = {
@@ -1942,14 +2020,14 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
     from .llm import generate_kundali_interpretations
     interpretations = generate_kundali_interpretations(analysis_input, language=language)
 
-    if language == "hi":
+    if language == "hi" or regional:
         for row in birth_rows:
             row[1] = _translate_val(row[1], language)
 
         # Must stay column-for-column with _positions_table's English headers
         # (Body, Sign, Degree, House, Placement, Dignity). The previous labels
         # were Motion and Retrograde over the Placement and Dignity columns.
-        pos_table["headers"] = ["ग्रह", "राशि", "अंश", "भाव", "भाव-स्थिति", "बल / गरिमा"]
+        pos_table["headers"] = list(L("positions_headers", ["ग्रह", "राशि", "अंश", "भाव", "भाव-स्थिति", "बल / गरिमा"]))
         for row in pos_table["rows"]:
             for i in range(len(row)):
                 row[i] = _translate_val(row[i], language)
@@ -1957,21 +2035,21 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
         # Five columns (House, Sign on cusp, Cusp, Ruler, Occupants), so five
         # headers — the sixth used to wrap onto a second header row and pushed
         # every label one column to the left of what it described.
-        houses_table["headers"] = ["भाव", "राशि", "आरंभ अंश", "भावेश", "स्थित ग्रह"]
+        houses_table["headers"] = list(L("houses_headers", ["भाव", "राशि", "आरंभ अंश", "भावेश", "स्थित ग्रह"]))
         for row in houses_table["rows"]:
             row[1] = _translate_val(row[1], language)
             row[3] = _translate_val(row[3], language)
             row[4] = _translate_val(row[4], language)
 
         # Last column is applying/separating, not an exactness flag.
-        aspects_table["headers"] = ["कारक ग्रह", "दृष्टि", "लक्ष्य ग्रह", "अंतर (orb)", "गति"]
+        aspects_table["headers"] = list(L("aspects_headers", ["कारक ग्रह", "दृष्टि", "लक्ष्य ग्रह", "अंतर (orb)", "गति"]))
         for row in aspects_table["rows"]:
             row[0] = _translate_val(row[0], language)
             row[1] = _translate_val(row[1], language)
             row[2] = _translate_val(row[2], language)
             row[4] = _translate_val(row[4], language)
 
-        vargas_table["headers"] = ["ग्रह/लग्न", "D1 (लग्न)", "D3 (द्रेष्काण)", "D7 (सप्तांश)", "D9 (नवमांश)", "D10 (दशांश)", "D12 (द्वादशांश)"]
+        vargas_table["headers"] = list(L("vargas_headers", ["ग्रह/लग्न", "D1 (लग्न)", "D3 (द्रेष्काण)", "D7 (सप्तांश)", "D9 (नवमांश)", "D10 (दशांश)", "D12 (द्वादशांश)"]))
         for row in vargas_table["rows"]:
             for i in range(len(row)):
                 row[i] = _translate_val(row[i], language)
@@ -1981,7 +2059,7 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
         # again only risks the comma-splitting branch mangling a planet list.
 
         if dasha:
-            dasha["table"]["headers"] = ["महादशा", "वर्ष", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"]
+            dasha["table"]["headers"] = list(L("dasha_headers", ["महादशा", "वर्ष", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"]))
             for row in dasha["table"]["rows"]:
                 row[0] = _translate_val(row[0], language)
                 row[2] = _translate_val(row[2], language)
@@ -1992,12 +2070,24 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
                 row[1] = _translate_val(row[1], language)
 
             if antardasha_table:
-                antardasha_table["headers"] = ["अंतर्दशा स्वामी", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"]
+                antardasha_table["headers"] = list(L("antardasha_headers", ["अंतर्दशा स्वामी", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"]))
                 for row in antardasha_table["rows"]:
                     row[0] = _translate_val(row[0], language)
                     row[1] = _translate_val(row[1], language)
                     row[2] = _translate_val(row[2], language)
                     row[3] = _translate_val(row[3], language)
+
+    def _prose(text: str, written_in: str | None) -> list[dict]:
+        """A narrative section; a regional report whose model call fell back to
+        the English text says so above it, in the report's language."""
+        if regional and written_in != language and text:
+            text = f"> {pdf_i18n.label(language, 'english_sections')}\n\n{text}"
+        return markdown_blocks(text)
+
+    n_lang, i_lang = narratives.get("written_in"), interpretations.get("written_in")
+    varshphal = [[m, markdown_blocks(p)] for m, p in narratives["varshphal"]]
+    if regional and n_lang != language and varshphal:
+        varshphal[0][1] = _prose(narratives["varshphal"][0][1], n_lang)
 
     data = {
         "brand": brand,
@@ -2024,12 +2114,12 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
         "houses": houses_table,
         "aspects": aspects_table,
         "dasha": dasha,
-        "varshphal": [[m, markdown_blocks(p)] for m, p in narratives["varshphal"]],
-        "upcoming": markdown_blocks(narratives["key_periods"]),
-        "house_summary": markdown_blocks(narratives["house_summary"]),
-        "houses_detailed": markdown_blocks(interpretations["houses_detailed"]),
-        "planets_detailed": markdown_blocks(interpretations["planets_detailed"]),
-        "remedies_detailed": markdown_blocks(interpretations["yogas_remedies_detailed"]),
+        "varshphal": varshphal,
+        "upcoming": _prose(narratives["key_periods"], n_lang),
+        "house_summary": _prose(narratives["house_summary"], n_lang),
+        "houses_detailed": _prose(interpretations["houses_detailed"], i_lang),
+        "planets_detailed": _prose(interpretations["planets_detailed"], i_lang),
+        "remedies_detailed": _prose(interpretations["yogas_remedies_detailed"], i_lang),
     }
     return _compile(_CHART_BODY, data, files)
 

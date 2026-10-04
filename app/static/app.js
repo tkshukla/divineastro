@@ -6,15 +6,30 @@
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
+/* DIVASTRO-121: the languages, from the registry main.py inlines (app/i18n.py).
+   The fallback list only matters if the page was served without it. */
+const LANGS = (window.DA_LANGS && window.DA_LANGS.length) ? window.DA_LANGS
+  : ["en", "hi", "kn", "te", "ta", "ml", "bn", "or"].map((code) => ({ code, native: code, htmlLang: code }));
+const LANG_CODES = LANGS.map((l) => l.code);
+const langInfo = (code) => LANGS.find((l) => l.code === code) || LANGS[0];
+function storedLang() { try { return localStorage.getItem("astro.lang"); } catch { return null; } }
+// The first known code among the candidates, else English.
+function pickLang(...candidates) {
+  for (const c of candidates) {
+    const code = String(c || "").trim().toLowerCase();
+    if (LANG_CODES.includes(code)) return code;
+  }
+  return "en";
+}
+
 const state = {
   place: null,
   sessionId: null,
   chart: null,
   busy: false,
-  // ?lang=hi|en comes from the /hi/ SEO pages' links (seo_pages.py) and wins
-  // over the stored choice; applyLanguage() then stores it.
-  lang: ({ hi: "hi", en: "en" })[new URLSearchParams(location.search).get("lang")]
-    || localStorage.getItem("astro.lang") || "en",
+  // ?lang=<code> comes from the server pages' links (seo_pages.py and the language
+  // picker) and wins over the stored choice; applyLanguage() then stores it.
+  lang: pickLang(new URLSearchParams(location.search).get("lang"), storedLang()),
   // Empty means "the visitor has never chosen" — the server decides in that
   // case (GET /api/llm -> default), so turning Claude on needs no client change.
   //
@@ -45,452 +60,24 @@ const state = {
    i18n — UI chrome and chart vocabulary. Fully offline.
    The narrative itself is translated by the LLM layer when enabled.
    ------------------------------------------------------------ */
-const I18N = {
-  en: {
-    tagline: "Swiss-Ephemeris precision, Vedic judgement — your chart read properly.",
-    name: "Name", optional: "optional", namePh: "Who is this chart for?",
-    dob: "Date of birth", tob: "Time of birth",
-    unknownTime: "I don't know the exact time",
-    unknownHint: "— houses and the ascendant become unreliable; noon is used",
-    pob: "Place of birth", pobPh: "Start typing a city…",
-    advanced: "Advanced settings", zodiac: "Zodiac", houseSystem: "House system",
-    tropical: "Tropical (Western)", sidereal: "Sidereal (Vedic / Jyotish)",
-    ayanamsa: "Ayanamsa", cast: "Show my reading", casting: "Consulting the ephemeris…",
-    footnote: "Nothing leaves this computer. Birth data is held in memory only.",
-    pickPlace: "Pick a birth place from the suggestions so the coordinates and timezone are exact.",
-    narration: "Narration",
-    copyAns: "Copy", shareAns: "Share", copiedMsg: "Copied",
-    jumpLatest: "Latest", textSize: "Text size", chartDetails: "Chart details",
-    hidePanel: "Show or hide the chart",
-    midnightHint: "⚠️ Born between midnight and sunrise? Use the next calendar date (e.g. night of 25th is technically early hours of 26th).",
-    chartStyle: "Chart style",
-    styleNorth: "North Indian", styleSouth: "South Indian", styleWheel: "Western wheel",
-    styleNorthFull: "North Indian (Vedic diamond)",
-    styleSouthFull: "South Indian (Vedic square)",
-    styleWheelFull: "Western wheel",
-    rashiChart: "Rashi (D-1)", lagnaLbl: "Lagna",
-    wholeSignNote: "Whole-sign rashi chart — houses counted from the Lagna.",
-    mahadashaTable: "Vimshottari mahadasha", antardashaTable: "Antardasha",
-    dashaLord: "Lord", dashaFrom: "From", dashaTo: "To",
-    running: "running now", yrs: "yrs",
-    balanceAtBirth: "balance at birth", atBirth: "at birth",
-    expandHint: "Open a mahadasha to see its antardashas.",
-    noDasha: "Vimshottari dasha needs a sidereal (Vedic) chart. Recast with the sidereal zodiac to see mahadashas and antardashas.",
-    moonAt: "Moon at",
-    placements: "Placements", houses: "Houses", vargas: "Vargas", ashtakavarga: "Ashtakavarga", jaimini: "Jaimini", sudarshana: "Sudarshana", aspects: "Aspects", now: "Now",
-    askPh: "Ask about career, love, money…",
-    reading: "Reading the chart…", writing: "Writing it out…",
-    responseTruncated: "The response may have been cut short — ask a follow-up to continue it.",
-    responseStopped: "Stopped.",
-    responseDropped: "Connection dropped — this answer may be incomplete.",
-    elemental: "Elemental balance", patterns: "Patterns", cusps: "cusps",
-    angular: "Angular", succedent: "Succedent", cadent: "Cadent",
-    annualProfection: "Annual profection", lordOfYear: "lord of the year",
-    monthly: "Monthly", releasing: "Zodiacal releasing", firdaria: "Firdaria",
-    dasha: "Vimshottari dasha", mahadasha: "mahadasha", antardasha: "antardasha",
-    nakshatra: "Moon in", pada: "pada", asOf: "As of", age: "age",
-    reasoningOne: "The reasoning —", reasoningTwo: "chart factors weighed",
-    score: "Weighted verdict score", routedTo: "routed to", intent: "intent",
-    savedTitle: "Your saved charts", savedSlots: "saved",
-    savedSub: "Open one with a tap, or cast a new chart below.",
-    castAnother: "+ Cast a new chart",
-    homeHeadline: "Know your kundali. Ask anything.",
-    // Casting a chart needs no account (only asking the AI does); say so, because
-    // "reading" alone read like the start of a sign-up wall (DIVASTRO-101).
-    homeCta: "Get my free kundali — no sign-in needed",
-    homeBlurb: "Your birth chart, cast to the exact minute — with answers in Hindi or English, "
-             + "drawn from your own planets and dashas.",
-    freeBadge: "First {n} questions FREE",
-    freeBadgeSub: "No card needed · tap to sign up",
-    freeBadgeInSub: "Tap to ask the AI astrologer",
-    freeBadgeIn: "{n} questions left — ask away",
-    feat1: "Kundali cast to the exact minute", feat2: "Ask in Hindi or English",
-    feat3: "Dasha timelines & transits", feat4: "Kundali Milan — 36 gun match",
-    feat5: "Remedies & gemstones", feat6: "Downloadable PDF reports",
-    birthTitle: "Your birth details",
-    birthSub: "Exact time and place — the chart is only as good as these.",
-    point1: "Swiss Ephemeris — the same data professional astrologers use",
-    point2: "Vimshottari dashas, transits and timing windows",
-    point3: "Answers in plain language, in Hindi or English",
-    gender: "Gender", genderNone: "Prefer not to say",
-    genderFemale: "Female", genderMale: "Male", genderOther: "Other",
-    savedFullHint: "That is the lot — delete one to make room for a new chart.",
-    savedRename: "Rename", savedDelete: "Delete",
-    savedRenamePrompt: "What should this chart be called?",
-    savedDeleteConfirm: "Delete this saved chart? You can always cast it again.",
-    savedFullOne: "You are already keeping all", savedFullTwo:
-      "saved charts, so this one was not saved. Delete one to make room.",
-    savedFailed: "That chart could not be opened.",
-    newChart: "New chart", asc: "Asc / Lagna", sun: "Sun", moon: "Moon",
-    sect: "Sect", diurnal: "Diurnal", nocturnal: "Nocturnal",
-    housesLbl: "Houses", zodiacLbl: "Zodiac",
-    polishedBy: "Rewritten by", engineText: "The engine's own wording",
-    llmFailed: "Narration failed — showing the engine's wording",
-    starters: [
-      "What am I actually like?",
-      "How is my career looking?",
-      "When will I get married?",
-      "Will money improve in the next two years?",
-      "What is happening in my life right now?",
-      "Where are my health vulnerabilities?",
-      "Should I move abroad?",
-      "What are my biggest strengths and blind spots?",
-      "I got married in 2012 — what was my chart doing?",
-    ],
-    dashDownloadPdf: "Download Kundali PDF",
-    dashChangeProfile: "Switch Profile",
-    dashForecastTitle: "Your Personal Daily Forecast",
-    dashTransitLoading: "Loading your daily transit guidance...",
-    dashPanchangTitle: "Today's Panchang",
-    dashTithi: "Tithi:",
-    dashNakshatra: "Nakshatra:",
-    dashYoga: "Yoga:",
-    dashKarana: "Karana:",
-    dashMuhurthaTitle: "Muhurtha & Timings",
-    dashAbhijit: "Abhijit (Auspicious):",
-    dashRahuKalam: "Rahu Kalam (Avoid):",
-    dashSunrise: "Sunrise:",
-    dashSunset: "Sunset:",
-    dashDashaTitle: "Current Dasha Timeline",
-    dashMdLord: "Mahadasha Lord:",
-    dashAdLord: "Antardasha Lord:",
-    dashDuration: "Duration:",
-    dashTimelineTitle: "Dasha Visual Timeline",
-    dashTimelineDesc: "Interactive mapping of your Vimshottari Mahadasha and Antardasha sequence. Active period is highlighted.",
-    dashTimelineLoading: "Loading timeline...",
-    dashExploreTitle: "Explore Your Chart",
-    dashNavChatTitle: "Ask AI Guru",
-    dashNavChatDesc: "Get detailed answers about your career, marriage, and life",
-    dashNavRemediesTitle: "Remedies & Gemstones",
-    dashNavRemediesDesc: "Auspicious stones, mantras, and remedies for your active dasha",
-    dashNavDoshasTitle: "Dosha & Afflictions",
-    dashNavDoshasDesc: "Detailed check for Manglik, Sade Sati, and Kaal Sarp",
-    dashNavMilanTitle: "Kundali Milan",
-    dashNavMilanDesc: "Compare compatibility with another profile",
-    modalRemediesTitle: "Remedies & Gemstones",
-    modalRemediesGemsTitle: "Recommended Gemstones",
-    modalRemediesDashaTitle: "Active Dasha Remedies",
-    modalRemediesPdfBtn: "Download AI-Driven Remedy PDF Report",
-    noneToday: "None today",
-    selectedPeriod: "Selected period:",
-    mahadashaWord: "Mahadasha",
-    yearsWord: "years",
-    durationWord: "Duration:",
-    toWord: "to",
-    scoreExcellent: "Excellent",
-    scoreNeutral: "Neutral",
-    scoreCaution: "Caution",
-    metalLabel: "Metal:",
-    wearOnLabel: "Wear on:",
-    currentMDRuled: "Your current Mahadasha is ruled by",
-    recommendedMantra: "Recommended Mantra:",
-    charityFasting: "Charity & Fasting:",
-    toolMilanName: "Kundali Milan",
-    toolMilanSub: "36-point marriage matching",
-    toolPanchangName: "Today's Panchang",
-    toolPanchangSub: "Tithi, nakshatra and Rahu Kaal",
-    toolMuhuratName: "Muhurat Finder",
-    toolMuhuratSub: "Auspicious dates for marriage, house & events",
-    toolChoghadiyaName: "Choghadiya Muhurta",
-    toolChoghadiyaSub: "Real-time auspicious & inauspicious hours",
-    toolVratName: "Vrat & Tyohar",
-    toolVratSub: "Today's & upcoming fasts and festivals, with puja muhurat",
-    toolKathaName: "Kathas",
-    toolKathaSub: "Stories from the Ramayana, Mahabharata & Puranas",
-    choghadiyaTitle: "Choghadiya Muhurta",
-    choghadiyaSub: "Real-time 16-slot Day and Night Vedic intervals for immediate decision making.",
-    lblChoghadiyaDate: "Date",
-    lblChoghadiyaPlace: "Place",
-    btnChoghadiyaCheck: "View Choghadiya Schedule",
-    tabVargas: "Vargas (D1-D60)",
-    tabAshtakavarga: "Ashtakavarga",
-    muhuratTitle: "Muhurat Finder",
-    muhuratSub: "Find classical auspicious dates and timings for marriage, house warming, ceremonies and important events.",
-    lblMuhuratEvent: "Event / Ceremony",
-    lblMuhuratPlace: "Place",
-    lblMuhuratFrom: "From Date",
-    lblMuhuratTo: "To Date",
-    btnMuhuratSearch: "Find Auspicious Dates",
-    muhuratResultsTitle: "Auspicious Dates Summary",
-    milanTitle: "Kundali Milan",
-    mangalTitle: "Mangal Dosha Analysis",
-    milanNeedDate: "Both dates of birth are needed.",
-    milanNeedPlace: "Pick both birth places from the suggestions so the coordinates are exact.",
-    beforeCancellation: "before cancellation",
-    tithiL: "Tithi",
-    nakL: "Nakshatra",
-    yogaL: "Yoga",
-    karanaL: "Karana",
-    timingsL: "Timings",
-    until: "until",
-    none: "none today",
-    // ---- Hindi Panchang: tool-page labels, values and messages (tools.js) ----
-    panchangTitle: "Panchang",
-    panchangSub: "The five limbs of the day, with Rahu Kaal and the auspicious windows.",
-    lblDate: "Date", lblPlace: "Place",
-    rahuKaalL: "Rahu Kaal", yamagandaL: "Yamaganda", gulikaL: "Gulika Kaal",
-    abhijitL: "Abhijit Muhurta", abhijitShort: "Abhijit",
-    sunL: "Sunrise – sunset", moonL: "Moonrise – moonset",
-    reckonedMidnight: "reckoned from midnight",
-    paErr: "Could not compute the panchang.",
-    muErr: "Could not calculate muhurat.",
-    choErr: "Could not calculate Choghadiya.",
-    muNeedDates: "Please choose both from and to dates.",
-    muNone: "No dates found for this range.",
-    muColDate: "Date / Day", muColVerdict: "Verdict", muColLimbs: "Tithi & Nakshatra",
-    muColAbhijit: "Abhijit", muColReasons: "Evaluation / Reasons",
-    evMarriage: "Marriage / Vivaha (विवाह)",
-    evGrihaPravesh: "House Warming / Griha Pravesh (गृह प्रवेश)",
-    evMundan: "Tonsure / Mundan (मुंडन संस्कार)",
-    evNamkaran: "Naming / Namkaran (नामकरण)",
-    evGeneral: "General Auspicious (सर्वकार्य शुभ)",
-    replyUnreadable: "The server sent a reply this page could not read. Please try again.",
-    serverProblem: "The server ran into a problem (error {n}). Please try again in a moment.",
-    // ---- DIVASTRO-111: Panchang tool's vrat/festival section; header labels ----
-    vratDayToday: "Vrat & Festivals today", vratDayOn: "Vrat & Festivals on {d}",
-    hdrHome: "Divine Astro — home", hdrTheme: "Toggle theme", hdrThemeTitle: "Toggle light / dark theme",
-    hdrLang: "Language",
-    // ---- DIVASTRO-101: home screen Today strip + sample question ----
-    todayTitle: "Today", todayTithi: "Tithi", todayNak: "Nakshatra", todayRahu: "Rahu Kaal",
-    todayNow: "now", todayChange: "Change city", todayCityPh: "Start typing a city…",
-    todayOpen: "Open today's full panchang",
-    sampleTag: "Example",
-    sampleQ: "When will my career pick up? I have felt stuck for two years.",
-    sampleA: "Your 10th lord Saturn sits strong in its own sign, which favours a steady rise "
-           + "over sudden jumps. The stuck feeling matches your Rahu antardasha, which tends to "
-           + "scatter effort. When it ends, Jupiter's antardasha begins and looks directly at "
-           + "your 10th house — that is the window to push for a new role. Until then, build "
-           + "skills and keep your work visible.",
-    sampleNote: "Every answer is read from the person's own chart and dashas.",
-    sampleAsk: "Ask your own question",
-    // ---- DIVASTRO-107: WhatsApp share buttons (share.js). No personal details in these. ----
-    shareWa: "Share on WhatsApp", shareShort: "Share",
-    shareMilanText: "We got {score}/{max} in Kundali Milan 💍 — check yours free:",
-    shareTodayText: "Today's Rahu Kaal in {city}: {rahu} · Tithi {tithi} —",
-    sharePanchangText: "Panchang for {city}, {date}: Tithi {tithi} · Nakshatra {nak} · Rahu Kaal {rahu} —",
-  },
-  hi: {
-    tagline: "स्विस एफ़ेमेरिस की सटीकता, वैदिक विवेचन — आपकी कुंडली, सही ढंग से।",
-    name: "नाम", optional: "वैकल्पिक", namePh: "यह कुंडली किसकी है?",
-    dob: "जन्म तिथि", tob: "जन्म समय",
-    unknownTime: "मुझे सही समय नहीं पता",
-    unknownHint: "— भाव और लग्न अविश्वसनीय हो जाएँगे; दोपहर का समय लिया जाएगा",
-    pob: "जन्म स्थान", pobPh: "शहर का नाम लिखना शुरू करें…",
-    advanced: "विस्तृत सेटिंग्स", zodiac: "राशि पद्धति", houseSystem: "भाव पद्धति",
-    tropical: "सायन (पाश्चात्य)", sidereal: "निरयन (वैदिक / ज्योतिष)",
-    ayanamsa: "अयनांश", cast: "मेरी कुंडली देखें", casting: "पंचांग देखा जा रहा है…",
-    footnote: "कोई भी जानकारी इस कंप्यूटर से बाहर नहीं जाती। जन्म-विवरण केवल मेमोरी में रहता है।",
-    pickPlace: "सुझावों में से जन्म स्थान चुनें ताकि अक्षांश-देशांतर और समय-क्षेत्र सही रहें।",
-    narration: "वर्णन",
-    copyAns: "कॉपी", shareAns: "शेयर", copiedMsg: "कॉपी हो गया",
-    jumpLatest: "नवीनतम", textSize: "अक्षर का आकार", chartDetails: "कुंडली विवरण",
-    hidePanel: "कुंडली दिखाएँ या छिपाएँ",
-    midnightHint: "⚠️ मध्यरात्रि और सूर्योदय के बीच जन्म? अगली कैलेंडर तिथि दर्ज करें (जैसे 25 तारीख की रात तकनीकी रूप से 26 तारीख की भोर है)।",
-    chartStyle: "कुंडली शैली",
-    styleNorth: "उत्तर भारतीय", styleSouth: "दक्षिण भारतीय", styleWheel: "पाश्चात्य चक्र",
-    styleNorthFull: "उत्तर भारतीय (वैदिक)",
-    styleSouthFull: "दक्षिण भारतीय (वैदिक)",
-    styleWheelFull: "पाश्चात्य चक्र",
-    rashiChart: "राशि चक्र (D-1)", lagnaLbl: "लग्न",
-    wholeSignNote: "पूर्ण-राशि (चलित रहित) राशि कुंडली — भाव लग्न से गिने गए हैं।",
-    mahadashaTable: "विंशोत्तरी महादशा", antardashaTable: "अंतर्दशा",
-    dashaLord: "स्वामी", dashaFrom: "आरंभ", dashaTo: "समाप्ति",
-    running: "वर्तमान", yrs: "वर्ष",
-    balanceAtBirth: "जन्म के समय शेष", atBirth: "जन्म पर",
-    expandHint: "अंतर्दशा देखने के लिए किसी महादशा पर क्लिक करें।",
-    noDasha: "विंशोत्तरी दशा के लिए निरयन (वैदिक) कुंडली आवश्यक है। महादशा और अंतर्दशा देखने हेतु निरयन राशि पद्धति चुनकर कुंडली दोबारा बनाएँ।",
-    moonAt: "चंद्र",
-    placements: "ग्रह स्थिति", houses: "भाव", vargas: "वर्ग (D1-D60)", ashtakavarga: "अष्टकवर्ग", jaimini: "जैमिनी कारक", sudarshana: "सुदर्शन चक्र", aspects: "दृष्टि", now: "वर्तमान",
-    askPh: "करियर, विवाह, धन — कुछ भी पूछें…",
-    reading: "कुंडली पढ़ी जा रही है…", writing: "उत्तर लिखा जा रहा है…",
-    responseTruncated: "उत्तर अधूरा रह गया हो सकता है — जारी रखने के लिए अगला प्रश्न पूछें।",
-    responseStopped: "रोक दिया गया।",
-    responseDropped: "कनेक्शन टूट गया — यह उत्तर अधूरा हो सकता है।",
-    elemental: "तत्व संतुलन", patterns: "योग", cusps: "आरंभ",
-    angular: "केन्द्र", succedent: "पणफर", cadent: "आपोक्लिम",
-    annualProfection: "वार्षिक प्रोफ़ेक्शन", lordOfYear: "वर्षेश",
-    monthly: "मासिक", releasing: "ज़ोडिएकल रिलीज़िंग", firdaria: "फ़िरदारिया",
-    dasha: "विंशोत्तरी दशा", mahadasha: "महादशा", antardasha: "अंतर्दशा",
-    nakshatra: "चंद्र नक्षत्र", pada: "पाद", asOf: "दिनांक", age: "आयु",
-    reasoningOne: "तर्क —", reasoningTwo: "कुंडली-तत्वों का आकलन",
-    score: "भारित निर्णय अंक", routedTo: "विषय", intent: "प्रश्न-प्रकार",
-    savedTitle: "आपकी सहेजी कुंडलियाँ", savedSlots: "सहेजी गईं",
-    savedSub: "किसी पर क्लिक करके पढ़ें, या नीचे नई कुंडली बनाएँ।",
-    castAnother: "+ नई कुंडली बनाएँ",
-    homeHeadline: "अपनी कुंडली जानें। कुछ भी पूछें।",
-    homeCta: "मेरी निःशुल्क कुंडली देखें — साइन-इन की ज़रूरत नहीं",
-    homeBlurb: "सटीक समय पर बनी आपकी जन्म कुंडली — आपके अपने ग्रहों और दशाओं पर आधारित उत्तर, "
-             + "हिंदी या अंग्रेज़ी में।",
-    freeBadge: "पहले {n} प्रश्न बिल्कुल मुफ़्त",
-    freeBadgeSub: "कार्ड की ज़रूरत नहीं · साइन-अप के लिए टैप करें",
-    freeBadgeInSub: "एआई ज्योतिषी से पूछने के लिए टैप करें",
-    freeBadgeIn: "{n} प्रश्न शेष — पूछिए",
-    feat1: "सटीक समय की कुंडली", feat2: "हिंदी या अंग्रेज़ी में पूछें",
-    feat3: "दशा और गोचर", feat4: "कुंडली मिलान — 36 गुण",
-    feat5: "उपाय और रत्न", feat6: "PDF रिपोर्ट डाउनलोड",
-    birthTitle: "आपका जन्म विवरण",
-    birthSub: "सटीक समय और स्थान — कुंडली इन्हीं पर निर्भर करती है।",
-    point1: "स्विस एफ़ेमेरिस — वही गणना जो पेशेवर ज्योतिषी उपयोग करते हैं",
-    point2: "विंशोत्तरी दशा, गोचर और समय-अवधि",
-    point3: "सरल भाषा में उत्तर, हिन्दी या अंग्रेज़ी में",
-    gender: "लिंग", genderNone: "बताना नहीं चाहते",
-    genderFemale: "स्त्री", genderMale: "पुरुष", genderOther: "अन्य",
-    savedFullHint: "सीमा पूरी — नई कुंडली के लिए जगह बनाने हेतु एक हटाएँ।",
-    savedRename: "नाम बदलें", savedDelete: "हटाएँ",
-    savedRenamePrompt: "इस कुंडली को क्या नाम दें?",
-    savedDeleteConfirm: "यह सहेजी कुंडली हटाएँ? आप इसे दोबारा बना सकते हैं।",
-    savedFullOne: "आपके पास पहले से पूरी", savedFullTwo:
-      "कुंडलियाँ सहेजी हैं, इसलिए यह सहेजी नहीं गई। जगह बनाने के लिए एक हटाएँ।",
-    savedFailed: "यह कुंडली नहीं खुल सकी।",
-    newChart: "नई कुंडली", asc: "लग्न", sun: "सूर्य", moon: "चंद्र",
-    sect: "पक्ष", diurnal: "दिवा", nocturnal: "रात्रि",
-    housesLbl: "भाव", zodiacLbl: "राशि",
-    polishedBy: "पुनर्लेखन:", engineText: "इंजन का मूल पाठ",
-    llmFailed: "वर्णन विफल — इंजन का मूल पाठ दिखाया जा रहा है",
-    starters: [
-      "मेरा स्वभाव कैसा है?",
-      "मेरा करियर कैसा रहेगा?",
-      "मेरा विवाह कब होगा?",
-      "अगले दो वर्षों में धन की स्थिति सुधरेगी?",
-      "अभी मेरे जीवन में क्या चल रहा है?",
-      "मेरे स्वास्थ्य की कमज़ोरियाँ क्या हैं?",
-      "क्या मुझे विदेश जाना चाहिए?",
-      "मेरी सबसे बड़ी शक्तियाँ और कमियाँ क्या हैं?",
-      "मेरा विवाह 2012 में हुआ — तब कुंडली में क्या था?",
-    ],
-    dashDownloadPdf: "जन्म कुंडली PDF डाउनलोड करें",
-    dashChangeProfile: "प्रोफ़ाइल बदलें",
-    dashForecastTitle: "आपका दैनिक गोचर राशिफल",
-    dashTransitLoading: "दैनिक गोचर फलादेश लोड हो रहा है...",
-    dashPanchangTitle: "आज का पंचांग",
-    dashTithi: "तिथि:",
-    dashNakshatra: "नक्षत्र:",
-    dashYoga: "योग:",
-    dashKarana: "करण:",
-    dashMuhurthaTitle: "मुहूर्त एवं समय",
-    dashAbhijit: "अभिजीत मुहूर्त (शुभ):",
-    dashRahuKalam: "राहुकाल (त्याज्य):",
-    dashSunrise: "सूर्योदय:",
-    dashSunset: "सूर्यास्त:",
-    dashDashaTitle: "वर्तमान दशा काल",
-    dashMdLord: "महादशा स्वामी:",
-    dashAdLord: "अंतर्दशा स्वामी:",
-    dashDuration: "अवधि:",
-    dashTimelineTitle: "दशा समय-चक्र",
-    dashTimelineDesc: "विंशोत्तरी महादशा एवं अंतर्दशा का दृश्य मानचित्र। वर्तमान सक्रिय काल चयनित है।",
-    dashTimelineLoading: "समय-चक्र लोड हो रहा है...",
-    dashExploreTitle: "अपनी कुंडली जानें",
-    dashNavChatTitle: "ज्योतिष गुरु से पूछें",
-    dashNavChatDesc: "करियर, विवाह और जीवन के बारे में सटीक मार्गदर्शन प्राप्त करें",
-    dashNavRemediesTitle: "उपाय एवं रत्न",
-    dashNavRemediesDesc: "सक्रिय दशा के लिए शुभ रत्न, वैदिक मंत्र और उपाय",
-    dashNavDoshasTitle: "दोष एवं शांति",
-    dashNavDoshasDesc: "मांगलिक, साढ़े साती और कालसर्प दोष की विस्तृत जांच",
-    dashNavMilanTitle: "कुंडली मिलान",
-    dashNavMilanDesc: "अष्टकूट गुण मिलान और वैवाहिक अनुकूलता",
-    modalRemediesTitle: "उपाय एवं रत्न परामर्श",
-    modalRemediesGemsTitle: "अनुशंसित रत्न",
-    modalRemediesDashaTitle: "सक्रिय दशा के उपाय",
-    modalRemediesPdfBtn: "उपाय PDF रिपोर्ट डाउनलोड करें",
-    noneToday: "आज नहीं है",
-    selectedPeriod: "चयनित अवधि:",
-    mahadashaWord: "महादशा",
-    yearsWord: "वर्ष",
-    durationWord: "अवधि:",
-    toWord: "से",
-    scoreExcellent: "उत्तम (शुभ)",
-    scoreNeutral: "सामान्य (Neutral)",
-    scoreCaution: "सावधानी (सतर्क रहें)",
-    metalLabel: "धातु:",
-    wearOnLabel: "धारण अंगुली:",
-    currentMDRuled: "आपकी वर्तमान महादशा के स्वामी हैं",
-    recommendedMantra: "अनुशंसित मंत्र:",
-    charityFasting: "दान एवं व्रत:",
-    toolMilanName: "कुंडली मिलान",
-    toolMilanSub: "36 गुण मिलान और वैवाहिक अनुकूलता",
-    toolPanchangName: "आज का पंचांग",
-    toolPanchangSub: "तिथि, नक्षत्र और राहुकाल",
-    toolMuhuratName: "शुभ मुहूर्त खोजें",
-    toolMuhuratSub: "विवाह, गृह प्रवेश व शुभ कार्यों हेतु शुभ तिथियां",
-    toolChoghadiyaName: "चौघड़िया मुहूर्त",
-    toolChoghadiyaSub: "शुभ व अशुभ समय का वास्तविक समय चक्र",
-    toolVratName: "व्रत और त्योहार",
-    toolVratSub: "आज और आने वाले व्रत-त्योहार, पूजा मुहूर्त सहित",
-    toolKathaName: "कथाएँ",
-    toolKathaSub: "रामायण, महाभारत और पुराणों की कथाएँ",
-    choghadiyaTitle: "चौघड़िया मुहूर्त",
-    choghadiyaSub: "दिन व रात के 16 चौघड़िया मुहूर्त: अमृत, शुभ, लाभ, चर, रोग, काल, उद्वेग।",
-    lblChoghadiyaDate: "दिनांक",
-    lblChoghadiyaPlace: "स्थान",
-    btnChoghadiyaCheck: "चौघड़िया मुहूर्त देखें",
-    tabVargas: "षोडशवर्ग (D1-D60)",
-    tabAshtakavarga: "अष्टकवर्ग चक्र",
-    muhuratTitle: "शुभ मुहूर्त खोजक",
-    muhuratSub: "विवाह, गृह प्रवेश, मुंडन, नामकरण एवं सर्वकार्यों हेतु शास्त्रीय शुभ तिथियां व समय जानें।",
-    lblMuhuratEvent: "शुभ कार्य / संस्कार",
-    lblMuhuratPlace: "स्थान",
-    lblMuhuratFrom: "आरंभ तिथि",
-    lblMuhuratTo: "अंतिम तिथि",
-    btnMuhuratSearch: "शुभ मुहूर्त खोजें",
-    muhuratResultsTitle: "शुभ मुहूर्त विवरण",
-    milanTitle: "कुंडली मिलान",
-    mangalTitle: "मांगलिक दोष विश्लेषण",
-    milanNeedDate: "दोनों की जन्म तिथियां आवश्यक हैं।",
-    milanNeedPlace: "सुझावों में से दोनों जन्म स्थान चुनें ताकि देशांतर सही रहें।",
-    beforeCancellation: "परिहार से पूर्व",
-    tithiL: "तिथि",
-    nakL: "नक्षत्र",
-    yogaL: "योग",
-    karanaL: "करण",
-    timingsL: "शुभ-अशुभ समय",
-    until: "तक",
-    none: "आज नहीं है",
-    // ---- Hindi Panchang: tool-page labels, values and messages (tools.js) ----
-    panchangTitle: "पंचांग",
-    panchangSub: "दिन के पाँच अंग — तिथि, वार, नक्षत्र, योग और करण — राहु काल व शुभ मुहूर्त के साथ।",
-    lblDate: "दिनांक", lblPlace: "स्थान",
-    rahuKaalL: "राहु काल", yamagandaL: "यमगण्ड", gulikaL: "गुलिक काल",
-    abhijitL: "अभिजित मुहूर्त", abhijitShort: "अभिजित",
-    sunL: "सूर्योदय – सूर्यास्त", moonL: "चंद्रोदय – चंद्रास्त",
-    reckonedMidnight: "मध्यरात्रि से गणना",
-    paErr: "पंचांग की गणना नहीं हो सकी। कृपया फिर से प्रयास करें।",
-    muErr: "मुहूर्त की गणना नहीं हो सकी। तिथियाँ जाँचें (अधिकतम 90 दिन) और फिर से प्रयास करें।",
-    choErr: "चौघड़िया की गणना नहीं हो सकी। कृपया फिर से प्रयास करें।",
-    muNeedDates: "कृपया आरंभ और अंतिम, दोनों तिथियाँ चुनें।",
-    muNone: "इस अवधि में कोई तिथि नहीं मिली।",
-    muColDate: "दिनांक / वार", muColVerdict: "निर्णय", muColLimbs: "तिथि व नक्षत्र",
-    muColAbhijit: "अभिजित", muColReasons: "मूल्यांकन / कारण",
-    evMarriage: "विवाह",
-    evGrihaPravesh: "गृह प्रवेश",
-    evMundan: "मुंडन संस्कार",
-    evNamkaran: "नामकरण",
-    evGeneral: "सर्वकार्य शुभ",
-    replyUnreadable: "सर्वर का उत्तर पढ़ा नहीं जा सका। कृपया फिर से प्रयास करें।",
-    serverProblem: "सर्वर में समस्या आई (त्रुटि {n})। कृपया थोड़ी देर बाद फिर प्रयास करें।",
-    // ---- DIVASTRO-111: Panchang tool's vrat/festival section; header labels ----
-    vratDayToday: "आज के व्रत-त्योहार", vratDayOn: "{d} के व्रत-त्योहार",
-    hdrHome: "Divine Astro — मुख्य पृष्ठ", hdrTheme: "हल्का / गहरा रंग", hdrThemeTitle: "हल्का / गहरा रंग बदलें",
-    hdrLang: "भाषा",
-    // ---- DIVASTRO-101: home screen Today strip + sample question ----
-    todayTitle: "आज", todayTithi: "तिथि", todayNak: "नक्षत्र", todayRahu: "राहु काल",
-    todayNow: "अभी", todayChange: "शहर बदलें", todayCityPh: "शहर का नाम लिखना शुरू करें…",
-    todayOpen: "आज का पूरा पंचांग खोलें",
-    sampleTag: "उदाहरण",
-    sampleQ: "मेरा करियर कब आगे बढ़ेगा? दो साल से सब अटका हुआ लगता है।",
-    sampleA: "आपके दशमेश शनि अपनी ही राशि में बलवान हैं — यह अचानक छलाँग के बजाय धीमी, "
-           + "स्थिर उन्नति देता है। अटके होने का अनुभव आपकी राहु अंतर्दशा से मेल खाता है, जो "
-           + "प्रयासों को बिखेर देती है। इसके समाप्त होते ही गुरु की अंतर्दशा आरंभ होगी, जिसकी "
-           + "सीधी दृष्टि आपके दशम भाव पर है — नई भूमिका के लिए प्रयास का वही समय है। तब तक "
-           + "कौशल बढ़ाइए और अपने काम को सबके सामने रखिए।",
-    sampleNote: "हर उत्तर व्यक्ति की अपनी कुंडली और दशाओं से पढ़ा जाता है।",
-    sampleAsk: "अपना प्रश्न पूछें",
-    // ---- DIVASTRO-107: WhatsApp share buttons (share.js). No personal details in these. ----
-    shareWa: "WhatsApp पर भेजें", shareShort: "भेजें",
-    shareMilanText: "कुंडली मिलान में हमारे {score}/{max} गुण मिले 💍 — आप भी मुफ़्त में देखें:",
-    shareTodayText: "आज {city} में राहु काल: {rahu} · तिथि {tithi} —",
-    sharePanchangText: "{city} का पंचांग, {date}: तिथि {tithi} · नक्षत्र {nak} · राहु काल {rahu} —",
-  },
-};
+/* DIVASTRO-121: the strings live in app/static/i18n/<code>.json, one file per
+   language. English and Hindi arrive inline with the page (main.py _page puts
+   them in window.DA_I18N), so the first paint never waits on a fetch; the other
+   languages are fetched the first time they are chosen (loadLang) and cached.
+   Any key a language lacks falls back to English, per key — a half-translated
+   language shows English for the rest, never a blank or a raw key. */
+const I18N = Object.assign({ en: {}, hi: {} }, window.DA_I18N || {});
+const I18N_LOADING = {};
+function loadLang(code) {
+  if (I18N[code] || !LANG_CODES.includes(code)) return Promise.resolve();
+  if (!I18N_LOADING[code]) {
+    I18N_LOADING[code] = fetch(`/static/i18n/${code}.json?v=${encodeURIComponent(window.DA_I18N_V || "")}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((table) => { I18N[code] = table && typeof table === "object" ? table : {}; })
+      .catch(() => { delete I18N_LOADING[code]; });   // English meanwhile; retried on the next switch
+  }
+  return I18N_LOADING[code];
+}
 
 const PLANET_NAME_HI = {
   Sun: "सूर्य", Moon: "चंद्र", Mercury: "बुध", Venus: "शुक्र", Mars: "मंगल",
@@ -507,7 +94,23 @@ const SIGN_NAME_HI = {
 };
 const ELEMENT_HI = { Fire: "अग्नि", Earth: "पृथ्वी", Air: "वायु", Water: "जल" };
 
-const t = (key) => (I18N[state.lang] || I18N.en)[key] ?? I18N.en[key] ?? key;
+const t = (key) => {
+  const own = (I18N[state.lang] || {})[key];
+  if (own) return own;
+  const en = I18N.en[key];
+  return en == null ? key : en;
+};
+/* A field of an API object in the reader's language: obj.name_kn, else (Hindi) the
+   existing name_hi, else the English obj.name. The server adds name_<code> as each
+   language's tables land (app/astro/names_<code>.py), and this picks them up as-is. */
+const loc = (obj, field, lang = state.lang) => {
+  if (!obj) return "";
+  if (lang && lang !== "en") {
+    const v = obj[`${field}_${lang}`];
+    if (v) return v;
+  }
+  return obj[field] ?? obj[`${field}_en`] ?? "";
+};
 const tPlanet = (n) => (state.lang === "hi" ? PLANET_NAME_HI[n] || n : n);
 const tSign = (n) => (state.lang === "hi" ? SIGN_NAME_HI[n] || n : n);
 const tElement = (n) => (state.lang === "hi" ? ELEMENT_HI[n] || n : n);
@@ -1024,10 +627,61 @@ function markdown(src) {
 /* ------------------------------------------------------------
    Language + narration engine
    ------------------------------------------------------------ */
+/* DIVASTRO-121: the script's web font, for the active language only — never all
+   eight. Google's CSS splits each family by unicode-range and uses
+   font-display: swap, so text shows at once in a system font. The family is
+   named in styles.css (html[lang=xx] --sans/--serif). */
+const FONTS_LOADED = new Set();
+function loadFont(code) {
+  const url = langInfo(code).font;
+  if (!url || FONTS_LOADED.has(code)) return;
+  FONTS_LOADED.add(code);
+  if (!document.querySelector('link[rel="preconnect"][href="https://fonts.gstatic.com"]')) {
+    const pc = document.createElement("link");
+    pc.rel = "preconnect"; pc.href = "https://fonts.gstatic.com"; pc.crossOrigin = "";
+    document.head.appendChild(pc);
+  }
+  const link = document.createElement("link");
+  link.rel = "stylesheet"; link.href = url; link.dataset.langFont = code;
+  document.head.appendChild(link);
+}
+
+/* The header picker (written by main.py from app/i18n.py picker()): its button
+   shows the current language's native name, its menu marks the current one. */
+function renderLangPicker() {
+  const info = langInfo(state.lang);
+  $$(".lang-picker").forEach((det) => {
+    det.dataset.current = state.lang;
+    const cur = $(".lp-cur", det);
+    if (cur) { cur.textContent = info.native; cur.setAttribute("lang", state.lang); }
+    $("summary", det)?.setAttribute("aria-label", `${t("hdrLang")}: ${info.native}`);
+    $$(".lp-menu a[data-lang]", det).forEach((a) => {
+      if (a.dataset.lang === state.lang) a.setAttribute("aria-current", "true");
+      else a.removeAttribute("aria-current");
+    });
+  });
+}
+
+/* Switch language in place (langpick.js calls this instead of following the link). */
+window.daSetLang = (code) => {
+  const next = pickLang(code);
+  if (next === state.lang && I18N[next]) { renderLangPicker(); return; }
+  state.lang = next;
+  applyLanguage();
+};
+window.daGetLang = () => state.lang;
+
 function applyLanguage() {
+  // A language whose strings have not arrived yet renders in English now and
+  // again, translated, the moment its JSON lands (only if still selected).
+  if (!I18N[state.lang]) {
+    const wanted = state.lang;
+    loadLang(wanted).then(() => { if (state.lang === wanted && I18N[wanted]) applyLanguage(); });
+  }
   document.documentElement.lang = state.lang;
-  document.body.classList.toggle("lang-hi", state.lang === "hi");
-  $$(".lang").forEach((b) => b.classList.toggle("active", b.dataset.lang === state.lang));
+  LANG_CODES.forEach((c) => document.body.classList.toggle(`lang-${c}`, c === state.lang));
+  loadFont(state.lang);
+  renderLangPicker();
 
   const set = (sel, text) => { const el = $(sel); if (el) el.textContent = text; };
   const ph = (sel, text) => { const el = $(sel); if (el) el.placeholder = text; };
@@ -1052,10 +706,12 @@ function applyLanguage() {
   set("#tool-vrat-name", t("toolVratName"));
   set("#tool-vrat-sub", t("toolVratSub"));
   const vratCard = document.querySelector("#open-vrat");
-  if (vratCard) vratCard.setAttribute("href", state.lang === "hi" ? "/hi/vrat-tyohar" : "/vrat-tyohar");
+  // The server pages live under /<code>/ (an untranslated one shows English with a notice).
+  if (vratCard) vratCard.setAttribute("href", state.lang === "en" ? "/vrat-tyohar" : `/${state.lang}/vrat-tyohar`);
   set("#tool-katha-name", t("toolKathaName"));
   set("#tool-katha-sub", t("toolKathaSub"));
   const kathaCard = document.querySelector("#open-katha");
+  // Katha is Hindi-canonical (/katha) with an English twin; no other language yet.
   if (kathaCard) kathaCard.setAttribute("href", state.lang === "hi" ? "/katha" : "/en/katha");
 
   // Muhurat stage
@@ -1170,7 +826,7 @@ function applyLanguage() {
   renderStarters();
   renderSavedCharts();
   describeProvider();   // the Hindi caveat depends on the active language
-  localStorage.setItem("astro.lang", state.lang);
+  try { localStorage.setItem("astro.lang", state.lang); } catch { /* private mode */ }
   // tools.js: Panchang / Muhurat / Choghadiya labels, and any result already on
   // screen, follow the switch (tools.js loads after this file, hence the check).
   if (typeof window.applyToolsLanguage === "function") window.applyToolsLanguage();
@@ -1180,7 +836,7 @@ function applyLanguage() {
   $("#go-home")?.setAttribute("aria-label", t("hdrHome"));
   $("#theme-toggle")?.setAttribute("aria-label", t("hdrTheme"));
   $("#theme-toggle")?.setAttribute("title", t("hdrThemeTitle"));
-  $(".site-header .lang-switch")?.setAttribute("aria-label", t("hdrLang"));
+  renderLangPicker();                    // its aria-label is t("hdrLang") + the native name
   if (typeof renderAccountBar === "function") renderAccountBar();
 
   if (state.sessionId) {
@@ -1255,9 +911,7 @@ function applyTheme(theme) {
 }
 initTheme();
 
-$$(".lang").forEach((btn) => {
-  btn.onclick = () => { state.lang = btn.dataset.lang; applyLanguage(); };
-});
+// The language picker's clicks are wired by langpick.js, which calls window.daSetLang.
 
 async function loadProviders() {
   const select = $("#f-provider");
@@ -1287,12 +941,14 @@ function describeProvider() {
   if (!note) return;
   if (!p) { note.textContent = ""; return; }
 
-  const hindiRisk = state.lang === "hi" && p.key !== "off" && !p.hindi_ok;
-  note.textContent = hindiRisk
-    ? `${p.detail}  ⚠ This model garbles Devanagari — for Hindi, use Claude or pull a Qwen/Gemma model.`
+  // DIVASTRO-124: every non-English language is written by the model now, so a
+  // model that garbles Indian scripts is a risk for all of them, not just Hindi.
+  const scriptRisk = state.lang !== "en" && p.key !== "off" && !p.hindi_ok;
+  note.textContent = scriptRisk
+    ? `${p.detail}  ${t("engineScriptRisk").replace("{lang}", langInfo(state.lang).native)}`
     : p.detail;
-  // Warn both when a model is bad at Hindi and when the choice leaves the machine.
-  note.classList.toggle("warn", hindiRisk || (!p.local && p.key !== "off"));
+  // Warn both when a model is bad at Indian scripts and when the choice leaves the machine.
+  note.classList.toggle("warn", scriptRisk || (!p.local && p.key !== "off"));
   // NOT persisted here: this runs on every load, and writing on load is exactly
   // what pinned everyone to "off". Only the change handler below persists.
 }
@@ -1949,7 +1605,7 @@ function renderNow(now, c) {
 async function renderVargas(sessionId) {
   const pane = $("#pane-vargas");
   if (!pane) return;
-  pane.innerHTML = `<p class="mini-title">${escapeHtml(state.lang === 'hi' ? 'षोडशवर्ग कुंडलियां लोड हो रही हैं...' : 'Loading Shodashvarga charts...')}</p>`;
+  pane.innerHTML = `<p class="mini-title">${escapeHtml(t("vargaLoading"))}</p>`;
   try {
     const res = await fetch(`/api/vargas/${sessionId}?lang=${state.lang}`);
     const data = await res.json();
@@ -1961,10 +1617,9 @@ async function renderVargas(sessionId) {
     function drawVargaContent(code) {
       const v = vargas[code];
       if (!v) return;
-      const isHi = state.lang === "hi";
       const selectHtml = `
         <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-          <label style="font-size: 12px; color: var(--gold); font-weight: bold;">${isHi ? 'वर्ग चयन:' : 'Select Varga:'}</label>
+          <label style="font-size: 12px; color: var(--gold); font-weight: bold;">${escapeHtml(t("vargaSelect"))}</label>
           <select id="varga-select" style="padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.06); color: var(--ink); border: 1px solid var(--line);">
             ${codes.map(c => `<option value="${c}" ${c === code ? 'selected' : ''}>${c}: ${escapeHtml(vargas[c].title)}</option>`).join('')}
           </select>
@@ -1974,7 +1629,7 @@ async function renderVargas(sessionId) {
       const headerHtml = `
         <div style="padding: 8px 10px; border-radius: 6px; background: rgba(212, 175, 55, 0.08); border: 1px solid var(--line); margin-bottom: 12px;">
           <div style="font-weight: bold; color: var(--gold); font-size: 13px;">${escapeHtml(v.title)} (${v.code})</div>
-          <div style="font-size: 12px; color: var(--ink-dim);">${escapeHtml(v.purpose)} · ${isHi ? 'लग्न:' : 'Ascendant:'} <b>${escapeHtml(v.ascendant_label)}</b></div>
+          <div style="font-size: 12px; color: var(--ink-dim);">${escapeHtml(v.purpose)} · ${escapeHtml(t("vargaAsc"))} <b>${escapeHtml(v.ascendant_label)}</b></div>
         </div>
       `;
 
@@ -1982,7 +1637,7 @@ async function renderVargas(sessionId) {
         <li>
           <span class="glyph">${p.house}</span>
           <span class="name"><b>${escapeHtml(p.planet_label)}</b><em>${escapeHtml(p.sign_label)}</em></span>
-          <span class="pos">${isHi ? 'भाव ' + p.house : 'House ' + p.house}</span>
+          <span class="pos">${escapeHtml(t("houseN").replace("{n}", p.house))}</span>
         </li>
       `).join('');
 
@@ -2006,8 +1661,7 @@ async function renderVargas(sessionId) {
 async function renderAshtakavarga(sessionId) {
   const pane = $("#pane-ashtakavarga");
   if (!pane) return;
-  const isHi = state.lang === "hi";
-  pane.innerHTML = `<p class="mini-title">${escapeHtml(isHi ? 'अष्टकवर्ग चक्र लोड हो रहा है...' : 'Loading Ashtakavarga Matrix...')}</p>`;
+  pane.innerHTML = `<p class="mini-title">${escapeHtml(t("avLoading"))}</p>`;
   try {
     const res = await fetch(`/api/ashtakavarga/${sessionId}?lang=${state.lang}`);
     const data = await res.json();
@@ -2035,8 +1689,8 @@ async function renderAshtakavarga(sessionId) {
 
     pane.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <span style="font-size: 12px; font-weight: bold; color: var(--gold);">${isHi ? 'सर्वाष्टकवर्ग (कुल 337 बिंदु)' : 'Sarvashtakavarga (337 Bindus)'}</span>
-        <span style="font-size: 12px; color: var(--ink-dim);">${isHi ? 'उच्च बल: ≥28 | सामान्य: 25-27' : 'Strong: ≥28 | Avg: 25-27'}</span>
+        <span style="font-size: 12px; font-weight: bold; color: var(--gold);">${escapeHtml(t("avSarvaTitle"))}</span>
+        <span style="font-size: 12px; color: var(--ink-dim);">${escapeHtml(t("avLegend"))}</span>
       </div>
       <div style="overflow-x: auto; margin-bottom: 12px;">
         <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
@@ -2058,8 +1712,7 @@ async function renderAshtakavarga(sessionId) {
 async function renderJaimini(sessionId) {
   const pane = $("#pane-jaimini");
   if (!pane) return;
-  const isHi = state.lang === "hi";
-  pane.innerHTML = `<p class="mini-title">${escapeHtml(isHi ? 'जैमिनी कारक लोड हो रहे हैं...' : 'Loading Jaimini Karakas...')}</p>`;
+  pane.innerHTML = `<p class="mini-title">${escapeHtml(t("jmLoading"))}</p>`;
   try {
     const res = await fetch(`/api/jaimini/${sessionId}?lang=${state.lang}`);
     const data = await res.json();
@@ -2086,18 +1739,18 @@ async function renderJaimini(sessionId) {
           <b>${escapeHtml(a.code)} (${escapeHtml(a.title)})</b>: ${escapeHtml(a.sign_label)}
           <div style="font-size: 12px; color:var(--ink-dim);">${escapeHtml(a.area)}</div>
         </div>
-        <span class="badge neutral" style="font-size: 12px;">${isHi ? 'भाव ' + a.arudha_house : 'H' + a.arudha_house}</span>
+        <span class="badge neutral" style="font-size: 12px;">${escapeHtml(t("houseShortN").replace("{n}", a.arudha_house))}</span>
       </div>
     `).join('');
 
     pane.innerHTML = `
       <div style="padding: 8px 10px; border-radius: 6px; background: rgba(212, 175, 55, 0.08); border-left: 3px solid var(--gold); margin-bottom: 12px; font-size: 12px; line-height: 1.4;">
-        <b>${isHi ? 'कारकांश लग्न:' : 'Karakamsha Lagna:'}</b> ${escapeHtml(kl.sign_label)} (${escapeHtml(kl.atmakaraka_label)})<br/>
+        <b>${escapeHtml(t("jmKarakamsha"))}</b> ${escapeHtml(kl.sign_label)} (${escapeHtml(kl.atmakaraka_label)})<br/>
         ${escapeHtml(kl.summary)}
       </div>
-      <p class="mini-title">${isHi ? '7 चर कारक (Jaimini 7 Chara Karakas)' : '7 Chara Karakas (Planetary Significators)'}</p>
+      <p class="mini-title">${escapeHtml(t("jmKarakasTitle"))}</p>
       <ul class="plist" style="margin-bottom:14px;">${karakaRows}</ul>
-      <p class="mini-title">${isHi ? '12 आरूढ़ पद (Arudha Padas - A1 to A12)' : '12 Arudha Padas (Manifested Realities)'}</p>
+      <p class="mini-title">${escapeHtml(t("jmArudhaTitle"))}</p>
       <div>${arudhaRows}</div>
     `;
   } catch (err) {
@@ -2108,8 +1761,7 @@ async function renderJaimini(sessionId) {
 async function renderSudarshana(sessionId) {
   const pane = $("#pane-sudarshana");
   if (!pane) return;
-  const isHi = state.lang === "hi";
-  pane.innerHTML = `<p class="mini-title">${escapeHtml(isHi ? 'सुदर्शन चक्र विश्लेषण लोड हो रहा है...' : 'Loading Sudarshana Chakra...')}</p>`;
+  pane.innerHTML = `<p class="mini-title">${escapeHtml(t("sdLoading"))}</p>`;
   try {
     const res = await fetch(`/api/sudarshana/${sessionId}?lang=${state.lang}`);
     const data = await res.json();
@@ -2122,15 +1774,15 @@ async function renderSudarshana(sessionId) {
     const lagnaHeader = `
       <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:12px; text-align:center;">
         <div style="padding:6px; border-radius:6px; background:rgba(255,255,255,0.03); border:1px solid var(--line);">
-          <div style="font-size: 12px; color:var(--ink-dim);">${isHi ? 'तनु (लग्न)' : 'Janma Lagna'}</div>
+          <div style="font-size: 12px; color:var(--ink-dim);">${escapeHtml(t("sdJanma"))}</div>
           <div style="font-weight:bold; color:var(--gold); font-size:12px;">${escapeHtml(lagnas.janma.sign_label)}</div>
         </div>
         <div style="padding:6px; border-radius:6px; background:rgba(255,255,255,0.03); border:1px solid var(--line);">
-          <div style="font-size: 12px; color:var(--ink-dim);">${isHi ? 'चंद्र लग्न' : 'Chandra Lagna'}</div>
+          <div style="font-size: 12px; color:var(--ink-dim);">${escapeHtml(t("sdChandra"))}</div>
           <div style="font-weight:bold; color:#56d4dd; font-size:12px;">${escapeHtml(lagnas.chandra.sign_label)}</div>
         </div>
         <div style="padding:6px; border-radius:6px; background:rgba(255,255,255,0.03); border:1px solid var(--line);">
-          <div style="font-size: 12px; color:var(--ink-dim);">${isHi ? 'सूर्य लग्न' : 'Surya Lagna'}</div>
+          <div style="font-size: 12px; color:var(--ink-dim);">${escapeHtml(t("sdSurya"))}</div>
           <div style="font-weight:bold; color:#f0c674; font-size:12px;">${escapeHtml(lagnas.surya.sign_label)}</div>
         </div>
       </div>
@@ -2138,7 +1790,7 @@ async function renderSudarshana(sessionId) {
 
     const highlightHtml = highlights.length ? `
       <div style="padding: 8px 10px; border-radius: 6px; background: rgba(34, 197, 94, 0.08); border-left: 3px solid #22c55e; margin-bottom: 12px; font-size: 12px; line-height: 1.4;">
-        <b>${isHi ? 'त्रि-लग्न शुभ योग:' : 'Tri-Lagna Convergence:'}</b><br/>
+        <b>${escapeHtml(t("sdConvergence"))}</b><br/>
         ${highlights.map(h => `<div>• ${escapeHtml(h)}</div>`).join('')}
       </div>
     ` : '';
@@ -2148,7 +1800,7 @@ async function renderSudarshana(sessionId) {
       return `
         <div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <span style="font-size:12px; font-weight:bold;">${isHi ? 'भाव ' + h.house : 'House ' + h.house}: ${escapeHtml(h.title)}</span>
+            <span style="font-size:12px; font-weight:bold;">${escapeHtml(t("houseN").replace("{n}", h.house))}: ${escapeHtml(h.title)}</span>
             <span class="badge ${badgeClass}" style="font-size:9.5px;">${escapeHtml(h.verdict)} (${h.score}/5)</span>
           </div>
           <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:4px; font-size:10.5px; color:var(--ink-dim);">
@@ -2228,6 +1880,14 @@ function verdictHtml(result) {
   // "which year was it" — the answer is a date, not a judgement.
   if (!result || ["search", "review"].includes(result.intent)) return "";
   return `<span class="verdict-tag ${verdictClass(result.score)}">${escapeHtml(result.verdict)} · ${escapeHtml(result.topic_label)}</span>`;
+}
+
+// DIVASTRO-124: the server sends `fallback_note` ("Answer shown in English", in
+// the reader's language) for kn/te/ta/ml/bn/or. It belongs above the engine's
+// English only — never above the AI's answer in their language.
+function fallbackNoteHtml(result) {
+  const note = result && result.fallback_note;
+  return note ? `<p class="incomplete-note lang-fallback-note">${escapeHtml(note)}</p>` : "";
 }
 
 function addBot(md, result, withReasoning = true) {
@@ -2471,7 +2131,8 @@ $("#ask-form").addEventListener("submit", async (e) => {
           result = data;
           pending.remove?.();
           if (state.provider === "off") {
-            addBot(result.answer_engine, result);
+            const b = addBot(result.answer_engine, result);
+            b.insertAdjacentHTML("afterbegin", fallbackNoteHtml(result));
           } else {
             bubble = addBot("", result, false);
             bubble.innerHTML =
@@ -2496,7 +2157,7 @@ $("#ask-form").addEventListener("submit", async (e) => {
           // either way, and a red "narration failed" banner only tells the
           // customer that something they cannot act on went wrong.
           polished = result.answer_engine;
-          bubble.innerHTML =
+          bubble.innerHTML = fallbackNoteHtml(result) +
             verdictHtml(result) + markdown(polished) + reasoningHtml(result);
           bubble = null;
           console.warn("narration:", data.error);
@@ -2888,19 +2549,37 @@ $("#close-kundali-pdf-modal")?.addEventListener("click", () => {
   $("#kundali-pdf-modal").style.display = "none";
 });
 
-$("#generate-pdf-en")?.addEventListener("click", () => {
-  if (state.sessionId) {
-    window.location.href = `/api/pdf/chart/${state.sessionId}?lang=en`;
-    $("#kundali-pdf-modal").style.display = "none";
+// DIVASTRO-124: one button per language the server can print a kundali PDF in
+// (window.DA_PDF_LANGS, from pdf_report.pdf_languages(): en, hi and each
+// regional language whose script font is installed). The English and Hindi
+// buttons are in index.html; the others are added here, after them.
+function renderPdfLangButtons() {
+  const box = $("#generate-pdf-en")?.parentElement;
+  if (!box) return;
+  const codes = (window.DA_PDF_LANGS && window.DA_PDF_LANGS.length) ? window.DA_PDF_LANGS : ["en", "hi"];
+  box.style.flexWrap = "wrap";
+  for (const code of codes) {
+    let btn = $(`#generate-pdf-${code}`);
+    if (!btn) {
+      const L = langInfo(code);
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn";
+      btn.id = `generate-pdf-${code}`;
+      btn.style.minWidth = "120px";
+      btn.lang = L.htmlLang || code;
+      btn.textContent = L.english && L.english !== L.native ? `${L.native} (${L.english})` : L.native;
+      box.append(btn);
+    }
+    btn.addEventListener("click", () => {
+      if (state.sessionId) {
+        window.location.href = `/api/pdf/chart/${state.sessionId}?lang=${code}`;
+        $("#kundali-pdf-modal").style.display = "none";
+      }
+    });
   }
-});
-
-$("#generate-pdf-hi")?.addEventListener("click", () => {
-  if (state.sessionId) {
-    window.location.href = `/api/pdf/chart/${state.sessionId}?lang=hi`;
-    $("#kundali-pdf-modal").style.display = "none";
-  }
-});
+}
+renderPdfLangButtons();
 
 /* ============================================================
    DIVASTRO-101 — home screen: show value before the first tap.

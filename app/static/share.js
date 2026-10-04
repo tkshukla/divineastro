@@ -22,7 +22,7 @@
 (() => {
   const SITE = 'https://divineastro.org';
 
-  const lang = () => (typeof state !== 'undefined' && state.lang === 'hi' ? 'hi' : 'en');
+  const lang = () => (typeof state !== 'undefined' && state.lang ? state.lang : 'en');
   const tr = (k, fallback) => {
     try { const v = t(k); return v && v !== k ? v : fallback; } catch { return fallback; }
   };
@@ -69,10 +69,12 @@
     return c.slug === defaultSlug ? `/${tool}` : `/${tool}/${c.slug}`;
   }
 
-  // The name people will read: the Hindi one for an SEO city in Hindi, else as typed.
+  // The name people will read: an SEO city's name in the UI language when the
+  // city list carries one (name_hi today; name_<code> as languages land), else as typed.
   function cityName(place) {
     const c = cityFor(place);
-    if (c) return lang() === 'hi' ? c.name_hi : c.name;
+    const l = lang();
+    if (c) return (l !== 'en' && c[`name_${l}`]) || c.name;
     return String((place && place.label) || '').split(',')[0].trim();
   }
 

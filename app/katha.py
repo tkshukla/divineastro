@@ -36,7 +36,7 @@ from urllib.parse import urlencode
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from . import daily_state, seo_pages
+from . import daily_state, i18n, seo_pages
 from .astro import festivals
 from .seo_pages import EN, HI, SITE_URL, _e, _render
 
@@ -274,9 +274,25 @@ def page_path(slug: str | None = None, lang: str = HI) -> str:
     return f"{base}/{slug}" if slug else base
 
 
+# DIVASTRO-121: katha is the one module whose canonical language is Hindi
+# (/katha) with English at /en/katha. The other registry languages get NO katha
+# routes until their stories are written: the picker sends them to the English
+# copy. To add, say, Kannada: write the stories' Kannada text, add "/kn/katha"
+# routes and a page_path() branch, put "kn" in TRANSLATED and in _lang_paths().
+TRANSLATED = frozenset({HI, EN})
+
+
+def _lang_paths(slug: str | None) -> dict[str, str]:
+    """Each registry language's copy of a katha page, for hreflang and the picker."""
+    out = {code: page_path(slug, EN) for code in i18n.CODES}
+    out[HI] = page_path(slug, HI)
+    return out
+
+
 def sitemap_paths() -> list[str]:
-    return [page_path(None, lang) for lang in (HI, EN)] + [
-        page_path(s, lang) for s in STORIES for lang in (HI, EN)]
+    langs = [lang for lang in (HI, EN) if lang in TRANSLATED]
+    return [page_path(None, lang) for lang in langs] + [
+        page_path(s, lang) for s in STORIES for lang in langs]
 
 
 def is_public_path(path: str) -> bool:
@@ -319,7 +335,7 @@ def _index(lang: str) -> HTMLResponse:
     return _render(title=f"{ui['index']} | Divine Astro", description=ui["index_desc"],
                    path=page_path(None, lang), alt=page_path(None, EN if lang == HI else HI),
                    crumbs=[(ui["crumb"], page_path(None, lang))], body=body, lang=lang,
-                   x_default=HI)
+                   x_default=HI, translated=TRANSLATED, lang_paths=_lang_paths(None))
 
 
 def _story(slug: str, lang: str) -> HTMLResponse:
@@ -328,6 +344,7 @@ def _story(slug: str, lang: str) -> HTMLResponse:
     if s is None:
         return _render(title=f"{ui['nf']} | Divine Astro", description=ui["nf_desc"],
                        path=page_path(slug, lang), crumbs=[(ui["crumb"], page_path(None, lang))],
+                       translated=TRANSLATED, lang_paths=_lang_paths(slug),
                        body=f'<h1>{_e(ui["nf"])}</h1><p><a href="{page_path(None, lang)}">'
                             f'{_e(ui["all"])}</a></p>',
                        lang=lang, status=404, cache=False)
@@ -353,7 +370,8 @@ def _story(slug: str, lang: str) -> HTMLResponse:
                    description=f"{t.title}: {t.summary} {ui['source']}: {t.source}.",
                    path=page_path(slug, lang), alt=page_path(slug, EN if lang == HI else HI),
                    crumbs=[(ui["crumb"], page_path(None, lang)), (t.title, page_path(slug, lang))],
-                   body=body, lang=lang, extra_ld=(article,), x_default=HI)
+                   body=body, lang=lang, extra_ld=(article,), x_default=HI,
+                   translated=TRANSLATED, lang_paths=_lang_paths(slug))
 
 
 @router.get("/katha", response_class=HTMLResponse)

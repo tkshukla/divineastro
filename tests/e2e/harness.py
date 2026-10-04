@@ -170,6 +170,11 @@ class Page:
         self.page.evaluate("state.provider = 'off'")
         self.page.wait_for_timeout(400)      # let entry animations settle
 
+    def set_lang(self, code: str) -> None:
+        """Choose a language the way a person does (DIVASTRO-121): open the header's
+        language picker and tap the language. Waits until the app has switched."""
+        set_lang(self.page, code)
+
     def rect(self, selector: str) -> dict | None:
         return self.page.evaluate(
             """(s) => { const e = document.querySelector(s); if (!e) return null;
@@ -177,6 +182,46 @@ class Page:
                         return {top: r.top, bottom: r.bottom, height: r.height,
                                 left: r.left, right: r.right, width: r.width}; }""",
             selector)
+
+
+PICKER = ".site-header details.lang-picker"
+
+
+def set_lang(page, code: str) -> None:
+    """Open the header language picker and choose `code` (a Playwright page)."""
+    if page.evaluate(f"!!document.querySelector('{PICKER}')?.open") is False:
+        page.click(f"{PICKER} > summary")
+    page.click(f"{PICKER} .lp-menu a[data-lang='{code}']")
+    page.wait_for_function("(c) => typeof state !== 'undefined' && state.lang === c", arg=code)
+
+
+def caddy_csp() -> str:
+    """The Content-Security-Policy production sends, read from the Caddyfile, so a
+    browser test can enforce exactly it (the test server has no Caddy in front)."""
+    import re
+    text = (ROOT / "Caddyfile").read_text(encoding="utf-8")
+    m = re.search(r'Content-Security-Policy\s+"([^"]+)"', text)
+    if not m:
+        raise RuntimeError("no Content-Security-Policy in the Caddyfile")
+    return m.group(1)
+
+
+def enforce_csp(context, base: str) -> None:
+    """Serve every same-origin document with the production CSP header, so a
+    resource the Caddyfile does not allow (a font, a script) is blocked here
+    exactly as it would be live, and shows up in Page.csp_violations()."""
+    csp = caddy_csp()
+
+    def handle(route):
+        if route.request.resource_type != "document":
+            route.continue_()
+            return
+        resp = route.fetch()
+        headers = dict(resp.headers)
+        headers["content-security-policy"] = csp
+        route.fulfill(response=resp, headers=headers)
+
+    context.route(f"{base}/**", handle)
 
 
 class Checker:

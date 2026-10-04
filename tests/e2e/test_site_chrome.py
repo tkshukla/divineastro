@@ -59,7 +59,7 @@ def preferences_persist(p, browser, base: str) -> None:
     initial_lang = pg.page.evaluate("localStorage.getItem('astro.lang')")
     check("starts in English", (initial_lang or "en") == "en", str(initial_lang))
 
-    pg.page.click('button.lang[data-lang="hi"]')
+    pg.set_lang("hi")
     pg.page.click("#theme-toggle")
     lang_after_click = pg.page.evaluate("localStorage.getItem('astro.lang')")
     theme_after_click = pg.page.evaluate("localStorage.getItem('astro.theme')")
@@ -79,8 +79,8 @@ def preferences_persist(p, browser, base: str) -> None:
           f"{theme_after_click!r} -> {theme_after_reload!r}")
 
     active_lang_btn = pg.page.evaluate(
-        "document.querySelector('button.lang.active')?.dataset.lang")
-    check("the Hindi button shows as active after reload (UI matches storage, "
+        "document.querySelector('.site-header .lang-picker')?.dataset.current")
+    check("the picker shows Hindi as current after reload (UI matches storage, "
           "not just the storage key)", active_lang_btn == "hi", str(active_lang_btn))
 
     data_theme = pg.page.evaluate("document.documentElement.getAttribute('data-theme')")

@@ -63,7 +63,7 @@ def screenshot(pg: Page, name: str) -> None:
 
 def open_home_hi(pg: Page) -> None:
     pg.open_home()
-    pg.page.click(".lang[data-lang=hi]")
+    pg.set_lang("hi")
     pg.page.wait_for_function("state.lang === 'hi'")
 
 
@@ -136,29 +136,29 @@ def switch_with_results_open(browser, base: str) -> None:
     ctx = browser.new_context(**PHONES["iphone_375x812"])
     pg = Page(ctx.new_page(), base)
     pg.open_home()
-    pg.page.click(".lang[data-lang=en]")
+    pg.set_lang("en")
     pg.page.click("#open-panchang")
     pg.page.wait_for_selector("#panchang-result .pa-limbs", timeout=15000)
     check("English first: the Panchang shows English names",
           "Rahu Kaal" in pg.page.locator("#panchang-result").inner_text())
-    pg.page.click(".lang[data-lang=hi]")
+    pg.set_lang("hi")
     pg.page.wait_for_function("!document.querySelector('#panchang-result').innerText.includes('Rahu')",
                               timeout=5000)
     words = latin_words(pg, "#stage-panchang")
     check("after the switch: Panchang has no Latin-script words", not words, str(words))
-    pg.page.click(".lang[data-lang=en]")
+    pg.set_lang("en")
     pg.page.wait_for_function("document.querySelector('#panchang-result').innerText.includes('Rahu Kaal')",
                               timeout=5000)
     check("and back: English again", "until" in pg.page.locator("#panchang-result").inner_text())
 
     for opener, go, result, stage in (("#open-choghadiya", "#choghadiya-go", "#choghadiya-result", "#stage-choghadiya"),
                                       ("#open-muhurat", "#muhurat-go", "#muhurat-result", "#stage-muhurat")):
-        pg.page.evaluate("document.querySelector('.lang[data-lang=en]').click()")
+        pg.page.evaluate("daSetLang('en')")
         pg.page.evaluate("showStage('stage-home')")
         pg.page.click(opener)
         pg.page.click(go)
         pg.page.wait_for_selector(f"{result} tbody tr", state="attached", timeout=60000)
-        pg.page.click(".lang[data-lang=hi]")
+        pg.set_lang("hi")
         try:
             pg.page.wait_for_function(
                 f"!/[A-Za-z]{{3,}}/.test(document.querySelector('{result} tbody').innerText)", timeout=60000)
@@ -197,13 +197,13 @@ def vrat_section(browser, base: str) -> None:
     pg.page.locator("#pa-vrat").scroll_into_view_if_needed()
     screenshot(pg, "panchang-vrat-hi.png")
 
-    pg.page.click(".lang[data-lang=en]")
+    pg.set_lang("en")
     pg.page.wait_for_function(
         "document.querySelector('#pa-vrat').innerText.includes('Lakshmi puja muhurat')", timeout=5000)
     check("EN switch: the section re-renders in English",
           "Vrat & Festivals on 8 November 2026" in pg.page.locator("#pa-vrat").inner_text()
           and pg.page.locator("#pa-vrat a[href='/tyohar/diwali-2026']").count() == 1)
-    pg.page.click(".lang[data-lang=hi]")
+    pg.set_lang("hi")
     pg.page.wait_for_function(
         "document.querySelector('#pa-vrat').innerText.includes('लक्ष्मी पूजा मुहूर्त')", timeout=5000)
     words = latin_words(pg, "#stage-panchang")
@@ -230,10 +230,10 @@ def sign_in_hindi(browser, base: str) -> None:
     ctx = browser.new_context(**PHONES["iphone_375x812"])
     pg = Page(ctx.new_page(), base)
     pg.open_home()
-    pg.page.click(".lang[data-lang=en]")
+    pg.set_lang("en")
     pg.page.wait_for_selector("#btn-signin", timeout=10000)
     check("English: the header says 'Sign in'", pg.page.inner_text("#btn-signin").strip() == "Sign in")
-    pg.page.click(".lang[data-lang=hi]")
+    pg.set_lang("hi")
     check("switch to हिं: the header button turns Hindi at once (साइन इन)",
           pg.page.inner_text("#btn-signin").strip() == "साइन इन", pg.page.inner_text("#btn-signin"))
     words = latin_words(pg, "#account-bar")
@@ -256,7 +256,7 @@ def sign_in_hindi(browser, base: str) -> None:
     words = latin_words(pg, ".modal-backdrop")
     check("username view + a server error: no Latin-script words", not words, str(words))
     pg.page.evaluate("closeModal()")
-    pg.page.click(".lang[data-lang=en]")
+    pg.set_lang("en")
     check("and back to EN: 'Sign in' again", pg.page.inner_text("#btn-signin").strip() == "Sign in")
     ctx.close()
 
@@ -265,9 +265,9 @@ def sign_in_hindi(browser, base: str) -> None:
     pg = Page(ctx.new_page(), base)
     pg.sign_in(email="hindi-e2e@example.com", name="परीक्षक")
     pg.open_home()
-    pg.page.click(".lang[data-lang=en]")
+    pg.set_lang("en")
     pg.page.wait_for_selector("#btn-acct", timeout=10000)
-    pg.page.click(".lang[data-lang=hi]")
+    pg.set_lang("hi")
     pg.page.click("#btn-acct")
     pg.page.wait_for_selector(".acct-drop:not([hidden])", timeout=5000)
     # "English" is the menu's switch *to* English, named in its own language.
@@ -280,7 +280,7 @@ def sign_in_hindi(browser, base: str) -> None:
     words = latin_words(pg, ".modal-backdrop")
     check("मेरे ऑर्डर: no Latin-script words", not words, str(words))
     pg.page.evaluate("closeModal()")
-    pg.page.click(".lang[data-lang=en]")
+    pg.set_lang("en")
     pg.page.click("#btn-acct")
     check("and back to EN: 'Sign out'", "Sign out" in pg.page.inner_text(".acct-drop"))
     check("no console errors", not pg.console_errors, "; ".join(pg.console_errors[:3]))
