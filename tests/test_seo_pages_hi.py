@@ -22,7 +22,7 @@ import xml.etree.ElementTree as ET
 from tests.test_seo_pages import (  # noqa: E402  (sets up the temp DB first)
     DEVANAGARI, ROOT, SITE, TODAY, canonical, check, client, common, failures, title)
 
-from app import analytics, seo_cities, seo_pages  # noqa: E402
+from app import analytics, i18n, seo_cities, seo_pages  # noqa: E402
 from app import main as app_main  # noqa: E402
 from app.astro import choghadiya as chog  # noqa: E402
 from app.astro import panchang as panchang_engine  # noqa: E402
@@ -110,7 +110,9 @@ def main() -> int:
     bad = []
     for en, hi in pairs:
         h_en, h_hi = client.get(en).text, client.get(hi).text
-        want = {"en": SITE + en, "hi": SITE + hi, "x-default": SITE + en}
+        # DIVASTRO-123: plus every other translated language (bn, or)
+        want = {code: SITE + i18n.localized_path(en, code) for code in i18n.ordered(seo_pages.TRANSLATED)}
+        want["x-default"] = SITE + en
         if not (alternates(h_en) == want == alternates(h_hi)
                 and canonical(h_en) == SITE + en and canonical(h_hi) == SITE + hi
                 # DIVASTRO-121: the language picker links each copy to the other

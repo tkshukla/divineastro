@@ -64,7 +64,10 @@ def _keep(path: str) -> bool:
 
 
 def paths() -> list[str]:
-    out = [p for p in seo_pages.sitemap_paths() if _keep(p)]
+    # English and Hindi only: the regional copies (/bn/, /or/ ... once translated)
+    # are pinned by their own tests, not byte for byte here.
+    from app import i18n
+    out = [p for p in seo_pages.sitemap_paths() if _keep(p) and i18n.strip_prefix(p)[0] in LANGS]
     for pre in ("", "/hi"):
         out += [
             f"{pre}/naam-se-kundali-milan?boy=Rahul&girl=Priya",

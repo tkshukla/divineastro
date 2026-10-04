@@ -34,7 +34,7 @@ from .astro.namakshar import (ABHIJIT, Match, all_padas, from_pada_id, lookup,
 # are nakshatra_pages' (names_i18n for every language).
 from .naam_milan_text import TEXT
 from .nakshatra_pages import (RASHIS, kundali_cta, milan_path, nak_path, rashi_path, shell)
-from .nakshatra_pages import _nak_label, _rashi_pill, _sign_name
+from .nakshatra_pages import _nak_label, _rashi_pill, _sign_name, _syl, _syl_lang
 from .seo_pages import BRAND, _e
 
 router = APIRouter()
@@ -81,7 +81,7 @@ def _options(selected: Match | None, lang: str) -> str:
     def opt(n, p, sel=False):
         dev, lat = n.syllables[p - 1]
         sign = _sign_label(n.pada_sign(p), lang)
-        text = f"{dev} ({lat}) — {_nak_label(n, lang)} {p} · {sign}"
+        text = f"{_syl(dev, lang)} ({lat}) — {_nak_label(n, lang)} {p} · {sign}"
         return (f'<option value="{pada_id(n, p)}"' + (" selected" if sel else "")
                 + f">{_e(text)}</option>")
 
@@ -179,13 +179,14 @@ def _rashi_syllables(lang: str) -> str:
     head = _tx("syl.head", lang)
     rows = "".join(
         f'<tr><td><a href="{rashi_path(r, lang)}">{_e(_rashi_pill(r, lang))}'
-        f'</a></td><td lang="hi">{_e(" ".join(n.syllables[p - 1][0] for n, p in sign_padas(r.index)))}'
+        f'</a></td><td lang="{_syl_lang(lang)}">'
+        f'{_e(" ".join(_syl(n.syllables[p - 1][0], lang) for n, p in sign_padas(r.index)))}'
         "</td></tr>" for r in RASHIS)
     return f'<div class="scroll"><table>{head}{rows}</table></div>'
 
 
 def _explainer(lang: str) -> str:
-    abhijit = " ".join(d for d, _ in ABHIJIT)
+    abhijit = " ".join(_syl(d, lang) for d, _ in ABHIJIT)
     return _tx("explainer", lang, abhijit=abhijit, syllables=_rashi_syllables(lang),
                href=nak_path(None, lang))
 

@@ -155,9 +155,10 @@ def main() -> int:
     check("localize_links is a no-op for en and hi",
           i18n.localize_links(frag, "en") == frag and i18n.localize_links(frag, "hi") == frag)
 
-    print("\n3. Every module: TRANSLATED is {en, hi} today")
+    print("\n3. Every module: TRANSLATED holds en, hi and the translated regional languages")
     for name, mod in MODULES.items():
-        check(f"{name}.TRANSLATED", set(mod.TRANSLATED) == {"en", "hi"}, str(mod.TRANSLATED))
+        check(f"{name}.TRANSLATED", {"en", "hi", "bn", "or"} <= set(mod.TRANSLATED) <= set(i18n.CODES),
+              str(mod.TRANSLATED))
     check("katha.TRANSLATED (Hindi canonical)", set(katha.TRANSLATED) == {"en", "hi"})
 
     print("\n4. Every module's pages in every language")
@@ -168,7 +169,7 @@ def main() -> int:
                 r = client.get(path)
                 h = r.text
                 ok = r.status_code == 200
-                translated = lang in ("en", "hi")
+                translated = lang in MODULES[name].TRANSLATED
                 ok = ok and html_lang(h).split("-")[0] == lang
                 ok = ok and (noindex(h) != translated or "boy=" in path)
                 ok = ok and (bool(alternates(h)) == translated)
@@ -225,7 +226,9 @@ def main() -> int:
     print("\n7. Sitemap and beacon")
     sm = client.get("/sitemap.xml").text
     locs = re.findall(r"<loc>([^<]+)</loc>", sm)
-    extra = [u for u in locs if i18n.strip_prefix(u.removeprefix(SITE))[0] in i18n.EXTRA_CODES]
+    translated_anywhere = set().union(*(mod.TRANSLATED for mod in MODULES.values()))
+    extra = [u for u in locs if i18n.strip_prefix(u.removeprefix(SITE))[0]
+             in set(i18n.EXTRA_CODES) - translated_anywhere]
     check("sitemap lists no untranslated (/kn/ ...) URL", not extra, str(extra[:3]))
     check("sitemap still lists /hi/ pages", any("/hi/panchang" in u for u in locs))
     for path in ("/kn/panchang", "/ta/panchang/pune", "/or/rashifal/mesh", "/bn/vrat-tyohar/2026",

@@ -56,7 +56,7 @@ from .vrat_text import TEXT
 # /<code>/vrat-tyohar etc. exist for every registry language; one not listed here
 # renders the English text with noindex, no hreflang and no sitemap entry. Add a
 # code here once vrat_text has that language's text.
-TRANSLATED = i18n.BASE_TRANSLATED
+TRANSLATED = i18n.BASE_TRANSLATED | {"bn", "or"}   # DIVASTRO-123
 i18n.LOCALIZABLE_ROOTS.update({"vrat-tyohar", "tyohar", "ekadashi-"})
 
 
@@ -184,8 +184,25 @@ def _name(o: dict, lang: str) -> str:
 
 
 def _rule(o: dict, lang: str) -> str:
-    """How the date is fixed: festivals.py's `rule_<lang>`, English otherwise."""
-    return o.get(f"rule_{lang}") or o["rule_en"]
+    """How the date is fixed: festivals.py's `rule_<lang>` (en, hi), else built
+    from vrat_text.RULE in `lang`, else English."""
+    own = o.get(f"rule_{lang}")
+    table = vrat_text.RULE.get(lang)
+    if own or not table:
+        return own or o["rule_en"]
+    special = table.get(f"key.{o.get('key')}")
+    if special:
+        return special
+    tithi, kind = o.get("tithi"), table.get(f"rule.{o.get('rule')}")
+    if not tithi or not kind:
+        return o["rule_en"]
+    names = i18n.names(lang)
+    month = o.get("month") or {}
+    # festivals._tithi_words names the month only for month-bound observances.
+    head = (table["month"].format(month=names.MASA.get(month["name"], month["name"]))
+            if month.get("name") and o["rule_en"].startswith(f"{month['name']} (amanta) ") else "")
+    return table["tithi"].format(month=head, paksha=names.PAKSHA.get(tithi["paksha"], tithi["paksha"]),
+                                 tithi=names.TITHI.get(tithi["name"], tithi["name"]), rule=kind)
 
 
 def _local_text(table: dict, key: str, lang: str) -> str:

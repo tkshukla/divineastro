@@ -30,7 +30,7 @@ os.environ["ASTRO_DATABASE_URL"] = f"sqlite:///{Path(_tmp).as_posix()}/t.db"
 
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app import analytics, muhurat_pages, seo_pages  # noqa: E402
+from app import analytics, i18n, muhurat_pages, muhurat_text, seo_pages  # noqa: E402
 from app.main import app  # noqa: E402
 
 client = TestClient(app, raise_server_exceptions=False)
@@ -64,25 +64,27 @@ def main() -> int:
 
     print("\n2. Shell: hreflang, lang, beacon, AdSense, footer, CTA")
     for path, html in pages.items():
-        hi = path.startswith("/hi/")
-        en_path = path.removeprefix("/hi")
-        check(f"{path}: html lang", f'<html lang="{"hi-IN" if hi else "en-IN"}">' in html)
+        lang, en_path = i18n.strip_prefix(path)
+        hi = lang == "hi"
+        check(f"{path}: html lang", f'<html lang="{lang}-IN">' in html)
         check(f"{path}: canonical is itself", f'<link rel="canonical" href="{SITE}{path}"/>' in html)
-        check(f"{path}: hreflang en/hi/x-default",
-              f'hreflang="en-IN" href="{SITE}{en_path}"' in html
-              and f'hreflang="hi-IN" href="{SITE}/hi{en_path}"' in html
+        check(f"{path}: hreflang to every translated copy + x-default",
+              all(f'hreflang="{code}-IN" href="{SITE}{i18n.localized_path(en_path, code)}"' in html
+                  for code in muhurat_pages.TRANSLATED)
               and f'hreflang="x-default" href="{SITE}{en_path}"' in html)
         check(f"{path}: visit.js beacon", '<script src="/static/visit.js" defer>' in html)
         check(f"{path}: AdSense", f"client={seo_pages.ADSENSE_CLIENT}" in html)
         check(f"{path}: footer", 'class="site-footer"' in html and "/privacy" in html)
-        check(f"{path}: CTA into the Muhurat Finder", 'href="/?open=muhurat"' in html)
+        check(f"{path}: CTA into the Muhurat Finder",
+              'href="/?open=muhurat"' in html if lang in ("en", "hi")
+              else f'href="/?open=muhurat&amp;lang={lang}"' in html)
         check(f"{path}: has date rows", len(ROW_DATE.findall(html)) > 5)
         if hi:
             body = html.split("<main", 1)[1]
             check(f"{path}: Devanagari body", len(DEVANAGARI.findall(body)) > 300)
             check(f"{path}: Hindi month/tithi names", "नवंबर" in body and "शुक्ल" in body and "नक्षत्र" in body)
-        check(f"{path}: says timings vary by city",
-              ("vary by city" in html) or ("दूसरे शहर" in html))
+        note = re.sub(r"<[^>]+>", "", muhurat_text.TEXT[lang]["note"])[:20]
+        check(f"{path}: says timings vary by city", note in re.sub(r"<[^>]+>", "", html), note)
 
     print("\n3. No listed date inside an excluded period; periods explained")
     from app.astro import muhurat

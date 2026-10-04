@@ -120,7 +120,8 @@ def main() -> int:
     ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
     locs = [e.text for e in root.findall("s:url/s:loc", ns)]
     want = {SITE + p for p in rp.sitemap_paths()}
-    check("sitemap lists all 26 rashifal URLs", len(want) == 26 and want <= set(locs),
+    n_urls = 13 * len(rp.TRANSLATED)          # index + 12 signs, per translated language
+    check(f"sitemap lists all {n_urls} rashifal URLs", len(want) == n_urls and want <= set(locs),
           str(sorted(want - set(locs))[:5]))
     check("sitemap still has no duplicates", len(locs) == len(set(locs)))
 

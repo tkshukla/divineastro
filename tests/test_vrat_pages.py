@@ -30,7 +30,7 @@ os.environ["ASTRO_DATABASE_URL"] = f"sqlite:///{Path(_tmp).as_posix()}/t.db"
 
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app import analytics, seo_pages, vrat_pages  # noqa: E402
+from app import analytics, i18n, seo_pages, vrat_pages  # noqa: E402
 from app.astro import festivals  # noqa: E402
 from app.main import app  # noqa: E402
 
@@ -73,11 +73,12 @@ def main() -> int:
 
     print("2. Shell: language, hreflang, beacon, AdSense, share, footer")
     for p, html in pages.items():
-        hi = p.startswith("/hi/")
-        en_path = p[3:] if hi else p
+        lang, en_path = i18n.strip_prefix(p)
+        hi = lang == "hi"
         alts = _alts(html)
         problems = []
-        if alts.get("en") != SITE + en_path or alts.get("hi") != SITE + "/hi" + en_path:
+        if any(alts.get(code) != SITE + i18n.localized_path(en_path, code)
+               for code in vrat_pages.TRANSLATED):
             problems.append("hreflang")
         if f'<link rel="canonical" href="{SITE}{p}"/>' not in html:
             problems.append("canonical")
