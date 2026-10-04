@@ -1719,7 +1719,7 @@ TEXT: dict[str, dict[str, str]] = {
         # {desc} (the engine's slot description, English or Hindi only) is left out
         "ch.row": ('<tr><td>{when}</td><td class="{cls}"><strong>{name}</strong>'
                    "<small>অধিপতি: {ruler}</small></td>"
-                   "<td>{quality}</td></tr>"),
+                   "<td>{quality}<small>{desc}</small></td></tr>"),
         "ch.cta": "লাইভ চৌঘড়িয়া ঘড়ি খুলুন",
         "ch.about": ("<h2>চৌঘড়িয়া কীভাবে হিসাব করা হয়</h2>\n"
                      "<p>সূর্যোদয় থেকে সূর্যাস্ত পর্যন্ত দিন, আর সূর্যাস্ত থেকে পরের সূর্যোদয় পর্যন্ত রাত — দুটিকেই\n"
@@ -1976,7 +1976,7 @@ TEXT: dict[str, dict[str, str]] = {
         # {desc} (the engine's slot description, English or Hindi only) is left out
         "ch.row": ('<tr><td>{when}</td><td class="{cls}"><strong>{name}</strong>'
                    "<small>ଅଧିପତି: {ruler}</small></td>"
-                   "<td>{quality}</td></tr>"),
+                   "<td>{quality}<small>{desc}</small></td></tr>"),
         "ch.cta": "ଲାଇଭ୍ ଚୌଘଡ଼ିଆ ଘଣ୍ଟା ଖୋଲନ୍ତୁ",
         "ch.about": ("<h2>ଚୌଘଡ଼ିଆ କିପରି ହିସାବ କରାଯାଏ</h2>\n"
                      "<p>ସୂର୍ଯ୍ୟୋଦୟରୁ ସୂର୍ଯ୍ୟାସ୍ତ ପର୍ଯ୍ୟନ୍ତ ଦିନ, ଏବଂ ସୂର୍ଯ୍ୟାସ୍ତରୁ ପରବର୍ତ୍ତୀ ସୂର୍ଯ୍ୟୋଦୟ ପର୍ଯ୍ୟନ୍ତ ରାତି —\n"

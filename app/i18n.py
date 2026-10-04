@@ -36,6 +36,7 @@ from __future__ import annotations
 import functools
 import html
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Iterable, Mapping
 
@@ -303,39 +304,48 @@ def weekday(day, lang: str) -> str:
     return names(lang).VARA.get(english, english)
 
 
-# DIVASTRO-123: a namakshar syllable (astro/namakshar.py keeps them in
-# Devanagari) in the reader's script. Malayalam's Unicode block mirrors
-# Devanagari's letter for letter; Tamil's lacks the voiced and aspirated
-# stops, which fold to the plain letter as Tamil panchangs write them
-# (ख ग घ -> க, द ध थ -> த ...). Other languages: unchanged (Devanagari).
-_AKSHAR_BLOCK = {"ml": 0x0D00, "ta": 0x0B80}
-_TAMIL_FOLD = dict(zip("खगघछझठडढथदधफबभ", "கககசஜடடடதததபபப"))
+# DIVASTRO-123: a namakshar syllable (astro/namakshar.py keeps the 108 in
+# Devanagari, and a name's first letter is read as Devanagari) in the reader's
+# script. The Brahmi scripts share Devanagari's Unicode layout, so a letter moves
+# to the same offset in the language's block — kn, te and ml one-to-one. Two
+# scripts need per-letter rules first:
+#   ta  Tamil has no voiced or aspirated stops; they fold to the plain letter as
+#       Tamil panchangs write them (ख ग घ -> க, द ध थ -> த ...);
+#   bn  Bengali's block has no letter at व's place: व -> ব (and Odia व -> ବ, the
+#   or  letter Odia panchangs use rather than the rare ଵ).
+# A letter with no counterpart in the target block stays Devanagari. Languages
+# not listed (en, hi) get the text unchanged.
+_AKSHAR: dict[str, tuple[int, dict[str, str]]] = {
+    "kn": (0x0C80, {}),
+    "te": (0x0C00, {}),
+    "ml": (0x0D00, {}),
+    "ta": (0x0B80, dict(zip("खगघछझठडढथदधफबभ", "கககசஜடடடதததபபப"))),
+    "bn": (0x0980, {"व": "ব"}),
+    "or": (0x0B00, {"व": "ବ"}),
+}
 
 
 def akshar(text: str, lang: str) -> str:
-    base = _AKSHAR_BLOCK.get(lang)
-    if base is None:
-        from .nakshatra_text import SYLLABLE_SCRIPT  # bn, or (unified in a later commit)
-        if lang in SYLLABLE_SCRIPT:
-            spec = SYLLABLE_SCRIPT[lang]
-            return "".join(spec["fix"].get(c) or (chr(ord(c) + spec["offset"])
-                                                  if "\u0900" <= c <= "\u097f" else c) for c in text)
-        from .astro.namakshar import syllable_text   # kn, te (unified in a later commit)
-        return syllable_text(text, lang)
+    """`text` with its Devanagari letters in `lang`'s script (see _AKSHAR)."""
+    spec = _AKSHAR.get(lang)
+    if spec is None:
+        return text
+    base, fix = spec
     out = []
     for c in text:
-        if lang == "ta" and c in _TAMIL_FOLD:
-            out.append(_TAMIL_FOLD[c])
+        if c in fix:
+            c = fix[c]
         elif "ऀ" <= c <= "ॿ":
-            out.append(chr(base + ord(c) - 0x0900))
-        else:
-            out.append(c)
+            moved = chr(base + ord(c) - 0x0900)
+            if unicodedata.name(moved, ""):
+                c = moved
+        out.append(c)
     return "".join(out)
 
 
 def akshar_lang(lang: str) -> str:
-    """The lang="" attribute for akshar(text, lang)."""
-    return lang if lang in _AKSHAR_BLOCK or lang in ("kn", "te", "bn", "or") else "hi"
+    """The lang="" attribute for akshar(text, lang): `lang` if it converts, else hi."""
+    return lang if lang in _AKSHAR else "hi"
 
 
 # Strings for the chrome every server-rendered page shares (crumbs, footer,

@@ -29,14 +29,13 @@ from fastapi.responses import HTMLResponse
 from . import i18n
 from .astro import matching
 from .astro.namakshar import (ABHIJIT, Match, all_padas, from_pada_id, lookup,
-                              match_for_pada, moon_bundle, pada_id, sign_padas,
-                              syllable_lang, syllable_text)
+                              match_for_pada, moon_bundle, pada_id, sign_padas)
 # DIVASTRO-123: the page's text is naam_milan_text.TEXT; nakshatra/rashi names
 # are nakshatra_pages' (names_i18n for every language).
 from . import seo_text
 from .naam_milan_text import ENGINE, TEXT
 from .nakshatra_pages import (RASHIS, kundali_cta, milan_path, nak_path, rashi_path, shell)
-from .nakshatra_pages import _nak_label, _rashi_pill, _sign_name, _syl, _syl_lang
+from .nakshatra_pages import _nak_label, _rashi_pill, _sign_name
 from .seo_pages import BRAND, _e
 
 router = APIRouter()

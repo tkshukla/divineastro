@@ -684,7 +684,7 @@ TEXT: dict[str, dict[str, str]] = {
     },
 
     # DIVASTRO-123: Bengali. The builder prints the syllables ({syl}) in Bengali
-    # script (nakshatra_text.SYLLABLE_SCRIPT); the subtitle shows the English name.
+    # script (i18n.akshar); the subtitle shows the English name.
     "bn": {
         "kundali_cta": "বিনামূল্যে আপনার কোষ্ঠী তৈরি করুন — জেনে নিন সঠিক জন্ম নক্ষত্র ও চন্দ্র রাশি",
         "more.heading": "আরও বিনামূল্যের টুল",

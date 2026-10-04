@@ -35,7 +35,6 @@ from __future__ import annotations
 
 import datetime as dt
 import functools
-import re
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Query
@@ -190,10 +189,6 @@ def _rule(o: dict, lang: str) -> str:
     (DIVASTRO-123); English otherwise."""
     if o.get(f"rule_{lang}"):
         return o[f"rule_{lang}"]
-    if lang in ("kn", "te"):                      # unified in a later commit
-        return _rule_knte(o, lang)
-    if lang in ("bn", "or"):
-        return _rule_bnor(o, lang)
     rules = vrat_text.RULES.get(lang, {})
     if rules.get(f"key.{o.get('key')}"):
         return rules[f"key.{o['key']}"]
@@ -207,42 +202,6 @@ def _rule(o: dict, lang: str) -> str:
     if month and o["rule_en"].startswith(f"{month['name']} (amanta) "):
         words = rules["head"].format(month=n.MASA.get(month["name"], month["name"])) + words
     return words + tail
-
-
-def _rule_bnor(o: dict, lang: str) -> str:
-    table = vrat_text.RULE[lang]
-    special = table.get(f"key.{o.get('key')}")
-    if special:
-        return special
-    tithi, kind = o.get("tithi"), table.get(f"rule.{o.get('rule')}")
-    if not tithi or not kind:
-        return o["rule_en"]
-    names = i18n.names(lang)
-    month = o.get("month") or {}
-    head = (table["month"].format(month=names.MASA.get(month["name"], month["name"]))
-            if month.get("name") and o["rule_en"].startswith(f"{month['name']} (amanta) ") else "")
-    return table["tithi"].format(month=head, paksha=names.PAKSHA.get(tithi["paksha"], tithi["paksha"]),
-                                 tithi=names.TITHI.get(tithi["name"], tithi["name"]), rule=kind)
-
-
-def _rule_knte(o: dict, lang: str) -> str:
-    table = vrat_text.RULE[lang]
-    en = o["rule_en"]
-    if en in table:
-        return table[en]
-    if o.get("key") == "ekadashi" and "ekadashi" in table:
-        return table["ekadashi"]
-    m = _RULE_EN.match(en)
-    if not m or o.get("rule") not in table:
-        return en
-    n = i18n.names(lang)
-    month, paksha, tithi = m.groups()
-    head = f"{n.MASA.get(month, month)} {table['amanta']} " if month else ""
-    return f"{head}{n.PAKSHA.get(paksha, paksha)} {n.TITHI.get(tithi, tithi)}: {table[o['rule']]}"
-
-
-# festivals._tithi_words + RULE_TEXT: "Ashwin (amanta) Krishna Amavasya: tithi prevailing ..."
-_RULE_EN = re.compile(r"^(?:(\S+) \(amanta\) )?(Shukla|Krishna) ([^:]+): ")
 
 
 def _local_text(table: dict, key: str, lang: str) -> str:

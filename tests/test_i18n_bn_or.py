@@ -210,21 +210,22 @@ def main() -> int:
 
     from app.astro import festivals
     from app.astro.namakshar import BY_SLUG as NAK_BY_SLUG
-    want_rule = ({"tithi", "month"} | {f"rule.{k}" for k in festivals.RULE_TEXT}
+    want_rule = ({"tithi", "head"} | {f"rule.{k}" for k in festivals.RULE_TEXT}
                  | {f"key.{k}" for k in ("ekadashi", "makar_sankranti", "lohri", "holi")})
     for lang in LANGS:
-        rule = vrat_text.RULE.get(lang, {})
-        check(f"vrat_text.RULE {lang}: every festivals.RULE_TEXT kind + the four own-worded rules",
+        rule = vrat_text.RULES.get(lang, {})
+        check(f"vrat_text.RULES {lang}: every festivals.RULE_TEXT kind + the four own-worded rules",
               set(rule) == want_rule and not any(devanagari(v) for v in rule.values())
               and all(has_script(v, lang) for k, v in rule.items() if k != "tithi"),
               str(want_rule ^ set(rule)))
         for field in ("deity", "symbol"):
-            local = nakshatra_text.NAKSHATRA_LOCAL[field].get(lang, {})
-            check(f"nakshatra_text.NAKSHATRA_LOCAL {field} {lang}: all 27, in script",
+            local = {k.split(".", 1)[1]: v for k, v in nakshatra_text.FACTS.get(lang, {}).items()
+                     if k.startswith(field + ".")}
+            check(f"nakshatra_text.FACTS {field} {lang}: all 27, in script",
                   set(local) == set(NAK_BY_SLUG) and all(has_script(v, lang) for v in local.values()))
-        check(f"nakshatra_text.SYLLABLE_SCRIPT {lang}: namakshar syllables in script",
-              all(has_script(nakshatra_pages._syl(d, lang), lang)
-                  and not devanagari(nakshatra_pages._syl(d, lang))
+        check(f"i18n.akshar {lang}: namakshar syllables in script",
+              all(has_script(i18n.akshar(d, lang), lang)
+                  and not devanagari(i18n.akshar(d, lang))
                   for n in NAK_BY_SLUG.values() for d, _ in n.syllables))
 
     print("\n2. Every page module: bn and or translated (katha not)")

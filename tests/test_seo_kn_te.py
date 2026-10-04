@@ -150,16 +150,17 @@ def tables() -> None:
     bank("nakshatra_text.RASHI_TRAITS", nakshatra_text.RASHI_TRAITS)
     from app.astro import choghadiya, festivals, namakshar
     for lang in LANGS:
-        rule = vrat_text.RULE.get(lang, {})
-        check(f"vrat_text.RULE[{lang}]: every festivals.RULE_TEXT rule + amanta + ekadashi",
-              set(festivals.RULE_TEXT) | {"amanta", "ekadashi"} <= set(rule))
-        check(f"vrat_text.RULE[{lang}]: own script, no Devanagari",
-              all(in_script(v, lang) and not DEVANAGARI.search(v) for v in rule.values()))
+        rule = vrat_text.RULES.get(lang, {})
+        check(f"vrat_text.RULES[{lang}]: every festivals.RULE_TEXT rule + head + key.ekadashi",
+              {f"rule.{k}" for k in festivals.RULE_TEXT} | {"head", "tithi", "key.ekadashi"} <= set(rule))
+        check(f"vrat_text.RULES[{lang}]: own script, no Devanagari",
+              all(in_script(v, lang) and not DEVANAGARI.search(v) for k, v in rule.items() if k != "tithi"))
         check(f"choghadiya description_{lang} for all 7",
               all(in_script(i.get(f"description_{lang}", ""), lang) for i in choghadiya.CHOGHADIYA_INFO.values()))
-        check(f"namakshar deity/symbol_{lang} for all 27",
-              all(in_script(getattr(n, f"deity_{lang}"), lang) and in_script(getattr(n, f"symbol_{lang}"), lang)
-                  for n in namakshar.NAKSHATRA_LIST))
+        facts = nakshatra_text.FACTS.get(lang, {})
+        check(f"nakshatra_text.FACTS[{lang}]: deity/symbol for all 27",
+              all(in_script(facts.get(f"deity.{n.slug}", ""), lang)
+                  and in_script(facts.get(f"symbol.{n.slug}", ""), lang) for n in namakshar.NAKSHATRA_LIST))
         eng = naam_milan_text.ENGINE.get(lang, {})
         check(f"naam_milan_text.ENGINE[{lang}]: 4 band notes + convention note",
               {"band_note0", "band_note1", "band_note2", "band_note3", "convention_note"} <= set(eng)
