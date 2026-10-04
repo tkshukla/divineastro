@@ -491,5 +491,6 @@
  "push.err": "Could not turn on alerts. Please try again.",
  "push.denied": "Notifications are blocked for this site in your browser settings.",
  "chartSaved": "Chart saved",
- "saveChart": "Save chart"
+ "saveChart": "Save chart",
+ "engineScriptRisk": "⚠ This model garbles Indian scripts — for {lang}, use Claude or pull a Qwen/Gemma model."
 }

@@ -62,47 +62,58 @@ class Language:
     yes: str = ""        # "View in <language>" (its button)
     not_now: str = ""    # "Not now"
     notice: str = ""     # "Translation coming soon — this page is in English for now."
+    # DIVASTRO-124: one line shown above a reading when the AI could not write it
+    # in this language and the engine's English text is shown instead.
+    english_answer: str = ""   # "Answer shown in English."
     extra: Mapping[str, str] = field(default_factory=dict)
 
 
 LANGUAGES: tuple[Language, ...] = (
     Language("en", "English", "English", "Latn", "en", "en-IN", "en-IN", "en_IN", "", "full", None,
              choose="Choose language", hint="View this site in English?", yes="View in English",
-             not_now="Not now", notice="Translation coming soon — this page is shown in English for now."),
+             not_now="Not now", notice="Translation coming soon — this page is shown in English for now.",
+             english_answer="Answer shown in English."),
     Language("hi", "हिन्दी", "Hindi", "Deva", "hi", "hi-IN", "hi", "hi_IN", "/hi", "full", None,
              choose="भाषा चुनें", hint="क्या आप यह साइट हिन्दी में देखना चाहेंगे?",
              yes="हिन्दी में देखें", not_now="अभी नहीं",
-             notice="अनुवाद जल्द आ रहा है — यह पेज अभी अंग्रेज़ी में दिखाया जा रहा है।"),
+             notice="अनुवाद जल्द आ रहा है — यह पेज अभी अंग्रेज़ी में दिखाया जा रहा है।",
+             english_answer="उत्तर अंग्रेज़ी में दिखाया गया है।"),
     Language("kn", "ಕನ್ನಡ", "Kannada", "Knda", "kn", "kn-IN", "kn", "kn_IN", "/kn", "beta",
              "Noto Sans Kannada",
              choose="ಭಾಷೆ ಆಯ್ಕೆಮಾಡಿ", hint="ಈ ಸೈಟ್ ಅನ್ನು ಕನ್ನಡದಲ್ಲಿ ನೋಡಬೇಕೆ?",
              yes="ಕನ್ನಡದಲ್ಲಿ ನೋಡಿ", not_now="ಈಗ ಬೇಡ",
-             notice="ಅನುವಾದ ಶೀಘ್ರದಲ್ಲೇ ಬರಲಿದೆ — ಸದ್ಯಕ್ಕೆ ಈ ಪುಟವನ್ನು ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ತೋರಿಸಲಾಗಿದೆ."),
+             notice="ಅನುವಾದ ಶೀಘ್ರದಲ್ಲೇ ಬರಲಿದೆ — ಸದ್ಯಕ್ಕೆ ಈ ಪುಟವನ್ನು ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ತೋರಿಸಲಾಗಿದೆ.",
+             english_answer="ಉತ್ತರವನ್ನು ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ತೋರಿಸಲಾಗಿದೆ."),
     Language("te", "తెలుగు", "Telugu", "Telu", "te", "te-IN", "te", "te_IN", "/te", "beta",
              "Noto Sans Telugu",
              choose="భాషను ఎంచుకోండి", hint="ఈ సైట్‌ను తెలుగులో చూడాలనుకుంటున్నారా?",
              yes="తెలుగులో చూడండి", not_now="ఇప్పుడు కాదు",
-             notice="అనువాదం త్వరలో వస్తుంది — ప్రస్తుతానికి ఈ పేజీ ఆంగ్లంలో చూపబడుతోంది."),
+             notice="అనువాదం త్వరలో వస్తుంది — ప్రస్తుతానికి ఈ పేజీ ఆంగ్లంలో చూపబడుతోంది.",
+             english_answer="సమాధానం ఆంగ్లంలో చూపబడింది."),
     Language("ta", "தமிழ்", "Tamil", "Taml", "ta", "ta-IN", "ta", "ta_IN", "/ta", "beta",
              "Noto Sans Tamil",
              choose="மொழியைத் தேர்ந்தெடுக்கவும்", hint="இந்தத் தளத்தைத் தமிழில் பார்க்க விரும்புகிறீர்களா?",
              yes="தமிழில் பார்க்க", not_now="இப்போது வேண்டாம்",
-             notice="மொழிபெயர்ப்பு விரைவில் வரும் — தற்போது இந்தப் பக்கம் ஆங்கிலத்தில் காட்டப்படுகிறது."),
+             notice="மொழிபெயர்ப்பு விரைவில் வரும் — தற்போது இந்தப் பக்கம் ஆங்கிலத்தில் காட்டப்படுகிறது.",
+             english_answer="பதில் ஆங்கிலத்தில் காட்டப்பட்டுள்ளது."),
     Language("ml", "മലയാളം", "Malayalam", "Mlym", "ml", "ml-IN", "ml", "ml_IN", "/ml", "beta",
              "Noto Sans Malayalam",
              choose="ഭാഷ തിരഞ്ഞെടുക്കുക", hint="ഈ സൈറ്റ് മലയാളത്തിൽ കാണണോ?",
              yes="മലയാളത്തിൽ കാണുക", not_now="ഇപ്പോൾ വേണ്ട",
-             notice="വിവർത്തനം ഉടൻ വരുന്നു — ഇപ്പോൾ ഈ പേജ് ഇംഗ്ലീഷിലാണ് കാണിക്കുന്നത്."),
+             notice="വിവർത്തനം ഉടൻ വരുന്നു — ഇപ്പോൾ ഈ പേജ് ഇംഗ്ലീഷിലാണ് കാണിക്കുന്നത്.",
+             english_answer="ഉത്തരം ഇംഗ്ലീഷിലാണ് കാണിച്ചിരിക്കുന്നത്."),
     Language("bn", "বাংলা", "Bengali", "Beng", "bn", "bn-IN", "bn", "bn_IN", "/bn", "beta",
              "Noto Sans Bengali",
              choose="ভাষা বেছে নিন", hint="এই সাইটটি বাংলায় দেখতে চান?",
              yes="বাংলায় দেখুন", not_now="এখন নয়",
-             notice="অনুবাদ শীঘ্রই আসছে — আপাতত এই পৃষ্ঠাটি ইংরেজিতে দেখানো হচ্ছে।"),
+             notice="অনুবাদ শীঘ্রই আসছে — আপাতত এই পৃষ্ঠাটি ইংরেজিতে দেখানো হচ্ছে।",
+             english_answer="উত্তরটি ইংরেজিতে দেখানো হয়েছে।"),
     Language("or", "ଓଡ଼ିଆ", "Odia", "Orya", "or", "or-IN", "or", "or_IN", "/or", "beta",
              "Noto Sans Oriya",
              choose="ଭାଷା ବାଛନ୍ତୁ", hint="ଏହି ସାଇଟ୍‌ଟି ଓଡ଼ିଆରେ ଦେଖିବେ କି?",
              yes="ଓଡ଼ିଆରେ ଦେଖନ୍ତୁ", not_now="ଏବେ ନୁହେଁ",
-             notice="ଅନୁବାଦ ଶୀଘ୍ର ଆସୁଛି — ଆପାତତଃ ଏହି ପୃଷ୍ଠାଟି ଇଂରାଜୀରେ ଦେଖାଯାଉଛି।"),
+             notice="ଅନୁବାଦ ଶୀଘ୍ର ଆସୁଛି — ଆପାତତଃ ଏହି ପୃଷ୍ଠାଟି ଇଂରାଜୀରେ ଦେଖାଯାଉଛି।",
+             english_answer="ଉତ୍ତରଟି ଇଂରାଜୀରେ ଦେଖାଯାଇଛି।"),
 )
 
 BY_CODE: dict[str, Language] = {lang.code: lang for lang in LANGUAGES}
@@ -443,4 +454,5 @@ def client_registry() -> list[dict]:
     return [{"code": L.code, "native": L.native, "english": L.english, "script": L.script,
              "htmlLang": L.html_lang, "prefix": L.prefix, "status": L.status,
              "font": font_url(L.code), "choose": L.choose, "hint": L.hint, "yes": L.yes,
-             "notNow": L.not_now, "notice": L.notice} for L in LANGUAGES]
+             "notNow": L.not_now, "notice": L.notice,
+             "englishAnswer": L.english_answer} for L in LANGUAGES]

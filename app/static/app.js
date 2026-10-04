@@ -941,12 +941,14 @@ function describeProvider() {
   if (!note) return;
   if (!p) { note.textContent = ""; return; }
 
-  const hindiRisk = state.lang === "hi" && p.key !== "off" && !p.hindi_ok;
-  note.textContent = hindiRisk
-    ? `${p.detail}  ⚠ This model garbles Devanagari — for Hindi, use Claude or pull a Qwen/Gemma model.`
+  // DIVASTRO-124: every non-English language is written by the model now, so a
+  // model that garbles Indian scripts is a risk for all of them, not just Hindi.
+  const scriptRisk = state.lang !== "en" && p.key !== "off" && !p.hindi_ok;
+  note.textContent = scriptRisk
+    ? `${p.detail}  ${t("engineScriptRisk").replace("{lang}", langInfo(state.lang).native)}`
     : p.detail;
-  // Warn both when a model is bad at Hindi and when the choice leaves the machine.
-  note.classList.toggle("warn", hindiRisk || (!p.local && p.key !== "off"));
+  // Warn both when a model is bad at Indian scripts and when the choice leaves the machine.
+  note.classList.toggle("warn", scriptRisk || (!p.local && p.key !== "off"));
   // NOT persisted here: this runs on every load, and writing on load is exactly
   // what pinned everyone to "off". Only the change handler below persists.
 }
@@ -1880,6 +1882,14 @@ function verdictHtml(result) {
   return `<span class="verdict-tag ${verdictClass(result.score)}">${escapeHtml(result.verdict)} · ${escapeHtml(result.topic_label)}</span>`;
 }
 
+// DIVASTRO-124: the server sends `fallback_note` ("Answer shown in English", in
+// the reader's language) for kn/te/ta/ml/bn/or. It belongs above the engine's
+// English only — never above the AI's answer in their language.
+function fallbackNoteHtml(result) {
+  const note = result && result.fallback_note;
+  return note ? `<p class="incomplete-note lang-fallback-note">${escapeHtml(note)}</p>` : "";
+}
+
 function addBot(md, result, withReasoning = true) {
   const el = document.createElement("div");
   el.className = "msg bot";
@@ -2121,7 +2131,8 @@ $("#ask-form").addEventListener("submit", async (e) => {
           result = data;
           pending.remove?.();
           if (state.provider === "off") {
-            addBot(result.answer_engine, result);
+            const b = addBot(result.answer_engine, result);
+            b.insertAdjacentHTML("afterbegin", fallbackNoteHtml(result));
           } else {
             bubble = addBot("", result, false);
             bubble.innerHTML =
@@ -2146,7 +2157,7 @@ $("#ask-form").addEventListener("submit", async (e) => {
           // either way, and a red "narration failed" banner only tells the
           // customer that something they cannot act on went wrong.
           polished = result.answer_engine;
-          bubble.innerHTML =
+          bubble.innerHTML = fallbackNoteHtml(result) +
             verdictHtml(result) + markdown(polished) + reasoningHtml(result);
           bubble = null;
           console.warn("narration:", data.error);
@@ -2538,19 +2549,37 @@ $("#close-kundali-pdf-modal")?.addEventListener("click", () => {
   $("#kundali-pdf-modal").style.display = "none";
 });
 
-$("#generate-pdf-en")?.addEventListener("click", () => {
-  if (state.sessionId) {
-    window.location.href = `/api/pdf/chart/${state.sessionId}?lang=en`;
-    $("#kundali-pdf-modal").style.display = "none";
+// DIVASTRO-124: one button per language the server can print a kundali PDF in
+// (window.DA_PDF_LANGS, from pdf_report.pdf_languages(): en, hi and each
+// regional language whose script font is installed). The English and Hindi
+// buttons are in index.html; the others are added here, after them.
+function renderPdfLangButtons() {
+  const box = $("#generate-pdf-en")?.parentElement;
+  if (!box) return;
+  const codes = (window.DA_PDF_LANGS && window.DA_PDF_LANGS.length) ? window.DA_PDF_LANGS : ["en", "hi"];
+  box.style.flexWrap = "wrap";
+  for (const code of codes) {
+    let btn = $(`#generate-pdf-${code}`);
+    if (!btn) {
+      const L = langInfo(code);
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn";
+      btn.id = `generate-pdf-${code}`;
+      btn.style.minWidth = "120px";
+      btn.lang = L.htmlLang || code;
+      btn.textContent = L.english && L.english !== L.native ? `${L.native} (${L.english})` : L.native;
+      box.append(btn);
+    }
+    btn.addEventListener("click", () => {
+      if (state.sessionId) {
+        window.location.href = `/api/pdf/chart/${state.sessionId}?lang=${code}`;
+        $("#kundali-pdf-modal").style.display = "none";
+      }
+    });
   }
-});
-
-$("#generate-pdf-hi")?.addEventListener("click", () => {
-  if (state.sessionId) {
-    window.location.href = `/api/pdf/chart/${state.sessionId}?lang=hi`;
-    $("#kundali-pdf-modal").style.display = "none";
-  }
-});
+}
+renderPdfLangButtons();
 
 /* ============================================================
    DIVASTRO-101 — home screen: show value before the first tap.
