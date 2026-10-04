@@ -152,11 +152,12 @@ def main() -> int:
     cfg.set_main_option("script_location", str(ROOT / "migrations"))
     cfg.set_main_option("sqlalchemy.url", os.environ["ASTRO_DATABASE_URL"])
     try:
-        command.downgrade(cfg, "-1")
+        # Not "-1": newer migrations sit on top of this one. Step back to its parent.
+        command.downgrade(cfg, "f2a3b4c5d6e7")
         gone = "push_subscriptions" not in inspect(engine).get_table_names()
         command.upgrade(cfg, "head")
         back = "push_subscriptions" in inspect(engine).get_table_names()
-        check("downgrade -1 drops it, upgrade head brings it back", gone and back)
+        check("downgrading past it drops the table, upgrade head brings it back", gone and back)
     except Exception as exc:
         check("downgrade/upgrade round trip", False, repr(exc))
 
