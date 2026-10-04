@@ -215,6 +215,25 @@ class Visit(Base):
     visitor: Mapped[str] = mapped_column(String(16), default="")
 
 
+class Event(Base):
+    """One action inside the single-page app, for the admin Traffic panel's
+    "what did visitors do" view. Same privacy rules as `Visit` (see analytics.py):
+    the `visitor` hash is the day-scoped one, no IP, no user id. `detail` is a
+    short label from a fixed vocabulary (a screen id, a sku, a language code).
+    """
+
+    __tablename__ = "events"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    ts: Mapped[dt.datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, index=True)
+    name: Mapped[str] = mapped_column(String(30), default="")
+    detail: Mapped[str] = mapped_column(String(60), default="")
+    visitor: Mapped[str] = mapped_column(String(16), default="", index=True)
+    source: Mapped[str] = mapped_column(String(60), default="")      # first-touch, from astro_src
+    campaign: Mapped[str] = mapped_column(String(80), default="")
+
+
 FEEDBACK_CATEGORIES = ("general", "bug", "answers", "payments", "idea", "other")
 FEEDBACK_STATUSES = ("new", "read", "resolved")
 

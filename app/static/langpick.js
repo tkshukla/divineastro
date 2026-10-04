@@ -37,6 +37,7 @@
   function choose(code, href, ev) {
     store.set(LANG_KEY, code);
     store.set(HINT_KEY, '1');
+    if (typeof window.daTrack === 'function') window.daTrack('lang', code);
     if (typeof window.daSetLang === 'function') {
       if (ev) ev.preventDefault();
       window.daSetLang(code);

@@ -1115,6 +1115,7 @@ async function castChart(payload) {
   state.chart = data.chart;
   state.currentBirthData = payload;
   state.currentBirthId = state.selectedBirthId;
+  window.daTrack?.("chart_cast");
   renderReading(data);
   loadAndShowDashboard();
 }
@@ -1240,6 +1241,7 @@ function showStage(id) {
     if (el) el.classList.toggle("active", s === id);
   });
   document.body.classList.toggle("in-reading", id === "stage-chat");
+  window.daTrack?.("screen", id.replace("stage-", ""));
   // On a phone the reading and the chart share one screen, switched by the
   // Reading / Chart & Dashas buttons. Arriving at the chat always means "ask a
   // question", so never inherit the chart side from an earlier visit: it has no
@@ -2089,6 +2091,7 @@ $("#ask-form").addEventListener("submit", async (e) => {
   };
 
   askAbort = new AbortController();
+  window.daTrack?.("ask_sent");
   try {
     const res = await fetch("/api/ask/stream", {
       method: "POST",

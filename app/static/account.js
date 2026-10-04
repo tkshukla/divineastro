@@ -253,6 +253,7 @@ const PROVIDER_MARK = {
    N free" line uses the number /api/me reported (acct.freeQuestions), and is left
    out until the server has said it, exactly like the home page's free badge. */
 function openSignIn(onDone) {
+  window.daTrack?.("signin_open");
   acct.afterLogin = onDone || null;
   const provs = acct.authProviders || [];
   // Inline providers complete inside this sheet; only the rest are redirects.
@@ -599,6 +600,7 @@ function packCard(p) {
 
 function openStore(outOfCredits = false) {
   if (!acct.user) return openSignIn(() => openStore(outOfCredits));
+  window.daTrack?.("store_open", outOfCredits ? "credits" : "browse");
   acct.coupon = null;
   const packs = acct.products.filter((p) => p.kind === "questions");
   const singleReports = acct.products.filter((p) => p.kind === "single_question");
@@ -734,6 +736,8 @@ async function startCheckout(sku, back) {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || "Could not create the order.");
+    acct.checkoutSku = sku;
+    window.daTrack?.("checkout_start", sku);
 
     const c = data.checkout;
     if (c.mode === "test") {
@@ -901,6 +905,7 @@ async function confirmPayment(orderId, payload) {
   acct.user.credits = data.credits;
   renderAccountBar();
   closeModal();
+  if (!data.pending) window.daTrack?.("paid", acct.checkoutSku || "");
 
   if (data.pending) {
     toast(data.message || "Payment is being confirmed…");
@@ -910,6 +915,7 @@ async function confirmPayment(orderId, payload) {
       const fresh = await (await fetch("/api/me")).json();
       if (fresh.user && fresh.user.credits !== data.credits) {
         acct.user = fresh.user; renderAccountBar();
+        window.daTrack?.("paid", acct.checkoutSku || "");
         toast(`${at("paid")} ✓`); break;
       }
     }
