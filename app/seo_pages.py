@@ -250,9 +250,11 @@ _SHELL = """<!DOCTYPE html>
 <meta property="og:title" content="{title}"/>
 <meta property="og:description" content="{description}"/>
 <meta property="og:url" content="{canonical}"/>
-<meta property="og:image" content="{site}/static/icon-512.png"/>
+<meta property="og:image" content="{site}/static/og-card.jpg"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
 <meta property="og:locale" content="{og_locale}"/>
-<meta name="twitter:card" content="summary"/>
+<meta name="twitter:card" content="summary_large_image"/>
 <meta name="google-adsense-account" content="{adsense}"/>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={adsense}"
         crossorigin="anonymous"></script>
