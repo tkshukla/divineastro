@@ -222,7 +222,7 @@ def t(key: str, lang: str, table: Mapping[str, Mapping[str, str]]) -> str:
     return key
 
 
-def fmt(key: str, lang: str, table: Mapping[str, Mapping[str, str]], **values) -> str:
+def fmt(key: str, lang: str, table: Mapping[str, Mapping[str, str]], /, **values) -> str:
     """t() then str.format(**values): templates keep their `{placeholders}` (the
     word order is the translator's). Values are inserted as given — HTML-escape
     them first where the template is HTML. Every template may also use the

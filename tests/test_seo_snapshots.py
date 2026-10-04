@@ -151,7 +151,30 @@ def main(argv: list[str]) -> int:
     print(f"\n{len(digests) - len(failures)}/{len(set(want) | set(digests))} identical")
     if failures:
         print("Re-run with --dump DIR before and after to diff the bodies.")
+    failures += regional_names()
     return 1 if failures else 0
+
+
+def regional_names() -> list[str]:
+    """An untranslated language still prints astrology names in its own script:
+    /kn/panchang/bengaluru shows the day's tithi and nakshatra from names_kn."""
+    from app import i18n
+    pin()
+    client = TestClient(app, raise_server_exceptions=True)
+    p = seo_pages._panchang("bengaluru", DAY)
+    failures = []
+    for lang in ("kn", "ta"):
+        html = client.get(f"/{lang}/panchang/bengaluru").text
+        n = i18n.names(lang)
+        want = [n.TITHI[p["tithi"][0]["name"]], n.NAKSHATRAS[p["nakshatra"][0]["name"]],
+                n.TIMINGS["rahu_kaal"], n.VARA[p["vara"]["weekday"]], n.MONTHS[DAY.month - 1]]
+        missing = [w for w in want if w not in html]
+        ok = not missing and 'content="noindex, follow"' in html
+        print(f"  {'PASS' if ok else 'FAIL'}  /{lang}/panchang/bengaluru: native tithi, nakshatra, "
+              f"Rahu Kaal, weekday, month; still noindex" + (f" — missing {missing}" if missing else ""))
+        if not ok:
+            failures.append(lang)
+    return failures
 
 
 if __name__ == "__main__":

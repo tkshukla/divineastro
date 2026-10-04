@@ -38,6 +38,9 @@ from .astro import matching
 from .astro.namakshar import (BY_NAME, BY_SLUG, NAK_MIN, NAKSHATRA_LIST, PADA_MIN, SIGN_MIN,
                               Nakshatra, sign_padas)
 from .chart_service import DOMICILE, ELEMENT, MODALITY, VIMSHOTTARI
+# DIVASTRO-123: every word of these pages is in nakshatra_page_text.TEXT (and the
+# trait paragraphs in nakshatra_text), per language; names from names_i18n.
+from .nakshatra_page_text import TEXT
 from .nakshatra_text import NAKSHATRA_TRAITS, RASHI_TRAITS
 from .rashifal_pages import BY_SLUG as RASHI_BY_SLUG, RASHIS, Rashi, path as rashifal_path
 from .seo_pages import (ADSENSE_CLIENT, BRAND, SITE_URL, _STYLE, _cache_headers, _e, _footer,
@@ -55,11 +58,12 @@ NAAM_MILAN = "/naam-se-kundali-milan"
 TRANSLATED = i18n.BASE_TRANSLATED
 i18n.LOCALIZABLE_ROOTS.update({"nakshatra", "rashi", NAAM_MILAN.strip("/")})
 
-ELEMENT_HI = {"Fire": "अग्नि", "Earth": "पृथ्वी", "Air": "वायु", "Water": "जल"}
-QUALITY = {"Cardinal": ("Movable (Chara)", "चर"), "Fixed": ("Fixed (Sthira)", "स्थिर"),
-           "Mutable": ("Dual (Dwiswabhava)", "द्विस्वभाव")}
-YONI_GENDER_HI = {"male": "पुरुष", "female": "स्त्री"}
 DASHA_YEARS = dict(VIMSHOTTARI)
+
+
+def _tx(key: str, lang: str, **values) -> str:
+    """This module's text for `key` in `lang` (nakshatra_page_text.TEXT), formatted."""
+    return i18n.fmt(key, lang, TEXT, **values)
 
 
 # --------------------------------------------------------------------------
@@ -128,9 +132,20 @@ def _deg(minutes: int) -> str:
     return f"{minutes // 60}°{minutes % 60:02d}′"
 
 
+def rashi_name(r: Rashi, lang: str) -> str:
+    """'Mesh' / 'मेष' / the names_<code> word: the Rashi's own `name_<lang>`, its
+    Indian name in English, else names_<code>.RASHI."""
+    own = getattr(r, f"name_{lang}", None)
+    if own:
+        return own
+    if lang == i18n.DEFAULT:
+        return r.name
+    return i18n.names(lang).RASHI.get(r.english, r.name)
+
+
 def _sign_name(index: int, lang: str) -> str:
     r = RASHIS[index]
-    return r.name_hi if lang == "hi" else f"{r.name} ({r.english})"
+    return _tx("sign", lang, name=rashi_name(r, lang), english=r.english)
 
 
 def _point(minutes: int, lang: str, end: bool = False) -> str:
@@ -147,11 +162,17 @@ def span_text(n: Nakshatra, lang: str) -> str:
 
 
 def _planet(name: str, lang: str) -> str:
-    return matching.PLANET_HI.get(name, name) if lang == "hi" else name
+    return i18n.names(lang).GRAHA.get(name, name)
 
 
 def _nak_label(n: Nakshatra, lang: str) -> str:
-    return n.name_hi if lang == "hi" else n.name
+    """The nakshatra's own `name_<lang>` (namakshar has name_hi), else names_<code>."""
+    return getattr(n, f"name_{lang}", None) or i18n.names(lang).NAKSHATRAS.get(n.name, n.name)
+
+
+def _own(obj, field: str, lang: str) -> str:
+    """`obj.<field>_<lang>` (deity_hi, symbol_hi) if the data has it, else English."""
+    return getattr(obj, f"{field}_{lang}", None) or getattr(obj, field)
 
 
 def today_nakshatra(day: dt.date) -> Nakshatra | None:
@@ -223,11 +244,13 @@ def shell(*, lang: str, en_path: str, hi_path: str, title: str, description: str
     Milan result uses it for its referrer policy, which must precede every
     subresource). `ads=False` drops the AdSense script — never load a third
     party on a URL that carries a person's name."""
-    own = hi_path if lang == "hi" else i18n.localized_path(en_path, lang)
+    # `hi_path` is kept for callers; every copy's URL is the English one localized.
+    own = i18n.localized_path(en_path, lang)
     canonical = SITE_URL + own
     bits = page_language_bits(lang=lang, path=own, has_twin=status == 200,
                               translated=TRANSLATED, region=True, lang_paths={"en": en_path})
-    trail = [("मुख्य पृष्ठ" if lang == "hi" else i18n.chrome("home", lang), "/")] + crumbs
+    home = TEXT[lang]["home"] if i18n.has("home", lang, TEXT) else i18n.chrome("home", lang)
+    trail = [(home, "/")] + crumbs
     crumb_html = " › ".join(
         f'<a href="{_e(href)}">{_e(name)}</a>' if i < len(trail) - 1 else _e(name)
         for i, (name, href) in enumerate(trail))
@@ -264,9 +287,7 @@ def shell(*, lang: str, en_path: str, hi_path: str, title: str, description: str
 
 
 def kundali_cta(lang: str) -> str:
-    text = ("अपनी मुफ़्त कुंडली बनाएँ — जानें आपका जन्म नक्षत्र और चंद्र राशि" if lang == "hi"
-            else "Get your free kundali — find your exact birth nakshatra and Moon sign")
-    return f'<a class="cta" href="/?open=kundali">{_e(text)}</a>'
+    return f'<a class="cta" href="/?open=kundali">{_e(_tx("kundali_cta", lang))}</a>'
 
 
 def _links(items: list[tuple[str, str]], head: str) -> str:
@@ -275,56 +296,45 @@ def _links(items: list[tuple[str, str]], head: str) -> str:
 
 
 def _more(lang: str) -> str:
-    if lang == "hi":
-        return _links([("/hi/nakshatra", "सभी 27 नक्षत्र"), ("/hi/rashi", "सभी 12 राशियाँ"),
-                       (milan_path("hi"), "नाम से कुंडली मिलान"),
-                       ("/hi/kundali-milan", "कुंडली मिलान (36 गुण)"),
-                       ("/hi/rashifal", "आज का राशिफल"), ("/hi/panchang", "आज का पंचांग")],
-                      "और भी")
-    return _links([("/nakshatra", "All 27 nakshatras"), ("/rashi", "All 12 rashis"),
-                   (milan_path("en"), "Naam se Kundali Milan"),
-                   ("/kundali-milan", "Kundali Milan (36 guna)"),
-                   ("/rashifal", "Today's Rashifal"), ("/panchang", "Today's Panchang")],
-                  "More free tools")
+    pre = _pre(lang)
+    return _links([(pre + "/nakshatra", _tx("more.naks", lang)),
+                   (pre + "/rashi", _tx("more.rashis", lang)),
+                   (milan_path(lang), _tx("more.milan", lang)),
+                   (pre + "/kundali-milan", _tx("more.kundali_milan", lang)),
+                   (pre + "/rashifal", _tx("more.rashifal", lang)),
+                   (pre + "/panchang", _tx("more.panchang", lang))],
+                  _tx("more.heading", lang))
 
 
 def _nak_list(current: Nakshatra | None, lang: str) -> str:
     items = "".join(
         f'<li><a href="{nak_path(n, lang)}"' + (' aria-current="page"' if n == current else "")
         + f'>{n.index + 1}. {_e(_nak_label(n, lang))}</a></li>' for n in NAKSHATRA_LIST)
-    head = "सभी 27 नक्षत्र" if lang == "hi" else "All 27 nakshatras"
-    return f'<h2>{head}</h2><ul class="links">{items}</ul>'
+    return f'<h2>{_tx("list.naks", lang)}</h2><ul class="links">{items}</ul>'
+
+
+def _rashi_pill(r: Rashi, lang: str) -> str:
+    return _tx("sign.pill", lang, name=rashi_name(r, lang), english=r.english)
 
 
 def _rashi_list(current: Rashi | None, lang: str) -> str:
     items = "".join(
         f'<li><a href="{rashi_path(r, lang)}"' + (' aria-current="page"' if r == current else "")
-        + f'>{_e(r.name_hi if lang == "hi" else f"{r.name} · {r.english}")}</a></li>'
+        + f'>{_e(_rashi_pill(r, lang))}</a></li>'
         for r in RASHIS)
-    head = "सभी 12 राशियाँ" if lang == "hi" else "All 12 rashis"
-    return f'<h2>{head}</h2><ul class="links">{items}</ul>'
+    return f'<h2>{_tx("list.rashis", lang)}</h2><ul class="links">{items}</ul>'
 
 
 def _today_box(n: Nakshatra | None, day: dt.date, lang: str) -> str:
     t = today_nakshatra(day)
-    pan = "/hi/panchang" if lang == "hi" else "/panchang"
+    pan = _pre(lang) + "/panchang"
     if t is None:
         return ""
-    if lang == "hi":
-        if n is not None and t == n:
-            lead = f"<strong>आज (नई दिल्ली में सूर्योदय के समय) चंद्रमा {_e(n.name_hi)} नक्षत्र में है।</strong>"
-        else:
-            lead = (f'आज का नक्षत्र (नई दिल्ली में सूर्योदय के समय) '
-                    f'<a href="{nak_path(t, lang)}"><strong>{_e(t.name_hi)}</strong></a> है।')
-        tail = f' नक्षत्र का समाप्ति-समय, तिथि और राहु काल <a href="{pan}">आज के पंचांग</a> में देखें।'
+    if n is not None and t == n:
+        lead = _tx("today.same", lang, name=_e(_nak_label(n, lang)))
     else:
-        if n is not None and t == n:
-            lead = f"<strong>Today the Moon is in {_e(n.name)} (at sunrise in New Delhi).</strong>"
-        else:
-            lead = (f"Today's nakshatra is <a href=\"{nak_path(t, lang)}\"><strong>{_e(t.name)}"
-                    "</strong></a> (at sunrise in New Delhi).")
-        tail = (f' Its end time, the tithi and Rahu Kaal are on <a href="{pan}">today\'s '
-                "Panchang</a>.")
+        lead = _tx("today.other", lang, href=nak_path(t, lang), name=_e(_nak_label(t, lang)))
+    tail = _tx("today.tail", lang, pan=pan)
     return f'<div class="box"><p>{lead}{tail}</p></div>'
 
 
@@ -333,57 +343,39 @@ def _today_box(n: Nakshatra | None, day: dt.date, lang: str) -> str:
 # --------------------------------------------------------------------------
 
 def _facts(n: Nakshatra, lang: str) -> str:
-    hi = lang == "hi"
+    names = i18n.names(lang)
     yoni, gender = n.yoni
     signs = n.signs
     sign_links = ", ".join(
         f'<a href="{rashi_path(RASHIS[s], lang)}">{_e(_sign_name(s, lang))}</a>' for s in signs)
     varnas = ", ".join(
         dict.fromkeys(
-            (matching.VARNA_HI[v] if hi else v)
+            names.VARNA.get(v, v)
             for v in (matching.VARNA_OF_RASHI[RASHIS[s].english] for s in signs)))
     nadi = n.nadi
     humour = matching.NADI_HUMOUR[nadi]
-    if hi:
-        rows = [
-            ("क्रम", f"27 में से {n.index + 1}वाँ"),
-            ("अंश (निरयण)", _e(span_text(n, lang))),
-            ("राशि", sign_links),
-            ("स्वामी ग्रह (विंशोत्तरी)", f"{_e(_planet(n.lord, lang))} "
-             f"<small>महादशा {DASHA_YEARS[n.lord]} वर्ष</small>"),
-            ("देवता", _e(n.deity_hi)),
-            ("प्रतीक", _e(n.symbol_hi)),
-            ("गण", _e(matching.GANA_HI[n.gana])),
-            ("योनि", f"{_e(matching.YONI_HI[yoni])} <small>{YONI_GENDER_HI[gender]}</small>"),
-            ("नाड़ी", f"{_e(matching.NADI_HI[nadi])} <small>{matching.NADI_HUMOUR_HI[humour]}</small>"),
-            ("वर्ण (राशि से, गुण मिलान में)", _e(varnas)),
-            ("नामाक्षर", f'<span class="syl">{_e(" ".join(d for d, _ in n.syllables))}</span>'),
-        ]
-    else:
-        rows = [
-            ("Number", f"{n.index + 1} of 27"),
-            ("Span (sidereal)", _e(span_text(n, lang))),
-            ("Rashi", sign_links),
-            ("Ruling planet (Vimshottari lord)", f"{_e(n.lord)} "
-             f"<small>{DASHA_YEARS[n.lord]}-year mahadasha</small>"),
-            ("Deity", _e(n.deity)),
-            ("Symbol", _e(n.symbol)),
-            ("Gana", f"{_e(n.gana)} <small lang=\"hi\">{matching.GANA_HI[n.gana]}</small>"),
-            ("Yoni (animal)", f"{_e(yoni)} <small>{gender}</small>"),
-            ("Nadi", f"{_e(nadi)} <small>{humour}</small>"),
-            ("Varna (from its rashi, as used in Guna Milan)", _e(varnas)),
-            ("Name syllables (namakshar)",
-             f'<span class="syl" lang="hi">{_e(" ".join(d for d, _ in n.syllables))}</span> '
-             f'<small>{_e(", ".join(l for _, l in n.syllables))}</small>'),
-        ]
-    body = "".join(f'<tr><th scope="row">{k}</th><td>{v}</td></tr>' for k, v in rows)
+    rows = [
+        ("f.number", _tx("f.number_v", lang, n=n.index + 1)),
+        ("f.span", _e(span_text(n, lang))),
+        ("f.rashi", sign_links),
+        ("f.lord", _tx("f.lord_v", lang, lord=_e(_planet(n.lord, lang)),
+                       years=DASHA_YEARS[n.lord])),
+        ("f.deity", _e(_own(n, "deity", lang))),
+        ("f.symbol", _e(_own(n, "symbol", lang))),
+        ("f.gana", _tx("f.gana_v", lang, gana=_e(names.GANA.get(n.gana, n.gana)),
+                       gana_hi=i18n.names("hi").GANA[n.gana])),
+        ("f.yoni", f"{_e(names.YONI.get(yoni, yoni))} <small>{_tx(f'gender.{gender}', lang)}</small>"),
+        ("f.nadi", f"{_e(names.NADI.get(nadi, nadi))} <small>{_tx(f'humour.{humour}', lang)}</small>"),
+        ("f.varna", _e(varnas)),
+        ("f.syl", _tx("f.syl_v", lang, syl=_e(" ".join(d for d, _ in n.syllables)),
+                      lat=_e(", ".join(l for _, l in n.syllables)))),
+    ]
+    body = "".join(f'<tr><th scope="row">{_tx(k, lang)}</th><td>{v}</td></tr>' for k, v in rows)
     return f'<div class="scroll"><table>{body}</table></div>'
 
 
 def _pada_table(n: Nakshatra, lang: str) -> str:
-    hi = lang == "hi"
-    head = ("<tr><th>चरण</th><th>अंश</th><th>राशि</th><th>नामाक्षर</th></tr>" if hi else
-            "<tr><th>Pada</th><th>Span</th><th>Rashi</th><th>Name syllable</th></tr>")
+    head = _tx("pada.head", lang)
     rows = []
     for p in range(1, 5):
         start = n.start_min + (p - 1) * PADA_MIN
@@ -394,66 +386,47 @@ def _pada_table(n: Nakshatra, lang: str) -> str:
             f"{_e(_point(start + PADA_MIN, lang, end=True))}</td>"
             f'<td><a href="{rashi_path(RASHIS[sign], lang)}">{_e(_sign_name(sign, lang))}</a></td>'
             f'<td><span class="syl" lang="hi">{_e(dev)}</span> <small>{_e(lat)}</small></td></tr>')
-    title = "चार चरण और नामाक्षर" if hi else "The four padas and their name syllables"
-    note = ("<p class=\"note\">परंपरा में बच्चे का नाम जन्म नक्षत्र के चरण के अक्षर से रखा जाता है "
-            "(नामाक्षर)। अक्षर ड्रिक पंचांग में प्रकाशित स्वर-सिद्धांत की 108 चरण-अक्षरों की सूची "
-            "(अवकहड़ा चक्र) के अनुसार हैं।</p>" if hi else
-            "<p class=\"note\">Traditionally a child's name begins with the syllable of the pada the "
-            "Moon occupied at birth (namakshar). Syllables follow the 108-pada Swar Siddhanta list "
-            "(the Avakahada Chakra) as published by Drik Panchang.</p>")
-    return (f"<h2>{title}</h2><div class=\"scroll\"><table>{head}{''.join(rows)}</table></div>"
-            + note)
+    return (f"<h2>{_tx('pada.title', lang)}</h2><div class=\"scroll\"><table>{head}"
+            f"{''.join(rows)}</table></div>" + _tx("pada.note", lang))
 
 
 def _related(n: Nakshatra, lang: str) -> str:
-    hi = lang == "hi"
     items = []
     for s in n.signs:
         r = RASHIS[s]
-        items.append((rashifal_path(r, lang),
-                      f"आज का {r.name_hi} राशिफल" if hi else f"Today's {r.name} Rashifal"))
+        items.append((rashifal_path(r, lang), _tx("rel.rashifal", lang, name=rashi_name(r, lang))))
     prev_n = NAKSHATRA_LIST[(n.index - 1) % 27]
     next_n = NAKSHATRA_LIST[(n.index + 1) % 27]
     items += [(nak_path(prev_n, lang), ("← " + _nak_label(prev_n, lang))),
               (nak_path(next_n, lang), (_nak_label(next_n, lang) + " →")),
-              (milan_path(lang), "नाम से कुंडली मिलान" if hi else "Naam se Kundali Milan"),
-              ("/hi/panchang" if hi else "/panchang", "आज का पंचांग" if hi else "Today's Panchang")]
-    return _links(items, "संबंधित" if hi else "Related")
+              (milan_path(lang), _tx("more.milan", lang)),
+              (_pre(lang) + "/panchang", _tx("more.panchang", lang))]
+    return _links(items, _tx("rel.heading", lang))
 
 
 @functools.lru_cache(maxsize=128)
 def _nak_page(day: dt.date, slug: str, lang: str) -> tuple[str, str, str]:
     n = BY_SLUG[slug]
-    hi = lang == "hi"
+    names = i18n.names(lang)
     syl = " ".join(d for d, _ in n.syllables)
     lat = ", ".join(l for _, l in n.syllables)
-    if hi:
-        title = (f"{n.name_hi} नक्षत्र — देवता, स्वामी, गण, योनि, नाड़ी और नामाक्षर ({syl}) | "
-                 f"{BRAND}")
-        description = (f"{n.name_hi} नक्षत्र ({n.name}): {span_text(n, lang)}, स्वामी "
-                       f"{_planet(n.lord, lang)}, देवता {n.deity_hi}, {matching.GANA_HI[n.gana]} "
-                       f"गण, नाड़ी {matching.NADI_HI[n.nadi]}। नामाक्षर {syl} और स्वभाव।")
-        h1, sub = f"{n.name_hi} नक्षत्र", f"{n.name} Nakshatra"
-    else:
-        title = (f"{n.name} Nakshatra — Deity, Lord, Gana, Yoni, Nadi & Name Letters "
-                 f"({lat}) | {BRAND}")
-        description = (f"{n.name} nakshatra ({n.name_hi}): {span_text(n, lang)}, ruled by "
-                       f"{n.lord}, deity {n.deity.split(',')[0]}, {n.gana} gana, {n.nadi} nadi, "
-                       f"{n.yoni[0]} yoni. Name syllables {lat} and traits.")
-        h1, sub = f"{n.name} Nakshatra", f"{n.name_hi} नक्षत्र"
-    trait_head = "स्वभाव" if hi else "Nature and traits"
-    trait_note = ("<p class=\"note\">ये पारंपरिक प्रवृत्तियाँ हैं, निर्णय नहीं। आपकी पूरी कुंडली — "
-                  "लग्न, ग्रह और दशा — व्यक्तिगत चित्र देती है।</p>" if hi else
-                  "<p class=\"note\">These are traditional tendencies, not verdicts. Your full "
-                  "kundali — ascendant, planets and dasha — gives the personal picture.</p>")
+    deity = _own(n, "deity", lang)
+    raw = {"name": _nak_label(n, lang), "name_en": n.name, "name_hi": n.name_hi, "syl": syl,
+           "lat": lat, "span": span_text(n, lang), "lord": _planet(n.lord, lang),
+           "deity": deity, "deity_short": deity.split(",")[0],
+           "gana": names.GANA.get(n.gana, n.gana), "nadi": names.NADI.get(n.nadi, n.nadi),
+           "yoni": names.YONI.get(n.yoni[0], n.yoni[0]), "brand": BRAND}
+    title = _tx("nak.title", lang, **raw)
+    description = _tx("nak.desc", lang, **raw)
+    esc = {k: _e(v) for k, v in raw.items()}
     body = f"""
-<h1>{_e(h1)}</h1>
-<p class="hi" lang="{'en' if hi else 'hi'}">{_e(sub)}</p>
+{_tx("nak.h1", lang, **esc)}
+{_tx("nak.sub", lang, **esc)}
 {_today_box(n, day, lang)}
 {_facts(n, lang)}
-<h2>{trait_head}</h2>
+<h2>{_tx("trait_head", lang)}</h2>
 <p>{_e(i18n.pick(NAKSHATRA_TRAITS[n.slug], lang))}</p>
-{trait_note}
+{_tx("nak.trait_note", lang)}
 {_pada_table(n, lang)}
 {kundali_cta(lang)}
 {_related(n, lang)}
@@ -463,59 +436,35 @@ def _nak_page(day: dt.date, slug: str, lang: str) -> tuple[str, str, str]:
 
 @functools.lru_cache(maxsize=8)
 def _nak_index(day: dt.date, lang: str) -> tuple[str, str, str]:
-    hi = lang == "hi"
-    head = ("<tr><th>#</th><th>नक्षत्र</th><th>राशि</th><th>स्वामी</th><th>गण</th>"
-            "<th>नामाक्षर</th></tr>" if hi else
-            "<tr><th>#</th><th>Nakshatra</th><th>Rashi</th><th>Lord</th><th>Gana</th>"
-            "<th>Name syllables</th></tr>")
+    names = i18n.names(lang)
     rows = []
     for n in NAKSHATRA_LIST:
-        signs = " / ".join(RASHIS[s].name_hi if hi else RASHIS[s].name for s in n.signs)
-        gana = matching.GANA_HI[n.gana] if hi else n.gana
+        signs = " / ".join(rashi_name(RASHIS[s], lang) for s in n.signs)
+        gana = names.GANA.get(n.gana, n.gana)
         rows.append(
             f'<tr><td>{n.index + 1}</td><td><a href="{nak_path(n, lang)}">'
             f"{_e(_nak_label(n, lang))}</a></td><td>{_e(signs)}</td>"
             f"<td>{_e(_planet(n.lord, lang))}</td><td>{_e(gana)}</td>"
             f'<td lang="hi">{_e(" ".join(d for d, _ in n.syllables))}</td></tr>')
-    if hi:
-        title = f"27 नक्षत्र — नाम, स्वामी, देवता, गण और नामाक्षर की पूरी सूची | {BRAND}"
-        description = ("अश्विनी से रेवती तक सभी 27 नक्षत्र: हर नक्षत्र के अंश, राशि, स्वामी ग्रह, "
-                       "देवता, गण, योनि, नाड़ी और चारों चरणों के नामाक्षर — कुंडली मिलान की तालिकाओं "
-                       "से मेल खाते हुए।")
-        h1, sub = "27 नक्षत्र", "The 27 Nakshatras"
-        intro = ("<p>वैदिक ज्योतिष में राशि-चक्र 27 नक्षत्रों में बँटा है — हर नक्षत्र 13°20′ का, "
-                 "और हर नक्षत्र के 3°20′ के चार चरण। कुल 108 चरण 12 राशियों में बँटते हैं, हर राशि "
-                 "में ठीक 9 चरण। आपका जन्म नक्षत्र वह है जिसमें जन्म के समय चंद्रमा था; उसी से "
-                 "विंशोत्तरी दशा शुरू होती है और कुंडली मिलान के तारा, योनि, गण और नाड़ी कूट "
-                 "देखे जाते हैं।</p>")
-    else:
-        title = f"The 27 Nakshatras — Lords, Deities, Gana & Name Syllables | {BRAND}"
-        description = ("All 27 nakshatras from Ashwini to Revati: span, rashi, ruling planet, "
-                       "deity, gana, yoni, nadi and the name syllables of all four padas — "
-                       "consistent with our Kundali Milan tables.")
-        h1, sub = "The 27 Nakshatras", "27 नक्षत्र"
-        intro = ("<p>Vedic astrology divides the zodiac into 27 nakshatras (lunar mansions) of "
-                 "13°20′ each, and each nakshatra into four padas of 3°20′. The 108 padas fall "
-                 "exactly nine to a sign across the 12 rashis. Your birth nakshatra is the one the "
-                 "Moon occupied when you were born: it starts your Vimshottari dasha and drives "
-                 "the Tara, Yoni, Gana and Nadi kootas of Kundali Milan.</p>")
+    title = _tx("ni.title", lang, brand=BRAND)
+    description = _tx("ni.desc", lang)
     body = f"""
-<h1>{_e(h1)}</h1>
-<p class="hi" lang="{'en' if hi else 'hi'}">{_e(sub)}</p>
-{intro}
+{_tx("ni.h1", lang)}
+{_tx("ni.sub", lang)}
+{_tx("ni.intro", lang)}
 {_today_box(None, day, lang)}
-<div class="scroll"><table>{head}{''.join(rows)}</table></div>
+<div class="scroll"><table>{_tx("ni.head", lang)}{''.join(rows)}</table></div>
 {kundali_cta(lang)}
 {_more(lang)}"""
     return title, description, body
 
 
 def _crumb_nak(lang: str) -> tuple[str, str]:
-    return ("नक्षत्र", "/hi/nakshatra") if lang == "hi" else ("Nakshatras", "/nakshatra")
+    return _tx("crumb.naks", lang), nak_path(None, lang)
 
 
 def _crumb_rashi(lang: str) -> tuple[str, str]:
-    return ("राशियाँ", "/hi/rashi") if lang == "hi" else ("Rashis", "/rashi")
+    return _tx("crumb.rashis", lang), rashi_path(None, lang)
 
 
 def render_nak_index(lang: str, day: dt.date | None = None) -> HTMLResponse:
@@ -533,12 +482,11 @@ def render_nak(slug: str, lang: str, day: dt.date | None = None) -> HTMLResponse
 
 
 def _not_found(kind: str, slug: str, lang: str) -> HTMLResponse:
-    hi = lang == "hi"
     if kind == "nakshatra":
-        head = "नक्षत्र नहीं मिला" if hi else "Nakshatra not found"
+        head = _tx("nf.nak", lang)
         lst, crumb = _nak_list(None, lang), _crumb_nak(lang)
     else:
-        head = "राशि नहीं मिली" if hi else "Rashi not found"
+        head = _tx("nf.rashi", lang)
         lst, crumb = _rashi_list(None, lang), _crumb_rashi(lang)
     body = f"<h1>{head}</h1><p>“{_e(slug)}”</p>{lst}"
     base = f"/{kind}"
@@ -583,10 +531,8 @@ def _resolve_nak(slug: str, lang: str):
 # --------------------------------------------------------------------------
 
 def _rashi_facts(r: Rashi, lang: str) -> str:
-    hi = lang == "hi"
     lord = DOMICILE[r.english]
     element = ELEMENT[r.english]
-    quality_en, quality_hi = QUALITY[MODALITY[r.english]]
     varna = matching.VARNA_OF_RASHI[r.english]
     span = f"{r.index * 30}° – {r.index * 30 + 30}°"
     padas = sign_padas(r.index)
@@ -594,32 +540,20 @@ def _rashi_facts(r: Rashi, lang: str) -> str:
     nak_links = ", ".join(f'<a href="{nak_path(n, lang)}">{_e(_nak_label(n, lang))}</a>'
                           for n in naks)
     syl = " ".join(n.syllables[p - 1][0] for n, p in padas)
-    if hi:
-        rows = [("क्रम", f"12 में से {r.index + 1}वीं"),
-                ("अंश (निरयण राशि-चक्र)", span),
-                ("स्वामी ग्रह", _e(_planet(lord, lang))),
-                ("तत्व", ELEMENT_HI[element]),
-                ("स्वभाव (गुण)", quality_hi),
-                ("वर्ण (गुण मिलान में)", matching.VARNA_HI[varna]),
-                ("नक्षत्र", nak_links),
-                ("नामाक्षर", f'<span class="syl">{_e(syl)}</span>')]
-    else:
-        rows = [("Number", f"{r.index + 1} of 12"),
-                ("Span (sidereal zodiac)", span),
-                ("Sign lord", _e(lord)),
-                ("Element", element),
-                ("Quality", quality_en),
-                ("Varna (used in Guna Milan)", varna),
-                ("Nakshatras", nak_links),
-                ("Name syllables (namakshar)", f'<span class="syl" lang="hi">{_e(syl)}</span>')]
-    body = "".join(f'<tr><th scope="row">{k}</th><td>{v}</td></tr>' for k, v in rows)
+    rows = [("r.number", _tx("r.number_v", lang, n=r.index + 1)),
+            ("r.span", span),
+            ("r.lord", _e(_planet(lord, lang))),
+            ("r.element", _tx(f"element.{element}", lang)),
+            ("r.quality", _tx(f"quality.{MODALITY[r.english]}", lang)),
+            ("r.varna", i18n.names(lang).VARNA.get(varna, varna)),
+            ("r.naks", nak_links),
+            ("r.syl", _tx("r.syl_v", lang, syl=_e(syl)))]
+    body = "".join(f'<tr><th scope="row">{_tx(k, lang)}</th><td>{v}</td></tr>' for k, v in rows)
     return f'<div class="scroll"><table>{body}</table></div>'
 
 
 def _rashi_padas(r: Rashi, lang: str) -> str:
-    hi = lang == "hi"
-    head = ("<tr><th>नक्षत्र</th><th>चरण</th><th>अंश</th><th>नामाक्षर</th></tr>" if hi else
-            "<tr><th>Nakshatra</th><th>Pada</th><th>Degrees in sign</th><th>Syllable</th></tr>")
+    head = _tx("rp.head", lang)
     rows = []
     for i, (n, p) in enumerate(sign_padas(r.index)):
         lo, hi_m = i * PADA_MIN, (i + 1) * PADA_MIN
@@ -628,47 +562,34 @@ def _rashi_padas(r: Rashi, lang: str) -> str:
                     f"<td>{p}</td><td>{_deg(lo)} – {_deg(hi_m)}</td>"
                     f'<td><span class="syl" lang="hi">{_e(dev)}</span> <small>{_e(lat)}</small>'
                     "</td></tr>")
-    title = ("इस राशि के 9 नक्षत्र-चरण" if hi else "The nine nakshatra padas in this sign")
-    return f"<h2>{title}</h2><div class=\"scroll\"><table>{head}{''.join(rows)}</table></div>"
+    return (f"<h2>{_tx('rp.title', lang)}</h2><div class=\"scroll\"><table>{head}"
+            f"{''.join(rows)}</table></div>")
 
 
 @functools.lru_cache(maxsize=64)
 def _rashi_page(slug: str, lang: str) -> tuple[str, str, str]:
     r = RASHI_BY_SLUG[slug]
-    hi = lang == "hi"
     lord = DOMICILE[r.english]
     padas = sign_padas(r.index)
-    syl = " ".join(n.syllables[p - 1][0] for n, p in padas)
-    lat = ", ".join(n.syllables[p - 1][1] for n, p in padas)
-    if hi:
-        title = f"{r.name_hi} राशि — स्वामी, तत्व, नक्षत्र, नामाक्षर ({syl}) और स्वभाव | {BRAND}"
-        description = (f"{r.name_hi} राशि ({r.name}, {r.english}): स्वामी {_planet(lord, lang)}, "
-                       f"{ELEMENT_HI[ELEMENT[r.english]]} तत्व, {QUALITY[MODALITY[r.english]][1]} "
-                       f"स्वभाव। इसके 9 नक्षत्र-चरण, नामाक्षर {syl} और स्वभाव।")
-        h1, sub = f"{r.name_hi} राशि", f"{r.name} Rashi · {r.english}"
-        today = f"आज का {r.name_hi} राशिफल पढ़ें"
-    else:
-        title = (f"{r.name} Rashi ({r.english}) — Lord, Element, Nakshatras & Name Letters | "
-                 f"{BRAND}")
-        description = (f"{r.name} rashi ({r.english} Moon sign, {r.name_hi}): ruled by {lord}, "
-                       f"{ELEMENT[r.english].lower()} element, {QUALITY[MODALITY[r.english]][0].lower()}"
-                       f" quality. Its 9 nakshatra padas, name syllables ({lat}) and traits.")
-        h1, sub = f"{r.name} Rashi — {r.english} Moon Sign", f"{r.name_hi} राशि"
-        today = f"Read today's {r.name} Rashifal"
-    trait_head = "स्वभाव" if hi else "Nature and traits"
-    note = ("<p class=\"note\">वैदिक ज्योतिष में राशि का अर्थ प्रायः चंद्र राशि होता है — जन्म के समय "
-            "चंद्रमा जिस राशि में था। यह अक्सर पश्चिमी सूर्य राशि से अलग होती है।</p>" if hi else
-            "<p class=\"note\">In Vedic astrology \"rashi\" usually means the Moon sign — the sign "
-            "the Moon occupied at birth, in the sidereal zodiac. It is often different from a "
-            "Western sun sign.</p>")
+    element = _tx(f"element.{ELEMENT[r.english]}", lang)
+    quality = _tx(f"quality.{MODALITY[r.english]}", lang)
+    raw = {"name": rashi_name(r, lang), "name_en": r.name, "name_hi": r.name_hi,
+           "english": r.english, "lord": _planet(lord, lang), "element": element,
+           "element_lower": element.lower(), "quality": quality, "quality_lower": quality.lower(),
+           "syl": " ".join(n.syllables[p - 1][0] for n, p in padas),
+           "lat": ", ".join(n.syllables[p - 1][1] for n, p in padas), "brand": BRAND}
+    title = _tx("rs.title", lang, **raw)
+    description = _tx("rs.desc", lang, **raw)
+    esc = {k: _e(v) for k, v in raw.items()}
+    today = _tx("rs.today", lang, **raw)
     body = f"""
-<h1>{_e(h1)}</h1>
-<p class="hi" lang="{'en' if hi else 'hi'}">{_e(sub)}</p>
+{_tx("rs.h1", lang, **esc)}
+{_tx("rs.sub", lang, **esc)}
 <div class="box"><p><a href="{rashifal_path(r, lang)}"><strong>{_e(today)}</strong></a></p></div>
 {_rashi_facts(r, lang)}
-<h2>{trait_head}</h2>
+<h2>{_tx("trait_head", lang)}</h2>
 <p>{_e(i18n.pick(RASHI_TRAITS[r.slug], lang))}</p>
-{note}
+{_tx("rs.note", lang)}
 {_rashi_padas(r, lang)}
 {kundali_cta(lang)}
 {_rashi_list(r, lang)}
@@ -678,46 +599,25 @@ def _rashi_page(slug: str, lang: str) -> tuple[str, str, str]:
 
 @functools.lru_cache(maxsize=4)
 def _rashi_index(lang: str) -> tuple[str, str, str]:
-    hi = lang == "hi"
-    head = ("<tr><th>राशि</th><th>स्वामी</th><th>तत्व</th><th>नक्षत्र</th><th>नामाक्षर</th></tr>"
-            if hi else
-            "<tr><th>Rashi</th><th>Lord</th><th>Element</th><th>Nakshatras</th>"
-            "<th>Name syllables</th></tr>")
     rows = []
     for r in RASHIS:
         padas = sign_padas(r.index)
         naks = list(dict.fromkeys(n for n, _ in padas))
-        name = (f"{r.name_hi} <small>{_e(r.name)}</small>" if hi
-                else f"{_e(r.name)} <small>{_e(r.english)}</small>")
-        el = ELEMENT[r.english]
+        name = _tx("ri.name", lang, name=_e(rashi_name(r, lang)), name_en=_e(r.name),
+                   english=_e(r.english))
         rows.append(
             f'<tr><td><a href="{rashi_path(r, lang)}">{name}</a></td>'
             f"<td>{_e(_planet(DOMICILE[r.english], lang))}</td>"
-            f"<td>{ELEMENT_HI[el] if hi else el}</td>"
+            f"<td>{_tx('element.' + ELEMENT[r.english], lang)}</td>"
             f"<td>{_e(', '.join(_nak_label(n, lang) for n in naks))}</td>"
             f'<td lang="hi">{_e(" ".join(n.syllables[p - 1][0] for n, p in padas))}</td></tr>')
-    if hi:
-        title = f"12 राशियाँ — स्वामी, तत्व, नक्षत्र और नामाक्षर की पूरी सूची | {BRAND}"
-        description = ("मेष से मीन तक सभी 12 राशियाँ: हर राशि का स्वामी ग्रह, तत्व, स्वभाव, उसमें "
-                       "आने वाले 9 नक्षत्र-चरण और नाम के पहले अक्षर (नामाक्षर)।")
-        h1, sub = "12 राशियाँ", "The 12 Rashis (Moon signs)"
-        intro = ("<p>हर राशि 30° की है और उसमें ठीक 9 नक्षत्र-चरण आते हैं। आपकी राशि (चंद्र राशि) "
-                 "वह है जिसमें जन्म के समय चंद्रमा था — राशिफल, साढ़ेसाती और कुंडली मिलान इसी से "
-                 "देखे जाते हैं।</p>")
-    else:
-        title = f"The 12 Rashis — Lords, Elements, Nakshatras & Name Letters | {BRAND}"
-        description = ("All 12 rashis (Vedic Moon signs) from Mesh to Meen: sign lord, element, "
-                       "quality, the nine nakshatra padas in each and their name syllables "
-                       "(namakshar).")
-        h1, sub = "The 12 Rashis (Moon Signs)", "12 राशियाँ"
-        intro = ("<p>Each rashi spans 30° of the sidereal zodiac and holds exactly nine nakshatra "
-                 "padas. Your rashi is your Moon sign — the sign the Moon occupied at birth — and "
-                 "it is what rashifal, Sade Sati and Kundali Milan are read from.</p>")
+    title = _tx("ri.title", lang, brand=BRAND)
+    description = _tx("ri.desc", lang)
     body = f"""
-<h1>{_e(h1)}</h1>
-<p class="hi" lang="{'en' if hi else 'hi'}">{_e(sub)}</p>
-{intro}
-<div class="scroll"><table>{head}{''.join(rows)}</table></div>
+{_tx("ri.h1", lang)}
+{_tx("ri.sub", lang)}
+{_tx("ri.intro", lang)}
+<div class="scroll"><table>{_tx("ri.head", lang)}{''.join(rows)}</table></div>
 {kundali_cta(lang)}
 {_more(lang)}"""
     return title, description, body
@@ -734,8 +634,8 @@ def render_rashi(slug: str, lang: str) -> HTMLResponse:
     title, description, body = _rashi_page(slug, lang)
     return shell(lang=lang, en_path=rashi_path(r, "en"), hi_path=rashi_path(r, "hi"),
                  title=title, description=description,
-                 crumbs=[_crumb_rashi(lang), (r.name_hi if lang == "hi" else r.name,
-                                              rashi_path(r, lang))], body=body)
+                 crumbs=[_crumb_rashi(lang), (rashi_name(r, lang), rashi_path(r, lang))],
+                 body=body)
 
 
 def _resolve_rashi(slug: str, lang: str):
