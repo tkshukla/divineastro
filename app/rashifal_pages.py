@@ -61,11 +61,16 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 from . import i18n, seo_cities
 from .astro import panchang as panchang_engine
-from .astro.muhurat import NAKSHATRAS_HI, TITHI_HI, VARA_HI
 from .chart_service import SIGNS
 from .seo_pages import (
-    ADSENSE_CLIENT, BRAND, IST, PAKSHA_HI, SITE_URL, _STYLE, _cache_headers, _clock, _e,
+    ADSENSE_CLIENT, BRAND, IST, SITE_URL, _STYLE, _cache_headers, _e,
     _footer, _panchang, _today, page_language_bits,
+)
+from .seo_text import TEXT as SEO_TEXT
+# DIVASTRO-123: every word of these pages, and the phrase bank, is data in rashifal_text.
+from .rashifal_text import (  # noqa: F401  (re-exported: tests read the banks from here)
+    CLOCK_LANG, EASY, GOOD, JUPITER_HOUSE, KETU_LINE, MIXED, MOON_HOUSE, MORE_LINKS,
+    RAHU_HOUSE, SATURN_HOUSE, TEXT, TONE_LABEL,
 )
 
 from .share import seo_share  # noqa: E402  (DIVASTRO-107 share button)
@@ -110,11 +115,6 @@ LANGS = ("en", "hi")
 TRANSLATED = i18n.BASE_TRANSLATED
 i18n.LOCALIZABLE_ROOTS.add("rashifal")
 
-MONTHS_HI = ("जनवरी", "फ़रवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त",
-             "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर")
-HOUSE_HI = {1: "पहले", 2: "दूसरे", 3: "तीसरे", 4: "चौथे", 5: "पाँचवें", 6: "छठे",
-            7: "सातवें", 8: "आठवें", 9: "नौवें", 10: "दसवें", 11: "ग्यारहवें", 12: "बारहवें"}
-PLANET_HI = {"Moon": "चंद्रमा", "Saturn": "शनि", "Jupiter": "गुरु", "Rahu": "राहु", "Ketu": "केतु"}
 
 
 def _ordinal(n: int) -> str:
@@ -149,7 +149,6 @@ def is_public_path(p: str) -> bool:
 # The phrase bank — see the module docstring for the classical scheme.
 # --------------------------------------------------------------------------
 
-GOOD, MIXED, EASY = "good", "mixed", "easy"
 MOON_FAVOURABLE = frozenset({1, 3, 6, 7, 10, 11})
 MOON_CHALLENGING = frozenset({4, 8, 12})
 SATURN_FAVOURABLE = frozenset({3, 6, 11})
@@ -157,225 +156,12 @@ JUPITER_FAVOURABLE = frozenset({2, 5, 7, 9, 11})
 NODE_FAVOURABLE = frozenset({3, 6, 11})
 SADE_SATI = {12: 1, 1: 2, 2: 3}          # house of Saturn from the Moon sign -> phase
 DHAIYA = frozenset({4, 8})
-
-TONE_LABEL = {
-    "en": {GOOD: "Favourable day", MIXED: "Mixed day", EASY: "Take it easy"},
-    "hi": {GOOD: "अनुकूल दिन", MIXED: "मिश्रित दिन", EASY: "संयम का दिन"},
-}
+# TONE_LABEL and the phrase bank (MOON_HOUSE, SATURN_HOUSE, JUPITER_HOUSE,
+# RAHU_HOUSE, KETU_LINE) live in rashifal_text.py, one entry per language.
 
 
 def moon_tone(house: int) -> str:
     return GOOD if house in MOON_FAVOURABLE else EASY if house in MOON_CHALLENGING else MIXED
-
-
-MOON_HOUSE: dict[int, dict[str, str]] = {
-    1: {"en": "The Moon moves through your own sign today (Janma Chandra). Classical texts read "
-              "this as a day of comfort and good spirits — good food, warm company and a clear "
-              "sense of yourself. A good day to look after your own needs and begin small, "
-              "personal things.",
-        "hi": "आज चंद्रमा आपकी अपनी राशि (जन्म राशि) में गोचर कर रहा है। शास्त्रों में इसे सुख और "
-              "प्रसन्नता का दिन माना गया है — अच्छा भोजन, अपनों का साथ और मन में स्पष्टता। अपनी "
-              "ज़रूरतों का ध्यान रखने और छोटे निजी काम शुरू करने के लिए अच्छा दिन है।"},
-    2: {"en": "The Moon is in your 2nd house today. Tradition asks for care with money and words — "
-              "expenses can creep up and small misunderstandings arise easily. Keep spending "
-              "planned and speak gently at home; routine work goes fine.",
-        "hi": "आज चंद्रमा आपकी राशि से दूसरे भाव में है। परंपरा के अनुसार आज धन और वाणी में "
-              "सावधानी रखें — खर्च बढ़ सकते हैं और छोटी-छोटी गलतफ़हमियाँ हो सकती हैं। खर्च योजना से "
-              "करें और घर में मधुर बोलें; नियमित काम ठीक चलेंगे।"},
-    3: {"en": "The Moon in your 3rd house is a favourable transit. Courage and initiative are "
-              "high, effort brings results, and contact with siblings, friends and neighbours "
-              "goes well. A good day for short trips, calls and pushing a pending task over the "
-              "line.",
-        "hi": "चंद्रमा का तीसरे भाव में गोचर शुभ माना गया है। साहस और उत्साह बढ़ा रहेगा, प्रयासों का "
-              "फल मिलेगा, और भाई-बहनों, मित्रों व पड़ोसियों से संपर्क अच्छा रहेगा। छोटी यात्रा, "
-              "बातचीत और अटके काम पूरे करने के लिए अच्छा दिन है।"},
-    4: {"en": "The Moon in your 4th house can leave the mind a little unsettled — home matters or "
-              "travel may feel tiring. Keep the day simple, avoid arguments at home and give "
-              "yourself some quiet time; the mood lifts as the Moon moves on.",
-        "hi": "चौथे भाव में चंद्रमा मन को थोड़ा अशांत कर सकता है — घरेलू बातें या यात्रा थकाऊ लग "
-              "सकती हैं। दिन को सरल रखें, घर में बहस से बचें और कुछ समय शांति से बिताएँ; चंद्रमा के "
-              "आगे बढ़ते ही मन हल्का होगा।"},
-    5: {"en": "The Moon in your 5th house is a mixed transit. Plans may meet small hurdles and "
-              "the mind can swing between ideas. Avoid speculative decisions; study, creative "
-              "work and time with children are better uses of the day.",
-        "hi": "पाँचवें भाव में चंद्रमा मिश्रित फल देता है। योजनाओं में छोटी रुकावटें आ सकती हैं और "
-              "मन विचारों में डोल सकता है। जोखिम भरे निर्णयों से बचें; पढ़ाई, रचनात्मक काम और बच्चों "
-              "के साथ समय बिताना बेहतर रहेगा।"},
-    6: {"en": "The Moon in your 6th house is one of its best transits. Classical texts promise "
-              "success over rivals and obstacles, and the energy to clear a backlog. A good day "
-              "for competitive work, settling pending issues and steady routines.",
-        "hi": "छठे भाव में चंद्रमा का गोचर सबसे शुभ स्थितियों में गिना जाता है। शास्त्रों के अनुसार "
-              "विरोधियों और बाधाओं पर विजय मिलती है और रुके काम निपटाने की ऊर्जा मिलती है। "
-              "प्रतियोगिता, लंबित मामलों को सुलझाने और नियमित दिनचर्या के लिए अच्छा दिन है।"},
-    7: {"en": "The Moon in your 7th house favours partnership and company. Time with your spouse "
-              "or partner, meetings and agreements tend to go smoothly, with comfort and good "
-              "food. A good day to reach out and work together.",
-        "hi": "सातवें भाव में चंद्रमा साझेदारी और संगति के लिए अनुकूल है। जीवनसाथी के साथ समय, "
-              "मुलाक़ातें और समझौते सहजता से होते हैं, साथ में सुख-सुविधा भी। मिल-जुलकर काम करने का "
-              "अच्छा दिन है।"},
-    8: {"en": "The Moon is in your 8th house — the period known as Chandrashtama. Tradition "
-              "advises against starting important new things today; unexpected delays are more "
-              "likely and the mind can feel anxious. Keep a margin in your schedule, stick to "
-              "familiar work and be gentle with yourself — it passes within two to three days.",
-        "hi": "आज चंद्रमा आपकी राशि से आठवें भाव में है — इसे चंद्राष्टम कहा जाता है। परंपरा के अनुसार "
-              "आज कोई महत्वपूर्ण नया काम शुरू न करें; अचानक देरी हो सकती है और मन में चिंता रह सकती "
-              "है। समय में गुंजाइश रखें, जाने-पहचाने काम करें और स्वयं के प्रति धैर्य रखें — यह दो-तीन "
-              "दिन में बीत जाता है।"},
-    9: {"en": "The Moon in your 9th house is a mixed transit. Plans may need extra effort and you "
-              "may feel tired or distracted. Prayer, reading and time with elders or teachers "
-              "suit the day better than big new ventures.",
-        "hi": "नौवें भाव में चंद्रमा मिश्रित फल देता है। योजनाओं में अधिक मेहनत लग सकती है और थकान "
-              "या ध्यान भटक सकता है। बड़े नए कामों की बजाय पूजा-पाठ, अध्ययन और बड़ों या गुरुजनों के "
-              "साथ समय बिताना बेहतर रहेगा।"},
-    10: {"en": "The Moon in your 10th house supports work and reputation. Tasks get done, seniors "
-               "are receptive and effort is noticed. A good day to present your work, take a "
-               "professional step or finish something visible.",
-         "hi": "दसवें भाव में चंद्रमा कार्य और प्रतिष्ठा के लिए अनुकूल है। काम पूरे होंगे, वरिष्ठ लोग "
-               "बात सुनेंगे और मेहनत दिखेगी। अपना काम प्रस्तुत करने या कार्यक्षेत्र में नया कदम उठाने "
-               "के लिए अच्छा दिन है।"},
-    11: {"en": "The Moon in your 11th house — the house of gains — is a very favourable transit. "
-               "Expect support from friends, good news and the fruit of earlier effort. A good "
-               "day for networking, making requests and celebrating with others.",
-         "hi": "ग्यारहवें भाव (लाभ भाव) में चंद्रमा बहुत शुभ माना गया है। मित्रों का सहयोग, शुभ "
-               "समाचार और पिछली मेहनत का फल मिल सकता है। मेल-जोल बढ़ाने, अनुरोध करने और अपनों के "
-               "साथ ख़ुशी मनाने का अच्छा दिन है।"},
-    12: {"en": "The Moon in your 12th house can bring extra expenses and a tired, inward mood. "
-               "Avoid overspending and late nights; the day suits rest, prayer, charity and "
-               "finishing old work rather than starting new.",
-         "hi": "बारहवें भाव में चंद्रमा अतिरिक्त खर्च और थका हुआ, अंतर्मुखी मन दे सकता है। फ़िज़ूलखर्ची "
-               "और देर रात जागने से बचें; आज नया शुरू करने की बजाय विश्राम, पूजा, दान और पुराने काम "
-               "पूरे करना अच्छा रहेगा।"},
-}
-
-SATURN_HOUSE: dict[int, dict[str, str]] = {
-    1: {"en": "Saturn is passing over your Moon sign — the peak phase of Sade Sati. It rewards "
-              "patience, routine and honest effort; take on a little less and finish what you "
-              "start.",
-        "hi": "शनि आपकी चंद्र राशि पर गोचर कर रहे हैं — साढ़ेसाती का मध्य (चरम) चरण। यह समय धैर्य, "
-              "नियमितता और ईमानदार मेहनत का फल देता है; थोड़ा कम काम हाथ में लें और जो शुरू करें उसे "
-              "पूरा करें।"},
-    2: {"en": "Saturn is in your 2nd — the last phase of Sade Sati. Be measured with spending and "
-              "with words at home; the pressure is easing.",
-        "hi": "शनि दूसरे भाव में हैं — साढ़ेसाती का अंतिम चरण। घर में खर्च और वाणी संयमित रखें; दबाव "
-              "धीरे-धीरे कम हो रहा है।"},
-    3: {"en": "Saturn in your 3rd is one of its best positions — steady effort pays, courage grows "
-              "and long-running work gains traction.",
-        "hi": "शनि तीसरे भाव में हैं — शनि की सबसे शुभ स्थितियों में से एक। लगातार प्रयास फल देते हैं, "
-              "साहस बढ़ता है और लंबे समय से चल रहे काम गति पकड़ते हैं।"},
-    4: {"en": "Saturn in your 4th (Dhaiya, Kantaka Shani) can make home life and peace of mind feel "
-              "heavier; keep routines simple and handle family matters calmly.",
-        "hi": "शनि चौथे भाव में हैं (ढैया, कंटक शनि) — घर और मन की शांति पर बोझ महसूस हो सकता है; "
-              "दिनचर्या सरल रखें और पारिवारिक बातें शांति से सँभालें।"},
-    5: {"en": "Saturn in your 5th asks for patience with plans, studies and children's matters — "
-              "slow and careful beats quick.",
-        "hi": "शनि पाँचवें भाव में हैं — योजनाओं, पढ़ाई और संतान संबंधी बातों में धैर्य रखें; जल्दबाज़ी "
-              "से अच्छा है धीमे और सोच-समझकर चलना।"},
-    6: {"en": "Saturn in your 6th works in your favour — discipline wins over rivals and backlog, "
-              "and hard work gets noticed.",
-        "hi": "शनि छठे भाव में आपके पक्ष में हैं — अनुशासन से विरोधियों और अटके कामों पर जीत मिलती है, "
-              "और मेहनत पर लोगों की नज़र जाती है।"},
-    7: {"en": "Saturn in your 7th puts partnerships in a slow, serious light — clear agreements "
-              "and patience help.",
-        "hi": "शनि सातवें भाव में हैं — साझेदारी और संबंधों में गंभीरता आती है; स्पष्ट बातचीत और धैर्य "
-              "सहायक हैं।"},
-    8: {"en": "Saturn in your 8th (Dhaiya, Ashtama Shani) is a time to avoid shortcuts and keep a "
-              "margin for delays.",
-        "hi": "शनि आठवें भाव में हैं (ढैया, अष्टम शनि) — शॉर्टकट से बचें और देरी के लिए समय की "
-              "गुंजाइश रखें।"},
-    9: {"en": "Saturn in your 9th can slow luck and long journeys; respect for elders and steady "
-              "duty keep things on track.",
-        "hi": "शनि नौवें भाव में भाग्य और लंबी यात्राओं को धीमा कर सकते हैं; बड़ों का सम्मान और "
-              "कर्तव्य-पालन चीज़ों को पटरी पर रखते हैं।"},
-    10: {"en": "Saturn in your 10th brings responsibility at work — a heavier load, but sincere "
-               "effort builds a lasting reputation.",
-         "hi": "शनि दसवें भाव में हैं — कार्यक्षेत्र में ज़िम्मेदारी बढ़ती है; भार अधिक है, पर सच्ची "
-               "मेहनत स्थायी प्रतिष्ठा बनाती है।"},
-    11: {"en": "Saturn in your 11th is favourable — gains come slowly but surely, and long effort "
-               "starts to pay off.",
-         "hi": "शनि ग्यारहवें भाव में शुभ हैं — लाभ धीरे-धीरे पर पक्के तौर पर आता है और लंबी मेहनत का "
-               "फल मिलने लगता है।"},
-    12: {"en": "Saturn is in your 12th — the opening phase of Sade Sati. Watch expenses and rest "
-               "well; a good time for quiet, inward work.",
-         "hi": "शनि बारहवें भाव में हैं — साढ़ेसाती का पहला चरण। खर्चों पर नज़र रखें और पर्याप्त विश्राम "
-               "करें; शांत, आत्मचिंतन वाले काम के लिए अच्छा समय।"},
-}
-
-JUPITER_HOUSE: dict[int, dict[str, str]] = {
-    1: {"en": "Jupiter over your Moon sign is classically a restless position; keep plans "
-              "grounded and avoid over-committing.",
-        "hi": "गुरु आपकी चंद्र राशि पर हैं — शास्त्रों में इसे अस्थिरता की स्थिति माना गया है; योजनाएँ "
-              "व्यावहारिक रखें और ज़रूरत से ज़्यादा वादे न करें।"},
-    2: {"en": "Jupiter in your 2nd supports family harmony, savings and kind speech.",
-        "hi": "गुरु दूसरे भाव में पारिवारिक सौहार्द, बचत और मधुर वाणी को बल देते हैं।"},
-    3: {"en": "Jupiter in your 3rd asks a little more effort for the same result — keep at it.",
-        "hi": "गुरु तीसरे भाव में हैं — उसी परिणाम के लिए थोड़ी अधिक मेहनत लगती है; लगे रहें।"},
-    4: {"en": "Jupiter in your 4th can unsettle home matters; patience with relatives helps.",
-        "hi": "गुरु चौथे भाव में घरेलू मामलों में उतार-चढ़ाव ला सकते हैं; रिश्तेदारों के साथ धैर्य रखें।"},
-    5: {"en": "Jupiter in your 5th favours learning, children's matters, creativity and good "
-              "counsel.",
-        "hi": "गुरु पाँचवें भाव में विद्या, संतान, रचनात्मकता और अच्छी सलाह के लिए शुभ हैं।"},
-    6: {"en": "Jupiter in your 6th: steer clear of small disputes and overwork.",
-        "hi": "गुरु छठे भाव में हैं — छोटे विवादों और काम के अधिक बोझ से बचें।"},
-    7: {"en": "Jupiter in your 7th blesses partnerships, marriage talks and travel.",
-        "hi": "गुरु सातवें भाव में साझेदारी, विवाह की बातचीत और यात्रा के लिए शुभ हैं।"},
-    8: {"en": "Jupiter in your 8th suggests care with big decisions — go slow.",
-        "hi": "गुरु आठवें भाव में हैं — बड़े निर्णयों में सावधानी रखें; धीरे चलें।"},
-    9: {"en": "Jupiter in your 9th is one of its best positions — fortune, dharma and guidance "
-              "from teachers.",
-        "hi": "गुरु नौवें भाव में हैं — सबसे शुभ स्थितियों में से एक: भाग्य, धर्म और गुरुजनों का "
-              "मार्गदर्शन।"},
-    10: {"en": "Jupiter in your 10th may bring changes at work; stay adaptable.",
-         "hi": "गुरु दसवें भाव में कार्यक्षेत्र में बदलाव ला सकते हैं; लचीले रहें।"},
-    11: {"en": "Jupiter in your 11th brings gains, fulfilled wishes and helpful friends.",
-         "hi": "गुरु ग्यारहवें भाव में लाभ, इच्छापूर्ति और मित्रों का सहयोग देते हैं।"},
-    12: {"en": "Jupiter in your 12th brings expenses, often on good causes; charity and spiritual "
-               "practice are well placed.",
-         "hi": "गुरु बारहवें भाव में खर्च कराते हैं, अक्सर अच्छे कामों पर; दान और आध्यात्मिक साधना "
-               "शुभ है।"},
-}
-
-RAHU_HOUSE: dict[int, dict[str, str]] = {
-    1: {"en": "Rahu over your Moon sign can stir restlessness and unusual wants; stay grounded.",
-        "hi": "राहु आपकी चंद्र राशि पर बेचैनी और असामान्य इच्छाएँ जगा सकते हैं; ज़मीन से जुड़े रहें।"},
-    2: {"en": "Rahu in your 2nd: take care with speech and money talk within the family.",
-        "hi": "राहु दूसरे भाव में हैं — परिवार में धन और वाणी के मामलों में सावधानी रखें।"},
-    3: {"en": "Rahu in your 3rd is favourable — bold initiatives and communication succeed.",
-        "hi": "राहु तीसरे भाव में शुभ हैं — साहसिक पहल और संवाद सफल होते हैं।"},
-    4: {"en": "Rahu in your 4th can unsettle domestic peace; avoid hasty property moves.",
-        "hi": "राहु चौथे भाव में घरेलू शांति को हिला सकते हैं; संपत्ति संबंधी जल्दबाज़ी से बचें।"},
-    5: {"en": "Rahu in your 5th: double-check risky ideas and keep a clear head.",
-        "hi": "राहु पाँचवें भाव में हैं — जोखिम भरे विचारों को दोबारा जाँचें; मन स्पष्ट रखें।"},
-    6: {"en": "Rahu in your 6th helps you get past competition and obstacles.",
-        "hi": "राहु छठे भाव में प्रतियोगिता और बाधाओं पर विजय दिलाते हैं।"},
-    7: {"en": "Rahu in your 7th: keep partnerships transparent.",
-        "hi": "राहु सातवें भाव में हैं — साझेदारी में पारदर्शिता रखें।"},
-    8: {"en": "Rahu in your 8th: avoid risky shortcuts and stay calm when the unexpected comes.",
-        "hi": "राहु आठवें भाव में हैं — जोखिम भरे शॉर्टकट से बचें; अनपेक्षित स्थितियों में शांत रहें।"},
-    9: {"en": "Rahu in your 9th can raise doubts about beliefs or mentors; seek advice you trust.",
-        "hi": "राहु नौवें भाव में आस्था या मार्गदर्शकों को लेकर संदेह ला सकते हैं; भरोसेमंद सलाह लें।"},
-    10: {"en": "Rahu in your 10th brings ambition and sudden openings at work; move with "
-               "integrity.",
-         "hi": "राहु दसवें भाव में महत्वाकांक्षा और कार्यक्षेत्र में अचानक अवसर लाते हैं; ईमानदारी से "
-               "आगे बढ़ें।"},
-    11: {"en": "Rahu in your 11th — gains through networks and new contacts.",
-         "hi": "राहु ग्यारहवें भाव में हैं — नए संपर्कों और नेटवर्क से लाभ।"},
-    12: {"en": "Rahu in your 12th: watch hidden expenses and get proper rest.",
-         "hi": "राहु बारहवें भाव में हैं — छिपे खर्चों पर नज़र रखें और पूरा विश्राम लें।"},
-}
-
-KETU_LINE = {
-    True: {"en": "Ketu in your {n} house works quietly in your favour — obstacles clear with "
-                 "less fuss.",
-           "hi": "केतु {n} भाव में अनुकूल हैं — बाधाएँ कम झंझट में दूर होती हैं।"},
-    False: {"en": "Ketu in your {n} house is a quieter, inward influence — good for reflection "
-                  "and spiritual practice, less so for impulsive moves.",
-            "hi": "केतु {n} भाव में हैं — अंतर्मुखी प्रभाव; आत्मचिंतन और साधना के लिए अच्छा, "
-                  "जल्दबाज़ी के कदमों के लिए कम।"},
-}
-
-
-def _house_word(n: int, lang: str) -> str:
-    return HOUSE_HI[n] if lang == "hi" else _ordinal(n)
 
 
 # --------------------------------------------------------------------------
@@ -512,16 +298,40 @@ _SHELL = """<!DOCTYPE html>
 {footer}
 </body></html>"""
 
+def _tx(key: str, lang: str, **values) -> str:
+    """This module's text for `key` in `lang` (rashifal_text.TEXT), formatted."""
+    return i18n.fmt(key, lang, TEXT, **values)
+
 
 def _date_text(day: dt.date, lang: str, short: bool = False) -> str:
-    if lang == "hi":
-        return f"{day.day} {MONTHS_HI[day.month - 1]} {day.year}"
-    return f"{day.day} {day.strftime('%b' if short else '%B')} {day.year}"
+    """'4 October 2026' / '4 Oct 2026' (English short form) / '4 अक्टूबर 2026'."""
+    return i18n.format_date(day, lang, short=short) + (f" {day.year}" if short else "")
 
 
 def _weekday(day: dt.date, lang: str) -> str:
-    name = day.strftime("%A")
-    return VARA_HI.get(name, name) if lang == "hi" else name
+    return i18n.weekday(day, lang)
+
+
+def _local(r: Rashi, lang: str) -> str:
+    """The sign in `lang`: मेष, ಮೇಷ — 'Aries' in English (names_<code>.RASHI)."""
+    return i18n.names(lang).RASHI.get(r.english, r.english)
+
+
+def _rashi_vars(r: Rashi, lang: str) -> dict:
+    return {"name": r.name, "english": r.english, "name_hi": r.name_hi, "local": _local(r, lang)}
+
+
+def _house_word(n: int, lang: str) -> str:
+    """'4th' / 'चौथे': a language's own "house.<n>" word, else the English ordinal."""
+    if i18n.has(f"house.{n}", lang, TEXT):
+        return TEXT[lang][f"house.{n}"]
+    return _ordinal(n)
+
+
+def _planet(planet: str, lang: str) -> str:
+    if i18n.has(f"planet.{planet}", lang, TEXT):
+        return TEXT[lang][f"planet.{planet}"]
+    return i18n.names(lang).GRAHA.get(planet, planet)
 
 
 def _shell(*, lang: str, rashi: Rashi | None, title: str, description: str,
@@ -530,7 +340,8 @@ def _shell(*, lang: str, rashi: Rashi | None, title: str, description: str,
     canonical = SITE_URL + path(rashi, lang)
     bits = page_language_bits(lang=lang, path=path(rashi, lang), has_twin=status == 200,
                               translated=TRANSLATED, region=True)
-    trail = [("मुख्य पृष्ठ" if lang == "hi" else i18n.chrome("home", lang), "/")] + crumbs
+    home = (TEXT[lang]["home"] if i18n.has("home", lang, TEXT) else i18n.chrome("home", lang))
+    trail = [(home, "/")] + crumbs
     crumb_html = " › ".join(
         f'<a href="{_e(href)}">{_e(name)}</a>' if i < len(trail) - 1 else _e(name)
         for i, (name, href) in enumerate(trail))
@@ -563,103 +374,75 @@ def _shell(*, lang: str, rashi: Rashi | None, title: str, description: str,
 
 
 def _sign_label(index: int, lang: str) -> str:
-    r = RASHIS[index]
-    return f"{r.name_hi} ({r.name})" if lang == "hi" else f"{r.english} ({r.name})"
+    return _tx("sign_label", lang, **_rashi_vars(RASHIS[index], lang))
 
 
 def _sign_links(current: Rashi | None, lang: str) -> str:
     items = "".join(
         f'<li><a href="{path(r, lang)}"' + (' aria-current="page"' if r == current else "")
-        + f'>{_e(r.name_hi if lang == "hi" else f"{r.name} · {r.english}")}</a></li>'
+        + f'>{_e(_tx("sign_link", lang, **_rashi_vars(r, lang)))}</a></li>'
         for r in RASHIS)
-    head = "अन्य राशियों का आज का राशिफल" if lang == "hi" else "Today's Rashifal for every sign"
-    return f'<h2>{head}</h2><ul class="links">{items}</ul>'
+    return f'<h2>{_tx("signs.head", lang)}</h2><ul class="links">{items}</ul>'
 
 
 def _more_links(rashi: Rashi | None, lang: str) -> str:
-    if lang == "hi":
-        links = [(path(rashi, "en"), "Read in English"), ("/panchang", "आज का पंचांग"),
-                 ("/rahu-kaal", "आज का राहु काल"), ("/choghadiya", "आज का चौघड़िया"),
-                 ("/kundali-milan", "कुंडली मिलान"), ("/hi/vrat-tyohar", "आज के व्रत और त्योहार")]
-        head = "और भी"
-    else:
-        links = [(path(rashi, "hi"), "हिन्दी में पढ़ें"), ("/panchang", "Today's Panchang"),
-                 ("/rahu-kaal", "Rahu Kaal today"), ("/choghadiya", "Choghadiya today"),
-                 ("/kundali-milan", "Kundali Milan"), ("/vrat-tyohar", "Today's vrat & festivals")]
-        head = "More free tools"
+    links = []
+    for href, text in i18n.pick(MORE_LINKS, lang):
+        if href.startswith("{twin:"):
+            href = path(rashi, href[6:-1])
+        links.append((href, text))
     items = "".join(f'<li><a href="{_e(h)}">{_e(t)}</a></li>' for h, t in links)
-    return f'<h2>{head}</h2><ul class="links">{items}</ul>'
+    return f'<h2>{_tx("more.head", lang)}</h2><ul class="links">{items}</ul>'
 
 
 def _cta(lang: str) -> str:
     """Into the birth form (tools.js `?open=kundali` clicks the home CTA). A
     question needs a chart first, so the kundali is the one door for both."""
-    text = ("अपनी मुफ़्त कुंडली बनाएँ — फिर अपनी कुंडली पर प्रश्न पूछें" if lang == "hi"
-            else "Get your free kundali — then ask a question about your own chart")
-    return f'<a class="cta" href="/?open=kundali">{_e(text)}</a>'
+    return f'<a class="cta" href="/?open=kundali">{_e(_tx("cta", lang))}</a>'
 
 
 def _personal_line(lang: str) -> str:
-    if lang == "hi":
-        return ("<p class=\"note\">यह राशिफल केवल आपकी चंद्र राशि से चंद्रमा, शनि, गुरु और "
-                "राहु-केतु के गोचर पर आधारित है — एक ही राशि वाले सभी लोगों के लिए समान। व्यक्तिगत "
-                "फलादेश आपकी पूरी जन्म कुंडली — लग्न, दशा और अष्टकवर्ग — से होता है। अपनी चंद्र "
-                "राशि नहीं पता? आपकी मुफ़्त कुंडली में यह सबसे ऊपर दिखती है।</p>")
-    return ("<p class=\"note\">This rashifal is read from your Moon sign alone — the same for "
-            "everyone born with the Moon in that sign. A personal reading uses your full birth "
-            "chart: the ascendant, your running dasha and the ashtakavarga strength of each "
-            "transit. Not sure of your Moon sign (rashi)? It is the first thing your free kundali "
-            "shows — it is usually not your Western sun sign.</p>")
+    return _tx("personal", lang)
 
 
-def _time(moment: dt.datetime, day: dt.date) -> str:
-    text = _clock(moment)
-    return text if moment.date() == day else f"{text} ({moment.day} {moment.strftime('%b')})"
+def _time(moment: dt.datetime, day: dt.date, lang: str = "en") -> str:
+    """The clock time, with the date when it falls on another day. Hindi pages
+    print it as English does (rashifal_text.CLOCK_LANG)."""
+    lang = CLOCK_LANG.get(lang, lang)
+    text = i18n.format_time(moment, lang)
+    if moment.date() == day:
+        return text
+    return f"{text} ({i18n.format_date(moment.date(), lang, short=True)})"
 
 
 def _moon_section(rashi: Rashi, r: dict, day: dt.date, lang: str) -> str:
-    hi = lang == "hi"
     moon = r["moon"]
     parts = []
     for seg in moon:
         h = seg["house"]
-        sign = _sign_label(seg["sign"], lang)
+        sign = _e(_sign_label(seg["sign"], lang))
+        house = _house_word(h, lang)
         if len(moon) == 1:
-            lead = (f"आज पूरे दिन चंद्रमा {_e(sign)} में है — आपकी राशि से {HOUSE_HI[h]} भाव में।"
-                    if hi else f"The Moon is in {_e(sign)} all day — your {_ordinal(h)} house.")
+            lead = _tx("moon.allday", lang, sign=sign, house=house)
         elif seg["until"]:
-            t = _time(seg["until"], day)
-            lead = (f"<strong>{t} (IST) तक:</strong> चंद्रमा {_e(sign)} में — आपकी राशि से "
-                    f"{HOUSE_HI[h]} भाव में।" if hi else
-                    f"<strong>Until {t} IST:</strong> the Moon is in {_e(sign)} — your "
-                    f"{_ordinal(h)} house.")
+            lead = _tx("moon.until", lang, sign=sign, house=house, time=_time(seg["until"], day, lang))
         else:
-            t = _time(seg["from"], day)
-            lead = (f"<strong>{t} (IST) से:</strong> चंद्रमा {_e(sign)} में प्रवेश करता है — आपकी "
-                    f"राशि से {HOUSE_HI[h]} भाव में।" if hi else
-                    f"<strong>From {t} IST:</strong> the Moon enters {_e(sign)} — your "
-                    f"{_ordinal(h)} house.")
+            lead = _tx("moon.from", lang, sign=sign, house=house, time=_time(seg["from"], day, lang))
         tone = moon_tone(h)
         parts.append(f'<p>{lead} <span class="tone {tone}">{_e(i18n.pick(TONE_LABEL, lang)[tone])}</span></p>'
                      f"<p>{_e(i18n.pick(MOON_HOUSE[h], lang))}</p>")
     if len(moon) > 1:
-        intro = ("<p>आज दिन में चंद्रमा राशि बदलता है, इसलिए दिन के दो हिस्से अलग पढ़ें।</p>" if hi
-                 else "<p>The Moon changes sign during the day, so the day reads in two parts.</p>")
-        parts.insert(0, intro)
-    head = "आज चंद्रमा का गोचर (चंद्र गोचर)" if hi else "Today's Moon transit (Chandra gochar)"
-    return f"<h2>{head}</h2>" + "".join(parts)
+        parts.insert(0, _tx("moon.two", lang))
+    return f"<h2>{_tx('moon.head', lang)}</h2>" + "".join(parts)
 
 
 def _backdrop_section(r: dict, s: dict, lang: str) -> str:
-    hi = lang == "hi"
     rows = []
 
     def row(planet: str, sign_index: int, house: int, text: str, retro: bool = False) -> None:
-        name = PLANET_HI[planet] if hi else planet
-        rx = (" (वक्री)" if hi else " (retrograde)") if retro else ""
-        where = (f"{_e(_sign_label(sign_index, lang))}{rx} · {HOUSE_HI[house]} भाव" if hi
-                 else f"{_e(_sign_label(sign_index, lang))}{rx} · {_ordinal(house)} house")
-        rows.append(f'<tr><th scope="row">{_e(name)}<small>{where}</small></th>'
+        where = _tx("back.where", lang, sign=_e(_sign_label(sign_index, lang)),
+                    rx=_tx("rx", lang) if retro else "", house=_house_word(house, lang))
+        rows.append(f'<tr><th scope="row">{_e(_planet(planet, lang))}<small>{where}</small></th>'
                     f"<td>{_e(text)}</td></tr>")
 
     row("Saturn", s["saturn"]["sign"], r["saturn"], i18n.pick(SATURN_HOUSE[r["saturn"]], lang),
@@ -672,61 +455,28 @@ def _backdrop_section(r: dict, s: dict, lang: str) -> str:
 
     phase = r["sade_sati_phase"]
     if phase:
-        names_hi = {1: "पहला (आरंभ)", 2: "दूसरा (मध्य)", 3: "तीसरा (अंतिम)"}
-        names_en = {1: "first (rising)", 2: "second (peak)", 3: "third (setting)"}
-        status = (f"<strong>साढ़ेसाती चल रही है</strong> — {names_hi[phase]} चरण। यह धीमी, "
-                  "अनुशासन सिखाने वाली अवधि है, डरने की नहीं; नियमित दिनचर्या, सेवा और धैर्य "
-                  "इसे हल्का करते हैं।" if hi else
-                  f"<strong>Sade Sati is running</strong> — the {names_en[phase]} phase. It is a "
-                  "slow, disciplining period rather than something to fear; steady routine, "
-                  "service and patience make it lighter.")
+        status = _tx("sade.running", lang, phase=_tx(f"phase.{phase}", lang))
     elif r["dhaiya"]:
-        status = ("<strong>साढ़ेसाती नहीं</strong>, पर शनि की ढैया चल रही है (ऊपर देखें)।" if hi
-                  else "<strong>No Sade Sati</strong>, but Saturn's Dhaiya is running (see above).")
+        status = _tx("sade.dhaiya", lang)
     else:
-        status = ("<strong>साढ़ेसाती नहीं</strong> — शनि आपकी राशि से 12वें, पहले या दूसरे भाव में "
-                  "नहीं हैं।" if hi else
-                  "<strong>No Sade Sati</strong> — Saturn is not in the 12th, 1st or 2nd from "
-                  "your sign.")
-    head = "लंबी अवधि का गोचर" if hi else "The longer backdrop: slow transits"
-    intro = ("<p>ये ग्रह महीनों या वर्षों तक एक राशि में रहते हैं, इसलिए ये रोज़ के दिन की "
-             "पृष्ठभूमि बनाते हैं।</p>" if hi else
-             "<p>These planets stay in one sign for months or years, so they set the background "
-             "against which each day plays out.</p>")
-    return (f"<h2>{head}</h2>{intro}<div class=\"scroll\"><table>{''.join(rows)}</table></div>"
+        status = _tx("sade.none", lang)
+    return (f"<h2>{_tx('back.head', lang)}</h2>{_tx('back.intro', lang)}"
+            f"<div class=\"scroll\"><table>{''.join(rows)}</table></div>"
             f'<div class="box"><p>{status}</p></div>')
 
 
 def _panchang_line(s: dict, day: dt.date, lang: str) -> str:
-    p = s["panchang"]
-    summ = p["summary"]
+    summ = s["panchang"]["summary"]
     paksha, tithi, nak = summ["paksha"] or "", summ["tithi"] or "", summ["nakshatra"] or ""
-    if lang == "hi":
-        return ("<h2>आज का पंचांग</h2><p>नई दिल्ली में सूर्योदय के समय "
-                f"<strong>{_e(PAKSHA_HI.get(paksha, paksha))} {_e(TITHI_HI.get(tithi, tithi))}</strong> "
-                f"तिथि और <strong>{_e(NAKSHATRAS_HI.get(nak, nak))}</strong> नक्षत्र है। राहु काल, "
-                'सूर्योदय और पूरा पंचांग <a href="/panchang">आज के पंचांग</a> में देखें।</p>')
-    return ("<h2>Today's Panchang</h2><p>At sunrise in New Delhi it is "
-            f"<strong>{_e(paksha)} {_e(tithi)}</strong> tithi with the Moon in "
-            f"<strong>{_e(nak)}</strong> nakshatra. Rahu Kaal, sunrise and the full almanac are "
-            'on <a href="/panchang">today\'s Panchang</a>.</p>')
+    n = i18n.names(lang)
+    local_paksha = n.PAKSHA.get(paksha, paksha)
+    paksha_full = (i18n.fmt("paksha.full", lang, SEO_TEXT, paksha=local_paksha) if paksha else "")
+    return _tx("panchang", lang, paksha=_e(local_paksha), paksha_full=_e(paksha_full),
+               tithi=_e(n.TITHI.get(tithi, tithi)), nakshatra=_e(n.NAKSHATRAS.get(nak, nak)))
 
 
 def _method_note(lang: str) -> str:
-    if lang == "hi":
-        return ("<h2>यह कैसे निकाला गया</h2><p>ग्रहों की स्थिति आज (भारतीय मानक समय) के लिए स्विस "
-                "एफ़ेमेरिस से निरयण (लाहिड़ी अयनांश) पद्धति में गणना की गई है — वही जो हमारी कुंडली और "
-                "पंचांग में प्रयुक्त है। भाव आपकी चंद्र राशि से गिने गए हैं (गोचर)। शुभ-अशुभ का आधार "
-                "वराहमिहिर की बृहत्संहिता (अध्याय 104) और मंत्रेश्वर की फलदीपिका (अध्याय 26) की "
-                "शास्त्रीय गोचर पद्धति है: चंद्रमा 1, 3, 6, 7, 10, 11वें भाव में शुभ; शनि और "
-                "राहु-केतु 3, 6, 11वें में; गुरु 2, 5, 7, 9, 11वें में।</p>")
-    return ("<h2>How this is calculated</h2><p>Planet positions are computed for today (IST) "
-            "with the Swiss Ephemeris in the sidereal zodiac (Lahiri ayanamsa) — the same "
-            "positions our kundali and panchang use. Houses are counted from your Moon sign, as "
-            "in classical gochar. Which houses are favourable follows the scheme of Varahamihira's "
-            "Brihat Samhita (ch. 104) and Mantreswara's Phaladeepika (ch. 26): the Moon is "
-            "favourable in the 1st, 3rd, 6th, 7th, 10th and 11th; Saturn, Rahu and Ketu in the "
-            "3rd, 6th and 11th; Jupiter in the 2nd, 5th, 7th, 9th and 11th.</p>")
+    return _tx("method", lang)
 
 
 @functools.lru_cache(maxsize=128)
@@ -735,36 +485,24 @@ def _sign_page(day: dt.date, slug: str, lang: str) -> tuple[str, str, str, str]:
     rashi = BY_SLUG[slug]
     s = sky(day)
     r = reading(rashi, day)
-    hi = lang == "hi"
     main = r["main_house"]
     tone = i18n.pick(TONE_LABEL, lang)[r["tone"]]
-    if hi:
-        title = (f"आज का {rashi.name_hi} राशिफल, {_date_text(day, lang)} — {rashi.name} Rashifal "
-                 f"Today | {BRAND}")
-        description = (f"{rashi.name_hi} राशि का आज का राशिफल ({_weekday(day, lang)}, "
-                       f"{_date_text(day, lang)}): चंद्रमा आपकी राशि से {HOUSE_HI[main]} भाव में — "
-                       f"{tone}। साथ में शनि, गुरु, राहु-केतु का गोचर, साढ़ेसाती की स्थिति और आज का "
-                       "पंचांग।")
-    else:
-        title = (f"{rashi.name} Rashifal Today, {_date_text(day, lang, short=True)} — "
-                 f"{rashi.english} Daily Horoscope | {BRAND}")
-        description = (f"{rashi.name} ({rashi.english} Moon sign) rashifal for {_weekday(day, lang)}, "
-                       f"{_date_text(day, lang)}: the Moon transits your {_ordinal(main)} house — "
-                       f"{tone.lower()}. Plus Saturn, Jupiter and Rahu–Ketu transits, Sade Sati "
-                       "status and today's tithi, computed from the sidereal sky.")
-    h1 = (f"आज का {rashi.name_hi} राशिफल" if hi else
-          f"{rashi.name} Rashifal Today — {rashi.english} Daily Horoscope")
-    sub = (f"{rashi.name} Rashifal · {rashi.english}" if hi else
-           f"आज का {rashi.name_hi} राशिफल")
-    sub_lang = "en" if hi else "hi"
+    rv = _rashi_vars(rashi, lang)
+    raw = {**rv, "date": _date_text(day, lang), "date_short": _date_text(day, lang, short=True),
+           "weekday": _weekday(day, lang), "house": _house_word(main, lang), "tone": tone,
+           "tone_lower": tone.lower(), "brand": BRAND}
+    title = _tx("s.title", lang, **raw)
+    description = _tx("s.desc", lang, **raw)
+    h1 = _tx("s.h1", lang, **rv)
+    sub = _tx("s.sub", lang, **rv)
     summary_box = (
         f'<div class="box"><p><strong>{_e(tone)}</strong> — '
-        + (f"चंद्रमा आपकी राशि से {HOUSE_HI[main]} भाव में।" if hi
-           else f"the Moon is in your {_ordinal(main)} house from {_e(rashi.name)}.")
+        + _tx("s.summary", lang, house=_house_word(main, lang), name=_e(rashi.name))
         + "</p></div>")
+    about = _tx("s.about_rashi", lang, **rv)
     body = f"""
 <h1>{_e(h1)}</h1>
-<p class="hi" lang="{sub_lang}">{_e(sub)}</p>
+<p class="hi" lang="{_tx('sub_lang', lang)}">{_e(sub)}</p>
 <p class="date">{_e(_weekday(day, lang))}, {_e(_date_text(day, lang))} · IST</p>
 {summary_box}
 {_moon_section(rashi, r, day, lang)}
@@ -772,71 +510,48 @@ def _sign_page(day: dt.date, slug: str, lang: str) -> tuple[str, str, str, str]:
 {_panchang_line(s, day, lang)}
 {_personal_line(lang)}
 {_cta(lang)}
-<p><a href="{'/hi' if hi else ''}/rashi/{rashi.slug}">{_e(f"{rashi.name_hi} राशि — स्वभाव, नक्षत्र और नामाक्षर" if hi else f"About {rashi.name} rashi — traits, nakshatras and name letters")}</a></p>
+<p><a href="{i18n.prefix(lang)}/rashi/{rashi.slug}">{_e(about)}</a></p>
 {_sign_links(rashi, lang)}
 {_method_note(lang)}
 {_more_links(rashi, lang)}"""
-    return title, description, body, (rashi.name_hi if hi else rashi.name)
+    return title, description, body, _tx("sign_crumb", lang, **rv)
 
 
 @functools.lru_cache(maxsize=8)
 def _index_page(day: dt.date, lang: str) -> tuple[str, str, str]:
     s = sky(day)
-    hi = lang == "hi"
     rows = []
     for rashi in RASHIS:
         r = reading(rashi, day)
         h = r["main_house"]
-        name = (f"{rashi.name_hi} <small>{_e(rashi.name)}</small>" if hi
-                else f"{_e(rashi.name)} <small>{_e(rashi.english)}</small>")
-        where = f"{HOUSE_HI[h]} भाव" if hi else f"{_ordinal(h)} house"
-        sade = ""
-        if r["sade_sati_phase"]:
-            sade = "<small>साढ़ेसाती</small>" if hi else "<small>Sade Sati</small>"
+        name = _tx("i.name", lang, **{k: _e(v) for k, v in _rashi_vars(rashi, lang).items()})
+        where = _tx("house_short", lang, house=_house_word(h, lang))
+        sade = _tx("i.sade", lang) if r["sade_sati_phase"] else ""
         rows.append(f'<tr><td><a href="{path(rashi, lang)}">{name}</a></td><td>{where}</td>'
                     f'<td class="{"good" if r["tone"] == GOOD else "bad" if r["tone"] == EASY else ""}">'
                     f'{_e(i18n.pick(TONE_LABEL, lang)[r["tone"]])}{sade}</td></tr>')
-    head_row = ("<tr><th>राशि</th><th>चंद्रमा</th><th>आज</th></tr>" if hi
-                else "<tr><th>Sign</th><th>Moon in your</th><th>Today</th></tr>")
     segs = s["moon"]
     moon_now = _sign_label(segs[0]["sign"], lang)
     if len(segs) > 1:
-        t = _time(segs[0]["until"], day)
-        nxt = _sign_label(segs[1]["sign"], lang)
-        moon_text = (f"चंद्रमा {t} (IST) तक {_e(moon_now)} में, फिर {_e(nxt)} में। तालिका दिन के "
-                     "अधिकांश भाग वाली स्थिति दिखाती है।" if hi else
-                     f"The Moon is in {_e(moon_now)} until {t} IST, then in {_e(nxt)}. The table "
-                     "shows the position for most of the day.")
+        moon_text = _tx("i.moon_two", lang, now=_e(moon_now), time=_time(segs[0]["until"], day, lang),
+                        next=_e(_sign_label(segs[1]["sign"], lang)))
     else:
-        moon_text = (f"आज पूरे दिन चंद्रमा {_e(moon_now)} में है।" if hi
-                     else f"The Moon is in {_e(moon_now)} all day.")
+        moon_text = _tx("i.moon_one", lang, now=_e(moon_now))
     sade_signs = [RASHIS[(s["saturn"]["sign"] + k) % 12] for k in (1, 0, -1)]
-    sade_names = ", ".join((x.name_hi if hi else x.name) for x in sade_signs)
+    sade_names = ", ".join(_tx("sade_name", lang, **_rashi_vars(x, lang)) for x in sade_signs)
     sat_sign = _sign_label(s["saturn"]["sign"], lang)
-    if hi:
-        title = (f"आज का राशिफल, {_date_text(day, lang)} — सभी 12 राशियों का दैनिक राशिफल | "
-                 f"{BRAND}")
-        description = (f"आज का राशिफल ({_weekday(day, lang)}, {_date_text(day, lang)}) मेष से मीन "
-                       "तक सभी 12 राशियों के लिए — चंद्र गोचर, शनि-गुरु-राहु का प्रभाव और साढ़ेसाती, "
-                       "निरयण (लाहिड़ी) गणना पर आधारित।")
-        intro = (f"<p>राशिफल आपकी <strong>चंद्र राशि</strong> से पढ़ा जाता है। {moon_text} शनि "
-                 f"{_e(sat_sign)} में हैं, इसलिए {_e(sade_names)} राशि वालों की साढ़ेसाती चल रही है।</p>")
-        h1, sub = "आज का राशिफल", "Aaj ka Rashifal — today's horoscope for all 12 signs"
-    else:
-        title = (f"Aaj Ka Rashifal, {_date_text(day, lang, short=True)} — Today's Horoscope for "
-                 f"All 12 Signs | {BRAND}")
-        description = (f"Today's rashifal for {_weekday(day, lang)}, {_date_text(day, lang)}: "
-                       "daily horoscope for all 12 Moon signs from Mesh to Meen — Moon transit, "
-                       "Saturn, Jupiter and Rahu, and Sade Sati, computed from the sidereal sky.")
-        intro = (f"<p>Rashifal is read from your <strong>Moon sign</strong> (rashi). {moon_text} "
-                 f"Saturn is in {_e(sat_sign)}, so Sade Sati is running for {_e(sade_names)}.</p>")
-        h1, sub = "Today's Rashifal — Daily Horoscope", "आज का राशिफल — सभी 12 राशियाँ"
+    raw = {"date": _date_text(day, lang), "date_short": _date_text(day, lang, short=True),
+           "weekday": _weekday(day, lang), "brand": BRAND}
+    title = _tx("i.title", lang, **raw)
+    description = _tx("i.desc", lang, **raw)
+    intro = _tx("i.intro", lang, moon_text=moon_text, sat_sign=_e(sat_sign),
+                sade_names=_e(sade_names))
     body = f"""
-<h1>{_e(h1)}</h1>
-<p class="hi" lang="{'en' if hi else 'hi'}">{_e(sub)}</p>
+<h1>{_e(_tx("i.h1", lang))}</h1>
+<p class="hi" lang="{_tx('sub_lang', lang)}">{_e(_tx("i.sub", lang))}</p>
 <p class="date">{_e(_weekday(day, lang))}, {_e(_date_text(day, lang))} · IST</p>
 {intro}
-<div class="scroll"><table>{head_row}{''.join(rows)}</table></div>
+<div class="scroll"><table>{_tx("i.head_row", lang)}{''.join(rows)}</table></div>
 {_panchang_line(s, day, lang)}
 {_personal_line(lang)}
 {_cta(lang)}
@@ -847,7 +562,7 @@ def _index_page(day: dt.date, lang: str) -> tuple[str, str, str]:
 
 
 def _crumb_root(lang: str) -> tuple[str, str]:
-    return ("आज का राशिफल", "/hi/rashifal") if lang == "hi" else ("Rashifal", "/rashifal")
+    return _tx("crumb_root", lang), path(None, lang)
 
 
 def render_index(lang: str, day: dt.date | None = None) -> HTMLResponse:
@@ -873,12 +588,8 @@ def _resolve(slug: str, lang: str) -> HTMLResponse | RedirectResponse:
     if rashi:
         return RedirectResponse(path(rashi, lang), status_code=301)
     day = _today()
-    hi = lang == "hi"
-    body = ((f"<h1>राशि नहीं मिली</h1><p>“{_e(slug)}” नाम की कोई राशि नहीं है। नीचे अपनी राशि चुनें।</p>")
-            if hi else
-            (f"<h1>Sign not found</h1><p>There is no rashi called “{_e(slug)}”. Pick your Moon "
-             "sign below.</p>")) + _sign_links(None, lang)
-    return _shell(lang=lang, rashi=None, title=f"{'राशि नहीं मिली' if hi else 'Sign not found'} — {BRAND}",
+    body = _tx("nf.body", lang, slug=_e(slug)) + _sign_links(None, lang)
+    return _shell(lang=lang, rashi=None, title=f"{_tx('nf.title', lang)} — {BRAND}",
                   description="Rashifal sign not found.", crumbs=[_crumb_root(lang)], body=body,
                   day=day, status=404, cache=False)
 
@@ -903,8 +614,9 @@ def rashifal_sign_hi(slug: str):
     return _resolve(slug, "hi")
 
 
-# DIVASTRO-121: /kn/rashifal, /te/rashifal, ... (i18n.EXTRA_CODES). The builders
-# take `lang`; until it is in TRANSLATED, their non-Hindi branch (English) shows.
+# DIVASTRO-121: /kn/rashifal, /te/rashifal, ... (i18n.EXTRA_CODES). One builder
+# per page, text from rashifal_text (English per key until translated; sign,
+# tithi and nakshatra names already in the language's script).
 @router.get("/{lang:xlang}/rashifal", response_class=HTMLResponse)
 def rashifal_index_lang(lang: str) -> HTMLResponse:
     return render_index(lang)

@@ -40,8 +40,10 @@ from fastapi.responses import HTMLResponse
 from . import i18n, seo_cities, seo_pages
 from .astro import muhurat
 from .astro import panchang as panchang_engine
-from .astro.muhurat import EVENT_PERIODS, NAKSHATRAS_HI, PERIODS, TITHI_HI, VARA_HI
+from .astro.muhurat import EVENT_PERIODS, PERIODS
 from .legal import BRAND
+# DIVASTRO-123: every word of these pages is in muhurat_text.TEXT, per language.
+from .muhurat_text import MONTHS, TEXT
 from .seo_pages import ADSENSE_CLIENT, SITE_URL, _e, _footer
 from .share import seo_share
 
@@ -61,15 +63,27 @@ class Kind:
     noun_en: str                          # "wedding", "house-warming"
 
 
+# The page text reads the names from muhurat_text ("kind.<slug>", "noun.<slug>");
+# name_en/name_hi are kept for callers.
 KINDS = {
-    "vivah": Kind("vivah", "marriage", "Vivah Muhurat", "विवाह मुहूर्त", "wedding"),
-    "griha-pravesh": Kind("griha-pravesh", "griha_pravesh", "Griha Pravesh Muhurat",
-                          "गृह प्रवेश मुहूर्त", "house-warming"),
+    slug: Kind(slug, event, TEXT["en"][f"kind.{slug}"], TEXT["hi"][f"kind.{slug}"],
+               TEXT["en"][f"noun.{slug}"])
+    for slug, event in (("vivah", "marriage"), ("griha-pravesh", "griha_pravesh"))
 }
 
-MONTHS_HI = ["जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त",
-             "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"]
-PAKSHA_HI = {"Shukla": "शुक्ल", "Krishna": "कृष्ण"}
+MONTHS_HI = list(MONTHS["hi"])
+
+
+def _tx(key: str, lang: str, **values) -> str:
+    """This module's text for `key` in `lang` (muhurat_text.TEXT), formatted."""
+    return i18n.fmt(key, lang, TEXT, **values)
+
+
+def _kind_vars(kind: Kind, lang: str) -> dict:
+    """{name} {name_lower} {noun} {noun_title} in `lang`, plus {name_en} {name_hi}."""
+    name, noun = _tx(f"kind.{kind.slug}", lang), _tx(f"noun.{kind.slug}", lang)
+    return {"name": name, "name_lower": name.lower(), "noun": noun, "noun_title": noun.title(),
+            "name_en": _tx(f"kind.{kind.slug}", "en"), "name_hi": _tx(f"kind.{kind.slug}", "hi")}
 
 
 # DIVASTRO-121: the languages these pages are really written in (app/i18n.py).
@@ -164,8 +178,8 @@ def _year_data(kind: str, year: int) -> dict:
 # --------------------------------------------------------------------------
 
 def _d(day: dt.date, lang: str, with_year: bool = False) -> str:
-    month = MONTHS_HI[day.month - 1] if lang == "hi" else day.strftime("%b")
-    return f"{day.day} {month}" + (f" {day.year}" if with_year else "")
+    return (i18n.format_date(day, lang, short=True, months=MONTHS.get(lang))
+            + (f" {day.year}" if with_year else ""))
 
 
 def _range(s: dt.date, e: dt.date, year: int, lang: str) -> str:
@@ -176,66 +190,42 @@ def _range(s: dt.date, e: dt.date, year: int, lang: str) -> str:
 
 
 def _month_name(m: int, year: int, lang: str) -> str:
-    return f"{MONTHS_HI[m - 1]} {year}" if lang == "hi" else f"{dt.date(year, m, 1):%B} {year}"
+    return f"{i18n.month_name(m, lang, MONTHS.get(lang))} {year}"
 
 
 def _period_list(keys: set[str], lang: str) -> str:
-    names = [PERIODS[k].name_hi if lang == "hi" else PERIODS[k].name_en
-             for k in PERIODS if k in keys]
-    return ", ".join(names)
+    return ", ".join(_tx(f"period.{k}", lang) for k in PERIODS if k in keys)
 
 
 def _month_section(kind: Kind, year: int, m: int, data: dict, lang: str) -> str:
     rows = data["months"][m]
     head = f"<h2>{_e(_month_name(m, year, lang))}</h2>"
+    kv = {k: _e(v) for k, v in _kind_vars(kind, lang).items()}
     if not rows:
         why = data["month_periods"][m]
-        if lang == "hi":
-            text = (f"{_e(_month_name(m, year, lang))} में कोई {_e(kind.name_hi)} नहीं"
-                    + (f" — {_e(_period_list(why, lang))}।" if why else
-                       " — इस माह कोई दिन तिथि, नक्षत्र, वार व योग की शर्तें पूरी नहीं करता।"))
-        else:
-            text = (f"No {_e(kind.name_en.lower())} in {_e(_month_name(m, year, lang))}"
-                    + (f" — {_e(_period_list(why, lang))}." if why else
-                       " — no day this month passes the tithi, nakshatra, weekday and yoga checks."))
+        month = _e(_month_name(m, year, lang))
+        text = (_tx("none.periods", lang, **kv, month=month, periods=_e(_period_list(why, lang)))
+                if why else _tx("none.plain", lang, **kv, month=month))
         return head + f'<p class="none">{text}</p>'
-    if lang == "hi":
-        th = "<tr><th>तिथि (दिनांक)</th><th>वार</th><th>तिथि</th><th>नक्षत्र</th></tr>"
-    else:
-        th = "<tr><th>Date</th><th>Day</th><th>Tithi</th><th>Nakshatra</th></tr>"
+    n = i18n.names(lang)
     body = []
     for r in rows:
-        if lang == "hi":
-            cells = (_d(r["date"], lang), VARA_HI.get(r["weekday"], r["weekday"]),
-                     f'{PAKSHA_HI.get(r["paksha"], "")} {TITHI_HI.get(r["tithi"], r["tithi"])}',
-                     NAKSHATRAS_HI.get(r["nakshatra"], r["nakshatra"]))
-        else:
-            cells = (_d(r["date"], lang), r["weekday"], f'{r["paksha"]} {r["tithi"]}',
-                     r["nakshatra"])
+        cells = (_d(r["date"], lang), n.VARA.get(r["weekday"], r["weekday"]),
+                 f'{n.PAKSHA.get(r["paksha"], "")} {n.TITHI.get(r["tithi"], r["tithi"])}',
+                 n.NAKSHATRAS.get(r["nakshatra"], r["nakshatra"]))
         iso = r["date"].isoformat()
         body.append(f'<tr data-date="{iso}">' + "".join(f"<td>{_e(c)}</td>" for c in cells)
                     + "</tr>")
-    return head + f'<div class="scroll"><table>{th}{"".join(body)}</table></div>'
+    return head + f'<div class="scroll"><table>{_tx("th", lang)}{"".join(body)}</table></div>'
 
 
 def _periods_section(kind: Kind, year: int, data: dict, lang: str) -> str:
-    items = []
-    for s, e, k in data["spans"]:
-        p = PERIODS[k]
-        if lang == "hi":
-            items.append(f"<li><strong>{_e(p.name_hi)}</strong>, {_e(_range(s, e, year, lang))} "
-                         f"— {_e(p.about_hi)}।</li>")
-        else:
-            items.append(f"<li><strong>{_e(p.name_en)}</strong>, {_e(_range(s, e, year, lang))} "
-                         f"— {_e(p.about_en)}.</li>")
-    if lang == "hi":
-        title = f"{year} में {kind.name_hi} कब नहीं है"
-        intro = (f"इन अवधियों में कोई {_e(kind.name_hi)} नहीं होता। ये तिथियां पंचांग से गणना की "
-                 "गई हैं (नई दिल्ली, सूर्योदय):")
-    else:
-        title = f"When there is no {kind.name_en.lower()} in {year}"
-        intro = (f"No {_e(kind.name_en.lower())} is given during these periods. The dates are "
-                 "computed from the panchang (New Delhi, sunrise):")
+    items = [_tx("periods.item", lang, period=_e(_tx(f"period.{k}", lang)),
+                 range=_e(_range(s, e, year, lang)), about=_e(_tx(f"period_about.{k}", lang)))
+             for s, e, k in data["spans"]]
+    kv = _kind_vars(kind, lang)
+    title = _tx("periods.h2", lang, **kv, year=year)
+    intro = _tx("periods.intro", lang, **{k: _e(v) for k, v in kv.items()})
     return (f"<h2>{_e(title)}</h2><p>{intro}</p>"
             f'<ul class="periods">{"".join(items)}</ul>')
 
@@ -284,73 +274,40 @@ _SHELL = """<!DOCTYPE html>
 def _page(kind_slug: str, year: int, lang: str) -> HTMLResponse:
     kind = KINDS[kind_slug]
     data = _year_data(kind_slug, year)
-    hi = lang == "hi"
     open_months = [m for m in range(1, 13) if data["months"][m]]
-    months_txt = ", ".join(
-        (MONTHS_HI[m - 1] if hi else dt.date(year, m, 1).strftime("%B")) for m in open_months)
+    months_txt = ", ".join(i18n.month_name(m, lang, MONTHS.get(lang)) for m in open_months)
     path = page_path(kind_slug, year, lang)
     bits = seo_pages.page_language_bits(lang=lang, path=path, has_twin=True,
                                         translated=TRANSLATED, region=True)
 
-    if hi:
-        title = f"{kind.name_hi} {year}: शुभ तिथियां (नई दिल्ली) | {BRAND}"
-        h1 = f"{kind.name_hi} {year}"
-        description = (f"{year} के {kind.name_hi} — नई दिल्ली के लिए माहवार शुभ तिथियां, तिथि व "
-                       f"नक्षत्र सहित। कुल {data['count']} तिथियां; चातुर्मास, खरमास, अधिक मास, "
-                       "पितृ पक्ष और गुरु-शुक्र अस्त की अवधि भी।")
-        intro = (f"<p>पंचांग के अनुसार {year} में नई दिल्ली के लिए <strong>{data['count']}</strong> "
-                 f"{_e(kind.name_hi)} की तिथियां हैं, इन महीनों में: {_e(months_txt) or '—'}। "
-                 "हर तिथि सूर्योदय के तिथि, नक्षत्र, वार, योग और भद्रा के शास्त्रीय नियमों से "
-                 "जांची गई है, और चातुर्मास, खरमास, अधिक मास, पितृ पक्ष तथा गुरु-शुक्र अस्त की "
-                 "अवधि को छोड़ा गया है।</p>")
-        note = ("<p><strong>ध्यान दें:</strong> ये तिथियां नई दिल्ली के सूर्योदय पर आधारित हैं। "
-                "दूसरे शहर में तिथि-नक्षत्र का समय बदलता है, और विवाह या गृह प्रवेश का सटीक "
-                "मुहूर्त (लग्न) परिवार के पंडित जी से अवश्य दिखवाएं। अपने शहर की तिथियां "
-                "मुहूर्त खोजक में देखें।</p>")
-        cta = "अपने शहर के लिए शुभ मुहूर्त खोजें"
-        crumbs = [("होम", "/"), (f"{kind.name_hi} {year}", path)]
-        more_title = "और मुहूर्त"
-    else:
-        title = f"{kind.name_en} {year}: Auspicious {kind.noun_en.title()} Dates (New Delhi) | {BRAND}"
-        h1 = f"{kind.name_en} {year}: auspicious {kind.noun_en} dates"
-        description = (f"{kind.name_en} {year} for New Delhi — month-by-month auspicious "
-                       f"{kind.noun_en} dates with tithi and nakshatra. {data['count']} dates; "
-                       "Chaturmas, Kharmas, Adhik Maas, Pitru Paksha and Guru/Shukra asta explained.")
-        intro = (f"<p>By the panchang there are <strong>{data['count']}</strong> "
-                 f"{_e(kind.name_en.lower())} dates in {year} for New Delhi, in "
-                 f"{_e(months_txt) or '—'}. Each date passes the classical checks on the sunrise "
-                 "tithi, nakshatra, weekday, yoga and Bhadra, and falls outside Chaturmas, "
-                 "Kharmas, Adhik Maas, Pitru Paksha and the combustion (asta) of Jupiter and "
-                 "Venus.</p>")
-        note = ("<p><strong>Timings vary by city.</strong> These dates are reckoned from New "
-                "Delhi's sunrise; elsewhere a tithi or nakshatra can change on a different day. "
-                "The exact muhurat (lagna) for a wedding or griha pravesh should be fixed by "
-                "your family priest. Check your own city in the Muhurat Finder.</p>")
-        cta = "Find muhurat for your city — free"
-        crumbs = [(i18n.chrome("home", lang), "/"), (f"{kind.name_en} {year}", path)]
-        more_title = "More muhurat dates"
+    kv = _kind_vars(kind, lang)
+    raw = {**kv, "year": year, "count": data["count"], "brand": BRAND}
+    title = _tx("title", lang, **raw)
+    h1 = _tx("h1", lang, **raw)
+    description = _tx("desc", lang, **raw)
+    esc = {**{k: _e(v) for k, v in kv.items()}, "year": year, "count": data["count"]}
+    intro = _tx("intro", lang, **esc, months=_e(months_txt) or "—")
+    note = _tx("note", lang)
+    crumbs = [(i18n.chrome("home", lang), "/"), (_tx("crumb", lang, **raw), path)]
 
     links = []
     for y in YEARS:
         for k, kk in KINDS.items():
             if (k, y) != (kind_slug, year):
-                label = f"{kk.name_hi} {y}" if hi else f"{kk.name_en} {y}"
+                label = _tx("link.kind", lang, **_kind_vars(kk, lang), year=y)
                 links.append(f'<li><a href="{page_path(k, y, lang)}">{_e(label)}</a></li>')
-    links.append('<li><a href="/panchang">' + ("आज का पंचांग" if hi else "Today's Panchang")
-                 + "</a></li>")
-    links.append('<li><a href="/kundali-milan">' + ("कुंडली मिलान" if hi else "Kundali Milan")
-                 + "</a></li>")
+    links.append(f'<li><a href="/panchang">{_tx("link.panchang", lang)}</a></li>')
+    links.append(f'<li><a href="/kundali-milan">{_tx("link.milan", lang)}</a></li>')
 
-    cta_html = f'<a class="cta" href="/?open=muhurat">{_e(cta)}</a>'
-    sub = (f'<p class="hi" lang="en">{_e(kind.name_en)} {year}</p>' if hi
-           else f'<p class="hi" lang="hi">{_e(kind.name_hi)} {year}</p>')
-    body = (f"<h1>{_e(h1)}</h1>{sub}"
-            f'<p class="date">{_e(CITY.name_hi if hi else CITY.label)} · IST</p>'
+    cta_html = f'<a class="cta" href="/?open=muhurat">{_e(_tx("cta", lang))}</a>'
+    place = _tx("place", lang, city=seo_cities.city_name(CITY, lang), label=CITY.label)
+    body = (f"<h1>{_e(h1)}</h1>{_tx('sub', lang, **esc)}"
+            f'<p class="date">{_e(place)}</p>'
             f'{intro}<div class="box">{note}</div>{cta_html}'
             + _periods_section(kind, year, data, lang)
             + "".join(_month_section(kind, year, m, data, lang) for m in range(1, 13))
             + cta_html
-            + f'<h2>{_e(more_title)}</h2><ul class="links">{"".join(links)}</ul>')
+            + f'<h2>{_e(_tx("more", lang))}</h2><ul class="links">{"".join(links)}</ul>')
 
     crumb_html = " › ".join(
         f'<a href="{_e(h)}">{_e(n)}</a>' if i < len(crumbs) - 1 else _e(n)
@@ -381,10 +338,10 @@ def _not_found(lang: str) -> HTMLResponse:
                     for p in (page_path(k, y, lang) for y in YEARS for k in KINDS))
     html = (f'<!DOCTYPE html><html lang="en-IN"><head><meta charset="utf-8"/>'
             f'<meta name="viewport" content="width=device-width, initial-scale=1"/>'
-            f"<title>Muhurat page not found — {_e(BRAND)}</title>"
+            f"<title>{_e(_tx('nf.title', 'en'))} — {_e(BRAND)}</title>"
             f'<link rel="stylesheet" href="/static/styles.css"/></head>'
-            f'<body class="sacred"><main class="seo"><h1>Muhurat page not found</h1>'
-            f'<ul>{links}</ul><p><a href="/?open=muhurat">Open the Muhurat Finder</a></p>'
+            f'<body class="sacred"><main class="seo"><h1>{_e(_tx("nf.title", "en"))}</h1>'
+            f'<ul>{links}</ul><p><a href="/?open=muhurat">{_e(_tx("nf.open", "en"))}</a></p>'
             f"</main></body></html>")
     return HTMLResponse(html, status_code=404, headers={"Cache-Control": "no-store"})
 
