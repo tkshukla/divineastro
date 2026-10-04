@@ -89,7 +89,7 @@ def _kind_vars(kind: Kind, lang: str) -> dict:
 # DIVASTRO-121: the languages these pages are really written in (app/i18n.py).
 # /<code>/muhurat/... exists for every registry language; an untranslated one
 # shows the English text, noindex, outside the sitemap and hreflang.
-TRANSLATED = i18n.BASE_TRANSLATED
+TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te", "ta", "ml", "bn", "or"}  # DIVASTRO-123
 i18n.LOCALIZABLE_ROOTS.add("muhurat")
 
 
@@ -300,7 +300,7 @@ def _page(kind_slug: str, year: int, lang: str) -> HTMLResponse:
     links.append(f'<li><a href="/kundali-milan">{_tx("link.milan", lang)}</a></li>')
 
     cta_html = f'<a class="cta" href="/?open=muhurat">{_e(_tx("cta", lang))}</a>'
-    place = _tx("place", lang, city=seo_cities.city_name(CITY, lang), label=CITY.label)
+    place = _tx("place", lang, city=seo_cities.city_name(CITY, lang), label=seo_cities.place(CITY, lang))
     body = (f"<h1>{_e(h1)}</h1>{_tx('sub', lang, **esc)}"
             f'<p class="date">{_e(place)}</p>'
             f'{intro}<div class="box">{note}</div>{cta_html}'

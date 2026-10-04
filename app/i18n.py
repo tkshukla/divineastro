@@ -36,6 +36,7 @@ from __future__ import annotations
 import functools
 import html
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Iterable, Mapping
 
@@ -301,6 +302,50 @@ def weekday(day, lang: str) -> str:
     """'Sunday' / 'रविवार' / the names_<code>.VARA word, for a date."""
     english = day.strftime("%A")
     return names(lang).VARA.get(english, english)
+
+
+# DIVASTRO-123: a namakshar syllable (astro/namakshar.py keeps the 108 in
+# Devanagari, and a name's first letter is read as Devanagari) in the reader's
+# script. The Brahmi scripts share Devanagari's Unicode layout, so a letter moves
+# to the same offset in the language's block — kn, te and ml one-to-one. Two
+# scripts need per-letter rules first:
+#   ta  Tamil has no voiced or aspirated stops; they fold to the plain letter as
+#       Tamil panchangs write them (ख ग घ -> க, द ध थ -> த ...);
+#   bn  Bengali's block has no letter at व's place: व -> ব (and Odia व -> ବ, the
+#   or  letter Odia panchangs use rather than the rare ଵ).
+# A letter with no counterpart in the target block stays Devanagari. Languages
+# not listed (en, hi) get the text unchanged.
+_AKSHAR: dict[str, tuple[int, dict[str, str]]] = {
+    "kn": (0x0C80, {}),
+    "te": (0x0C00, {}),
+    "ml": (0x0D00, {}),
+    "ta": (0x0B80, dict(zip("खगघछझठडढथदधफबभ", "கககசஜடடடதததபபப"))),
+    "bn": (0x0980, {"व": "ব"}),
+    "or": (0x0B00, {"व": "ବ"}),
+}
+
+
+def akshar(text: str, lang: str) -> str:
+    """`text` with its Devanagari letters in `lang`'s script (see _AKSHAR)."""
+    spec = _AKSHAR.get(lang)
+    if spec is None:
+        return text
+    base, fix = spec
+    out = []
+    for c in text:
+        if c in fix:
+            c = fix[c]
+        elif "ऀ" <= c <= "ॿ":
+            moved = chr(base + ord(c) - 0x0900)
+            if unicodedata.name(moved, ""):
+                c = moved
+        out.append(c)
+    return "".join(out)
+
+
+def akshar_lang(lang: str) -> str:
+    """The lang="" attribute for akshar(text, lang): `lang` if it converts, else hi."""
+    return lang if lang in _AKSHAR else "hi"
 
 
 # Strings for the chrome every server-rendered page shares (crumbs, footer,

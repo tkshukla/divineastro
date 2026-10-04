@@ -77,7 +77,7 @@ EN, HI = "en", "hi"
 # not listed here renders the English text with noindex, no hreflang, no
 # sitemap entry and a "translation coming soon" note (see app/i18n.py). A
 # translation agent adds e.g. "kn" here once seo_text.TEXT["kn"] is written.
-TRANSLATED = i18n.BASE_TRANSLATED
+TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te", "ta", "ml", "bn", "or"}  # DIVASTRO-123
 # First path segments served in every language by this module.
 i18n.LOCALIZABLE_ROOTS.update({"panchang", "rahu-kaal", "choghadiya", "kundali-milan",
                                "free-kundali"})
@@ -577,7 +577,7 @@ def _panchang_page(city: City, lang: str = EN) -> HTMLResponse:
     raw = {**cv, **names, "date": date_text, "sunrise": sunrise, "rahu": rahu, "brand": BRAND}
     title = _tx("p.title", lang, **raw)
     description = _tx("p.desc", lang, **raw)
-    v = {**_esc(cv), **_esc(names), "rahu": rahu, "place": _e(city.label),
+    v = {**_esc(cv), **_esc(names), "rahu": rahu, "place": _e(seo_cities.place(city, lang)),
          "lat": f"{city.latitude:.4f}", "lon": f"{city.longitude:.4f}"}
     body = f"""
 {_tx("p.h1", lang, **v)}

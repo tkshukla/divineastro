@@ -181,6 +181,7 @@ class Nakshatra:
 NAKSHATRA_LIST: tuple[Nakshatra, ...] = tuple(
     Nakshatra(i, NAKSHATRAS[i], slug, NAKSHATRAS_HI[NAKSHATRAS[i]], d, dh, s, sh, syl)
     for i, (slug, d, dh, s, sh, syl) in enumerate(_CURATED))
+
 BY_SLUG = {n.slug: n for n in NAKSHATRA_LIST}
 BY_NAME = {n.name: n for n in NAKSHATRA_LIST}
 

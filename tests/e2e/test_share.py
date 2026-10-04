@@ -2,6 +2,9 @@
 
 The home Today strip, the Panchang tool and a server-rendered SEO page, on the
 360px phone most of this audience uses. (The Milan button is in test_milan.)
+DIVASTRO-123: on 320-400px phones, in every language, the SEO pages' share pill
+overlaps neither the breadcrumb nor the H1, and a two-column fact table (the
+nakshatra / rashi / panchang facts) fits the screen without scrolling sideways.
 
     ~/.venvs/divineastro/bin/python -u -m tests.e2e.test_share
 """
@@ -144,12 +147,68 @@ def seo_page(p, browser, base: str) -> None:
     ctx.close()
 
 
+LAYOUT = """() => {
+  const box = e => { if (!e) return null; const b = e.getBoundingClientRect();
+                     return [b.left, b.top, b.right, b.bottom]; };
+  const hit = (a, b) => a && b && a[0] < b[2] - 0.5 && b[0] < a[2] - 0.5 && a[1] < b[3] - 0.5 && b[1] < a[3] - 0.5;
+  const textBoxes = e => { if (!e) return []; const r = document.createRange(); r.selectNodeContents(e);
+                           return Array.from(r.getClientRects()).map(b => [b.left, b.top, b.right, b.bottom]); };
+  const share = box(document.querySelector('.seo > .share-wa'));
+  const over = sel => textBoxes(document.querySelector(sel)).some(t => hit(share, t));
+  const facts = Array.from(document.querySelectorAll('.seo .scroll')).filter(s =>
+      s.querySelector('th[scope=row]') && Array.from(s.querySelectorAll('tr')).every(tr => tr.cells.length === 2));
+  // Shares a band of height with the breadcrumb or the H1 block (the nakshatra
+  // pages put the pill after the breadcrumb, so beside the H1).
+  const level = b => !!(share && b && b[1] < share[3] - 0.5 && share[1] < b[3] - 0.5);
+  return {share: !!share, top: hit(share, box(document.querySelector('.seo .top'))),
+          beside: level(box(document.querySelector('.seo .crumbs'))) || level(box(document.querySelector('.seo h1'))),
+          crumbs: over('.seo .crumbs'), h1: over('.seo h1'),
+          facts: facts.length, wide: facts.filter(s => s.scrollWidth > s.clientWidth + 1).length,
+          page: document.documentElement.scrollWidth > innerWidth};
+}"""
+
+
+def seo_layout(p, browser, base: str) -> None:
+    print("\n[SEO pages at 320/360/400px in every language: share pill clear, fact tables fit]")
+    city = {"en": "mumbai", "hi": "new-delhi", "kn": "bengaluru", "te": "hyderabad", "ta": "chennai",
+            "ml": "kochi", "bn": "kolkata", "or": "bhubaneswar"}
+    for w in (320, 360, 400):
+        ctx = browser.new_context(viewport={"width": w, "height": 740}, is_mobile=True, has_touch=True,
+                                  device_scale_factor=2, user_agent=ANDROID_UA)
+        page = ctx.new_page()
+        bad = []
+        for lang, slug in city.items():
+            pre = "" if lang == "en" else f"/{lang}"
+            for path in (f"{pre}/panchang/{slug}", f"{pre}/nakshatra/uttara-bhadrapada", f"{pre}/rashi/mesh"):
+                page.goto(base + path, wait_until="domcontentloaded")
+                m = page.evaluate(LAYOUT)
+                # "beside": the pill must sit on its own row, not float beside the
+                # breadcrumb or the H1 (it squeezed them and, with a long regional
+                # label, ran into them on real phones).
+                probs = [k for k in ("top", "beside", "crumbs", "h1", "page") if m[k]]
+                if not m["share"]:
+                    probs.append("no share pill")
+                if "nakshatra" in path and not m["facts"]:
+                    probs.append("no fact table found")
+                if m["wide"]:
+                    probs.append(f"{m['wide']} fact table(s) scroll sideways")
+                if probs:
+                    bad.append(f"{path}: {probs}")
+        check(f"{w}px: share pill on its own row, clear of breadcrumb/H1, fact tables fit, no page scroll", not bad,
+              "; ".join(bad[:4]))
+        if w == 360:
+            page.goto(base + "/kn/nakshatra/uttara-bhadrapada", wait_until="domcontentloaded")
+            page.screenshot(path=os.path.join(SHOT_DIR, "seo_layout_kn_360.png"))
+        ctx.close()
+
+
 def main() -> int:
     with server() as base, sync_playwright() as p:
         browser = p.chromium.launch()
         today_strip(p, browser, base)
         panchang_tool(p, browser, base)
         seo_page(p, browser, base)
+        seo_layout(p, browser, base)
         browser.close()
     return check.finish("WhatsApp share buttons")
 
