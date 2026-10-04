@@ -34,7 +34,7 @@ from app import daily_state, reflections as R  # noqa: E402
 from app import whatsapp_channel as W  # noqa: E402
 
 failures: list[str] = []
-MIN_LIBRARY = 150
+MIN_LIBRARY = 300
 
 
 def check(label: str, ok: bool, detail: str = "") -> None:
@@ -168,7 +168,10 @@ def test_pick() -> None:
         rid2 = R.pick(day, posted=recent)
         check(f"{day}: not repeated within 300 days", key not in lib[rid2].tags, rid2)
         old = {t: day - dt.timedelta(days=R.FESTIVAL_GAP_DAYS + 1) for t in tagged}
-        check(f"{day}: allowed again after 300 days", key in lib[R.pick(day, posted=old)].tags)
+        others = {r.id: day - dt.timedelta(days=5) for r in lib.values()
+                  if r.tags and r.id not in tagged}
+        check(f"{day}: allowed again after 300 days",
+              key in lib[R.pick(day, posted={**others, **old})].tags)
 
     plain = dt.date(2026, 10, 5)
     check("an ordinary night gets an evergreen reflection", not lib[R.pick(plain, posted={})].tags)
@@ -190,7 +193,7 @@ def test_pick() -> None:
     check("120 nights: at least 15 themes", len(set(themes)) >= 15, str(len(set(themes))))
 
     evergreen = [r.id for r in lib.values() if not r.tags]
-    long_run = simulate(dt.date(2027, 1, 1), len(evergreen) + 40)
+    long_run = simulate(dt.date(2027, 1, 1), len(evergreen) + 120)
     seq = [rid for _d, rid in long_run if not lib[rid].tags]
     first_cycle = seq[:len(evergreen)]
     check("no evergreen repeats until all have been posted",
