@@ -33,6 +33,7 @@ languages themselves (main.py inlines it into index.html).
 
 from __future__ import annotations
 
+import functools
 import html
 import re
 from dataclasses import dataclass, field
@@ -213,14 +214,93 @@ def app_link(lang: str, query: str = "") -> str:
 # Strings
 # --------------------------------------------------------------------------
 
+# A string table may carry a NATIVE layer beside its languages: templates a
+# language uses for a key it has not translated yet, before falling back to
+# English. It holds only the keys whose English text is mostly an astrology
+# name ("{tithi}", a timing label), so an untranslated Kannada page still prints
+# its tithi/nakshatra names from app/astro/names_kn.py instead of English words.
+NATIVE = "_native"
+
+
 def t(key: str, lang: str, table: Mapping[str, Mapping[str, str]]) -> str:
-    """table[lang][key], falling back to table['en'][key], then to the key itself.
-    The shape of every per-module string table: {"en": {...}, "hi": {...}, "kn": {...}}."""
-    for code in (lang, DEFAULT):
+    """table[lang][key], falling back to table['_native'][key] (any language but
+    English), then table['en'][key], then to the key itself. The shape of every
+    per-module string table: {"en": {...}, "hi": {...}, "kn": {...}}."""
+    for code in ((lang, NATIVE, DEFAULT) if lang != DEFAULT else (DEFAULT,)):
         value = table.get(code, {}).get(key)
         if value:
             return value
     return key
+
+
+def fmt(key: str, lang: str, table: Mapping[str, Mapping[str, str]], /, **values) -> str:
+    """t() then str.format(**values): templates keep their `{placeholders}` (the
+    word order is the translator's). Values are inserted as given — HTML-escape
+    them first where the template is HTML. Every template may also use the
+    astrology labels of `lang` (name_vars): {t_rahu_kaal}, {l_tithi}, ..."""
+    return t(key, lang, table).format(**{**name_vars(lang), **values})
+
+
+@functools.lru_cache(maxsize=None)
+def _name_vars(lang: str) -> dict:
+    n = names(lang)
+    out = {f"t_{k}": v for k, v in n.TIMINGS.items()}
+    out.update({f"l_{k}": v for k, v in n.LIMBS.items()})
+    return out
+
+
+def name_vars(lang: str) -> dict:
+    """{t_<timing>: ..., l_<limb>: ...} from names_<code>.TIMINGS / LIMBS, so a
+    template can say "{t_rahu_kaal}" and get ರಾಹು ಕಾಲ on a Kannada page."""
+    return _name_vars(lang if lang in BY_CODE else DEFAULT)
+
+
+def has(key: str, lang: str, table: Mapping[str, Mapping[str, str]]) -> bool:
+    """Whether `lang` has its own text for `key` (not a fallback)."""
+    return bool(table.get(lang, {}).get(key))
+
+
+# --------------------------------------------------------------------------
+# Astrology names, dates and clock times in any language
+# --------------------------------------------------------------------------
+
+def names(lang: str | None):
+    """The name tables for `lang` (app.astro.names_i18n.Names): TITHI, NAKSHATRAS,
+    VARA, MONTHS, CLOCK, TIMINGS, FESTIVALS ... English for an unknown code."""
+    from .astro.names_i18n import names_for
+    return names_for(lang)
+
+
+def format_date(day, lang: str, *, short: bool = False, months=None) -> str:
+    """'8 November 2026' / '8 Nov' in English; '8 नवंबर 2026' / '8 नवंबर' in
+    Hindi, and the same shape with names_<code>.MONTHS in every other language
+    (English abbreviates a short month; the Indian languages do not). `months`
+    overrides the month names for one module that spells them its own way."""
+    if lang not in BY_CODE or lang == DEFAULT:
+        text = f"{day.day} {day.strftime('%b' if short else '%B')}"
+    else:
+        text = f"{day.day} {(months or names(lang).MONTHS)[day.month - 1]}"
+    return text if short else f"{text} {day.year}"
+
+
+def month_name(month: int, lang: str, months=None) -> str:
+    """'November' / 'नवंबर' / 'ನವೆಂಬರ್' for a month number 1-12."""
+    if lang not in BY_CODE or lang == DEFAULT:
+        import calendar
+        return calendar.month_name[month]
+    return (months or names(lang).MONTHS)[month - 1]
+
+
+def format_time(moment, lang: str) -> str:
+    """'6:29 AM' in English; '<part of day> 6:29' (सुबह 6:29) in every Indian
+    language — how almanacs print times (names_i18n.Names.clock)."""
+    return names(lang if lang in BY_CODE else DEFAULT).clock(moment)
+
+
+def weekday(day, lang: str) -> str:
+    """'Sunday' / 'रविवार' / the names_<code>.VARA word, for a date."""
+    english = day.strftime("%A")
+    return names(lang).VARA.get(english, english)
 
 
 # Strings for the chrome every server-rendered page shares (crumbs, footer,

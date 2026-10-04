@@ -17,7 +17,6 @@ import os
 import re
 import sys
 import tempfile
-import types
 import unicodedata
 from pathlib import Path
 
@@ -32,6 +31,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 from app import (analytics, i18n, katha, muhurat_pages, nakshatra_pages,  # noqa: E402
                  rashifal_pages, seo_pages, share, vrat_pages)
 from app.astro import names as astro_names  # noqa: E402
+from app.astro import names_i18n  # noqa: E402
 from app.main import app  # noqa: E402
 
 client = TestClient(app, raise_server_exceptions=False)
@@ -268,37 +268,31 @@ def main() -> int:
     p = client.get(f"/api/panchang?{q}").json()
     check("/api/panchang still carries name_hi", all("name_hi" in row for row in p["tithi"]))
 
-    print("\n10. names_<code> loader")
-    astro_names.names_for.cache_clear()
-    real_kn = astro_names.names_for("kn")
-    check("names_for('en') is None", astro_names.names_for("en") is None)
-    check("names_for('../x') is refused", astro_names.names_for("../x") is None)
-    fake = types.ModuleType("app.astro.names_zz")
-    fake.TITHI_ZZ = {"Ashtami": "ಅಷ್ಟಮಿ"}
-    fake.PAKSHA_ZZ = {"Krishna": "ಕೃಷ್ಣ"}
-    sys.modules["app.astro.names_zz"] = fake
-    try:
-        astro_names.names_for.cache_clear()
-        row = {"name": "Ashtami", "paksha": "Krishna"}
-        nak = {"name": "Rohini"}
-        p = {"tithi": [dict(row)], "nakshatra": [dict(nak)], "vara": {"weekday": "Monday", "name": "Somavara"},
-             "reckoned_from": "sunrise", "muhurta": {"abhijit": None}, "notes": ["Wednesday note"]}
-        astro_names.add_names(p, "zz")
-        check("add_names: translated where the table has it",
-              p["tithi"][0]["name_zz"] == "ಅಷ್ಟಮಿ" and p["tithi"][0]["label_zz"] == "ಕೃಷ್ಣ ಅಷ್ಟಮಿ")
-        check("add_names: English where it does not",
-              p["nakshatra"][0]["name_zz"] == "Rohini" and p["vara"]["name_zz"] == "Somavara")
-        check("add_names: an untranslated note falls back to English",
-              p["notes_zz"] == ["Wednesday note"])
-    finally:
-        del sys.modules["app.astro.names_zz"]
-        astro_names.names_for.cache_clear()
-    if real_kn is not None:
-        p = client.get(f"/api/panchang?{q}").json()
-        check("names_kn present -> /api/panchang carries name_kn",
-              all("name_kn" in row for row in p["tithi"]))
-    else:
-        print("  (app/astro/names_kn.py not written yet — skipped the live name_kn check)")
+    print("\n10. names loader (app.astro.names_i18n; app.astro.names is its alias)")
+    check("names is an alias of names_i18n", astro_names.names_for is names_i18n.names_for
+          and astro_names.add_names is names_i18n.add_names)
+    check("names_for('en') is English", astro_names.names_for("en").code == "en"
+          and astro_names.names_for("en").TITHI["Ashtami"] == "Ashtami")
+    check("names_for('../x') is refused (English)", astro_names.names_for("../x").code == "en")
+    check("i18n.names is the same loader", i18n.names("kn") is astro_names.names_for("kn"))
+    row = {"name": "Ashtami", "paksha": "Krishna"}
+    p = {"tithi": [dict(row)], "nakshatra": [{"name": "Rohini"}],
+         "vara": {"weekday": "Monday", "name": "Somavara"},
+         "reckoned_from": "sunrise", "muhurta": {"abhijit": None}, "notes": ["Wednesday note"]}
+    astro_names.add_names(p, "kn")
+    kn = astro_names.names_for("kn")
+    check("add_names('kn'): tithi, label, nakshatra, vara in Kannada",
+          p["tithi"][0]["name_kn"] == kn.TITHI["Ashtami"]
+          and p["tithi"][0]["label_kn"] == f"{kn.PAKSHA['Krishna']} {kn.TITHI['Ashtami']}"
+          and p["nakshatra"][0]["name_kn"] == kn.NAKSHATRAS["Rohini"]
+          and p["vara"]["name_kn"] == kn.VARA["Monday"])
+    check("add_names('kn'): the Wednesday note in Kannada", p["notes_kn"] == [kn.NOTE_WEDNESDAY])
+    q2 = {"tithi": [dict(row)]}
+    astro_names.add_names(q2, "zz")
+    check("add_names: an unknown code leaves the row alone", q2 == {"tithi": [dict(row)]})
+    p = client.get(f"/api/panchang?{q}").json()
+    check("/api/panchang carries name_<code> for every regional language",
+          all(f"name_{c}" in r for c in i18n.EXTRA_CODES for r in p["tithi"]))
 
     print("\n11. Fonts and CSP")
     css = (ROOT / "app/static/styles.css").read_text(encoding="utf-8")

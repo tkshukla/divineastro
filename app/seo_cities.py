@@ -184,6 +184,23 @@ STATE_HI: dict[str, str] = {
 BY_SLUG: dict[str, City] = {c.slug: c for c in CITIES}
 
 
+def city_name(city: City, lang: str) -> str:
+    """The city's name in `lang` (a `name_<code>` field), else the English one."""
+    return getattr(city, f"name_{lang}", None) or city.name
+
+
+def state_name(state: str, lang: str) -> str:
+    """A state in `lang` (a `STATE_<CODE>` table here), else the English name."""
+    return (globals().get(f"STATE_{lang.upper()}") or {}).get(state, state)
+
+
+def place(city: City, lang: str) -> str:
+    """'New Delhi, Delhi' / 'नई दिल्ली, दिल्ली'; English where `lang` has no city names."""
+    if getattr(city, f"name_{lang}", None):
+        return f"{city_name(city, lang)}, {state_name(city.state, lang)}"
+    return city.label
+
+
 def by_state() -> list[tuple[str, list[City]]]:
     """(state, cities) in alphabetical order of state, cities alphabetical within
     each — the order the city index on every tool page is shown in. ~100 pills
