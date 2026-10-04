@@ -10,8 +10,9 @@ tools/fetch_data.py).
 Coordinates are city-centre values to four decimals; at Indian latitudes a
 kilometre of error moves sunrise by well under ten seconds, so this precision is
 far more than the minute-resolution times on the pages need. `name_hi` is the
-city's usual Devanagari spelling, shown on the /hi/ pages. All of India keeps
-one zone, so every entry is Asia/Kolkata.
+city's usual Devanagari spelling, shown on the /hi/ pages; the regional
+languages' spellings are in seo_city_names.py (city_name / state_name / place
+read both). All of India keeps one zone, so every entry is Asia/Kolkata.
 
 The slug is part of the public URL. Never rename one — add a redirect instead.
 """
@@ -19,6 +20,8 @@ The slug is part of the public URL. Never rename one — add a redirect instead.
 from __future__ import annotations
 
 from dataclasses import dataclass
+
+from . import seo_city_names as _names
 
 
 @dataclass(frozen=True)
@@ -184,9 +187,22 @@ STATE_HI: dict[str, str] = {
 BY_SLUG: dict[str, City] = {c.slug: c for c in CITIES}
 
 
+# DIVASTRO-123: the regional languages' city and state names live in
+# seo_city_names (CITIES[lang][slug], STATES[lang][state]); Hindi stays here.
+STATE_KN, STATE_TE, STATE_TA, STATE_ML, STATE_BN, STATE_OR = (
+    _names.STATES[c] for c in ("kn", "te", "ta", "ml", "bn", "or"))
+
+
+def has_name(city: City, lang: str) -> bool:
+    """Whether `city` has its own spelling in `lang` (hi, or seo_city_names)."""
+    return lang == "hi" or city.slug in _names.CITIES.get(lang, {})
+
+
 def city_name(city: City, lang: str) -> str:
-    """The city's name in `lang` (a `name_<code>` field), else the English one."""
-    return getattr(city, f"name_{lang}", None) or city.name
+    """The city's name in `lang` (name_hi / seo_city_names), else the English one."""
+    if lang == "hi":
+        return city.name_hi
+    return _names.CITIES.get(lang, {}).get(city.slug) or city.name
 
 
 def state_name(state: str, lang: str) -> str:
@@ -196,7 +212,7 @@ def state_name(state: str, lang: str) -> str:
 
 def place(city: City, lang: str) -> str:
     """'New Delhi, Delhi' / 'नई दिल्ली, दिल्ली'; English where `lang` has no city names."""
-    if getattr(city, f"name_{lang}", None):
+    if has_name(city, lang):
         return f"{city_name(city, lang)}, {state_name(city.state, lang)}"
     return city.label
 

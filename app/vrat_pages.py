@@ -228,7 +228,7 @@ def _city(city: City, lang: str) -> str:
 
 def _city_label(city: City, lang: str) -> str:
     """The date line's place: the city in `lang` ('नई दिल्ली'), or 'New Delhi, Delhi'."""
-    return getattr(city, f"name_{lang}", None) or city.label
+    return seo_cities.city_name(city, lang) if seo_cities.has_name(city, lang) else city.label
 
 
 def _timing_text(t: dict, day: dt.date, lang: str) -> str:

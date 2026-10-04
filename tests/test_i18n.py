@@ -263,26 +263,31 @@ def main() -> int:
     check("share: /kn/ page shares like its English twin",
           share.seo_share_text("/kn/panchang/pune") == share.seo_share_text("/panchang/pune"))
 
-    print("\n8. Translating a module flips everything (simulated: seo_pages + one more language)")
+    print("\n8. Translating a module flips everything (simulated: seo_pages without, then with, a language)")
     saved = seo_pages.TRANSLATED
-    new = next((c for c in i18n.EXTRA_CODES
-                if c not in saved and c not in rashifal_pages.TRANSLATED), None)
-    if new is None:
-        print("  (every language translated: nothing to simulate)")
-    else:
-        seo_pages.TRANSLATED = frozenset(saved | {new})
-        try:
-            h_new, h_en = client.get(f"/{new}/panchang").text, client.get("/panchang").text
-            check(f"{new} copy: indexable, no notice", not noindex(h_new) and "lp-notice" not in h_new)
-            want = {c: SITE + i18n.localized_path("/panchang", c) for c in seo_pages.TRANSLATED}
-            want["x-default"] = SITE + "/panchang"
-            check(f"{new} listed in hreflang on every copy",
-                  alternates(h_new) == want == alternates(h_en), str(alternates(h_new)))
-            check(f"{new} in the sitemap",
-                  f"<loc>{SITE}/{new}/panchang</loc>" in client.get("/sitemap.xml").text)
-            check("other modules unaffected", noindex(client.get(f"/{new}/rashifal").text))
-        finally:
-            seo_pages.TRANSLATED = saved
+    new = next((c for c in i18n.EXTRA_CODES if c not in saved), None) or "or"
+    base = frozenset(saved - {new})
+    try:
+        seo_pages.TRANSLATED = base
+        h_off = client.get(f"/{new}/panchang").text
+        r_off = noindex(client.get(f"/{new}/rashifal").text)
+        check(f"{new} copy untranslated: noindex + notice", noindex(h_off) and "lp-notice" in h_off)
+        check(f"{new} untranslated: not in hreflang, not in the sitemap",
+              new not in alternates(client.get("/panchang").text)
+              and f"<loc>{SITE}/{new}/panchang</loc>" not in client.get("/sitemap.xml").text)
+        seo_pages.TRANSLATED = frozenset(base | {new})
+        h_new, h_en = client.get(f"/{new}/panchang").text, client.get("/panchang").text
+        check(f"{new} copy: indexable, no notice", not noindex(h_new) and "lp-notice" not in h_new)
+        want = {c: SITE + i18n.localized_path("/panchang", c) for c in seo_pages.TRANSLATED}
+        want["x-default"] = SITE + "/panchang"
+        check(f"{new} listed in hreflang on every copy",
+              alternates(h_new) == want == alternates(h_en), str(alternates(h_new)))
+        check(f"{new} in the sitemap",
+              f"<loc>{SITE}/{new}/panchang</loc>" in client.get("/sitemap.xml").text)
+        check("other modules unaffected",
+              noindex(client.get(f"/{new}/rashifal").text) == r_off == (new not in rashifal_pages.TRANSLATED))
+    finally:
+        seo_pages.TRANSLATED = saved
 
     print("\n9. API language parameters: every code accepted, never a 422")
     q = "latitude=12.97&longitude=77.59&timezone=Asia/Kolkata"

@@ -577,7 +577,7 @@ def _panchang_page(city: City, lang: str = EN) -> HTMLResponse:
     raw = {**cv, **names, "date": date_text, "sunrise": sunrise, "rahu": rahu, "brand": BRAND}
     title = _tx("p.title", lang, **raw)
     description = _tx("p.desc", lang, **raw)
-    v = {**_esc(cv), **_esc(names), "rahu": rahu, "place": _e(city.label),
+    v = {**_esc(cv), **_esc(names), "rahu": rahu, "place": _e(seo_cities.place(city, lang)),
          "lat": f"{city.latitude:.4f}", "lon": f"{city.longitude:.4f}"}
     body = f"""
 {_tx("p.h1", lang, **v)}

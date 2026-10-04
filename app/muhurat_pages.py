@@ -300,7 +300,7 @@ def _page(kind_slug: str, year: int, lang: str) -> HTMLResponse:
     links.append(f'<li><a href="/kundali-milan">{_tx("link.milan", lang)}</a></li>')
 
     cta_html = f'<a class="cta" href="/?open=muhurat">{_e(_tx("cta", lang))}</a>'
-    place = _tx("place", lang, city=seo_cities.city_name(CITY, lang), label=CITY.label)
+    place = _tx("place", lang, city=seo_cities.city_name(CITY, lang), label=seo_cities.place(CITY, lang))
     body = (f"<h1>{_e(h1)}</h1>{_tx('sub', lang, **esc)}"
             f'<p class="date">{_e(place)}</p>'
             f'{intro}<div class="box">{note}</div>{cta_html}'

@@ -16,6 +16,10 @@ pinned date and compares each body's SHA-256 with tests/seo_snapshots.json:
     ~/.venvs/divineastro/bin/python -u -m tests.test_seo_snapshots --update   # re-record
     ~/.venvs/divineastro/bin/python -u -m tests.test_seo_snapshots --dump DIR # write each body to DIR
 
+Only en/hi are compared; the regional copies are tests/test_seo_regional.py's.
+Checkout-dependent values (the ?v=<mtime> cache-buster, "/"'s window.DA_I18N_V
+stamp) are normalised away, so every page, "/" included, is stable.
+
 Re-record ONLY for an intended English/Hindi change, and say so in the commit.
 A translator adding Kannada never needs to: kn pages are not snapshotted.
 """
@@ -128,12 +132,18 @@ def render() -> dict[str, bytes]:
 
 
 _CACHE_BUST = re.compile(rb"\?v=\d+")
+_I18N_V = re.compile(rb'window\.DA_I18N_V="\d*";')
+
+
+def normalise(b: bytes) -> bytes:
+    """Leave out every checkout-dependent value: static asset URLs carry a
+    ?v=<mtime> cache-buster, and "/" stamps the newest i18n file's mtime as
+    window.DA_I18N_V (main._lang_inline). Neither is page content."""
+    return _I18N_V.sub(b'window.DA_I18N_V="0";', _CACHE_BUST.sub(b"?v=0", b))
 
 
 def _digest(b: bytes) -> str:
-    # Static asset URLs carry a ?v=<mtime> cache-buster that changes with every
-    # checkout; it is not page content, so it is left out of the comparison.
-    return hashlib.sha256(_CACHE_BUST.sub(b"?v=0", b)).hexdigest()
+    return hashlib.sha256(normalise(b)).hexdigest()
 
 
 def main(argv: list[str]) -> int:
@@ -143,7 +153,7 @@ def main(argv: list[str]) -> int:
         d.mkdir(parents=True, exist_ok=True)
         for k, v in pages.items():
             name = k.strip("/").replace("/", "__").replace("?", "_Q_").replace("&", "_") or "root"
-            (d / (name.replace(":", "_") + ".out")).write_bytes(v)
+            (d / (name.replace(":", "_") + ".out")).write_bytes(normalise(v))
         print(f"dumped {len(pages)} bodies to {d}")
     digests = {k: _digest(v) for k, v in pages.items()}
     if "--update" in argv:
@@ -167,14 +177,14 @@ def main(argv: list[str]) -> int:
 def regional_names() -> list[str]:
     """A regional copy prints astrology names in its own script: /kn/panchang/bengaluru
     shows the day's tithi and nakshatra from names_kn. It is noindex exactly when
-    seo_pages is not (yet) translated into that language (kn is since DIVASTRO-123)."""
+    seo_pages is not (yet) translated into that language (both are since DIVASTRO-123;
+    tests/test_seo_regional.py checks the translated copies in full)."""
     from app import i18n
     pin()
     client = TestClient(app, raise_server_exceptions=True)
     p = seo_pages._panchang("bengaluru", DAY)
     failures = []
-    # Two languages seo_pages has not been translated into yet (if any are left).
-    for lang in [c for c in i18n.EXTRA_CODES if c not in seo_pages.TRANSLATED][:2]:
+    for lang in ("kn", "ta"):
         html = client.get(f"/{lang}/panchang/bengaluru").text
         n = i18n.names(lang)
         want = [n.TITHI[p["tithi"][0]["name"]], n.NAKSHATRAS[p["nakshatra"][0]["name"]],

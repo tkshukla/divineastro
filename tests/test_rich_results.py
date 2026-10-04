@@ -140,7 +140,8 @@ def omitted_labels(path: str) -> set[str]:
     """EN + HI labels of the timings switched off for this festival page's observance.
     A timing is printed as "<label>: <time>", so that is what must not appear (the
     Makar Sankranti RULE text may still name the punya kaal period, with no time)."""
-    slug, _, year = i18n.strip_prefix(path)[1].removeprefix("/tyohar/").rpartition("-")
+    lang, bare = i18n.strip_prefix(path)          # /hi, /ta, /kn ... (DIVASTRO-123)
+    slug, _, year = bare.removeprefix("/tyohar/").rpartition("-")
     key = vrat_pages.festival_index(int(year))[slug]["key"]
     own = i18n.names(lang).FESTIVAL_TIMINGS
     return {lbl for (k, tk) in festivals.OMITTED_TIMINGS if k == key
