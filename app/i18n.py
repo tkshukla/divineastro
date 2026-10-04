@@ -33,6 +33,7 @@ languages themselves (main.py inlines it into index.html).
 
 from __future__ import annotations
 
+import functools
 import html
 import re
 from dataclasses import dataclass, field
@@ -224,9 +225,23 @@ def t(key: str, lang: str, table: Mapping[str, Mapping[str, str]]) -> str:
 def fmt(key: str, lang: str, table: Mapping[str, Mapping[str, str]], **values) -> str:
     """t() then str.format(**values): templates keep their `{placeholders}` (the
     word order is the translator's). Values are inserted as given — HTML-escape
-    them first where the template is HTML."""
-    text = t(key, lang, table)
-    return text.format(**values) if values else text
+    them first where the template is HTML. Every template may also use the
+    astrology labels of `lang` (name_vars): {t_rahu_kaal}, {l_tithi}, ..."""
+    return t(key, lang, table).format(**{**name_vars(lang), **values})
+
+
+@functools.lru_cache(maxsize=None)
+def _name_vars(lang: str) -> dict:
+    n = names(lang)
+    out = {f"t_{k}": v for k, v in n.TIMINGS.items()}
+    out.update({f"l_{k}": v for k, v in n.LIMBS.items()})
+    return out
+
+
+def name_vars(lang: str) -> dict:
+    """{t_<timing>: ..., l_<limb>: ...} from names_<code>.TIMINGS / LIMBS, so a
+    template can say "{t_rahu_kaal}" and get ರಾಹು ಕಾಲ on a Kannada page."""
+    return _name_vars(lang if lang in BY_CODE else DEFAULT)
 
 
 def has(key: str, lang: str, table: Mapping[str, Mapping[str, str]]) -> bool:
