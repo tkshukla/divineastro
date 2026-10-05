@@ -252,8 +252,11 @@ const PROVIDER_MARK = {
    account — the last needs no configuration, so it is always there. The "first
    N free" line uses the number /api/me reported (acct.freeQuestions), and is left
    out until the server has said it, exactly like the home page's free badge. */
-function openSignIn(onDone) {
-  window.daTrack?.("signin_open");
+/* ctx "ask": opened because a signed-out visitor just sent a question (DIVASTRO-129).
+   They are mid-task, so say the question is kept, and put the email-code route first:
+   it needs no redirect and no password, and the parked question is asked on return. */
+function openSignIn(onDone, ctx) {
+  window.daTrack?.("signin_open", ctx || "");
   acct.afterLogin = onDone || null;
   const provs = acct.authProviders || [];
   // Inline providers complete inside this sheet; only the rest are redirects.
@@ -267,14 +270,17 @@ function openSignIn(onDone) {
   const freeLine = acct.freeKnown && acct.freeQuestions > 0
     ? ` <b>${escapeHtml(at("signInFree").replace("{n}", acct.freeQuestions))}</b>` : "";
 
+  const asking = ctx === "ask";
+  const emailBtn = emailOn ? `<button type="button" class="oauth-btn${asking ? " primary-choice" : ""}" id="email-open">
+            ${PROVIDER_MARK.email}<span>${escapeHtml(at("emailContinue"))}</span></button>` : "";
   const back = modal(`
-    <h2 class="modal-title">${escapeHtml(at("signInTitle"))}</h2>
-    <p class="modal-sub">${escapeHtml(at("signInSub"))}${freeLine}</p>
+    <h2 class="modal-title">${escapeHtml(at(asking ? "signInAskTitle" : "signInTitle"))}</h2>
+    <p class="modal-sub">${escapeHtml(at(asking ? "signInAskSub" : "signInSub"))}${freeLine}</p>
     <div id="signin-choices">
       <div class="oauth-list" id="oauth-list">
+        ${asking ? emailBtn : ""}
         ${buttons}
-        ${emailOn ? `<button type="button" class="oauth-btn" id="email-open">
-            ${PROVIDER_MARK.email}<span>${escapeHtml(at("emailContinue"))}</span></button>` : ""}
+        ${asking ? "" : emailBtn}
         ${phoneOn ? `<button type="button" class="oauth-btn" id="phone-open">
             ${PROVIDER_MARK.phone}<span>${escapeHtml(at("phoneContinue"))}</span></button>` : ""}
         ${acct.devLogin ? `<button class="oauth-btn dev" data-provider="dev">
@@ -1179,7 +1185,7 @@ function handleAskRejection(status, detail, question) {
   if (status === 401) {
     // Sign-in reloads the page; keep the question so it is asked when they are back.
     if (typeof parkQuestion === "function") parkQuestion(question);
-    openSignIn();
+    openSignIn(null, "ask");
     return true;
   }
   if (status === 402) {

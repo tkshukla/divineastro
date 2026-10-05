@@ -2545,3 +2545,11 @@ html[lang="or"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetic
   .site-header .lp-btn { padding: 0 9px; gap: 4px; }
   .site-header .lp-caret { display: none; }
 }
+
+/* The route we point a mid-question visitor to first (DIVASTRO-129). */
+.oauth-btn.primary-choice {
+  border-color: transparent;
+  background: linear-gradient(135deg, #ffd23f, #ff9a1f);
+  color: #3a1500;
+  box-shadow: 0 6px 18px rgba(255, 154, 31, 0.35);
+}
