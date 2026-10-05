@@ -626,3 +626,8 @@ a.as-link:hover { background: rgba(255, 255, 255, 0.06); }
 .tr-journey { border-top: 1px solid var(--line, rgba(128,128,128,.25)); padding: 6px 0; }
 .tr-journey summary { cursor: pointer; font-size: 0.88rem; }
 .tr-journey ol { margin: 8px 0 4px 4px; padding: 0; list-style: none; font-family: ui-monospace, monospace; font-size: 0.82rem; line-height: 1.7; }
+
+/* Questions from signed-out visitors (DIVASTRO-131) */
+.tr-unreg-row { border-top: 1px solid var(--line, rgba(128,128,128,.25)); padding: 8px 0; }
+.tr-unreg-meta { font-size: 0.78rem; opacity: .7; margin-bottom: 2px; }
+.tr-unreg-q { font-size: 0.95rem; white-space: pre-wrap; overflow-wrap: anywhere; }

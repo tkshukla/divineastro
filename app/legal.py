@@ -107,7 +107,7 @@ _SHELL = """<!DOCTYPE html>
 <script src="/static/visit.js" defer></script>   <!-- counts the page load: see analytics.py -->
 </body></html>"""
 
-UPDATED = "3 October 2026"
+UPDATED = "6 October 2026"
 
 
 def _page(title: str, body: str) -> HTMLResponse:
@@ -222,6 +222,12 @@ do about it. It is written to meet the Digital Personal Data Protection Act,
       part, and we treat it as such.</li>
   <li><strong>Your questions and our answers</strong>, so you can revisit and
       download them.</li>
+  <li><strong>Questions typed before signing in</strong> — if you type a
+      question while signed out, we keep the question text (not your birth
+      details) so we can see what visitors want to ask and improve the site.
+      It is stored without your name, email or IP address, is not linked to any
+      account, and is deleted after about 13 months. We honour
+      Do&nbsp;Not&nbsp;Track and Global&nbsp;Privacy&nbsp;Control here too.</li>
   <li><strong>Payment records</strong> — what you bought, when, and the
       gateway's transaction reference. <strong>We never see or store your card,
       UPI or bank details</strong>; those go directly to the payment gateway.</li>
