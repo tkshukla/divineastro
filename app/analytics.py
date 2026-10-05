@@ -37,6 +37,12 @@ started, ...) to POST /api/event, stored in `events` under the same day-scoped
 visitor hash and with the same exclusions. They carry a label from a fixed
 vocabulary and nothing the visitor typed: no birth details, no question text.
 
+Questions typed by visitors who are not signed in (DIVASTRO-131) are the one place
+free text is kept: the server refuses them (401), and the operator wants to see what
+people ask. Only the question text is stored (500 characters at most), under the same
+day-scoped hash, with the same exclusions, a per-visitor-day cap, and a line in the
+privacy policy. Birth details are never part of it.
+
 Known limits (also shown in the admin panel): a full page load is one visit, and
 in-app actions are the fixed event list above, not every click; and because the visitor hash rotates
 daily, a multi-day "visitors" total is a sum of daily uniques, not lifetime
@@ -63,7 +69,7 @@ from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
 from . import auth, i18n, rashifal_pages, seo_cities
-from .db import BirthProfile, Event, QuestionLog, User, Visit, session as db_session, utcnow
+from .db import BirthProfile, Event, QuestionLog, UnregQuestion, User, Visit, session as db_session, utcnow
 
 log = logging.getLogger(__name__)
 
@@ -489,11 +495,52 @@ def record_event(request: Request, name: str, detail: str = "") -> bool:
         return False
 
 
+UNREG_PER_VISITOR_DAY = 20
+
+
+def record_unregistered_question(request: Request, question: str, language: str = "") -> bool:
+    """Keep a question a signed-out visitor tried to ask. Never raises."""
+    try:
+        question = " ".join((question or "").split())[:500]
+        seen = _countable(request)
+        if not question or seen is None:
+            return False
+        ua, ip = seen
+        visitor = visitor_hash(ip, ua)
+        with db_session() as db:
+            if _is_admin_session(db, request.cookies.get(auth.COOKIE)):
+                return False
+            since = utcnow() - dt.timedelta(hours=24)
+            if (db.execute(select(func.count(UnregQuestion.id)).where(
+                    UnregQuestion.visitor == visitor, UnregQuestion.ts >= since)).scalar_one()
+                    >= UNREG_PER_VISITOR_DAY):
+                return False
+            source, _, campaign = request.cookies.get(SRC_COOKIE, "").partition("|")
+            db.add(UnregQuestion(question=question, language=clean(language, 8), visitor=visitor,
+                                 source=clean(source), campaign=clean(campaign, 80)))
+            db.commit()
+        return True
+    except Exception:
+        log.warning("unregistered-question capture failed", exc_info=True)
+        return False
+
+
+def unregistered_questions(db: Session, start_utc: dt.datetime, limit: int = 60) -> list[dict]:
+    rows = db.execute(
+        select(UnregQuestion.ts, UnregQuestion.question, UnregQuestion.language,
+               UnregQuestion.visitor, UnregQuestion.source, UnregQuestion.campaign)
+        .where(UnregQuestion.ts >= start_utc).order_by(UnregQuestion.ts.desc()).limit(limit)).all()
+    return [{"when": ts.astimezone(IST).strftime("%d %b %H:%M"), "question": q, "language": lang,
+             "visitor": v[:6], "source": src or "direct", "campaign": camp}
+            for ts, q, lang, v, src, camp in rows]
+
+
 def purge_old(db: Session) -> int:
     """Delete visits past the retention window. Returns how many."""
     cutoff = utcnow() - dt.timedelta(days=RETENTION_DAYS)
     n = db.execute(delete(Visit).where(Visit.ts < cutoff)).rowcount or 0
     db.execute(delete(Event).where(Event.ts < cutoff))
+    db.execute(delete(UnregQuestion).where(UnregQuestion.ts < cutoff))
     db.commit()
     return n
 
@@ -770,4 +817,5 @@ def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict
         "tracking_since": since_day.isoformat() if since_day else None,
         "users_total": users_total,
         **in_app(db, start_utc, range_days, today, visits),
+        "unreg_questions": unregistered_questions(db, range_start),
     }

@@ -25,7 +25,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from . import auth, billing, geo, llm, pdf_report
+from . import analytics, auth, billing, geo, llm, pdf_report
 from . import i18n as i18n  # DIVASTRO-121: language registry (index.html picker + inline strings)
 from .api_account import router as account_router
 from .api_feedback import router as feedback_router
@@ -414,7 +414,12 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
     # debit happens after the analysis succeeds, so a failure never costs the
     # customer a question.
     with db_session() as db:
-        user = auth.require_user(request, db)
+        try:
+            user = auth.require_user(request, db)
+        except HTTPException as exc:
+            if exc.status_code == 401:       # DIVASTRO-131: keep what signed-out visitors ask
+                analytics.record_unregistered_question(request, question, req.language)
+            raise
         credits = balance(db, user.id)
         if credits <= 0:
             raise InsufficientCredits(credits)

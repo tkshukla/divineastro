@@ -589,6 +589,40 @@ def part3() -> None:
         left = {x.detail for x in db.query(Event).filter(Event.detail.in_(["old-ev", "fresh-ev"]))}
     check("old events are deleted, recent ones kept", left == {"fresh-ev"}, str(left))
 
+    print("\n6d. Questions from signed-out visitors (DIVASTRO-131)")
+    from app.db import UnregQuestion
+    qv = f"198.19.{(RUN + 21) % 250}.{(RUN // 250 + 17) % 250 + 1}"
+    qh = {"User-Agent": CHROME + " asker", "X-Forwarded-For": qv}
+    def ask_signed_out(q, headers=None):
+        return requests.post(f"{BASE}/api/ask/stream", json={"session_id": "x", "question": q, "language": "hi"},
+                             headers={**qh, **(headers or {})}, timeout=30)
+    def kept():
+        with session() as db:
+            return [r.question for r in db.query(UnregQuestion).all()]
+    r = ask_signed_out(f"Will I get a visa in {RUN}?")
+    check("a signed-out question is still refused with 401", r.status_code == 401, str(r.status_code))
+    check("and its text is kept for the admin", f"Will I get a visa in {RUN}?" in kept(), str(kept()[-2:]))
+    n = len(kept())
+    for label, hd in [("Do-Not-Track", {"DNT": "1"}), ("Global-Privacy-Control", {"Sec-GPC": "1"}),
+                      ("a bot", {"User-Agent": "Googlebot/2.1"})]:
+        ask_signed_out("should not be kept", hd)
+        check(f"{label} is refused but not kept", len(kept()) == n, f"{n} -> {len(kept())}")
+    with session() as db:
+        row = db.query(UnregQuestion).filter(UnregQuestion.question.like("Will I get a visa%")).first()
+        stored = " ".join(str(x) for x in (row.question, row.language, row.visitor, row.source, row.campaign))
+    check("NO IP address and NO browser string stored with it", qv not in stored and "Mozilla" not in stored, stored)
+    d = admin.get(f"{BASE}/api/admin/traffic?days=7", timeout=30).json()
+    check("the admin summary lists it",
+          any(f"visa in {RUN}" in x["question"] for x in d.get("unreg_questions", [])), str(d.get("unreg_questions", [])[:2]))
+    with session() as db:
+        db.add_all([UnregQuestion(ts=an.utcnow() - dt.timedelta(days=an.RETENTION_DAYS + 30), question="old-uq"),
+                    UnregQuestion(ts=an.utcnow(), question="fresh-uq")])
+        db.commit()
+        an.purge_old(db)
+        left = {x.question for x in db.query(UnregQuestion).filter(UnregQuestion.question.in_(["old-uq", "fresh-uq"]))}
+    check("old kept questions are purged with the other statistics", left == {"fresh-uq"}, str(left))
+
+
 
 def main() -> int:
     part1()

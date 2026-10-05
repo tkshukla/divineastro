@@ -1272,6 +1272,18 @@ function renderInApp(d) {
   $('#tr-appfunnel-note').textContent = 'People are counted once per day. In-app actions are reported by the browser, ' +
     'so a visitor with tracking blocked is missing; steps can be skipped (a signed-in person never opens sign-in), so a step may be larger than the one before.';
 
+  const uq = $('#tr-unreg');
+  uq.textContent = '';
+  const qs = d.unreg_questions || [];
+  if (!qs.length) uq.appendChild(el('p', 'empty', 'No questions from signed-out visitors yet.'));
+  qs.forEach((q) => {
+    const row = el('div', 'tr-unreg-row');
+    row.appendChild(el('div', 'tr-unreg-meta',
+      `${q.when} · ${q.source}${q.campaign ? ' · ' + q.campaign : ''} · ${q.language || '?'} · #${q.visitor}`));
+    row.appendChild(el('div', 'tr-unreg-q', q.question));
+    uq.appendChild(row);
+  });
+
   const host = $('#tr-journeys');
   host.textContent = '';
   const js = d.journeys || [];

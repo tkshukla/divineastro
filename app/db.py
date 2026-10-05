@@ -234,6 +234,26 @@ class Event(Base):
     campaign: Mapped[str] = mapped_column(String(80), default="")
 
 
+class UnregQuestion(Base):
+    """A question typed by someone who was not signed in (DIVASTRO-131), kept so
+    the operator can see what visitors want to ask. The server refuses it (401),
+    so it is otherwise lost. Only the question text is kept, with the same
+    day-scoped `visitor` hash as `Visit` — no birth details, no IP, no user id.
+    Disclosed in the privacy policy; deleted with the other statistics.
+    """
+
+    __tablename__ = "unreg_questions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    ts: Mapped[dt.datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, index=True)
+    question: Mapped[str] = mapped_column(String(500), default="")
+    language: Mapped[str] = mapped_column(String(8), default="")
+    visitor: Mapped[str] = mapped_column(String(16), default="", index=True)
+    source: Mapped[str] = mapped_column(String(60), default="")
+    campaign: Mapped[str] = mapped_column(String(80), default="")
+
+
 FEEDBACK_CATEGORIES = ("general", "bug", "answers", "payments", "idea", "other")
 FEEDBACK_STATUSES = ("new", "read", "resolved")
 
