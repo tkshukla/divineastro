@@ -182,6 +182,27 @@ def paywall_after_free_questions(p, browser, base: str) -> None:
     ctx.close()
 
 
+def signin_after_rejected_question(p, browser, base: str) -> None:
+    print("\n[a question the server refuses with 401 opens a sign-in sheet that says the question is kept (DIVASTRO-129)]")
+    ctx = browser.new_context(**DESKTOPS["desktop_1440x800"])
+    pg = Page(ctx.new_page(), base)
+    pg.open_chat()
+    pg.page.route("**/api/ask/stream", lambda route: route.fulfill(
+        status=401, content_type="application/json", body='{"detail":"Sign in to ask."}'))
+    ask(pg, "Will I change my job this year?")
+    pg.page.wait_for_selector(".modal-title", timeout=10000)
+    title = pg.page.locator(".modal-title").first.inner_text()
+    sub = pg.page.locator(".modal-sub").first.inner_text()
+    check("the sheet is the 'one step to get your answer' version", "get your answer" in title, title)
+    check("it says the question is saved", "saved" in sub, sub)
+    if pg.page.locator("#email-open").count():
+        first = pg.page.evaluate("document.querySelector('#oauth-list').firstElementChild.id")
+        check("the email-code route is listed first", first == "email-open", first)
+    check("no console errors", not [e for e in pg.console_errors if "401" not in e],
+          "; ".join(pg.console_errors[:3]))
+    ctx.close()
+
+
 def main() -> int:
     with server() as base, sync_playwright() as p:
         browser = p.chromium.launch()
@@ -189,6 +210,7 @@ def main() -> int:
         stop_button(p, browser, base)
         hindi_answer(p, browser, base)
         paywall_after_free_questions(p, browser, base)
+        signin_after_rejected_question(p, browser, base)
         browser.close()
     return check.finish("ask a question (streaming, stop, Hindi, paywall)")
 

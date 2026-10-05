@@ -289,6 +289,8 @@
  "acct.signOut": "साइन आउट",
  "acct.signInTitle": "Divine Astro में साइन इन करें",
  "acct.signInSub": "लगभग 10 सेकंड लगते हैं — और यूज़रनेम वाले खाते के लिए ईमेल की ज़रूरत ही नहीं।",
+ "acct.signInAskTitle": "जवाब पाने के लिए बस एक कदम",
+ "acct.signInAskSub": "आपका सवाल सुरक्षित है — साइन इन करें (लगभग 10 सेकंड), और हम तुरंत जवाब देंगे।",
  "acct.signInFree": "आपके पहले {n} प्रश्न निःशुल्क हैं।",
  "acct.continueWith": "जारी रखें",
  "acct.noProviders": "साइन-इन अभी कॉन्फ़िगर नहीं है।",

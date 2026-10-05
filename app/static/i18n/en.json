@@ -289,6 +289,8 @@
  "acct.signOut": "Sign out",
  "acct.signInTitle": "Sign in to Divine Astro",
  "acct.signInSub": "Takes about 10 seconds — and a username account needs no email at all.",
+ "acct.signInAskTitle": "One step to get your answer",
+ "acct.signInAskSub": "Your question is saved — sign in (about 10 seconds) and we'll answer it right away.",
  "acct.signInFree": "Your first {n} questions are free.",
  "acct.continueWith": "Continue with",
  "acct.noProviders": "Sign-in is not configured yet. Add OAuth credentials to enable it.",
