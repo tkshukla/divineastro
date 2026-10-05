@@ -306,7 +306,10 @@ _UI = {
                   "कथा के साथ उसका मूल स्रोत दिया गया है।",
          "index_desc": "रामायण, महाभारत, पुराण और व्रत कथाएँ सरल हिंदी में, मूल स्रोत सहित।",
          "title_suffix": " की कथा", "nf": "कथा नहीं मिली", "nf_desc": "यह कथा उपलब्ध नहीं है।",
-         "all": "सभी कथाएँ देखें"},
+         "all": "सभी कथाएँ देखें",
+         "cta_h": "कथा पढ़ ली — अब अपनी कुंडली देखें",
+         "cta_p": "जन्म तिथि, समय और स्थान से मुफ़्त कुंडली, दशा और ग्रह स्थिति। AI ज्योतिषी से पहले 10 सवाल फ्री — कोई कार्ड नहीं चाहिए।",
+         "cta_kundali": "मुफ़्त कुंडली बनाएँ", "cta_panchang": "आज का पंचांग देखें"},
     EN: {"index": "Stories from the Puranas", "crumb": "Kathas", "source": "Source",
          "lesson": "What this story teaches", "next": "Read next", "more": "More stories",
          "intro": "Famous stories from the Ramayana, the Mahabharata, the Puranas and the vrat "
@@ -314,7 +317,11 @@ _UI = {
          "index_desc": "Stories from the Ramayana, Mahabharata, Puranas and vrat kathas in plain "
                        "English, with their sources.",
          "title_suffix": ": the story", "nf": "Story not found",
-         "nf_desc": "This story is not available.", "all": "See all stories"},
+         "nf_desc": "This story is not available.", "all": "See all stories",
+         "cta_h": "You have read the story — now see your own chart",
+         "cta_p": "A free kundali with your dashas and planetary positions from your birth date, time and place. "
+                  "Your first 10 questions to the AI astrologer are free — no card needed.",
+         "cta_kundali": "Make my free kundali", "cta_panchang": "See today's Panchang"},
 }
 
 
@@ -357,6 +364,9 @@ def _story(slug: str, lang: str) -> HTMLResponse:
             f"{paras}"
             f"<h2>{_e(ui['lesson'])}</h2><p>{_html(t.message)}</p>"
             + (f"<p>{_html(t.note)}</p>" if t.note else "")
+            + f"<h2>{_e(ui['cta_h'])}</h2><p>{_e(ui['cta_p'])}</p>"
+            + seo_pages._cta("free-kundali", ui["cta_kundali"], lang, big=True)
+            + f'<p><a href="{_e(i18n.prefix(lang))}/panchang">{_e(ui["cta_panchang"])}</a></p>'
             + (f'<h2>{_e(ui["next"])}</h2><ul class="links">{links}'
                f'<li><a href="{page_path(None, lang)}">{_e(ui["more"])}</a></li></ul>'))
     article = {"@type": "Article", "headline": t.title,
