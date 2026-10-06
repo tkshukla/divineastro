@@ -631,3 +631,8 @@ a.as-link:hover { background: rgba(255, 255, 255, 0.06); }
 .tr-unreg-row { border-top: 1px solid var(--line, rgba(128,128,128,.25)); padding: 8px 0; }
 .tr-unreg-meta { font-size: 0.78rem; opacity: .7; margin-bottom: 2px; }
 .tr-unreg-q { font-size: 0.95rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Day report (DIVASTRO-132) */
+#dr-nav { align-items: center; justify-content: flex-end; }
+#dr-nav input[type="date"] { font: inherit; color: inherit; width: auto; padding: 6px 12px; }
+#dr-nav .chip:disabled { opacity: .35; cursor: default; }

@@ -622,6 +622,32 @@ def part3() -> None:
         left = {x.question for x in db.query(UnregQuestion).filter(UnregQuestion.question.in_(["old-uq", "fresh-uq"]))}
     check("old kept questions are purged with the other statistics", left == {"fresh-uq"}, str(left))
 
+    print("\n6e. The day report (DIVASTRO-132)")
+    today = an.utcnow().astimezone(an.IST).date().isoformat()
+    dr = admin.get(f"{BASE}/api/admin/traffic/day", timeout=30)
+    check("the day report answers for today", dr.status_code == 200, str(dr.status_code))
+    dr = dr.json()
+    check("it carries the headline numbers and the day before",
+          dr["date"] == today and dr["is_today"] and dr["visitors"] >= 1 and dr["pageviews"] >= dr["visitors"]
+          and set(dr["previous"]) == {"visitors", "pageviews", "new_users"}, str({k: dr[k] for k in ("date", "visitors", "pageviews")}))
+    check("sources carry the campaign", any(x["source"] == "whatsapp" and x["campaign"] == "blr-test" for x in dr["sources"]),
+          str(dr["sources"]))
+    check("pages list the page and its visitors",
+          any(x["path"] == "/panchang/bengaluru" and x["visitors"] >= 1 for x in dr["pages"]), str(dr["pages"]))
+    check("what visitors did in the app is in plain words",
+          any(a["label"] == "Cast a chart" for a in dr["actions"]) and any(a["label"] == "Sent a question to the AI" for a in dr["actions"]),
+          str(dr["actions"]))
+    check("24 hourly buckets and a 7-day trend ending today",
+          len(dr["hours"]) == 24 and len(dr["trend"]) == 7 and dr["trend"][-1]["date"] == today)
+    check("signed-out questions for the day are included",
+          any("visa" in q["question"] for q in dr["questions"]), str(dr["questions"][:2]))
+    old = admin.get(f"{BASE}/api/admin/traffic/day?date=2020-01-01", timeout=30).json()
+    check("a day with no data is all zeros, not an error",
+          old["visitors"] == 0 and old["pageviews"] == 0 and old["sources"] == [] and old["is_today"] is False)
+    check("a future date is clamped to today", admin.get(f"{BASE}/api/admin/traffic/day?date=2999-01-01", timeout=30).json()["date"] == today)
+    check("a bad date -> 400", admin.get(f"{BASE}/api/admin/traffic/day?date=nope", timeout=30).status_code == 400)
+    check("anyone but an admin is refused", requests.get(f"{BASE}/api/admin/traffic/day", timeout=30).status_code in (401, 403))
+
 
 
 def main() -> int:

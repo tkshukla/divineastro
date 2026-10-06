@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
@@ -84,6 +84,18 @@ async def event(request: Request) -> Response:
     if ev is not None:
         await run_in_threadpool(analytics.record_event, request, *ev)
     return ok
+
+
+@router.get("/admin/traffic/day")
+def admin_traffic_day(date: str | None = None, _: User = Depends(admin),
+                      db: Session = Depends(get_db)) -> dict:
+    """One IST day in full (default: today). `date` is YYYY-MM-DD."""
+    import datetime as dt
+    try:
+        day = dt.date.fromisoformat(date) if date else analytics.utcnow().astimezone(analytics.IST).date()
+    except ValueError:
+        raise HTTPException(400, "date must be YYYY-MM-DD")
+    return analytics.day_report(db, day)
 
 
 @router.get("/admin/traffic")
