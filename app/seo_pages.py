@@ -220,6 +220,12 @@ _STYLE = """
   .seo th { color: var(--ink-faint); font-weight: 500; white-space: nowrap; }
   .seo td { color: var(--ink); }
   .seo td small { color: var(--ink-faint); display: block; }
+  /* Narrow phones: a long label or a long Tamil/Malayalam transition ("... till 2:52 AM, then ...")
+     must wrap rather than push the fact table wider than the screen. */
+  @media (max-width: 420px) {
+    .seo th { white-space: normal; }
+    .seo th, .seo td { overflow-wrap: anywhere; word-break: break-word; }
+  }
   .seo .good { color: var(--green); } .seo .bad { color: var(--rose); }
   .seo .cta { display: block; text-align: center; margin: 24px 0; padding: 14px 18px;
               border-radius: 12px; font-weight: 600; text-decoration: none; color: #fff;
