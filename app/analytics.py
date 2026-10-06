@@ -460,6 +460,7 @@ EVENT_NAMES = frozenset({
     "checkout_start",  # an order was started (detail: the sku)
     "paid",            # an order was confirmed paid (detail: the sku)
     "lang",            # the language was changed (detail: the code)
+    "home_cta",        # the main kundali button on the home screen was tapped
 })
 MAX_EVENT_BYTES = 512
 
@@ -635,6 +636,7 @@ def funnel(db: Session, start_utc: dt.datetime, visitors: int, new_users: int) -
 
 
 APP_FUNNEL = (   # (label, event name, detail or None)
+    ("Tapped the main kundali button", "home_cta", None),
     ("Opened the birth form", "screen", "birth"),
     ("Cast a chart", "chart_cast", None),
     ("Opened sign-in", "signin_open", None),
@@ -718,6 +720,7 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("screen", "dashboard"): "Opened the chart dashboard", ("screen", "panchang"): "Opened Panchang",
     ("screen", "milan"): "Opened Kundali Milan", ("screen", "muhurat"): "Opened Muhurat",
     ("screen", "choghadiya"): "Opened Choghadiya", ("screen", "home"): "Back on the home screen",
+    ("home_cta", ""): "Tapped the main kundali button",
     ("chart_cast", ""): "Cast a chart", ("ask_sent", ""): "Sent a question to the AI",
     ("signin_open", ""): "Sign-in sheet opened", ("signup", ""): "Signed up",
     ("store_open", "credits"): "Store opened (out of questions)",

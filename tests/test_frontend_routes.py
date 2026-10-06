@@ -69,8 +69,8 @@ def problems(source: str, table, where: str = "") -> tuple[int, list[str]]:
 
 HOME_IDS = ("today-strip", "today-open", "today-city", "today-place", "today-results",
             "today-tithi", "today-nak", "today-rahu", "sample-qa", "sample-q", "sample-a",
-            "sample-ask", "sample-ask-label", "home-cta", "free-badge")
-HOME_KEYS = ("homeCta", "todayTitle", "todayTithi", "todayNak", "todayRahu", "todayNow",
+            "sample-ask", "sample-ask-label", "home-cta", "home-promise", "tools-head", "free-badge")
+HOME_KEYS = ("homeCta", "homePromise", "homeToolsHead", "todayTitle", "todayTithi", "todayNak", "todayRahu", "todayNow",
              "todayChange", "todayCityPh", "todayOpen", "sampleTag", "sampleQ", "sampleA",
              "sampleNote", "sampleAsk")
 
@@ -100,7 +100,7 @@ def home_value_checks() -> None:
     check("every new home element is in index.html", not missing, str(missing))
 
     home = html[html.index('id="stage-home"'):html.index('id="home-footer"')]
-    order = ["home-tagline", "home-cta", "today-strip", "open-milan", "sample-qa", "feat-grid"]
+    order = ["home-tagline", "home-cta", "home-promise", "today-strip", "tools-head", "open-milan", "sample-qa", "feat-grid"]
     pos = [home.find(f'id="{i}"') for i in order]
     check("order: tagline > main button > Today strip > tools > sample Q&A > features",
           all(p >= 0 for p in pos) and pos == sorted(pos), str(dict(zip(order, pos))))
@@ -113,8 +113,11 @@ def home_value_checks() -> None:
           str([k for k in HOME_KEYS if k not in hi]))
 
     cta = i18n_table("en").get("homeCta", "")
-    check("the main button says the kundali is free and needs no sign-in",
-          "free" in cta.lower() and "sign-in" in cta.lower(), cta or "no homeCta")
+    promise = i18n_table("en").get("homePromise", "")
+    check("the main button promises a free kundali, fast (DIVASTRO-134)",
+          "free" in cta.lower() and "kundali" in cta.lower() and "30 seconds" in cta.lower(), cta or "no homeCta")
+    check("the promise line under it says free, no card, no sign-in",
+          all(w in promise.lower() for w in ("free", "card", "sign-in")), promise or "no homePromise")
 
     # The strip must reuse the Panchang tool's API (no second computation) and
     # remember the city defensively (localStorage throws in some private modes).
