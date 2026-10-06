@@ -1329,7 +1329,8 @@ function renderDayReport(r) {
 
 async function loadDayReport(day) {
   try {
-    renderDayReport(await api(`/api/admin/traffic/day${day ? `?date=${day}` : ''}`));
+    const url = day ? `/api/admin/traffic/day?date=${day}` : '/api/admin/traffic/day';
+    renderDayReport(await api(url));
   } catch (e) {
     console.error('Failed to load the day report:', e);
     $('#dr-sub').textContent = `Could not load the day report: ${e.message}`;
