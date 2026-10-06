@@ -44,7 +44,7 @@ from .nakshatra_page_text import TEXT
 from .nakshatra_text import FACTS, NAKSHATRA_TRAITS, RASHI_TRAITS
 from .rashifal_pages import BY_SLUG as RASHI_BY_SLUG, RASHIS, Rashi, path as rashifal_path
 from .seo_pages import (ADSENSE_CLIENT, BRAND, SITE_URL, _STYLE, _cache_headers, _e, _footer,
-                        _panchang, _today, page_language_bits)
+                        _panchang, _strip, _today, page_language_bits)
 from .share import seo_share
 
 router = APIRouter()
@@ -232,7 +232,7 @@ _SHELL = """<!DOCTYPE html>
   <div class="top"><a class="back" href="{home}">&larr; {brand}</a>{picker}</div>
   <nav class="crumbs" aria-label="Breadcrumb">{crumbs}</nav>
   {notice}
-  {body}
+  {body}{strip}
 </main>
 {footer}
 </body></html>"""
@@ -285,6 +285,7 @@ def shell(*, lang: str, en_path: str, hi_path: str, title: str, description: str
         style=_STYLE + _EXTRA_STYLE, jsonld=jsonld, crumbs=i18n.localize_links(crumb_html, lang),
         body=(seo_share(own) if share and status == 200 else "")
         + i18n.localize_links(body, lang),
+        strip=_strip(lang=lang, path=own, title=title) if share and status == 200 else "",
         footer=_footer(lang))
     out = _cache_headers() if cache else {"Cache-Control": "no-store"}
     out.update(headers or {})

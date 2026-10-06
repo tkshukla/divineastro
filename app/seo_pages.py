@@ -235,6 +235,25 @@ _STYLE = """
                       letter-spacing: .03em; }
   .seo dl.cities dd { margin: 0; }
   .seo .faq h3 { margin-top: 20px; }
+  .seo .stay { margin: 28px 0 8px; padding: 12px 14px; border: 1px solid var(--line);
+               border-radius: 14px; background: var(--inset-bg); }
+  .seo .stay h2 { font-family: var(--sans); font-size: 12.5px; font-weight: 500; letter-spacing: .04em;
+                  color: var(--ink-faint); margin: 0 0 8px; }
+  .seo .stay ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .seo .stay li { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+  .seo .stay a, .seo .stay .stay-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 40px;
+        box-sizing: border-box; padding: 6px 14px; border: 1px solid var(--line); border-radius: 999px;
+        font: inherit; font-size: 13.5px; line-height: 1.35; color: var(--ink-dim); background: transparent;
+        text-decoration: none; cursor: pointer; }
+  .seo .stay a:hover, .seo .stay .stay-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .seo .stay a:focus-visible, .seo .stay .stay-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+  .seo .stay .share-wa-icon { flex: none; color: #1fae55; }
+  .seo .stay .stay-btn[hidden] { display: none; }
+  .seo .stay .stay-btn:disabled { opacity: .6; cursor: progress; }
+  .seo .stay .stay-done { color: var(--gold); font-size: 13.5px; }
+  .seo .stay .stay-note { flex-basis: 100%; color: var(--ink-faint); font-size: 12.5px; }
+  @media (max-width: 639px) { .seo .stay li { flex-basis: 100%; }
+        .seo .stay a, .seo .stay .stay-btn { width: 100%; } }
   .site-footer { margin: 30px auto 0; }
   @media (min-width: 640px) { .seo { padding-top: 40px; } .seo h1 { font-size: 32px; } }
 """
@@ -270,7 +289,7 @@ _SHELL = """<!DOCTYPE html>
   <div class="top"><a class="back" href="{home}">&larr; {brand}</a>{switch}</div>
   {share}<nav class="crumbs" aria-label="{crumb_label}">{crumbs}</nav>
   {notice}
-  {body}
+  {body}{strip}
 </main>
 {footer}
 </body></html>"""
@@ -280,6 +299,12 @@ def _share(path: str) -> str:
     """DIVASTRO-107: a plain wa.me "Share on WhatsApp" link, UTM-tagged (see share.py)."""
     from .share import seo_share
     return seo_share(path)
+
+
+def _strip(*, lang: str, path: str, title: str) -> str:
+    """DIVASTRO-135: the "stay in touch" strip (see stay_strip.py), shared by every shell."""
+    from .stay_strip import stay_strip
+    return stay_strip(lang=lang, path=path, title=title)
 
 
 def _footer(lang: str = EN) -> str:
@@ -385,7 +410,8 @@ def _render(*, title: str, description: str, path: str, crumbs: list[tuple[str, 
         brand=_e(BRAND), site=_e(SITE_URL), adsense=ADSENSE_CLIENT, style=_STYLE,
         jsonld=jsonld, crumbs=i18n.localize_links(crumb_html, lang),
         body=i18n.localize_links(body, lang), footer=_footer(lang),
-        share=_share(path) if status == 200 else "")
+        share=_share(path) if status == 200 else "",
+        strip=_strip(lang=lang, path=path, title=title) if status == 200 else "")
     headers = _cache_headers() if cache else {"Cache-Control": "no-store"}
     return HTMLResponse(page, status_code=status, headers=headers)
 

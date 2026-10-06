@@ -14,7 +14,11 @@
 
 (() => {
   const root = document.getElementById('push-optin');
-  if (!root) return;
+  // DIVASTRO-135: the "stay in touch" strip on the content pages has its own button
+  // (#strip-push, loaded lazily by strip.js). Where the page also has #push-optin
+  // (home, /vrat-tyohar) that one is the offer and the strip's button stays hidden.
+  const stripBtn = root ? null : document.getElementById('strip-push');
+  if (!root && !stripBtn) return;
   if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
   if (Notification.permission === 'denied') return;
 
@@ -95,7 +99,36 @@
     };
   }
 
+  // The strip's button: shown while not subscribed, replaced by a short thanks once on.
+  function renderStrip() {
+    if (!stripBtn) return;
+    const li = stripBtn.parentElement;
+    let done = li.querySelector('.stay-done');
+    if (sub) {
+      stripBtn.hidden = true;
+      if (done) done.hidden = false;
+      else if (stripBtn.dataset.justOn) {
+        done = document.createElement('span');
+        done.className = 'stay-done';
+        done.setAttribute('role', 'status');
+        done.textContent = stripBtn.dataset.on || '';
+        li.append(done);
+      }
+      return;
+    }
+    if (done) done.hidden = true;
+    stripBtn.disabled = busy;
+    stripBtn.textContent = busy ? (stripBtn.dataset.busy || '…') : stripBtn.dataset.label;
+    let n = li.querySelector('.stay-note');
+    if (note) {
+      if (!n) { n = document.createElement('small'); n.className = 'stay-note'; n.setAttribute('role', 'status'); li.append(n); }
+      n.textContent = note;
+    } else if (n) n.remove();
+    stripBtn.hidden = false;
+  }
+
   function render() {
+    if (!root) { renderStrip(); return; }
     root.textContent = '';
     if (sub) {
       const span = document.createElement('span');
@@ -137,7 +170,7 @@
     try {
       const perm = await Notification.requestPermission();
       if (perm !== 'granted') {
-        note = perm === 'denied' ? tr('denied') : '';
+        note = perm === 'denied' ? ((stripBtn && stripBtn.dataset.denied) || tr('denied')) : '';
         return;
       }
       const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
@@ -146,8 +179,9 @@
         || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(key) });
       await post('/api/push/subscribe', payload(s));
       sub = s;
+      if (stripBtn) stripBtn.dataset.justOn = '1';
     } catch {
-      note = tr('err');
+      note = (stripBtn && stripBtn.dataset.err) || tr('err');
     } finally {
       busy = false;
       render();
@@ -179,6 +213,10 @@
       const reg = await navigator.serviceWorker.getRegistration('/');
       sub = reg ? await reg.pushManager.getSubscription() : null;
     } catch { return; }
+    if (stripBtn) {
+      stripBtn.dataset.label = stripBtn.textContent;
+      stripBtn.addEventListener('click', subscribe);
+    }
     render();
     new MutationObserver(() => { render(); sync(); })
       .observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
