@@ -87,6 +87,7 @@ async function boot() {
   wireUsers();
   wireFeedback();
   wireTraffic();
+  wireDayReport();
   wireQuestions();
 
   // Load active tab initially and prefetch background queues
@@ -1260,6 +1261,90 @@ function renderFunnel(f) {
     'Your own charts and questions are left out.';
 }
 
+/* ---- day report: one IST day in full ---- */
+let drDay = null;                        // YYYY-MM-DD; null = today
+
+const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const shiftDay = (iso, by) => { const d = new Date(`${iso}T12:00:00`); d.setDate(d.getDate() + by); return ymd(d); };
+
+function deltaText(now, before, noun) {
+  if (before === 0 && now === 0) return `no ${noun} the day before either`;
+  if (before === 0) return `${noun} the day before: 0`;
+  const diff = now - before;
+  const sign = diff > 0 ? '+' : diff < 0 ? '−' : '±';
+  return `${sign}${Math.abs(diff)} vs the day before (${before})`;
+}
+
+function renderDayReport(r) {
+  $('#dr-title').textContent = `${r.weekday}, ${r.label}`;
+  $('#dr-sub').textContent = r.is_today
+    ? `So far today, up to ${r.as_of} IST. Counted like the rest of this page: once per visitor per day, no bots, no Do-Not-Track, not you.`
+    : 'The full day, IST.';
+  drDay = r.is_today ? null : r.date;
+  $('#dr-date').value = r.date;
+  $('#dr-today').classList.toggle('on', r.is_today);
+  const yest = shiftDay(ymd(new Date()), -1);
+  $('#dr-yesterday').classList.toggle('on', r.date === yest);
+  $('#dr-next').disabled = r.is_today;
+
+  const tiles = $('#dr-tiles');
+  tiles.textContent = '';
+  tiles.append(
+    tile('Visitors', fmt(r.visitors), deltaText(r.visitors, r.previous.visitors, 'visitors'), 'blue'),
+    tile('Page views', fmt(r.pageviews),
+      r.pageviews_per_visitor ? `${r.pageviews_per_visitor} per visitor` : 'no visits yet'),
+    tile('New users', fmt(r.new_users), deltaText(r.new_users, r.previous.new_users, 'new users'), 'orange'),
+    tile('Sign-up rate', pct(r.signup_rate), 'new users ÷ visitors'),
+    tile('Paid orders', fmt(r.orders.paid), r.orders.paid ? `₹${fmt(r.orders.revenue_rupees)}` : 'no revenue'));
+
+  drawColumns($('#dr-hours'), r.hours,
+    { key: 'visitors', color: 'blue', title: 'Visitors by hour (IST)', one: 'visitor', many: 'visitors',
+      detail: (h) => `${h.label}:00 – ${h.label}:59 IST` });
+  drawColumns($('#dr-trend'), r.trend,
+    { key: 'visitors', color: 'orange', title: 'Visitors, last 7 days', one: 'visitor', many: 'visitors',
+      detail: (x) => `${fmt(x.pageviews)} page views · ${fmt(x.new_users)} new users` });
+
+  barList($('#dr-sources'), r.sources.map((s) => ({
+    label: `${niceLabel(s.source)}${s.campaign ? ' · ' + s.campaign : ''}`, count: s.visitors })), {
+    raw: true, value: (x) => `${fmt(x.count)} visitor${x.count === 1 ? '' : 's'}` });
+  barList($('#dr-pages'), r.pages.map((p) => ({ label: p.path, count: p.views, visitors: p.visitors })), {
+    raw: true, mono: true, value: (x) => `${fmt(x.count)} views · ${fmt(x.visitors)} visitors` });
+  barList($('#dr-actions'), r.actions.map((a) => ({ label: a.label, count: a.people, times: a.times })), {
+    raw: true, color: 'orange',
+    value: (x) => `${fmt(x.count)} ${x.count === 1 ? 'person' : 'people'}${x.times > x.count ? ` · ${fmt(x.times)} times` : ''}` });
+  barList($('#dr-devices'), r.devices.map((d) => ({ label: d.device, count: d.visitors })), {
+    value: (x) => `${fmt(x.count)} visitor${x.count === 1 ? '' : 's'}` });
+
+  const qs = $('#dr-questions');
+  qs.textContent = '';
+  if (!r.questions.length) qs.appendChild(el('p', 'empty', 'None this day.'));
+  r.questions.forEach((q) => {
+    const row = el('div', 'tr-unreg-row');
+    row.appendChild(el('div', 'tr-unreg-meta',
+      `${q.when} · ${q.source}${q.campaign ? ' · ' + q.campaign : ''} · ${q.language || '?'} · #${q.visitor}`));
+    row.appendChild(el('div', 'tr-unreg-q', q.question));
+    qs.appendChild(row);
+  });
+}
+
+async function loadDayReport(day) {
+  try {
+    renderDayReport(await api(`/api/admin/traffic/day${day ? `?date=${day}` : ''}`));
+  } catch (e) {
+    console.error('Failed to load the day report:', e);
+    $('#dr-sub').textContent = `Could not load the day report: ${e.message}`;
+  }
+}
+
+function wireDayReport() {
+  const cur = () => drDay || ymd(new Date());
+  $('#dr-today').onclick = () => loadDayReport(null);
+  $('#dr-yesterday').onclick = () => loadDayReport(shiftDay(ymd(new Date()), -1));
+  $('#dr-prev').onclick = () => loadDayReport(shiftDay(cur(), -1));
+  $('#dr-next').onclick = () => { const n = shiftDay(cur(), 1); loadDayReport(n >= ymd(new Date()) ? null : n); };
+  $('#dr-date').onchange = (e) => { if (e.target.value) loadDayReport(e.target.value); };
+}
+
 function renderInApp(d) {
   const steps = d.app_funnel || [];
   barList($('#bl-appfunnel'), steps, {
@@ -1370,6 +1455,7 @@ async function loadTraffic() {
   root.classList.add('is-loading');               // hold the frame while refetching — no layout jump
   try {
     trData = await api(`/api/admin/traffic?days=${trDays}`);
+    loadDayReport(drDay);
     renderTraffic(trData);
     fillOverviewCounters(trData);
   } catch (e) {

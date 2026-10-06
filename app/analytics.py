@@ -69,7 +69,8 @@ from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
 from . import auth, i18n, rashifal_pages, seo_cities
-from .db import BirthProfile, Event, QuestionLog, UnregQuestion, User, Visit, session as db_session, utcnow
+from .db import (BirthProfile, Event, Order, OrderStatus, QuestionLog, UnregQuestion, User,
+                 Visit, session as db_session, utcnow)
 
 log = logging.getLogger(__name__)
 
@@ -525,11 +526,14 @@ def record_unregistered_question(request: Request, question: str, language: str 
         return False
 
 
-def unregistered_questions(db: Session, start_utc: dt.datetime, limit: int = 60) -> list[dict]:
-    rows = db.execute(
-        select(UnregQuestion.ts, UnregQuestion.question, UnregQuestion.language,
-               UnregQuestion.visitor, UnregQuestion.source, UnregQuestion.campaign)
-        .where(UnregQuestion.ts >= start_utc).order_by(UnregQuestion.ts.desc()).limit(limit)).all()
+def unregistered_questions(db: Session, start_utc: dt.datetime, limit: int = 60,
+                           end_utc: dt.datetime | None = None) -> list[dict]:
+    q = select(UnregQuestion.ts, UnregQuestion.question, UnregQuestion.language,
+               UnregQuestion.visitor, UnregQuestion.source, UnregQuestion.campaign
+               ).where(UnregQuestion.ts >= start_utc)
+    if end_utc is not None:
+        q = q.where(UnregQuestion.ts < end_utc)
+    rows = db.execute(q.order_by(UnregQuestion.ts.desc()).limit(limit)).all()
     return [{"when": ts.astimezone(IST).strftime("%d %b %H:%M"), "question": q, "language": lang,
              "visitor": v[:6], "source": src or "direct", "campaign": camp}
             for ts, q, lang, v, src, camp in rows]
@@ -707,6 +711,117 @@ def in_app(db: Session, start_utc: dt.datetime, range_days: set, today: dt.date,
                     "source": j["source"] or "direct"})
     out.sort(key=lambda x: x["last"], reverse=True)
     return {"app_funnel": steps, "journeys": out[:40]}
+
+
+EVENT_LABELS = {          # the in-app actions, in plain words, for the day report
+    ("screen", "birth"): "Opened the birth form", ("screen", "chat"): "Opened the AI chat",
+    ("screen", "dashboard"): "Opened the chart dashboard", ("screen", "panchang"): "Opened Panchang",
+    ("screen", "milan"): "Opened Kundali Milan", ("screen", "muhurat"): "Opened Muhurat",
+    ("screen", "choghadiya"): "Opened Choghadiya", ("screen", "home"): "Back on the home screen",
+    ("chart_cast", ""): "Cast a chart", ("ask_sent", ""): "Sent a question to the AI",
+    ("signin_open", ""): "Sign-in sheet opened", ("signup", ""): "Signed up",
+    ("store_open", "credits"): "Store opened (out of questions)",
+    ("store_open", "browse"): "Store opened (browsing)",
+    ("checkout_start", ""): "Started checkout", ("paid", ""): "Paid",
+}
+
+
+def day_report(db: Session, day: dt.date, now: dt.datetime | None = None) -> dict:
+    """One IST calendar day in full: the numbers that were quoted by hand in chat.
+
+    Visitors and page views, new users, the same figures for the day before,
+    sources (with campaign), the pages, devices, visitors by hour, what people
+    did inside the app, questions asked while signed out, orders, and a 7-day trend.
+    """
+    now = now or utcnow()
+    today = now.astimezone(IST).date()
+    day = min(day, today)
+
+    def bounds(d: dt.date):
+        s = dt.datetime.combine(d, dt.time.min, IST).astimezone(dt.timezone.utc)
+        return s, s + dt.timedelta(days=1)
+
+    start, end = bounds(day)
+    trend_from = day - dt.timedelta(days=6)
+    t_start, _ = bounds(trend_from)
+
+    visits = db.execute(
+        select(Visit.ts, Visit.path, Visit.source, Visit.campaign, Visit.device, Visit.visitor)
+        .where(Visit.ts >= t_start, Visit.ts < end).order_by(Visit.ts, Visit.id)).all()
+    users = db.execute(
+        select(User.created_at).where(
+            User.created_at >= t_start, User.created_at < end,
+            or_(User.signup_source.is_(None), User.signup_source != "manual"))).all()
+
+    per_day_visitors: dict[dt.date, set] = defaultdict(set)
+    per_day_views: Counter = Counter()
+    for ts, _p, _s, _c, _d, visitor in visits:
+        d = _local_day(ts)
+        per_day_views[d] += 1
+        if visitor:
+            per_day_visitors[d].add(visitor)
+    new_by_day: Counter = Counter(_local_day(r[0]) for r in users)
+
+    def figures(d: dt.date) -> dict:
+        v, p, u = len(per_day_visitors.get(d, ())), per_day_views.get(d, 0), new_by_day.get(d, 0)
+        return {"visitors": v, "pageviews": p, "new_users": u}
+
+    first: dict[str, tuple] = {}
+    page_views: Counter = Counter()
+    page_people: dict[str, set] = defaultdict(set)
+    hourly = [set() for _ in range(24)]
+    for ts, path, source, campaign, device, visitor in visits:
+        if _local_day(ts) != day:
+            continue
+        page_views[path] += 1
+        page_people[path].add(visitor)
+        hourly[ts.astimezone(IST).hour].add(visitor)
+        first.setdefault(visitor, ("direct" if source == "internal" else source, campaign, device))
+    src: Counter = Counter()
+    dev: Counter = Counter()
+    for source, campaign, device in first.values():
+        src[(source, campaign)] += 1
+        dev[device] += 1
+
+    ev_people: dict[tuple, set] = defaultdict(set)
+    ev_count: Counter = Counter()
+    for name, detail, visitor in db.execute(
+            select(Event.name, Event.detail, Event.visitor)
+            .where(Event.ts >= start, Event.ts < end)).all():
+        key = (name, detail if (name, detail) in EVENT_LABELS else "")
+        if (name, key[1]) not in EVENT_LABELS:
+            continue
+        ev_people[key].add(visitor)
+        ev_count[key] += 1
+    actions = [{"label": EVENT_LABELS[k], "people": len(ev_people[k]), "times": ev_count[k]}
+               for k in EVENT_LABELS if k in ev_people]
+
+    paid = db.execute(
+        select(func.count(Order.id), func.coalesce(func.sum(Order.amount_paise), 0))
+        .where(Order.status == OrderStatus.paid, Order.provider != "comp",
+               Order.paid_at >= start, Order.paid_at < end)).one()
+
+    today_f, prev_f = figures(day), figures(day - dt.timedelta(days=1))
+    v = today_f["visitors"]
+    return {
+        "date": day.isoformat(), "label": f"{day.day} {day.strftime('%b %Y')}",
+        "weekday": day.strftime("%A"), "is_today": day == today,
+        "as_of": now.astimezone(IST).strftime("%H:%M") if day == today else None,
+        **today_f,
+        "pageviews_per_visitor": round(today_f["pageviews"] / v, 1) if v else None,
+        "signup_rate": round(today_f["new_users"] / v, 4) if v else None,
+        "previous": prev_f,
+        "sources": [{"source": s, "campaign": c, "visitors": n} for (s, c), n in src.most_common(12)],
+        "pages": [{"path": p, "views": n, "visitors": len(page_people[p])}
+                  for p, n in page_views.most_common(12)],
+        "devices": [{"device": d, "visitors": n} for d, n in dev.most_common()],
+        "hours": [{"label": f"{h:02d}", "visitors": len(hourly[h])} for h in range(24)],
+        "actions": actions,
+        "orders": {"paid": paid[0] or 0, "revenue_rupees": round((paid[1] or 0) / 100)},
+        "trend": [{"date": d.isoformat(), "label": f"{d.day} {d.strftime('%b')}", **figures(d)}
+                  for d in (trend_from + dt.timedelta(days=i) for i in range(7))],
+        "questions": unregistered_questions(db, start, 100, end),
+    }
 
 
 def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict:

@@ -131,6 +131,35 @@
   <!-- ============ Traffic ============ -->
   <section class="apane" id="pane-traffic">
     <div class="viz" id="traffic-root">
+      <div class="card" id="day-report">
+        <div class="tr-head">
+          <div>
+            <h3 style="margin:0 0 4px;" id="dr-title">Day report</h3>
+            <p class="pane-help" style="margin:0;" id="dr-sub">One day in full, in IST.</p>
+          </div>
+          <div class="chips" id="dr-nav" role="group" aria-label="Choose a day">
+            <button type="button" class="chip" id="dr-prev" aria-label="Previous day">&larr;</button>
+            <button type="button" class="chip on" id="dr-today">Today</button>
+            <button type="button" class="chip" id="dr-yesterday">Yesterday</button>
+            <input type="date" id="dr-date" class="chip" aria-label="Pick a date" />
+            <button type="button" class="chip" id="dr-next" aria-label="Next day">&rarr;</button>
+          </div>
+        </div>
+        <div class="tiles" id="dr-tiles"></div>
+        <div class="tr-grid" style="margin-top:14px;">
+          <div><h4 class="tr-title">Visitors by hour</h4><div class="chart" id="dr-hours"></div></div>
+          <div><h4 class="tr-title">Last 7 days</h4><div class="chart" id="dr-trend"></div></div>
+        </div>
+        <div class="tr-grid" style="margin-top:14px;">
+          <div><h4 class="tr-title">Where they came from</h4><div id="dr-sources"></div></div>
+          <div><h4 class="tr-title">Pages opened</h4><div id="dr-pages"></div></div>
+          <div><h4 class="tr-title">What they did in the app</h4><div id="dr-actions"></div></div>
+          <div><h4 class="tr-title">Devices</h4><div id="dr-devices"></div></div>
+        </div>
+        <h4 class="tr-title" style="margin-top:14px;">Questions from visitors who were not signed in</h4>
+        <div id="dr-questions"></div>
+      </div>
+
       <div class="card">
         <div class="tr-head">
           <div>
