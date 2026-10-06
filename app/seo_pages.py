@@ -236,6 +236,8 @@ _STYLE = """
   .seo dl.cities dd { margin: 0; }
   .seo .faq h3 { margin-top: 20px; }
   .site-footer { margin: 30px auto 0; }
+  .footer-sections { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center;
+                     margin: 10px 0 0; font-size: 13px; }
   @media (min-width: 640px) { .seo { padding-top: 40px; } .seo h1 { font-size: 32px; } }
 """
 
@@ -282,6 +284,21 @@ def _share(path: str) -> str:
     return seo_share(path)
 
 
+def _footer_sections(lang: str) -> str:
+    """DIVASTRO-133: a compact block of plain links to the top sections and the
+    crawlable /sitemap hub, so every server-rendered page links to them."""
+    from .hub_text import label
+    from .muhurat_pages import YEARS as muhurat_years
+    pre = i18n.prefix(lang)
+    items = [("sitemap", f"{pre}/sitemap"), ("panchang", f"{pre}/panchang"),
+             ("rashifal", f"{pre}/rashifal"), ("vrat", f"{pre}/vrat-tyohar"),
+             ("muhurat", f"{pre}/muhurat/vivah-{muhurat_years[-1]}"),
+             ("nakshatra", f"{pre}/nakshatra"),
+             ("katha", "/katha" if lang == HI else "/en/katha")]
+    links = " ".join(f'<a href="{href}">{label(k, lang)}</a>' for k, href in items)
+    return f'<nav class="footer-sections" aria-label="{label("sitemap", lang)}">{links}</nav>\n  '
+
+
 def _footer(lang: str = EN) -> str:
     """The same public footer as index.html — the links AdSense and payment
     underwriters look for, from the same constants the legal pages use. The
@@ -298,7 +315,7 @@ def _footer(lang: str = EN) -> str:
   <nav>
     {links}
   </nav>
-  <p class="legal-entity">{_e(LEGAL_NAME)} · {_e(ADDRESS)} ·
+  {_footer_sections(lang)}<p class="legal-entity">{_e(LEGAL_NAME)} · {_e(ADDRESS)} ·
     <a href="mailto:{_e(EMAIL)}">{_e(EMAIL)}</a> · {_e(PHONE)}</p>
   {f'<p class="legal-entity registrations">{_e(reg)}</p>' if reg else ''}
   <p class="disclaimer">{disclaimer}</p>
@@ -1033,25 +1050,84 @@ def sitemap_paths() -> list[str]:
     from .vrat_pages import page_paths as vrat_paths  # same: imports this module
     from .nakshatra_pages import sitemap_paths as nakshatra_paths  # same (DIVASTRO-115)
     from .katha import sitemap_paths as katha_paths  # same
-    return paths + rashifal_paths() + muhurat_paths() + vrat_paths() + nakshatra_paths() + katha_paths()
+    from .site_hub import sitemap_paths as hub_paths  # same (DIVASTRO-133)
+    return paths + hub_paths() + rashifal_paths() + muhurat_paths() + vrat_paths() + nakshatra_paths() + katha_paths()
+
+
+LEGAL_PATHS = frozenset({"/terms", "/privacy", "/refund", "/contact"})
+# Pages whose content really changes every day (sitemap <lastmod> = today).
+# Everything else gets no <lastmod>: a date that is always "today" teaches
+# crawlers to ignore the field (DIVASTRO-133).
+DAILY_ROOTS = frozenset(TOOLS) | {"rashifal"}
+
+
+_TOP_CITY_SLUGS = frozenset(c.slug for c in seo_cities.CITIES[:20])
+
+
+def _segments(path: str) -> list[str]:
+    parts = [p for p in i18n.strip_prefix(path)[1].split("/") if p]
+    return parts[1:] if parts[:1] == ["en"] else parts       # katha: /en/katha/<slug>
+
+
+def sitemap_priority(path: str) -> float:
+    """A crawl-priority hint (Bing and others read it; Google ignores it, so
+    this is mostly about the ORDER of the file). Home first, then the tool and
+    explainer pages, the section hubs, the dated/yearly pages, and last the
+    long tail of city pages; the regional-language copies sit 0.1 below the
+    English/Hindi originals."""
+    if path == "/":
+        return 1.0
+    lang, bare = i18n.strip_prefix(path)
+    if bare in LEGAL_PATHS:
+        return 0.3
+    parts = _segments(path)
+    root = parts[0] if parts else ""
+    if root in TOOLS or root in ("kundali-milan", "free-kundali") or root == "vrat-tyohar":
+        if len(parts) == 1:
+            score = 0.9
+        elif root == "vrat-tyohar" and parts[1].isdigit():
+            score = 0.7
+        else:                                   # a city page of a tool
+            score = 0.6 if parts[1] in _TOP_CITY_SLUGS else 0.5
+    else:
+        score = 0.8 if len(parts) <= 1 else 0.7
+    return round(score - (0.1 if lang not in (EN, HI) else 0.0), 1)
+
+
+def sitemap_lastmod(path: str, today: str) -> str | None:
+    parts = _segments(path)
+    return today if parts and parts[0] in DAILY_ROOTS else None
+
+
+def sitemap_ordered() -> list[str]:
+    """sitemap_paths() best pages first (stable, so the module order is kept
+    within a tier). Crawlers with a daily URL budget read the file top-down."""
+    return [p for p, _ in _ranked()]
+
+
+def _ranked() -> tuple[tuple[str, float], ...]:
+    """(path, priority), best first. The ranking is memoised on the path list
+    itself, so it is recomputed only if the set of listed pages changes."""
+    return _rank(tuple(sitemap_paths()))
+
+
+@functools.lru_cache(maxsize=4)
+def _rank(paths: tuple[str, ...]) -> tuple[tuple[str, float], ...]:
+    ranked = [(p, sitemap_priority(p)) for p in paths]
+    ranked.sort(key=lambda item: -item[1])
+    return tuple(ranked)
 
 
 @router.get("/sitemap.xml")
 def sitemap() -> Response:
     today = _today().isoformat()
     urls = []
-    for path in sitemap_paths():
+    for path, priority in _ranked():
         fields = f"<loc>{xml_escape(SITE_URL + path)}</loc>"
-        bare = i18n.strip_prefix(path)[1]
-        # The tool pages genuinely change every day; the legal pages and the
-        # explainers do not, and claiming they do only teaches crawlers to
-        # ignore our lastmod.
-        if bare.split("/")[1] in TOOLS:
-            fields += f"<lastmod>{today}</lastmod><changefreq>daily</changefreq>"
-        if path == "/":
-            fields += "<priority>1.0</priority>"
-        elif bare.strip("/") in TOOLS or bare == "/free-kundali":
-            fields += "<priority>0.9</priority>"
+        lastmod = sitemap_lastmod(path, today)
+        if lastmod:
+            fields += f"<lastmod>{lastmod}</lastmod><changefreq>daily</changefreq>"
+        fields += f"<priority>{priority:.1f}</priority>"
         urls.append(f"<url>{fields}</url>")
     xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'

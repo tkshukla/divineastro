@@ -37,6 +37,8 @@ from .rashifal_pages import router as rashifal_router
 from .nakshatra_pages import router as nakshatra_router
 from .katha import router as katha_router
 from .naam_milan import router as naam_milan_router
+from .site_hub import router as site_hub_router
+from . import indexnow
 from .share import router as share_router
 from .muhurat_pages import router as muhurat_pages_router
 from .vrat_pages import router as vrat_pages_router
@@ -88,6 +90,8 @@ app.include_router(seo_router)     # /panchang, /rahu-kaal, /choghadiya, /kundal
 app.include_router(rashifal_router)  # /rashifal, /hi/rashifal (DIVASTRO-105)
 app.include_router(nakshatra_router)  # /nakshatra, /rashi + /hi/ copies (DIVASTRO-115)
 app.include_router(katha_router)      # /katha, /katha/<slug> (evening channel story)
+app.include_router(site_hub_router)    # /sitemap: crawlable HTML site map (DIVASTRO-133)
+app.include_router(indexnow.make_router())   # /<ASTRO_INDEXNOW_KEY>.txt, only when the key is set (DIVASTRO-133)
 app.include_router(naam_milan_router)  # /naam-se-kundali-milan + /hi/ (DIVASTRO-115)
 app.include_router(share_router)   # /api/share/cities (DIVASTRO-107 WhatsApp share buttons)
 app.include_router(muhurat_pages_router)  # /muhurat/vivah-2026 etc. + /hi/ copies (DIVASTRO-109)
@@ -1057,7 +1061,12 @@ def _lang_inline(html: str, version: str) -> str:
 
 @app.get("/")
 def index() -> HTMLResponse:
-    return _page("index.html")
+    resp = _page("index.html")
+    # DIVASTRO-133: index.html has no <link rel="canonical">, so "/?open=panchang",
+    # "/?lang=hi" and utm-tagged links are separate URLs to a crawler. Google
+    # honours the same hint as an HTTP header; every variant canonicalises to "/".
+    resp.headers["Link"] = f'<{SITE_URL.rstrip("/")}/>; rel="canonical"'
+    return resp
 
 
 ADSENSE_PUBLISHER = "pub-1593974697916149"
