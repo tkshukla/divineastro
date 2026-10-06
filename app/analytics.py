@@ -461,6 +461,9 @@ EVENT_NAMES = frozenset({
     "paid",            # an order was confirmed paid (detail: the sku)
     "lang",            # the language was changed (detail: the code)
     "home_cta",        # the main kundali button on the home screen was tapped
+    "strip_push",      # tapped "get daily alert" in the stay-in-touch strip (content pages)
+    "strip_channel",   # tapped "join our WhatsApp channel" in that strip
+    "strip_share",     # tapped "share this page on WhatsApp" in that strip
 })
 MAX_EVENT_BYTES = 512
 
@@ -726,6 +729,9 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("store_open", "credits"): "Store opened (out of questions)",
     ("store_open", "browse"): "Store opened (browsing)",
     ("checkout_start", ""): "Started checkout", ("paid", ""): "Paid",
+    ("strip_push", ""): "Tapped Get daily alert on a content page",
+    ("strip_channel", ""): "Tapped Join WhatsApp channel on a content page",
+    ("strip_share", ""): "Tapped Share on WhatsApp on a content page",
 }
 
 

@@ -267,7 +267,7 @@ _SHELL = """<!DOCTYPE html>
   <div class="top"><a class="back" href="{home}">&larr; {brand}</a>{picker}</div>
   <nav class="crumbs" aria-label="Breadcrumb">{crumbs}</nav>
   {notice}
-  {body}
+  {body}{strip}
 </main>
 {footer}
 </body></html>"""
@@ -330,7 +330,8 @@ def _page(kind_slug: str, year: int, lang: str) -> HTMLResponse:
         adsense=ADSENSE_CLIENT, style=seo_pages._STYLE + _EXTRA_STYLE, jsonld=jsonld,
         home=_e(bits["home"]), picker=bits["picker"], notice=bits["notice"],
         crumbs=i18n.localize_links(crumb_html, lang),
-        body=seo_share(path) + i18n.localize_links(body, lang), footer=_footer(lang))
+        body=seo_share(path) + i18n.localize_links(body, lang),
+        strip=seo_pages._strip(lang=lang, path=path, title=title), footer=_footer(lang))
     # The list for a whole year does not change day to day.
     return HTMLResponse(page, headers={"Cache-Control": "public, max-age=86400"})
 

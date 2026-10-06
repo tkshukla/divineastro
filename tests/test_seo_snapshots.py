@@ -133,12 +133,17 @@ def render() -> dict[str, bytes]:
 
 _CACHE_BUST = re.compile(rb"\?v=\d+")
 _I18N_V = re.compile(rb'window\.DA_I18N_V="\d*";')
+# The PDF's language buttons depend on which script fonts are installed on the machine
+# running the test (pdf_report.pdf_languages), so CI and a dev box differ. Not page content.
+_PDF_LANGS = re.compile(rb"window\.DA_PDF_LANGS=.*?;(?=</script>|<\\/script>)", re.DOTALL)
 
 
 def normalise(b: bytes) -> bytes:
     """Leave out every checkout-dependent value: static asset URLs carry a
     ?v=<mtime> cache-buster, and "/" stamps the newest i18n file's mtime as
-    window.DA_I18N_V (main._lang_inline). Neither is page content."""
+    window.DA_I18N_V (main._lang_inline). Neither is page content. Nor is the list of
+    PDF languages, which follows the installed fonts."""
+    b = _PDF_LANGS.sub(b"window.DA_PDF_LANGS=0;", b)
     return _I18N_V.sub(b'window.DA_I18N_V="0";', _CACHE_BUST.sub(b"?v=0", b))
 
 
