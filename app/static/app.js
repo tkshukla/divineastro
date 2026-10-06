@@ -690,6 +690,8 @@ function applyLanguage() {
   set("#home-tagline", t("homeHeadline"));
   set("#home-blurb", t("homeBlurb"));
   set("#home-cta", t("homeCta"));
+  set("#home-promise", t("homePromise"));
+  set("#tools-head", t("homeToolsHead"));
   for (let i = 1; i <= 6; i++) set(`#feat-${i}`, t(`feat${i}`));
   renderFreeBadge();
   renderHomeValue();      // DIVASTRO-101 block at the end of this file
@@ -1260,7 +1262,10 @@ $("#go-home")?.addEventListener("click", () => {
     showStage("stage-home");
   }
 });
-$("#home-cta")?.addEventListener("click", () => showStage("stage-birth"));
+$("#home-cta")?.addEventListener("click", () => {
+  window.daTrack?.("home_cta");     // DIVASTRO-134: the one primary button
+  showStage("stage-birth");
+});
 
 function renderSavedCharts() {
   if (!savedBox) return;

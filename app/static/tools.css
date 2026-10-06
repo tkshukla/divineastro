@@ -245,3 +245,33 @@ a.tool-card { text-decoration: none; }
   .today-body { grid-template-columns: 1.2fr 1fr 1.1fr auto; gap: 6px; }
   .today-cell b { font-size: 14px; }
 }
+
+/* ---- DIVASTRO-134: one primary action on the home screen ----------------
+   The kundali button is the biggest, warmest thing on the screen; the promise
+   line sits right under it; the tools below are plainly secondary. */
+#stage-home .home-cta {
+  display: block; width: min(100%, 420px); min-width: 0; margin: 14px auto 8px;
+  min-height: 56px; padding: 15px 24px; font-size: 18px; font-weight: 700; letter-spacing: 0.01em;
+  color: #3a1200; border: 1px solid #b45309; border-radius: 16px;
+  background: linear-gradient(180deg, #ffb340 0%, #f59e0b 55%, #ea7a0c 100%);
+  box-shadow: 0 0 0 3px var(--card-bg), 0 0 0 4px #d4a017, 0 10px 24px rgba(234, 88, 12, 0.35);
+}
+#stage-home .home-cta:hover { filter: brightness(1.06); }
+#stage-home .home-cta:focus-visible { outline: 3px solid var(--gold-soft); outline-offset: 4px; }
+.home-promise { margin: 12px 0 14px; font-size: 14px; color: var(--ink-dim); }
+#stage-home .free-badge { margin: 0 auto 16px; padding: 7px 18px; }
+#stage-home .free-badge b { font-size: 15px; }
+.tools-head {
+  margin: 20px 0 10px; font-family: var(--sans); font-size: 13px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint);
+}
+#stage-home .tool-row { opacity: 0.96; }
+@media (max-width: 700px) {
+  #stage-home .home-cta { width: 100%; margin-bottom: 8px; font-size: 17px; padding: 14px 16px; }
+  #stage-home .home-tagline { margin-bottom: 4px; }
+  #stage-home .home-blurb { display: none; }
+  .sacred #home-logo, .sacred .home-logo { width: 84px; border-width: 2px; box-shadow: 0 0 0 4px var(--card-bg), 0 0 0 5px #d4a017, 0 8px 18px var(--frame-glow); }
+  .sacred #home-title { font-size: 28px; }
+  .deva-sub { font-size: 16px; margin-bottom: 6px; }
+  .om { display: none; }
+}
