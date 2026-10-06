@@ -64,7 +64,7 @@ from .astro import panchang as panchang_engine
 from .chart_service import SIGNS
 from .seo_pages import (
     ADSENSE_CLIENT, BRAND, IST, SITE_URL, _STYLE, _cache_headers, _e,
-    _footer, _panchang, _today, page_language_bits,
+    _footer, _panchang, _strip, _today, page_language_bits,
 )
 from .seo_text import TEXT as SEO_TEXT
 # DIVASTRO-123: every word of these pages, and the phrase bank, is data in rashifal_text.
@@ -295,7 +295,7 @@ _SHELL = """<!DOCTYPE html>
   <div class="top"><a class="back" href="{home}">&larr; {brand}</a>{picker}</div>
   <nav class="crumbs" aria-label="Breadcrumb">{crumbs}</nav>
   {notice}
-  {body}
+  {body}{strip}
 </main>
 {footer}
 </body></html>"""
@@ -370,6 +370,7 @@ def _shell(*, lang: str, rashi: Rashi | None, title: str, description: str,
         style=_STYLE + _EXTRA_STYLE, jsonld=jsonld, crumbs=i18n.localize_links(crumb_html, lang),
         body=(seo_share(path(rashi, lang)) if status == 200 else "")
         + i18n.localize_links(body, lang),
+        strip=_strip(lang=lang, path=path(rashi, lang), title=title) if status == 200 else "",
         footer=_footer(lang))
     headers = _cache_headers() if cache else {"Cache-Control": "no-store"}
     return HTMLResponse(page, status_code=status, headers=headers)

@@ -6,6 +6,7 @@
 <title>Divine Astro — Vedic kundali readings</title>
 <meta name="description" content="Your Vedic kundali cast to Swiss-Ephemeris precision, with dashas, North and South Indian charts, and answers to your questions in Hindi or English." />
 <meta property="og:title" content="Divine Astro — Vedic kundali readings" />
+<link rel="canonical" href="https://divineastro.org/" />
 <meta property="og:url" content="https://divineastro.org" />
 <meta property="og:type" content="website" />
 <meta property="og:description" content="आज का पंचांग, व्रत-त्योहार, शुभ मुहूर्त, राशिफल और आपकी कुंडली — AI ज्योतिषी से 10 सवाल फ्री।" />
@@ -82,6 +83,14 @@
       charts, and straight answers to your questions in Hindi or English.
     </p>
 
+    <!-- DIVASTRO-134: ONE primary action. The kundali button comes first, then a
+         one-line promise; the free-questions badge (number from the server) is the
+         proof under it. Everything else on this screen is secondary. -->
+    <button type="button" class="primary home-cta" id="home-cta">
+      Get your free kundali in 30 seconds
+    </button>
+    <p class="home-promise" id="home-promise">Free &middot; No card &middot; No sign-in needed</p>
+
     <!-- The number comes from the server (ASTRO_FREE_QUESTIONS) via /api/me — never
          hard-coded here, and hidden until it is known, so it can never be wrong.
          It is a button: signed out it opens sign-in, signed in it opens the AI chat. -->
@@ -89,10 +98,6 @@
       <span class="lights" aria-hidden="true"></span><span class="sheen" aria-hidden="true"></span>
       <b><svg class="ico" aria-hidden="true"><use href="#i-diya"/></svg> <span id="free-badge-main"></span> <span class="go" aria-hidden="true">&rsaquo;</span></b>
       <small id="free-badge-sub"></small>
-    </button>
-
-    <button type="button" class="primary home-cta" id="home-cta">
-      Get my free kundali — no sign-in needed
     </button>
 
     <!-- DIVASTRO-101: something of value before any tap. Today's tithi, nakshatra
@@ -130,6 +135,7 @@
 
     <!-- Free tools. Deliberately unmetered: they cost no LLM tokens and they
          are what people search for. -->
+    <h2 class="tools-head" id="tools-head">Or try a free tool</h2>
     <div class="tool-row">
       <button type="button" class="tool-card" id="open-milan">
         <span class="tool-icon">&#128141;</span>
@@ -203,6 +209,15 @@
       <a href="/refund">Refund &amp; Cancellation</a>
       <a href="/contact">Contact Us</a>
       <a href="/feedback">Feedback</a>
+    </nav>
+    <!-- Plain links so crawlers reach every section from the front page (DIVASTRO-133). -->
+    <nav aria-label="Sections">
+      <a href="/sitemap">Site map</a>
+      <a href="/panchang">Panchang</a>
+      <a href="/rashifal">Rashifal</a>
+      <a href="/vrat-tyohar">Vrat &amp; Tyohar</a>
+      <a href="/nakshatra">Nakshatra</a>
+      <a href="/en/katha">Stories</a>
     </nav>
     <p class="legal-entity">
       Yavi Info Solutions and Consultants · B1-1402 Leisure Park, Greater Noida,

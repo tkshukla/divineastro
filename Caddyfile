@@ -3,7 +3,14 @@
 # Caddy obtains and renews a Let's Encrypt certificate automatically; there is
 # no certbot and no renewal cron to forget about.
 
-divineastro.org, www.divineastro.org {
+# DIVASTRO-133: www used to serve a full second copy of the site. Search engines
+# treat that as duplicate hosts; one permanent redirect makes the apex the only
+# crawlable host (the certificate for www is still issued automatically).
+www.divineastro.org {
+	redir https://divineastro.org{uri} permanent
+}
+
+divineastro.org {
 	encode zstd gzip
 
 	# Security headers. The CSP allows exactly the third parties the app can
@@ -58,6 +65,11 @@ divineastro.org, www.divineastro.org {
 		Content-Security-Policy   "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.cashfree.com https://checkout.razorpay.com https://*.gstatic.com https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.google.co.in https://*.googleadservices.com https://*.adtrafficquality.google https://fundingchoicesmessages.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://sdk.cashfree.com https://api.cashfree.com https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.google.co.in https://*.googleadservices.com https://*.adtrafficquality.google https://fundingchoicesmessages.google.com; frame-src https://sdk.cashfree.com https://api.cashfree.com https://checkout.razorpay.com https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.google.co.in https://*.googleadservices.com https://*.adtrafficquality.google https://fundingchoicesmessages.google.com; base-uri 'self'; form-action 'self' https://accounts.google.com https://*.payu.in; frame-ancestors 'self'"
 		-Server
 	}
+
+	# The JSON API and the operator console are never search results (robots.txt
+	# already asks crawlers to stay out of both; this is the belt to that braces).
+	@noindex path /api/* /admin
+	header @noindex X-Robots-Tag "noindex, nofollow"
 
 	# The payment webhook must never be cached or rate-limited away.
 	@webhook path /api/webhooks/*

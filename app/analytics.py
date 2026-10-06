@@ -269,7 +269,7 @@ PUBLIC_PAGES = frozenset({"/", "/feedback", "/terms", "/privacy", "/refund", "/c
 # The SEO pages (seo_pages.py): the bare tool path, or tool + a real city slug,
 # each also under /hi/ (DIVASTRO-106's Hindi copies).
 SEO_TOOLS = frozenset({"/panchang", "/rahu-kaal", "/choghadiya", "/kundali-milan",
-                       "/free-kundali"})
+                       "/free-kundali", "/sitemap"})   # /sitemap: DIVASTRO-133
 SEO_CITY_TOOLS = frozenset({"/panchang", "/rahu-kaal", "/choghadiya"})
 # The daily rashifal pages (rashifal_pages.py): the 26 canonical URLs, EN + HI.
 RASHIFAL_PAGES = rashifal_pages.PUBLIC_PATHS
@@ -460,6 +460,10 @@ EVENT_NAMES = frozenset({
     "checkout_start",  # an order was started (detail: the sku)
     "paid",            # an order was confirmed paid (detail: the sku)
     "lang",            # the language was changed (detail: the code)
+    "home_cta",        # the main kundali button on the home screen was tapped
+    "strip_push",      # tapped "get daily alert" in the stay-in-touch strip (content pages)
+    "strip_channel",   # tapped "join our WhatsApp channel" in that strip
+    "strip_share",     # tapped "share this page on WhatsApp" in that strip
 })
 MAX_EVENT_BYTES = 512
 
@@ -635,6 +639,7 @@ def funnel(db: Session, start_utc: dt.datetime, visitors: int, new_users: int) -
 
 
 APP_FUNNEL = (   # (label, event name, detail or None)
+    ("Tapped the main kundali button", "home_cta", None),
     ("Opened the birth form", "screen", "birth"),
     ("Cast a chart", "chart_cast", None),
     ("Opened sign-in", "signin_open", None),
@@ -718,11 +723,15 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("screen", "dashboard"): "Opened the chart dashboard", ("screen", "panchang"): "Opened Panchang",
     ("screen", "milan"): "Opened Kundali Milan", ("screen", "muhurat"): "Opened Muhurat",
     ("screen", "choghadiya"): "Opened Choghadiya", ("screen", "home"): "Back on the home screen",
+    ("home_cta", ""): "Tapped the main kundali button",
     ("chart_cast", ""): "Cast a chart", ("ask_sent", ""): "Sent a question to the AI",
     ("signin_open", ""): "Sign-in sheet opened", ("signup", ""): "Signed up",
     ("store_open", "credits"): "Store opened (out of questions)",
     ("store_open", "browse"): "Store opened (browsing)",
     ("checkout_start", ""): "Started checkout", ("paid", ""): "Paid",
+    ("strip_push", ""): "Tapped Get daily alert on a content page",
+    ("strip_channel", ""): "Tapped Join WhatsApp channel on a content page",
+    ("strip_share", ""): "Tapped Share on WhatsApp on a content page",
 }
 
 

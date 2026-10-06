@@ -38,7 +38,8 @@ def run_profile(p, browser, base: str, name: str, args: dict, expect_n: int) -> 
     b, cta = pg.rect("#free-badge"), pg.rect("#home-cta")
     check("badge is visible without scrolling", b["bottom"] <= vh, f"bottom {b['bottom']:.0f} of {vh}")
     check("main button is visible without scrolling", cta["bottom"] <= vh, f"bottom {cta['bottom']:.0f} of {vh}")
-    check("badge sits above the main button", b["bottom"] <= cta["top"] + 1)
+    check("main button comes first, the badge sits under it (DIVASTRO-134)", cta["bottom"] <= b["top"] + 1)
+    check("main button is big enough for a thumb", cta["height"] >= 48 and cta["width"] >= 200, str(cta))
 
     feats = pg.page.eval_on_selector_all("#feat-grid .feat span", "els => els.map(e => e.textContent.trim())")
     check(f"{FEATURES} feature tiles, all with text", len(feats) == FEATURES and all(feats), str(feats))
@@ -239,7 +240,15 @@ def today_and_sample(p, browser, base: str) -> None:
           cta["bottom"] <= strip["top"] and strip["bottom"] <= tools["top"]
           and tools["bottom"] <= sample["top"] and sample["bottom"] <= feats["top"])
     check("the strip is on the first screen (412x915)", strip["bottom"] <= 915, f"bottom {strip['bottom']:.0f}")
-    check("the main button says free and no sign-in", "no sign-in" in pg.page.inner_text("#home-cta"))
+    cta_txt = pg.page.inner_text("#home-cta").lower()
+    check("the main button says free kundali in 30 seconds", "free kundali" in cta_txt and "30 seconds" in cta_txt)
+    check("the promise line says free, no card, no sign-in",
+          all(w in pg.page.inner_text("#home-promise").lower() for w in ("free", "no card", "no sign-in")))
+    pg.page.evaluate("window.__tr = []; window.daTrack = (n, d) => window.__tr.push(n)")
+    pg.page.click("#home-cta")
+    check("tapping it reports home_cta and opens the birth form",
+          "home_cta" in pg.page.evaluate("window.__tr") and pg.page.is_visible("#stage-birth"))
+    pg.page.evaluate("showStage('stage-home')")
     check("the sample is labelled as an example", pg.page.inner_text("#sample-qa-tag").strip().lower() == "example")
 
     # Hindi
