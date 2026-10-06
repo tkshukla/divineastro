@@ -247,7 +247,7 @@ _STYLE = """
         text-decoration: none; cursor: pointer; }
   .seo .stay a:hover, .seo .stay .stay-btn:hover { border-color: var(--gold); color: var(--gold); }
   .seo .stay a:focus-visible, .seo .stay .stay-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
-  .seo .stay .share-wa-icon { flex: none; color: #1fae55; }
+  .seo .stay .stay-btn svg { flex: none; color: #1fae55; }
   .seo .stay .stay-btn[hidden] { display: none; }
   .seo .stay .stay-btn:disabled { opacity: .6; cursor: progress; }
   .seo .stay .stay-done { color: var(--gold); font-size: 13.5px; }
