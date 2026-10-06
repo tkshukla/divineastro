@@ -269,7 +269,7 @@ PUBLIC_PAGES = frozenset({"/", "/feedback", "/terms", "/privacy", "/refund", "/c
 # The SEO pages (seo_pages.py): the bare tool path, or tool + a real city slug,
 # each also under /hi/ (DIVASTRO-106's Hindi copies).
 SEO_TOOLS = frozenset({"/panchang", "/rahu-kaal", "/choghadiya", "/kundali-milan",
-                       "/free-kundali"})
+                       "/free-kundali", "/sitemap"})   # /sitemap: DIVASTRO-133
 SEO_CITY_TOOLS = frozenset({"/panchang", "/rahu-kaal", "/choghadiya"})
 # The daily rashifal pages (rashifal_pages.py): the 26 canonical URLs, EN + HI.
 RASHIFAL_PAGES = rashifal_pages.PUBLIC_PATHS
