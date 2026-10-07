@@ -1,0 +1,1609 @@
+"""The text of the /learn explainer pages (learn_pages.py), English and Hindi.
+
+NEEDS OWNER REVIEW before the family is switched on (ASTRO_LEARN_PAGES=1):
+docs/learn-pages-review.md prints every direct answer and method paragraph
+verbatim from this file, with the engine function each factual claim rests on.
+
+Plain text only: learn_pages escapes every value. A template keeps its
+{placeholders}. Nothing here is a time or a date: every number a reader sees
+that changes with the day is computed by learn_pages from the engines.
+
+Per page (PAGES[slug][lang]):
+  h1, title, desc   unique per page; title gets " | Divine Astro" appended
+  label, blurb      the index page's link text and one line
+  answer            the DIRECT ANSWER, two sentences, shown first
+  method            "How it is calculated": the rule our engine uses, paragraphs
+  convention        optional: where traditions differ, the one convention we follow
+  live_h, live      the worked example for today (placeholders: see learn_pages)
+  use               "How it is used": descriptive, never prescriptive
+  faq               3-4 (question, answer): the visible FAQ and the FAQPage JSON-LD
+
+Only "en" and "hi" are written. Every other registry language gets the English
+text on its own /<code>/learn URL, noindex (learn_pages.TRANSLATED).
+
+CLAIMS[slug] is English-only and feeds the review document: (claim, source).
+"""
+
+from __future__ import annotations
+
+# --------------------------------------------------------------------------
+# Shared strings
+# --------------------------------------------------------------------------
+
+UI: dict[str, dict[str, str]] = {
+    "en": {
+        "learn": "Learn",
+        "index.h1": "Learn the Hindu almanac: Panchang, tithi, Rahu Kaal and more",
+        "index.title": "Learn Panchang, Tithi, Rahu Kaal, Choghadiya and More, Explained Simply",
+        "index.desc": ("Plain explanations of the terms in a Hindu almanac: what each one means, "
+                       "the rule our calculator uses, and today's worked example for New Delhi."),
+        "index.intro": ("Short explanations of the terms that appear in a Hindu almanac. Each page "
+                        "opens with the answer, states the rule our calculator uses, works through "
+                        "today's example for New Delhi with the same engine as the Panchang tool, "
+                        "and links to the tool."),
+        "h.method": "How it is calculated",
+        "h.live": "Worked example: today in {city}",
+        "h.use": "How it is used",
+        "h.faq": "Common questions",
+        "h.tool": "Try it for your city",
+        "h.more": "More explainers",
+        "conv": "Our convention",
+        "live.note": "Calculated when this page loads, with the same engine as the {tool} page.",
+        "disclaimer": ("These pages describe how a traditional almanac is calculated. Customs and "
+                       "regions differ, and nothing here is a prediction or advice."),
+        "tool.panchang": "Today's Panchang",
+        "tool.rahu-kaal": "Rahu Kaal today",
+        "tool.choghadiya": "Choghadiya today",
+        "tool.nakshatra": "All 27 nakshatras",
+        "tool.kundali": "Free Kundali",
+        "tool.milan": "Kundali Milan",
+        "tool.vrat": "Vrat and festivals",
+        "tool.sitemap": "Panchang for every city",
+        "tool.in_city": "{tool} in {city}",
+        "yes": "Yes", "no": "No", "and": "and",
+        "no_abhijit": "not given (Wednesday)",
+        "motion.direct": "moving forward (direct)",
+        "motion.retro": "moving backward (retrograde)",
+        # table headers
+        "th.limb": "Limb", "th.measured": "What is measured", "th.divisions": "Divisions",
+        "th.size": "Size of each",
+        "th.n": "No.", "th.paksha": "Paksha", "th.tithi": "Tithi", "th.angle": "Moon minus Sun",
+        "th.nak": "Nakshatra", "th.span": "Span in the sidereal zodiac",
+        "th.yoga": "Yoga", "th.position": "Half-tithi of the month", "th.karana": "Karana",
+        "th.kind": "Type",
+        "th.weekday": "Weekday", "th.part": "Part of daylight (of 8)",
+        "th.in_city": "In {city}",
+        "th.name": "Name", "th.ruler": "Ruler", "th.class": "Traditional class",
+        "th.when": "Time", "th.seq": "Parts 1 to 8",
+        "th.given": "Abhijit Muhurat given?",
+        "th.moon": "Moon sign", "th.s12": "12th from Moon", "th.s1": "Moon sign itself",
+        "th.s2": "2nd from Moon",
+        "th.obs": "Observance", "th.req": "Tithi that must be present",
+        "th.ref": "Counted from", "th.weight": "Weight in the engine's score",
+        "th.cond": "Cancellation the engine applies",
+        "th.chart": "Illustrative chart", "th.result": "What the engine reports",
+        "kind.movable": "Movable (repeats)", "kind.fixed": "Fixed",
+        "t.five.h": "The five limbs",
+        "t.tithi.h": "The 30 tithis",
+        "t.nak.h": "The 27 nakshatras",
+        "t.yoga.h": "The 27 yogas",
+        "t.karana.h": "The karanas",
+        "t.rahu.h": "Rahu Kaal by weekday",
+        "t.chog.names.h": "The seven names",
+        "t.chog.day.h": "Daytime sequence by weekday",
+        "t.chog.night.h": "Night-time sequence by weekday",
+        "t.chog.today.h": "Today's eight daytime choghadiya in {city}",
+        "t.abhijit.h": "Abhijit Muhurat by weekday",
+        "t.brahma.h": "Today's night in {city}, in fifteen parts",
+        "t.pradosh.h": "Where Pradosh Kaal matters in our calendar",
+        "t.sade.h": "The signs Saturn passes through in Sade Sati, for each Moon sign",
+        "t.mangal.houses.h": "What the engine checks",
+        "t.mangal.cancel.h": "Cancellations the engine applies",
+        "t.mangal.example.h": "Two illustrative charts, run through the engine",
+        "r.sunrise": "Sunrise", "r.sunset": "Sunset",
+        "r.brahma": "Brahma Muhurta (14th of 15)",
+        "r.abhijit": "Abhijit Muhurat (8th of 15)",
+        "r.sunset_prev": "Sunset yesterday",
+        "r.first_muhurta": "Muhurtas 1 to 7",
+        "r.last_muhurta": "Muhurtas 9 to 15",
+        "r.night_start": "Sunset (night begins)",
+        "r.parts_1_13": "Parts 1 to 13",
+        "r.part_15": "Part 15",
+        "r.pradosh": "Pradosh Kaal (printed window)",
+        "r.pradosh_dating": "Pradosh window used to decide the day",
+        "ex.lagna": "Lagna", "ex.mars": "Mars", "ex.moon": "Moon", "ex.venus": "Venus",
+        "ex.jupiter": "Jupiter",
+        "ex.houses": "Mars is in house {lagna} counted from the Lagna, {moon} from the Moon and {venus} from Venus.",
+        "ex.manglik": "Result: Manglik, score {score}. No cancellation applies.",
+        "ex.cancelled": "Result: Mars is in a counted house, but the dosha is cancelled (score 0). Cancellations found:",
+        "ex.clear": "Result: not Manglik.",
+        "ex.label": "Example {k}",
+        "cancel.dignified": "Mars is in Aries, Scorpio or Capricorn.",
+        "cancel.2": "Mars in the 2nd house, in Gemini or Virgo.",
+        "cancel.4": "Mars in the 4th house, in Taurus or Libra.",
+        "cancel.7": "Mars in the 7th house, in Cancer or Capricorn.",
+        "cancel.8": "Mars in the 8th house, in Sagittarius or Pisces.",
+        "cancel.12": "Mars in the 12th house, in Taurus or Libra.",
+        "cancel.jupiter": "Mars is in the same sign as Jupiter, or Jupiter aspects Mars.",
+        "cancel.moon": "Mars is in the same sign as the Moon, or the Moon aspects Mars.",
+    },
+    "hi": {
+        "learn": "जानें",
+        "index.h1": "हिंदू पंचांग को समझें: पंचांग, तिथि, राहु काल और बहुत कुछ",
+        "index.title": "पंचांग, तिथि, राहु काल, चौघड़िया और अन्य शब्द: सरल भाषा में",
+        "index.desc": ("पंचांग के शब्दों की सीधी व्याख्या: हर शब्द का अर्थ, हमारे कैलकुलेटर का नियम "
+                       "और नई दिल्ली के लिए आज का उदाहरण।"),
+        "index.intro": ("पंचांग में आने वाले शब्दों की छोटी-छोटी व्याख्याएँ। हर पन्ना सीधे उत्तर से शुरू होता है, "
+                        "बताता है कि हमारा कैलकुलेटर किस नियम से गणना करता है, पंचांग टूल वाले ही इंजन से "
+                        "नई दिल्ली का आज का उदाहरण दिखाता है और टूल का लिंक देता है।"),
+        "h.method": "यह कैसे निकाला जाता है",
+        "h.live": "आज का उदाहरण: {city}",
+        "h.use": "इसका उपयोग कैसे होता है",
+        "h.faq": "अक्सर पूछे जाने वाले प्रश्न",
+        "h.tool": "अपने शहर के लिए देखें",
+        "h.more": "और व्याख्याएँ",
+        "conv": "हमारी पद्धति",
+        "live.note": "यह पन्ना खुलते समय उसी इंजन से निकाला गया है जो {tool} पेज में चलता है।",
+        "disclaimer": ("ये पन्ने बताते हैं कि पारंपरिक पंचांग की गणना कैसे होती है। रीति-रिवाज और क्षेत्र "
+                       "अलग-अलग होते हैं, और यहाँ कुछ भी भविष्यवाणी या सलाह नहीं है।"),
+        "tool.panchang": "आज का पंचांग",
+        "tool.rahu-kaal": "आज का राहु काल",
+        "tool.choghadiya": "आज का चौघड़िया",
+        "tool.nakshatra": "सभी 27 नक्षत्र",
+        "tool.kundali": "मुफ़्त कुंडली",
+        "tool.milan": "कुंडली मिलान",
+        "tool.vrat": "व्रत और त्योहार",
+        "tool.sitemap": "हर शहर का पंचांग",
+        "tool.in_city": "{city} में {tool}",
+        "yes": "हाँ", "no": "नहीं", "and": "और",
+        "no_abhijit": "नहीं दिया जाता (बुधवार)",
+        "motion.direct": "सीधी चाल (मार्गी)",
+        "motion.retro": "उलटी चाल (वक्री)",
+        "th.limb": "अंग", "th.measured": "क्या मापा जाता है", "th.divisions": "विभाजन",
+        "th.size": "हर भाग का माप",
+        "th.n": "क्र.", "th.paksha": "पक्ष", "th.tithi": "तिथि", "th.angle": "चंद्र घटा सूर्य",
+        "th.nak": "नक्षत्र", "th.span": "निरयण राशिचक्र में विस्तार",
+        "th.yoga": "योग", "th.position": "मास की कौन-सी अर्ध-तिथि", "th.karana": "करण",
+        "th.kind": "प्रकार",
+        "th.weekday": "वार", "th.part": "दिन का भाग (8 में से)",
+        "th.in_city": "{city} में",
+        "th.name": "नाम", "th.ruler": "स्वामी", "th.class": "पारंपरिक वर्ग",
+        "th.when": "समय", "th.seq": "भाग 1 से 8",
+        "th.given": "अभिजित मुहूर्त दिया जाता है?",
+        "th.moon": "चंद्र राशि", "th.s12": "चंद्र से 12वीं", "th.s1": "चंद्र राशि स्वयं",
+        "th.s2": "चंद्र से दूसरी",
+        "th.obs": "पर्व / व्रत", "th.req": "प्रदोष में कौन-सी तिथि चाहिए",
+        "th.ref": "यहाँ से गिना जाता है", "th.weight": "इंजन के अंक में भार",
+        "th.cond": "इंजन जो परिहार मानता है",
+        "th.chart": "उदाहरण कुंडली", "th.result": "इंजन का परिणाम",
+        "kind.movable": "चर (दोहराए जाते हैं)", "kind.fixed": "स्थिर",
+        "t.five.h": "पंचांग के पाँच अंग",
+        "t.tithi.h": "30 तिथियाँ",
+        "t.nak.h": "27 नक्षत्र",
+        "t.yoga.h": "27 योग",
+        "t.karana.h": "करण",
+        "t.rahu.h": "वार के अनुसार राहु काल",
+        "t.chog.names.h": "सात नाम",
+        "t.chog.day.h": "वार के अनुसार दिन का क्रम",
+        "t.chog.night.h": "वार के अनुसार रात का क्रम",
+        "t.chog.today.h": "{city} में आज के दिन के आठ चौघड़िया",
+        "t.abhijit.h": "वार के अनुसार अभिजित मुहूर्त",
+        "t.brahma.h": "{city} में आज की रात, पंद्रह भागों में",
+        "t.pradosh.h": "हमारे कैलेंडर में प्रदोष काल कहाँ मायने रखता है",
+        "t.sade.h": "साढ़ेसाती में शनि जिन राशियों से गुज़रता है, हर चंद्र राशि के लिए",
+        "t.mangal.houses.h": "इंजन क्या जाँचता है",
+        "t.mangal.cancel.h": "इंजन जो परिहार मानता है",
+        "t.mangal.example.h": "दो उदाहरण कुंडलियाँ, इंजन से चलाकर",
+        "r.sunrise": "सूर्योदय", "r.sunset": "सूर्यास्त",
+        "r.brahma": "ब्रह्म मुहूर्त (15 में से 14वाँ)",
+        "r.abhijit": "अभिजित मुहूर्त (15 में से 8वाँ)",
+        "r.sunset_prev": "कल का सूर्यास्त",
+        "r.first_muhurta": "मुहूर्त 1 से 7",
+        "r.last_muhurta": "मुहूर्त 9 से 15",
+        "r.night_start": "सूर्यास्त (रात का आरंभ)",
+        "r.parts_1_13": "भाग 1 से 13",
+        "r.part_15": "भाग 15",
+        "r.pradosh": "प्रदोष काल (जो समय छापा जाता है)",
+        "r.pradosh_dating": "दिन तय करने के लिए प्रदोष की खिड़की",
+        "ex.lagna": "लग्न", "ex.mars": "मंगल", "ex.moon": "चंद्र", "ex.venus": "शुक्र",
+        "ex.jupiter": "गुरु",
+        "ex.houses": "गिनती के अनुसार मंगल का भाव: लग्न से {lagna}, चंद्र से {moon} और शुक्र से {venus}।",
+        "ex.manglik": "परिणाम: मांगलिक, अंक {score}। कोई परिहार लागू नहीं।",
+        "ex.cancelled": "परिणाम: मंगल गिने जाने वाले भाव में है, पर दोष का परिहार हो जाता है (अंक 0)। मिले परिहार:",
+        "ex.clear": "परिणाम: मांगलिक नहीं।",
+        "ex.label": "उदाहरण {k}",
+        "cancel.dignified": "मंगल मेष, वृश्चिक या मकर राशि में है।",
+        "cancel.2": "मंगल दूसरे भाव में, मिथुन या कन्या राशि में।",
+        "cancel.4": "मंगल चौथे भाव में, वृषभ या तुला राशि में।",
+        "cancel.7": "मंगल सातवें भाव में, कर्क या मकर राशि में।",
+        "cancel.8": "मंगल आठवें भाव में, धनु या मीन राशि में।",
+        "cancel.12": "मंगल बारहवें भाव में, वृषभ या तुला राशि में।",
+        "cancel.jupiter": "मंगल गुरु के साथ एक ही राशि में है, या गुरु की मंगल पर दृष्टि है।",
+        "cancel.moon": "मंगल चंद्र के साथ एक ही राशि में है, या चंद्र की मंगल पर दृष्टि है।",
+    },
+}
+
+# --------------------------------------------------------------------------
+# The eleven pages
+# --------------------------------------------------------------------------
+
+PAGES: dict[str, dict[str, dict]] = {}
+
+# ---- what-is-panchang ------------------------------------------------------
+PAGES["what-is-panchang"] = {
+    "en": {
+        "label": "What is a Panchang?",
+        "blurb": "The five limbs of the Hindu almanac and how each is calculated.",
+        "h1": "What is a Panchang? The five limbs of the Hindu almanac",
+        "title": "What is Panchang? The Five Limbs and How They Are Calculated",
+        "desc": ("A Panchang is the Hindu almanac of five limbs: tithi, vara, nakshatra, yoga and "
+                 "karana. How each is calculated, with today's values for New Delhi."),
+        "answer": ("A Panchang (पंचांग) is the Hindu almanac: a daily record of five limbs — tithi "
+                   "(lunar day), vara (weekday), nakshatra (the star group the Moon is in), yoga and "
+                   "karana — together with sunrise, sunset and the day's timing windows. The name "
+                   "comes from pancha (five) and anga (limb), and the almanac is used to date "
+                   "festivals and to choose times for ceremonies."),
+        "method": (
+            "Every limb is measured from the positions of the Sun and Moon, which our engine takes "
+            "from the Swiss Ephemeris. Tithi follows the angle between the Moon and the Sun. "
+            "Nakshatra follows the Moon's own position in the sidereal zodiac (Lahiri ayanamsa). "
+            "Yoga follows the sum of the Sun's and Moon's sidereal longitudes, and karana is half "
+            "a tithi. Vara is the weekday.",
+            "The Vedic day starts at sunrise, not at midnight. A day's vara, and everything keyed to "
+            "it such as Rahu Kaal, belongs to the sunrise that begins it, so before dawn on a Friday "
+            "the vara is still Thursday. The limb listed for a day is the one running at that "
+            "sunrise; a limb that changes later in the day is shown with the time it ends.",
+        ),
+        "convention": (
+            "Sunrise means the moment the upper edge of the Sun appears, with atmospheric "
+            "refraction, which is how widely published Indian panchangs print it. Some traditional "
+            "texts instead use the centre of the Sun's disc without refraction, which gives a "
+            "sunrise a few minutes later. Our engine follows the first convention."),
+        "live_h": None,
+        "live": ("Today in {city} ({weekday}, {date}), the tithi at sunrise is {tithi}, until "
+                 "{tithi_end}. The nakshatra is {nakshatra}, until {nak_end}. The yoga is {yoga}, "
+                 "until {yoga_end}, and the karana is {karana}, until {karana_end}. Sunrise is at "
+                 "{sunrise} and sunset at {sunset}."),
+        "use": (
+            "People look at a Panchang to learn the day's tithi for a fast or festival, the "
+            "nakshatra for naming and other rites, and the day's timing windows (Rahu Kaal, Abhijit "
+            "Muhurat, Choghadiya) before a journey or a ceremony.",
+            "How much weight to give any of it is a matter of family and regional custom. These "
+            "pages report the calculation; they do not tell anyone what to do.",
+        ),
+        "faq": (
+            ("What are the five parts of a Panchang?",
+             "Tithi, vara, nakshatra, yoga and karana. Tithi is the lunar day, vara the weekday, "
+             "nakshatra the star group the Moon is in, yoga a measure of the Sun's and Moon's "
+             "combined longitude, and karana half a tithi."),
+            ("Why does the Panchang depend on the city?",
+             "Sunrise and sunset depend on the place, and the Vedic day and the timing windows are "
+             "reckoned from them. The tithi, nakshatra, yoga and karana are the same everywhere at "
+             "the same instant, but the one listed for a day is the one running at that city's "
+             "sunrise, and Rahu Kaal and Abhijit Muhurat move with the city's sunrise and sunset."),
+            ("Does the Panchang use the tropical or the sidereal zodiac?",
+             "Nakshatra and yoga use the sidereal zodiac with the Lahiri ayanamsa. Tithi and karana "
+             "depend only on the angle between the Moon and the Sun, so no choice of ayanamsa "
+             "changes them."),
+            ("Why do different Panchangs show slightly different times?",
+             "Small differences come from conventions: how sunrise is defined, which ayanamsa is "
+             "used, and the precision of the ephemeris. This page states ours: upper-limb sunrise "
+             "with refraction and the Lahiri ayanamsa."),
+        ),
+    },
+    "hi": {
+        "label": "पंचांग क्या है?",
+        "blurb": "हिंदू पंचांग के पाँच अंग और हर एक की गणना।",
+        "h1": "पंचांग क्या है? हिंदू पंचांग के पाँच अंग",
+        "title": "पंचांग क्या है? पाँच अंग और उनकी गणना कैसे होती है",
+        "desc": ("पंचांग हिंदू कैलेंडर है जिसके पाँच अंग हैं: तिथि, वार, नक्षत्र, योग और करण। हर अंग की गणना "
+                 "और नई दिल्ली के आज के मान।"),
+        "answer": ("पंचांग हिंदू पंचाङ्ग-पत्र है: इसमें हर दिन के पाँच अंग दर्ज होते हैं, यानी तिथि (चंद्र दिवस), "
+                   "वार (सप्ताह का दिन), नक्षत्र (वह तारा-समूह जिसमें चंद्रमा है), योग और करण, और साथ में "
+                   "सूर्योदय, सूर्यास्त तथा दिन के समय-खंड। नाम पंच (पाँच) और अंग से बना है, और पंचांग का "
+                   "उपयोग पर्वों की तिथि तय करने और शुभ कार्यों का समय चुनने में होता है।"),
+        "method": (
+            "हर अंग सूर्य और चंद्रमा की स्थिति से निकाला जाता है, जो हमारा इंजन Swiss Ephemeris से लेता है। "
+            "तिथि चंद्रमा और सूर्य के बीच के कोण से बनती है। नक्षत्र चंद्रमा की निरयण राशिचक्र (लाहिरी अयनांश) "
+            "में अपनी स्थिति से तय होता है। योग सूर्य और चंद्रमा के निरयण भोगांशों के योग से बनता है, और करण "
+            "आधी तिथि है। वार सप्ताह का दिन है।",
+            "वैदिक दिन आधी रात से नहीं, सूर्योदय से शुरू होता है। किसी दिन का वार, और उससे जुड़ी हर चीज़ "
+            "जैसे राहु काल, उसी सूर्योदय की मानी जाती है जिससे दिन शुरू होता है; इसलिए शुक्रवार की भोर में, "
+            "सूर्योदय से पहले, वार अब भी गुरुवार ही रहता है। किसी दिन के लिए जो अंग लिखा जाता है वह उस "
+            "सूर्योदय पर चल रहा अंग होता है; जो अंग दिन में आगे बदलता है उसके साथ उसके समाप्त होने का समय "
+            "भी दिया जाता है।",
+        ),
+        "convention": (
+            "सूर्योदय का अर्थ है सूर्य के ऊपरी किनारे का दिखना, वायुमंडलीय अपवर्तन सहित; बहुत-से प्रकाशित "
+            "भारतीय पंचांग इसी तरह छापते हैं। कुछ पारंपरिक ग्रंथ सूर्य-बिंब का केंद्र बिना अपवर्तन के लेते हैं, "
+            "जिससे सूर्योदय कुछ मिनट बाद आता है। हमारा इंजन पहली पद्धति अपनाता है।"),
+        "live_h": None,
+        "live": ("आज {city} में ({weekday}, {date}) सूर्योदय के समय तिथि {tithi} है, {tithi_end} तक। नक्षत्र "
+                 "{nakshatra} है, {nak_end} तक। योग {yoga} है, {yoga_end} तक, और करण {karana} है, "
+                 "{karana_end} तक। सूर्योदय {sunrise} पर और सूर्यास्त {sunset} पर है।"),
+        "use": (
+            "लोग पंचांग देखकर व्रत या पर्व की तिथि, नामकरण और अन्य संस्कारों के लिए नक्षत्र, और यात्रा या "
+            "किसी अनुष्ठान से पहले दिन के समय-खंड (राहु काल, अभिजित मुहूर्त, चौघड़िया) जानते हैं।",
+            "इनमें से किसी को कितना महत्व देना है, यह परिवार और क्षेत्र की परंपरा की बात है। ये पन्ने केवल "
+            "गणना बताते हैं; किसी को यह नहीं बताते कि क्या करना चाहिए।",
+        ),
+        "faq": (
+            ("पंचांग के पाँच अंग कौन-से हैं?",
+             "तिथि, वार, नक्षत्र, योग और करण। तिथि चंद्र दिवस है, वार सप्ताह का दिन, नक्षत्र वह तारा-समूह "
+             "जिसमें चंद्रमा है, योग सूर्य और चंद्रमा के संयुक्त भोगांश का माप, और करण आधी तिथि।"),
+            ("पंचांग शहर के अनुसार क्यों बदलता है?",
+             "सूर्योदय और सूर्यास्त स्थान पर निर्भर करते हैं, और वैदिक दिन तथा समय-खंड उन्हीं से गिने जाते हैं। "
+             "तिथि, नक्षत्र, योग और करण एक ही क्षण पर हर जगह एक-से होते हैं, पर किसी दिन के लिए वही लिखा जाता "
+             "है जो उस शहर के सूर्योदय पर चल रहा हो, और राहु काल तथा अभिजित मुहूर्त शहर के सूर्योदय-सूर्यास्त के "
+             "साथ खिसकते हैं।"),
+            ("पंचांग में सायन राशिचक्र लिया जाता है या निरयण?",
+             "नक्षत्र और योग लाहिरी अयनांश के साथ निरयण राशिचक्र में निकाले जाते हैं। तिथि और करण केवल चंद्रमा "
+             "और सूर्य के बीच के कोण पर निर्भर हैं, इसलिए अयनांश कोई भी हो, वे नहीं बदलते।"),
+            ("अलग-अलग पंचांगों में समय थोड़े अलग क्यों होते हैं?",
+             "छोटे अंतर पद्धतियों से आते हैं: सूर्योदय की परिभाषा, कौन-सा अयनांश लिया गया और ephemeris की "
+             "सूक्ष्मता। इस पन्ने पर हमारी पद्धति लिखी है: अपवर्तन सहित ऊपरी किनारे का सूर्योदय और लाहिरी "
+             "अयनांश।"),
+        ),
+    },
+}
+
+# ---- what-is-tithi ---------------------------------------------------------
+PAGES["what-is-tithi"] = {
+    "en": {
+        "label": "What is a tithi?",
+        "blurb": "The lunar day: 12 degrees of Moon-Sun angle, 30 to a lunar month.",
+        "h1": "What is a tithi? The lunar day, explained",
+        "title": "What is a Tithi? Lunar Day, Shukla and Krishna Paksha, How It Is Calculated",
+        "desc": ("A tithi is the time the Moon takes to gain 12 degrees on the Sun. See all 30 "
+                 "tithis, how the engine computes them, and today's tithi in New Delhi."),
+        "answer": ("A tithi is a lunar day: the time the Moon takes to move exactly 12° ahead of the "
+                   "Sun. A lunar month has 30 tithis, 15 in the bright fortnight (Shukla paksha), "
+                   "which ends at Purnima, and 15 in the dark fortnight (Krishna paksha), which ends "
+                   "at Amavasya."),
+        "method": (
+            "Our engine takes the Moon's longitude minus the Sun's longitude, wrapped into 0° to "
+            "360°. The tithi number is the count of completed 12° steps, plus one: 0° to 12° is "
+            "Shukla Pratipada, 12° to 24° is Shukla Dwitiya, and so on. The 15th tithi of the bright "
+            "fortnight (168° to 180°) is Purnima and ends at full moon. The 30th (348° to 360°) is "
+            "Amavasya and ends at new moon.",
+            "The Moon's speed changes through the month, so tithis are not all the same length, and "
+            "they do not begin or end at sunrise. The tithi listed for a civil day is the one running "
+            "at that day's sunrise, so one tithi can cover two sunrises, or begin and end between "
+            "two. Some fasts and festivals test a different part of the day instead of sunrise; the "
+            "vrat pages say which rule each one uses.",
+        ),
+        "convention": (
+            "Tithi depends only on the angle between the Moon and the Sun, so it does not change with "
+            "the choice of ayanamsa."),
+        "live_h": None,
+        "live": "Today in {city} ({weekday}, {date}), the tithi at sunrise is {tithi}. It runs from {start} to {end}.",
+        "live2": " It is followed by {next}, which runs until {next_end}.",
+        "use": (
+            "Most fasts and festivals are tied to a tithi. Ekadashi, Pradosh, Sankashti Chaturthi, "
+            "Purnima and Amavasya come round every month, and the tithi is also one of the factors a "
+            "muhurat table checks. Which civil day keeps a tithi festival depends on the rule for "
+            "that festival; the vrat pages state it for each.",
+        ),
+        "faq": (
+            ("How many tithis are there?",
+             "Thirty in a lunar month: fifteen in Shukla paksha (the bright fortnight, from "
+             "Pratipada to Purnima) and fifteen in Krishna paksha (the dark fortnight, from "
+             "Pratipada to Amavasya)."),
+            ("Is a tithi the same as a calendar date?",
+             "No. A tithi is measured by the Moon-Sun angle, not by the clock, so it can begin or "
+             "end at any hour and is not the same length every day. A civil date can be shared by "
+             "two tithis, and a tithi can spread over two dates."),
+            ("What is the difference between Purnima and Amavasya?",
+             "Purnima is the last tithi of Shukla paksha and ends at full moon, when the Moon is 180° "
+             "from the Sun. Amavasya is the last tithi of Krishna paksha and ends at new moon, when "
+             "the angle returns to 0°."),
+            ("Why does a tithi sometimes seem to be skipped or to repeat?",
+             "The tithi listed for a day is the one running at sunrise. A short tithi can begin and "
+             "end between two sunrises and so is not listed for any day (calendars call this a "
+             "kshaya tithi), and a long one can be running at two sunrises."),
+        ),
+    },
+    "hi": {
+        "label": "तिथि क्या है?",
+        "blurb": "चंद्र दिवस: चंद्र-सूर्य के बीच 12 अंश का कोण, एक चांद्र मास में 30।",
+        "h1": "तिथि क्या है? चंद्र दिवस की सीधी व्याख्या",
+        "title": "तिथि क्या है? शुक्ल और कृष्ण पक्ष, गणना कैसे होती है",
+        "desc": ("तिथि वह समय है जिसमें चंद्रमा सूर्य से 12 अंश आगे बढ़ता है। सभी 30 तिथियाँ, इंजन की गणना "
+                 "और नई दिल्ली की आज की तिथि।"),
+        "answer": ("तिथि चंद्र दिवस है: चंद्रमा को सूर्य से ठीक 12° आगे बढ़ने में जितना समय लगता है, वही एक तिथि है। "
+                   "एक चांद्र मास में 30 तिथियाँ होती हैं: शुक्ल पक्ष की 15, जो पूर्णिमा पर समाप्त होती हैं, और कृष्ण "
+                   "पक्ष की 15, जो अमावस्या पर समाप्त होती हैं।"),
+        "method": (
+            "हमारा इंजन चंद्रमा का भोगांश घटा सूर्य का भोगांश लेता है, जिसे 0° से 360° के बीच रखा जाता है। "
+            "तिथि संख्या = पूरे हो चुके 12° के चरणों की गिनती + 1: 0° से 12° शुक्ल प्रतिपदा है, 12° से 24° शुक्ल "
+            "द्वितीया, और इसी तरह आगे। शुक्ल पक्ष की 15वीं तिथि (168° से 180°) पूर्णिमा है और पूर्ण चंद्र पर समाप्त "
+            "होती है। 30वीं तिथि (348° से 360°) अमावस्या है और अमावस पर समाप्त होती है।",
+            "चंद्रमा की चाल महीने भर बदलती रहती है, इसलिए सब तिथियाँ बराबर लंबी नहीं होतीं और वे सूर्योदय पर "
+            "शुरू या समाप्त नहीं होतीं। किसी नागरिक दिन के लिए जो तिथि लिखी जाती है वह उस दिन के सूर्योदय पर चल "
+            "रही तिथि होती है; इसलिए एक तिथि दो सूर्योदयों तक फैल सकती है, या दो सूर्योदयों के बीच ही शुरू होकर "
+            "समाप्त हो सकती है। कुछ व्रत-पर्व सूर्योदय की जगह दिन का कोई और भाग देखते हैं; व्रत के पन्ने बताते हैं "
+            "कि हर पर्व में कौन-सा नियम लिया गया है।",
+        ),
+        "convention": (
+            "तिथि केवल चंद्रमा और सूर्य के बीच के कोण पर निर्भर है, इसलिए अयनांश बदलने से वह नहीं बदलती।"),
+        "live_h": None,
+        "live": "आज {city} में ({weekday}, {date}) सूर्योदय के समय तिथि {tithi} है। यह {start} से {end} तक चलती है।",
+        "live2": " इसके बाद {next} आती है, जो {next_end} तक रहती है।",
+        "use": (
+            "अधिकतर व्रत और पर्व किसी तिथि से जुड़े होते हैं। एकादशी, प्रदोष, संकष्टी चतुर्थी, पूर्णिमा और "
+            "अमावस्या हर महीने आती हैं, और मुहूर्त-सारणी भी जिन बातों को देखती है उनमें तिथि एक है। तिथि "
+            "वाला पर्व किस नागरिक दिन मनाया जाए, यह उस पर्व के नियम पर निर्भर है; व्रत के पन्ने हर एक का नियम "
+            "बताते हैं।",
+        ),
+        "faq": (
+            ("तिथियाँ कितनी होती हैं?",
+             "एक चांद्र मास में तीस: शुक्ल पक्ष (प्रतिपदा से पूर्णिमा तक) की पंद्रह और कृष्ण पक्ष (प्रतिपदा से "
+             "अमावस्या तक) की पंद्रह।"),
+            ("क्या तिथि और कैलेंडर की तारीख़ एक ही चीज़ है?",
+             "नहीं। तिथि घड़ी से नहीं, चंद्र-सूर्य के कोण से नापी जाती है, इसलिए वह किसी भी घंटे शुरू या समाप्त "
+             "हो सकती है और हर दिन एक-सी लंबी नहीं होती। एक तारीख़ में दो तिथियाँ आ सकती हैं, और एक तिथि दो "
+             "तारीख़ों तक फैल सकती है।"),
+            ("पूर्णिमा और अमावस्या में क्या अंतर है?",
+             "पूर्णिमा शुक्ल पक्ष की अंतिम तिथि है और पूर्ण चंद्र पर समाप्त होती है, जब चंद्रमा सूर्य से 180° पर "
+             "होता है। अमावस्या कृष्ण पक्ष की अंतिम तिथि है और अमावस पर समाप्त होती है, जब कोण फिर 0° हो जाता "
+             "है।"),
+            ("कभी-कभी कोई तिथि छूटी हुई या दोहराई हुई क्यों लगती है?",
+             "किसी दिन के लिए वही तिथि लिखी जाती है जो सूर्योदय पर चल रही हो। छोटी तिथि दो सूर्योदयों के बीच ही "
+             "शुरू होकर समाप्त हो सकती है और किसी दिन के साथ नहीं लिखी जाती (पंचांग इसे क्षय तिथि कहते हैं), "
+             "जबकि लंबी तिथि दो सूर्योदयों पर चल रही हो सकती है।"),
+        ),
+    },
+}
+
+# ---- what-is-nakshatra -----------------------------------------------------
+PAGES["what-is-nakshatra"] = {
+    "en": {
+        "label": "What is a nakshatra?",
+        "blurb": "The 27 divisions of the zodiac, 13°20′ each, and the four padas in each.",
+        "h1": "What is a nakshatra? The 27 lunar mansions explained",
+        "title": "What is a Nakshatra? The 27 Nakshatras, Padas and How They Are Calculated",
+        "desc": ("A nakshatra is one of 27 equal 13°20′ divisions of the zodiac. See the full list, "
+                 "how the Moon's nakshatra and pada are calculated, and today's in New Delhi."),
+        "answer": ("A nakshatra is one of the 27 equal divisions of the zodiac, each 13°20′ wide, and "
+                   "each is named after a star group near the Moon's path. The Moon spends about a "
+                   "day in each, so the nakshatra of a day, or of a birth, is the one the Moon is in; "
+                   "every nakshatra is split into four padas of 3°20′."),
+        "method": (
+            "Our engine takes the Moon's sidereal longitude (Swiss Ephemeris, Lahiri ayanamsa) and "
+            "divides it by 13°20′, which is 360° ÷ 27. The whole number gives the nakshatra, "
+            "counting from Ashwini, which begins at 0° of sidereal Aries. The remainder, divided by "
+            "3°20′, gives the pada from 1 to 4.",
+            "Four padas in each of 27 nakshatras make 108, so each 30° sign holds exactly nine padas: "
+            "two and a quarter nakshatras. The nakshatra listed for a day is the one the Moon "
+            "occupies at sunrise; if it changes later in the day, the Panchang shows the time it "
+            "ends.",
+        ),
+        "convention": (
+            "Our Panchang and this page use the 27-nakshatra scheme. Because nakshatras are marked in "
+            "the sidereal zodiac, the ayanamsa matters: the different spellings of Lahiri differ by "
+            "about 20 arc-seconds, enough to move a nakshatra boundary by about a minute."),
+        "live_h": None,
+        "live": ("Today in {city} ({weekday}, {date}), the Moon is in {nakshatra} nakshatra at sunrise, "
+                 "in pada {pada}. {nakshatra} ends at {end}."),
+        "use": (
+            "Your janma nakshatra is the nakshatra the Moon was in at birth. It is used for the "
+            "traditional name letters (namakshar), as the starting point of the Vimshottari dasha "
+            "sequence, and in Kundali Milan for the gana, yoni and nadi points. Day to day, the "
+            "nakshatra is one of the factors a muhurat table looks at.",
+        ),
+        "faq": (
+            ("How many nakshatras are there?",
+             "Twenty-seven, each 13°20′ of the zodiac, from Ashwini to Revati. Each has four padas of "
+             "3°20′, which gives 108 padas in all."),
+            ("How do I find my nakshatra?",
+             "It is the nakshatra the Moon was in when you were born. Enter your birth date, time and "
+             "place in the free Kundali and it is shown, with the pada."),
+            ("What is a pada?",
+             "A pada (quarter) is one fourth of a nakshatra, 3°20′ of the zodiac. Each pada is also "
+             "one of the 108 name syllables used in the namakshar tradition."),
+            ("Does the nakshatra depend on the ayanamsa?",
+             "Yes. Nakshatras are fixed in the sidereal zodiac, so the ayanamsa used shifts the "
+             "boundaries slightly. Our engine uses Lahiri."),
+        ),
+    },
+    "hi": {
+        "label": "नक्षत्र क्या है?",
+        "blurb": "राशिचक्र के 27 भाग, हर एक 13°20′ का, और हर में चार चरण।",
+        "h1": "नक्षत्र क्या है? 27 नक्षत्रों की व्याख्या",
+        "title": "नक्षत्र क्या है? 27 नक्षत्र, चरण और गणना कैसे होती है",
+        "desc": ("नक्षत्र राशिचक्र के 27 बराबर भागों में से एक है, हर एक 13°20′ का। पूरी सूची, चंद्र नक्षत्र और "
+                 "चरण की गणना, और नई दिल्ली का आज का नक्षत्र।"),
+        "answer": ("नक्षत्र राशिचक्र के 27 बराबर भागों में से एक है, हर भाग 13°20′ चौड़ा, और हर का नाम चंद्रमा के पथ "
+                   "के पास के किसी तारा-समूह पर है। चंद्रमा हर नक्षत्र में लगभग एक दिन रहता है, इसलिए किसी दिन या "
+                   "जन्म का नक्षत्र वही है जिसमें चंद्रमा हो; हर नक्षत्र के 3°20′ के चार चरण होते हैं।"),
+        "method": (
+            "हमारा इंजन चंद्रमा का निरयण भोगांश (Swiss Ephemeris, लाहिरी अयनांश) लेकर उसे 13°20′ से भाग देता है, "
+            "यानी 360° ÷ 27। पूर्णांक नक्षत्र बताता है, गिनती अश्विनी से होती है जो निरयण मेष के 0° से शुरू होता "
+            "है। शेष को 3°20′ से भाग देने पर चरण 1 से 4 मिलता है।",
+            "27 नक्षत्रों में चार-चार चरण मिलकर 108 होते हैं, इसलिए 30° की हर राशि में ठीक नौ चरण आते हैं: सवा दो "
+            "नक्षत्र। किसी दिन के लिए जो नक्षत्र लिखा जाता है वह सूर्योदय पर चंद्रमा जिसमें हो वही है; अगर वह दिन "
+            "में आगे बदलता है तो पंचांग में उसके समाप्त होने का समय दिया जाता है।",
+        ),
+        "convention": (
+            "हमारा पंचांग और यह पन्ना 27-नक्षत्र पद्धति लेते हैं। नक्षत्र निरयण राशिचक्र में चिह्नित होते हैं, इसलिए "
+            "अयनांश मायने रखता है: लाहिरी के अलग-अलग रूपों में लगभग 20 कला-सेकंड का अंतर है, जो नक्षत्र की "
+            "सीमा को करीब एक मिनट खिसका देता है।"),
+        "live_h": None,
+        "live": ("आज {city} में ({weekday}, {date}) सूर्योदय पर चंद्रमा {nakshatra} नक्षत्र में है, चरण {pada} में। "
+                 "{nakshatra} {end} पर समाप्त होता है।"),
+        "use": (
+            "जन्म नक्षत्र वह है जिसमें जन्म के समय चंद्रमा था। इसका उपयोग पारंपरिक नामाक्षर के लिए, विंशोत्तरी "
+            "दशा-क्रम के आरंभ-बिंदु के रूप में, और कुंडली मिलान में गण, योनि और नाड़ी के अंकों के लिए होता है। रोज़ "
+            "के पंचांग में नक्षत्र उन बातों में से एक है जिन्हें मुहूर्त-सारणी देखती है।",
+        ),
+        "faq": (
+            ("नक्षत्र कितने होते हैं?",
+             "सत्ताईस, हर एक राशिचक्र का 13°20′, अश्विनी से रेवती तक। हर के चार चरण 3°20′ के होते हैं, यानी "
+             "कुल 108 चरण।"),
+            ("अपना नक्षत्र कैसे जानें?",
+             "जन्म के समय चंद्रमा जिस नक्षत्र में था, वही आपका नक्षत्र है। मुफ़्त कुंडली में जन्म तिथि, समय और "
+             "स्थान भरने पर वह चरण सहित दिख जाता है।"),
+            ("चरण (पद) क्या है?",
+             "चरण नक्षत्र का चौथा भाग है, राशिचक्र का 3°20′। हर चरण नामाक्षर परंपरा के 108 अक्षरों में से एक "
+             "से भी जुड़ा है।"),
+            ("क्या नक्षत्र अयनांश पर निर्भर करता है?",
+             "हाँ। नक्षत्र निरयण राशिचक्र में तय होते हैं, इसलिए जो अयनांश लिया जाए वह सीमाओं को थोड़ा खिसका "
+             "देता है। हमारा इंजन लाहिरी लेता है।"),
+        ),
+    },
+}
+
+# ---- what-is-yoga-and-karana ----------------------------------------------
+PAGES["what-is-yoga-and-karana"] = {
+    "en": {
+        "label": "What are yoga and karana?",
+        "blurb": "Two of the five limbs: the 27 yogas and the 11 karanas.",
+        "h1": "What are yoga and karana in the Panchang?",
+        "title": "What are Yoga and Karana in Panchang? 27 Yogas, 11 Karanas, Vishti (Bhadra)",
+        "desc": ("Yoga and karana are two of the five Panchang limbs. See the 27 yogas, the 11 "
+                 "karanas, how each is calculated, and today's in New Delhi."),
+        "answer": ("Yoga and karana are two of the five limbs of the Panchang. A yoga is a 13°20′ "
+                   "stretch of the Sun's and Moon's combined sidereal longitude (27 yogas, from "
+                   "Vishkambha to Vaidhriti), and a karana is half a tithi, 6° of Moon-Sun angle, so a "
+                   "lunar month holds 60 karanas drawn from 11 names."),
+        "method": (
+            "For yoga, our engine adds the Sun's sidereal longitude and the Moon's sidereal longitude "
+            "(Lahiri) and wraps the total into 0° to 360°. Each 13°20′ of that sum is one yoga, "
+            "counted from Vishkambha, which gives 27.",
+            "Each tithi has two karanas, so a karana is 6° of Moon-Sun angle and a lunar month has 60. "
+            "The first half-tithi of the month is Kimstughna. The next 56 run through seven names in "
+            "a fixed cycle (Bava, Balava, Kaulava, Taitila, Gara, Vanija, Vishti), eight times over. "
+            "The last three are Shakuni, Chatushpada and Naga. Seven repeating names plus four fixed "
+            "ones make 11.",
+        ),
+        "convention": (
+            "Yoga uses the sidereal zodiac, so the ayanamsa matters to it; karana, like tithi, depends "
+            "only on the Moon-Sun angle. Vishti karana is also called Bhadra."),
+        "live_h": None,
+        "live": ("Today in {city} ({weekday}, {date}), the yoga at sunrise is {yoga}, until {yoga_end}. "
+                 "The karana at sunrise is {karana}, until {karana_end}."),
+        "use": (
+            "In muhurat tables a few yogas are set aside: our Muhurat pages leave out Vyatipata and "
+            "Vaidhriti for every kind of event, and for some events also Ganda, Atiganda, Shula or "
+            "Vishkambha. Vishti (Bhadra) karana is the period around which Raksha Bandhan and Holika "
+            "Dahan are timed in our festival calendar. These are the conventions of the almanac "
+            "tradition, reported as such.",
+        ),
+        "faq": (
+            ("How many yogas and karanas are there?",
+             "There are 27 yogas, each 13°20′ of the Sun's and Moon's combined longitude. There are "
+             "11 karana names (seven that repeat and four fixed), and 60 karanas in a lunar month."),
+            ("What is Vishti karana?",
+             "Vishti is the seventh of the seven repeating karanas, and it is also called Bhadra. In "
+             "the calculation it is a karana like any other; it is the festival and muhurat rules "
+             "that say what to do around it."),
+            ("Is the Panchang yoga the same as yoga exercise?",
+             "No. In the Panchang, yoga is an astronomical division of the Sun's and Moon's combined "
+             "longitude. It has nothing to do with yoga as exercise, nor with the planetary "
+             "combinations called yogas in a birth chart."),
+            ("Which yogas does the Muhurat finder leave out?",
+             "Vyatipata and Vaidhriti are left out for every kind of event. For marriage, Ganda, "
+             "Atiganda, Shula and Vishkambha are also left out, and for house-warming, Shula and "
+             "Ganda."),
+        ),
+    },
+    "hi": {
+        "label": "योग और करण क्या हैं?",
+        "blurb": "पंचांग के दो अंग: 27 योग और 11 करण।",
+        "h1": "पंचांग में योग और करण क्या हैं?",
+        "title": "पंचांग में योग और करण क्या हैं? 27 योग, 11 करण, विष्टि (भद्रा)",
+        "desc": ("योग और करण पंचांग के पाँच अंगों में से दो हैं। 27 योग, 11 करण, हर एक की गणना और नई दिल्ली के "
+                 "आज के योग-करण।"),
+        "answer": ("योग और करण पंचांग के पाँच अंगों में से दो हैं। योग सूर्य और चंद्रमा के संयुक्त निरयण भोगांश का "
+                   "13°20′ का खंड है (विष्कम्भ से वैधृति तक 27 योग), और करण आधी तिथि है, यानी चंद्र-सूर्य कोण का 6°, "
+                   "इसलिए एक चांद्र मास में 60 करण होते हैं जो 11 नामों से बनते हैं।"),
+        "method": (
+            "योग के लिए हमारा इंजन सूर्य का निरयण भोगांश और चंद्रमा का निरयण भोगांश (लाहिरी) जोड़ता है और कुल "
+            "को 0° से 360° के बीच रखता है। उस योग का हर 13°20′ एक योग है, गिनती विष्कम्भ से होती है, और "
+            "इस तरह 27 योग बनते हैं।",
+            "हर तिथि में दो करण होते हैं, इसलिए एक करण चंद्र-सूर्य कोण का 6° है और एक चांद्र मास में 60 करण। "
+            "मास की पहली अर्ध-तिथि किंस्तुघ्न है। उसके बाद के 56 करण सात नामों के एक निश्चित चक्र (बव, बालव, "
+            "कौलव, तैतिल, गर, वणिज, विष्टि) में आठ बार दोहराए जाते हैं। अंतिम तीन शकुनि, चतुष्पाद और नाग हैं। "
+            "सात दोहराए जाने वाले और चार स्थिर नाम मिलकर 11 होते हैं।",
+        ),
+        "convention": (
+            "योग निरयण राशिचक्र में निकलता है, इसलिए अयनांश उस पर असर डालता है; करण तिथि की तरह केवल "
+            "चंद्र-सूर्य कोण पर निर्भर है। विष्टि करण को भद्रा भी कहते हैं।"),
+        "live_h": None,
+        "live": ("आज {city} में ({weekday}, {date}) सूर्योदय पर योग {yoga} है, {yoga_end} तक। सूर्योदय पर करण "
+                 "{karana} है, {karana_end} तक।"),
+        "use": (
+            "मुहूर्त-सारणियों में कुछ योग छोड़ दिए जाते हैं: हमारे मुहूर्त पन्ने हर तरह के आयोजन के लिए व्यतीपात "
+            "और वैधृति छोड़ते हैं, और कुछ आयोजनों में गण्ड, अतिगण्ड, शूल या विष्कम्भ भी। हमारे पर्व-कैलेंडर में रक्षा "
+            "बंधन और होलिका दहन का समय विष्टि (भद्रा) करण को ध्यान में रखकर तय होता है। ये पंचांग परंपरा की पद्धतियाँ "
+            "हैं, और वैसी ही बताई गई हैं।",
+        ),
+        "faq": (
+            ("योग और करण कितने होते हैं?",
+             "योग 27 हैं, हर एक सूर्य और चंद्रमा के संयुक्त भोगांश का 13°20′। करण के 11 नाम हैं (सात दोहराए जाने "
+             "वाले और चार स्थिर), और एक चांद्र मास में 60 करण होते हैं।"),
+            ("विष्टि करण क्या है?",
+             "विष्टि सात दोहराए जाने वाले करणों में सातवाँ है, और इसे भद्रा भी कहते हैं। गणना में यह बाकी करणों जैसा "
+             "ही एक करण है; इसके आसपास क्या करना है, यह पर्व और मुहूर्त के नियम बताते हैं।"),
+            ("क्या पंचांग का योग और योगासन एक ही हैं?",
+             "नहीं। पंचांग में योग सूर्य और चंद्रमा के संयुक्त भोगांश का खगोलीय विभाजन है। इसका योगासन से, या जन्म "
+             "कुंडली में ग्रहों के योगों से कोई संबंध नहीं।"),
+            ("मुहूर्त खोजक कौन-से योग छोड़ता है?",
+             "हर तरह के आयोजन में व्यतीपात और वैधृति छोड़े जाते हैं। विवाह में गण्ड, अतिगण्ड, शूल और विष्कम्भ भी "
+             "छोड़े जाते हैं, और गृह प्रवेश में शूल और गण्ड।"),
+        ),
+    },
+}
+
+# ---- what-is-rahu-kaal -----------------------------------------------------
+PAGES["what-is-rahu-kaal"] = {
+    "en": {
+        "label": "What is Rahu Kaal?",
+        "blurb": "One of eight parts of daylight; which part depends on the weekday.",
+        "h1": "What is Rahu Kaal and how is it calculated?",
+        "title": "What is Rahu Kaal? How It Is Calculated, Part by Weekday",
+        "desc": ("Rahu Kaal is one of the eight equal parts of daylight, chosen by weekday. See the "
+                 "rule our engine uses, the weekday table and today's Rahu Kaal in New Delhi."),
+        "answer": ("Rahu Kaal, named for Rahu, is one of the eight equal parts of the daylight hours "
+                   "(sunrise to sunset) that traditional almanacs mark as a window not preferred for "
+                   "starting new work. Which part it is depends on the weekday, and because it is a "
+                   "fixed fraction of the day it lasts about 90 minutes when daylight is 12 hours and "
+                   "its clock time changes with the city and the season."),
+        "method": (
+            "Our engine takes sunrise and sunset for the place (Swiss Ephemeris, visible upper limb), "
+            "cuts that span into eight equal parts, and picks one of them by weekday.",
+            "The parts are numbered 1 to 8 from sunrise. Rahu Kaal is the 8th part on Sunday, the 2nd "
+            "on Monday, the 7th on Tuesday, the 5th on Wednesday, the 6th on Thursday, the 4th on "
+            "Friday and the 3rd on Saturday. Yamaganda and Gulika Kaal are taken from the same eight "
+            "parts by their own weekday tables.",
+            "The weekday is the Vedic day, which runs from one sunrise to the next. Before sunrise, "
+            "the weekday is still the previous one, and so is the Rahu Kaal.",
+        ),
+        "convention": (
+            "Rahu Kaal here is a daytime period; our engine does not calculate a night-time Rahu "
+            "Kaal. Traditions are not unanimous in every detail, so we state exactly the convention "
+            "used: the eight-part scheme and the weekday table above, which was cross-checked "
+            "against Drik Panchang for Delhi and Varanasi."),
+        "live_h": None,
+        "live": ("Today in {city} ({weekday}, {date}), Rahu Kaal is {rahu}. That is part {part} of 8: "
+                 "sunrise is at {sunrise} and sunset at {sunset}, so each part is {minutes} minutes."),
+        "use": (
+            "Some people check Rahu Kaal before starting a journey, a purchase, a signing or a "
+            "ceremony, and wait for it to pass; others do not follow it at all. It is a custom of "
+            "the almanac tradition, and this page does not tell anyone what to do.",
+        ),
+        "faq": (
+            ("What is the Rahu Kaal time today?",
+             "It depends on the city and the weekday. The worked example above gives today's Rahu "
+             "Kaal for New Delhi, and the Rahu Kaal page gives it for other cities."),
+            ("How long is Rahu Kaal?",
+             "One eighth of the daylight. With 12 hours of daylight that is 90 minutes; it is "
+             "shorter when the days are shorter and longer when they are longer."),
+            ("Why is Rahu Kaal at a different time on each weekday?",
+             "Because the weekday decides which of the eight parts of daylight it is: the 8th on "
+             "Sunday, the 2nd on Monday, the 7th on Tuesday, the 5th on Wednesday, the 6th on "
+             "Thursday, the 4th on Friday and the 3rd on Saturday."),
+            ("Is there a Rahu Kaal at night?",
+             "Not in our calculation. Rahu Kaal as defined here is a daytime period, one of the "
+             "eight parts between sunrise and sunset."),
+        ),
+    },
+    "hi": {
+        "label": "राहु काल क्या है?",
+        "blurb": "दिन के आठ भागों में से एक; कौन-सा भाग, यह वार तय करता है।",
+        "h1": "राहु काल क्या है और कैसे निकाला जाता है?",
+        "title": "राहु काल क्या है? गणना की विधि और वार के अनुसार भाग",
+        "desc": ("राहु काल दिन के आठ बराबर भागों में से एक है, जो वार से तय होता है। हमारे इंजन का नियम, वार की "
+                 "सारणी और नई दिल्ली का आज का राहु काल।"),
+        "answer": ("राहु काल दिन के उजाले (सूर्योदय से सूर्यास्त) के आठ बराबर भागों में से एक है, जिसे राहु के नाम पर "
+                   "कहा जाता है और पारंपरिक पंचांग नया काम शुरू करने के लिए अपेक्षित नहीं मानते। कौन-सा भाग, यह वार "
+                   "से तय होता है; और क्योंकि यह दिन का निश्चित अंश है, 12 घंटे के दिन में यह लगभग 90 मिनट का होता "
+                   "है और इसका घड़ी-समय शहर और ऋतु के साथ बदलता है।"),
+        "method": (
+            "हमारा इंजन उस स्थान का सूर्योदय और सूर्यास्त लेता है (Swiss Ephemeris, दिखाई देने वाला ऊपरी किनारा), "
+            "उस अवधि को आठ बराबर भागों में बाँटता है, और वार के अनुसार उनमें से एक चुनता है।",
+            "भागों की गिनती सूर्योदय से 1 से 8 होती है। राहु काल रविवार को 8वाँ भाग है, सोमवार को 2रा, मंगलवार को "
+            "7वाँ, बुधवार को 5वाँ, गुरुवार को 6ठा, शुक्रवार को 4था और शनिवार को 3रा। यमगण्ड और गुलिक काल इन्हीं "
+            "आठ भागों में से अपनी-अपनी वार-सारणी से लिए जाते हैं।",
+            "वार का अर्थ वैदिक दिन है, जो एक सूर्योदय से अगले सूर्योदय तक चलता है। सूर्योदय से पहले वार पिछला ही "
+            "रहता है, और राहु काल भी पिछले दिन का ही।",
+        ),
+        "convention": (
+            "यहाँ राहु काल दिन का समय-खंड है; हमारा इंजन रात का राहु काल नहीं निकालता। हर छोटी बात पर परंपराएँ "
+            "एकमत नहीं हैं, इसलिए हम ठीक वही पद्धति लिखते हैं जो ली गई है: आठ-भाग की योजना और ऊपर की वार-सारणी, "
+            "जिसे दिल्ली और वाराणसी के लिए Drik Panchang से मिलाकर जाँचा गया है।"),
+        "live_h": None,
+        "live": ("आज {city} में ({weekday}, {date}) राहु काल {rahu} है। यह 8 भागों में से भाग संख्या {part} है: "
+                 "सूर्योदय {sunrise} पर और सूर्यास्त {sunset} पर है, इसलिए हर भाग {minutes} मिनट का है।"),
+        "use": (
+            "कुछ लोग यात्रा, खरीदारी, हस्ताक्षर या किसी अनुष्ठान से पहले राहु काल देखते हैं और उसके बीतने की "
+            "प्रतीक्षा करते हैं; कुछ लोग इसे बिल्कुल नहीं मानते। यह पंचांग परंपरा की एक रीति है, और यह पन्ना किसी "
+            "को यह नहीं बताता कि क्या करना चाहिए।",
+        ),
+        "faq": (
+            ("आज का राहु काल कब है?",
+             "यह शहर और वार पर निर्भर है। ऊपर के उदाहरण में नई दिल्ली का आज का राहु काल दिया है, और राहु काल "
+             "के पेज पर दूसरे शहरों का।"),
+            ("राहु काल कितनी देर का होता है?",
+             "दिन के उजाले का आठवाँ हिस्सा। 12 घंटे के दिन में यह 90 मिनट का है; दिन छोटे हों तो कम, बड़े हों "
+             "तो ज़्यादा।"),
+            ("हर वार को राहु काल अलग समय पर क्यों होता है?",
+             "क्योंकि दिन के आठ भागों में से कौन-सा भाग राहु काल है, यह वार तय करता है: रविवार को 8वाँ, सोमवार को "
+             "2रा, मंगलवार को 7वाँ, बुधवार को 5वाँ, गुरुवार को 6ठा, शुक्रवार को 4था और शनिवार को 3रा।"),
+            ("क्या रात में भी राहु काल होता है?",
+             "हमारी गणना में नहीं। यहाँ परिभाषित राहु काल दिन का समय-खंड है, सूर्योदय और सूर्यास्त के बीच के आठ "
+             "भागों में से एक।"),
+        ),
+    },
+}
+
+# ---- what-is-choghadiya ----------------------------------------------------
+PAGES["what-is-choghadiya"] = {
+    "en": {
+        "label": "What is Choghadiya?",
+        "blurb": "Day and night in eight parts each, named Amrit, Shubh, Labh, Char, Rog, Kaal, Udveg.",
+        "h1": "What is Choghadiya? The eight parts of day and night",
+        "title": "What is Choghadiya? The Seven Names, Day and Night Sequence by Weekday",
+        "desc": ("Choghadiya divides the day and the night into eight parts each, named Amrit, Shubh, "
+                 "Labh, Char, Rog, Kaal and Udveg. The sequence for every weekday and today's table."),
+        "answer": ("Choghadiya (चौघड़िया) is a traditional way of dividing the day and the night into "
+                   "eight equal parts each, 16 in all, and naming every part Amrit, Shubh, Labh, Char, "
+                   "Rog, Kaal or Udveg. Amrit, Shubh and Labh are classed as auspicious, Char as "
+                   "neutral, and Rog, Kaal and Udveg as inauspicious; this is a traditional "
+                   "classification, not a forecast."),
+        "method": (
+            "The daytime runs from sunrise to sunset and the night from sunset to the next sunrise "
+            "(Swiss Ephemeris, the same as the Panchang). Each is cut into eight equal parts, so with "
+            "a 12-hour day and a 12-hour night every part is 90 minutes; the length changes with the "
+            "city and the season.",
+            "The names follow a fixed cycle: Udveg, Char, Labh, Amrit, Kaal, Shubh, Rog, and then "
+            "Udveg again. The first daytime part takes the name belonging to the weekday's ruling "
+            "planet (Udveg for the Sun on Sunday, Amrit for the Moon on Monday, Rog for Mars on "
+            "Tuesday, Labh for Mercury on Wednesday, Shubh for Jupiter on Thursday, Char for Venus "
+            "on Friday, Kaal for Saturn on Saturday) and the cycle runs on from there. There are "
+            "eight parts and seven names, so the first name of the day returns as the eighth part.",
+            "The night has its own fixed cycle: Shubh, Amrit, Char, Rog, Kaal, Labh, Udveg, and then "
+            "Shubh again. Its first part is the name of the ruler of the weekday four days on: "
+            "Sunday night begins with Shubh, which is Thursday's name. The weekday is the Vedic day "
+            "from sunrise to sunrise, so the choghadiya before sunrise belongs to the previous "
+            "day's night.",
+        ),
+        "convention": (
+            "This page states the sequence our engine uses. The traditional class of each name "
+            "(auspicious, neutral, inauspicious) is the one our Choghadiya page shows."),
+        "live_h": None,
+        "live": ("Today in {city} ({weekday}, {date}), daylight runs from {sunrise} to {sunset}. The "
+                 "first choghadiya of the day is {first}, {first_when}. Each daytime part is {minutes} "
+                 "minutes long."),
+        "use": (
+            "People consult choghadiya mostly to pick a time for a journey, a purchase or a new "
+            "start, usually preferring the auspicious names and avoiding the inauspicious ones for "
+            "that purpose; practice varies, and some do not follow it. It describes short windows "
+            "of the day only, and says nothing about the whole day or about a person's chart.",
+        ),
+        "faq": (
+            ("How many choghadiya are there in a day?",
+             "Sixteen: eight in the daytime (sunrise to sunset) and eight at night (sunset to the "
+             "next sunrise). There are seven names, so one name appears twice in each set of eight."),
+            ("Which choghadiya are auspicious?",
+             "Traditionally Amrit, Shubh and Labh are classed as auspicious, Char as neutral, and "
+             "Rog, Kaal and Udveg as inauspicious."),
+            ("Does the first choghadiya start at sunrise?",
+             "Yes, the first daytime part begins at sunrise. Its name is the one belonging to the "
+             "weekday's ruling planet."),
+            ("How is Choghadiya different from Rahu Kaal?",
+             "Rahu Kaal is a single window, one of the eight parts of daylight. Choghadiya names "
+             "all eight parts of the day and all eight of the night. Both are cut from the same "
+             "sunrise and sunset."),
+        ),
+    },
+    "hi": {
+        "label": "चौघड़िया क्या है?",
+        "blurb": "दिन और रात के आठ-आठ भाग: अमृत, शुभ, लाभ, चल, रोग, काल, उद्वेग।",
+        "h1": "चौघड़िया क्या है? दिन और रात के आठ-आठ भाग",
+        "title": "चौघड़िया क्या है? सात नाम, वार के अनुसार दिन-रात का क्रम",
+        "desc": ("चौघड़िया दिन और रात को आठ-आठ भागों में बाँटता है: अमृत, शुभ, लाभ, चल, रोग, काल और उद्वेग। हर वार का "
+                 "क्रम और आज की सारणी।"),
+        "answer": ("चौघड़िया दिन और रात को आठ-आठ बराबर भागों में, यानी कुल 16 भागों में बाँटने की पारंपरिक विधि है, "
+                   "जिसमें हर भाग का नाम अमृत, शुभ, लाभ, चल, रोग, काल या उद्वेग होता है। अमृत, शुभ और लाभ शुभ माने "
+                   "जाते हैं, चल सामान्य, और रोग, काल व उद्वेग अशुभ; यह पारंपरिक वर्गीकरण है, कोई भविष्यवाणी नहीं।"),
+        "method": (
+            "दिन सूर्योदय से सूर्यास्त तक है और रात सूर्यास्त से अगले सूर्योदय तक (Swiss Ephemeris, पंचांग वाला ही)। "
+            "हर एक को आठ बराबर भागों में बाँटा जाता है, इसलिए 12 घंटे के दिन और 12 घंटे की रात में हर भाग 90 "
+            "मिनट का होता है; शहर और ऋतु के साथ यह अवधि बदलती है।",
+            "नामों का एक निश्चित चक्र है: उद्वेग, चल, लाभ, अमृत, काल, शुभ, रोग, और फिर उद्वेग। दिन का पहला भाग "
+            "उस वार के स्वामी ग्रह का नाम लेता है (रविवार को सूर्य का उद्वेग, सोमवार को चंद्र का अमृत, मंगलवार को "
+            "मंगल का रोग, बुधवार को बुध का लाभ, गुरुवार को गुरु का शुभ, शुक्रवार को शुक्र का चल, शनिवार को शनि का "
+            "काल) और चक्र वहीं से आगे चलता है। भाग आठ हैं और नाम सात, इसलिए दिन का पहला नाम आठवें भाग में लौट "
+            "आता है।",
+            "रात का अपना निश्चित चक्र है: शुभ, अमृत, चल, रोग, काल, लाभ, उद्वेग, और फिर शुभ। उसका पहला भाग उस वार "
+            "से चार दिन आगे के वार के स्वामी का नाम लेता है: रविवार की रात शुभ से शुरू होती है, जो गुरुवार का नाम "
+            "है। वार का अर्थ सूर्योदय से सूर्योदय तक का वैदिक दिन है, इसलिए सूर्योदय से पहले का चौघड़िया पिछले दिन "
+            "की रात का होता है।",
+        ),
+        "convention": (
+            "यह पन्ना वह क्रम बताता है जो हमारा इंजन लेता है। हर नाम का पारंपरिक वर्ग (शुभ, सामान्य, अशुभ) वही है "
+            "जो हमारे चौघड़िया पेज पर दिखता है।"),
+        "live_h": None,
+        "live": ("आज {city} में ({weekday}, {date}) उजाला {sunrise} से {sunset} तक है। दिन का पहला चौघड़िया "
+                 "{first} है, {first_when}। दिन का हर भाग {minutes} मिनट का है।"),
+        "use": (
+            "लोग चौघड़िया अधिकतर यात्रा, खरीदारी या किसी नई शुरुआत का समय चुनने के लिए देखते हैं, आम तौर पर उस "
+            "काम के लिए शुभ नामों को चुनते और अशुभ नामों से बचते हैं; व्यवहार अलग-अलग है, और कुछ लोग इसे नहीं "
+            "मानते। यह दिन के छोटे खंडों के बारे में ही है, पूरे दिन या किसी की कुंडली के बारे में कुछ नहीं कहता।",
+        ),
+        "faq": (
+            ("एक दिन में कितने चौघड़िया होते हैं?",
+             "सोलह: आठ दिन के (सूर्योदय से सूर्यास्त) और आठ रात के (सूर्यास्त से अगले सूर्योदय तक)। नाम सात हैं, "
+             "इसलिए आठ के हर समूह में एक नाम दो बार आता है।"),
+            ("कौन-से चौघड़िया शुभ माने जाते हैं?",
+             "परंपरा में अमृत, शुभ और लाभ शुभ माने जाते हैं, चल सामान्य, और रोग, काल व उद्वेग अशुभ।"),
+            ("क्या पहला चौघड़िया सूर्योदय से शुरू होता है?",
+             "हाँ, दिन का पहला भाग सूर्योदय पर शुरू होता है। उसका नाम उस वार के स्वामी ग्रह का होता है।"),
+            ("चौघड़िया और राहु काल में क्या अंतर है?",
+             "राहु काल एक अकेला समय-खंड है, दिन के आठ भागों में से एक। चौघड़िया दिन के सभी आठ और रात के सभी "
+             "आठ भागों को नाम देता है। दोनों एक ही सूर्योदय और सूर्यास्त से काटे जाते हैं।"),
+        ),
+    },
+}
+
+# ---- what-is-abhijit-muhurat ----------------------------------------------
+PAGES["what-is-abhijit-muhurat"] = {
+    "en": {
+        "label": "What is Abhijit Muhurat?",
+        "blurb": "The 8th of the 15 muhurtas of daylight, centred on the middle of the day.",
+        "h1": "What is Abhijit Muhurat and how is it calculated?",
+        "title": "What is Abhijit Muhurat? The Midday Muhurta and How It Is Calculated",
+        "desc": ("Abhijit Muhurat is the 8th of the 15 muhurtas of daylight, centred on midday and "
+                 "not given on Wednesdays. See the rule and today's Abhijit time for New Delhi."),
+        "answer": ("Abhijit Muhurat is the eighth of the fifteen muhurtas (equal parts) of the "
+                   "daylight, the one centred on the middle of the day, which traditional almanacs "
+                   "regard as a favourable window for beginning things. In our engine it lasts one "
+                   "fifteenth of the daylight, about 48 minutes when daylight is 12 hours, and it is "
+                   "not given on Wednesdays."),
+        "method": (
+            "Our engine cuts the daylight, from sunrise to sunset (Swiss Ephemeris, visible upper "
+            "limb), into fifteen equal muhurtas. Abhijit is the 8th: it starts after seven "
+            "fifteenths of the day and ends after eight fifteenths, so it is centred on the midpoint "
+            "between sunrise and sunset.",
+            "Abhijit is left out on Wednesdays. The engine's reason, which it gives with the "
+            "result, is that Wednesday's lord Mercury is held to spoil it.",
+        ),
+        "convention": (
+            "Almanacs differ on the exact length of Abhijit and on which weekdays it is kept. Our "
+            "engine follows the convention stated here: one fifteenth of the daylight, every weekday "
+            "except Wednesday."),
+        "live_h": None,
+        "live": ("Today in {city} ({weekday}, {date}), Abhijit Muhurat is {abhijit}. Sunrise is at "
+                 "{sunrise} and sunset at {sunset}, so the muhurta is {minutes} minutes long."),
+        "live_none": ("Today in {city} is {weekday}, {date}, and our engine does not give an Abhijit "
+                      "Muhurat on Wednesdays. On the next day, {date2}, it is {abhijit2}, which is "
+                      "{minutes2} minutes long."),
+        "use": (
+            "Some people prefer the middle of the day for starting something and look for Abhijit "
+            "Muhurat when no other window suits; others do not use it. Our vrat calendar lists it "
+            "as an optional window for Ghatasthapana at Navratri. This page describes the "
+            "calculation and does not tell anyone what to do.",
+        ),
+        "faq": (
+            ("What is the Abhijit Muhurat time today?",
+             "It depends on the city and the day. The worked example above gives it for New Delhi, "
+             "and the Panchang page gives it for other cities."),
+            ("How long is Abhijit Muhurat?",
+             "One fifteenth of the daylight in our engine: about 48 minutes when there are 12 hours "
+             "of daylight, shorter on short winter days and longer on long summer days."),
+            ("Why is there no Abhijit Muhurat on Wednesday?",
+             "Our engine follows the convention that Wednesday's lord Mercury is held to spoil it, so "
+             "it does not give an Abhijit window on Wednesdays."),
+            ("Is Abhijit Muhurat exactly at noon?",
+             "It is centred on the midpoint between sunrise and sunset, which is close to local "
+             "midday. The muhurta runs for about 24 minutes either side of that midpoint when "
+             "daylight is 12 hours."),
+        ),
+    },
+    "hi": {
+        "label": "अभिजित मुहूर्त क्या है?",
+        "blurb": "दिन के 15 मुहूर्तों में आठवाँ, जो दिन के मध्य पर केंद्रित है।",
+        "h1": "अभिजित मुहूर्त क्या है और कैसे निकाला जाता है?",
+        "title": "अभिजित मुहूर्त क्या है? दोपहर का मुहूर्त और उसकी गणना",
+        "desc": ("अभिजित मुहूर्त दिन के 15 मुहूर्तों में आठवाँ है, जो मध्याह्न पर केंद्रित है और बुधवार को नहीं दिया जाता। "
+                 "नियम और नई दिल्ली का आज का अभिजित समय।"),
+        "answer": ("अभिजित मुहूर्त दिन के उजाले के पंद्रह मुहूर्तों (बराबर भागों) में आठवाँ है, जो दिन के मध्य पर "
+                   "केंद्रित है और जिसे पारंपरिक पंचांग किसी काम की शुरुआत के लिए अनुकूल समय मानते हैं। हमारे इंजन में "
+                   "यह उजाले का पंद्रहवाँ हिस्सा है, 12 घंटे के दिन में लगभग 48 मिनट, और बुधवार को नहीं दिया जाता।"),
+        "method": (
+            "हमारा इंजन सूर्योदय से सूर्यास्त तक के उजाले (Swiss Ephemeris, दिखाई देने वाला ऊपरी किनारा) को पंद्रह "
+            "बराबर मुहूर्तों में बाँटता है। अभिजित आठवाँ है: यह दिन के सात-पंद्रहवें हिस्से के बाद शुरू होता है और "
+            "आठ-पंद्रहवें पर समाप्त होता है, इसलिए यह सूर्योदय और सूर्यास्त के मध्य-बिंदु पर केंद्रित है।",
+            "बुधवार को अभिजित छोड़ दिया जाता है। इंजन परिणाम के साथ इसका कारण भी देता है: वार के स्वामी बुध "
+            "को इसे दूषित करने वाला माना जाता है।",
+        ),
+        "convention": (
+            "अभिजित की ठीक लंबाई और किन वारों में इसे लिया जाए, इस पर पंचांगों में अंतर है। हमारा इंजन यहाँ "
+            "लिखी पद्धति लेता है: उजाले का पंद्रहवाँ हिस्सा, बुधवार को छोड़कर हर वार।"),
+        "live_h": None,
+        "live": ("आज {city} में ({weekday}, {date}) अभिजित मुहूर्त {abhijit} है। सूर्योदय {sunrise} पर और "
+                 "सूर्यास्त {sunset} पर है, इसलिए मुहूर्त {minutes} मिनट का है।"),
+        "live_none": ("आज {city} में {weekday}, {date} है, और हमारा इंजन बुधवार को अभिजित मुहूर्त नहीं देता। "
+                      "अगले दिन, {date2}, यह {abhijit2} है, जो {minutes2} मिनट का है।"),
+        "use": (
+            "कुछ लोग किसी काम की शुरुआत के लिए दिन का मध्य पसंद करते हैं और जब कोई और समय न बने तो अभिजित "
+            "मुहूर्त देखते हैं; कुछ इसे नहीं मानते। हमारे व्रत-कैलेंडर में नवरात्रि की घटस्थापना के लिए इसे एक वैकल्पिक "
+            "समय के रूप में दिया जाता है। यह पन्ना गणना बताता है, किसी को यह नहीं बताता कि क्या करना चाहिए।",
+        ),
+        "faq": (
+            ("आज का अभिजित मुहूर्त कब है?",
+             "यह शहर और दिन पर निर्भर है। ऊपर के उदाहरण में नई दिल्ली का समय दिया है, और पंचांग पेज पर "
+             "दूसरे शहरों का।"),
+            ("अभिजित मुहूर्त कितनी देर का होता है?",
+             "हमारे इंजन में उजाले का पंद्रहवाँ हिस्सा: 12 घंटे के उजाले में लगभग 48 मिनट, सर्दी के छोटे दिनों में कम "
+             "और गर्मी के लंबे दिनों में ज़्यादा।"),
+            ("बुधवार को अभिजित मुहूर्त क्यों नहीं होता?",
+             "हमारा इंजन उस पद्धति पर चलता है जिसमें बुधवार के स्वामी बुध को इसे दूषित करने वाला माना जाता है, "
+             "इसलिए बुधवार को अभिजित का समय नहीं दिया जाता।"),
+            ("क्या अभिजित मुहूर्त ठीक दोपहर 12 बजे होता है?",
+             "यह सूर्योदय और सूर्यास्त के मध्य-बिंदु पर केंद्रित है, जो स्थानीय दोपहर के पास होता है। 12 घंटे के "
+             "उजाले में मुहूर्त उस मध्य-बिंदु के दोनों ओर लगभग 24-24 मिनट चलता है।"),
+        ),
+    },
+}
+
+# ---- what-is-brahma-muhurta ------------------------------------------------
+PAGES["what-is-brahma-muhurta"] = {
+    "en": {
+        "label": "What is Brahma Muhurta?",
+        "blurb": "The 14th of the 15 muhurtas of the night, ending one muhurta before sunrise.",
+        "h1": "What is Brahma Muhurta and what time is it?",
+        "title": "What is Brahma Muhurta? The Pre-Dawn Muhurta and How to Find Its Time",
+        "desc": ("Brahma Muhurta is the muhurta before dawn: the 14th of the 15 parts of the night. "
+                 "The rule our page uses and today's Brahma Muhurta time for New Delhi."),
+        "answer": ("Brahma Muhurta is the pre-dawn muhurta that ends one muhurta before sunrise, "
+                   "traditionally associated with waking early, prayer and study. On this page the "
+                   "night, from sunset to the next sunrise, is cut into fifteen equal muhurtas and "
+                   "Brahma Muhurta is the 14th: about 48 minutes long when the night is 12 hours, "
+                   "starting about 96 minutes and ending about 48 minutes before sunrise."),
+        "method": (
+            "We take sunset and the next sunrise for the place (Swiss Ephemeris, visible upper limb) "
+            "and cut the night between them into fifteen equal muhurtas. Brahma Muhurta is the 14th: "
+            "it starts after thirteen fifteenths of the night and ends after fourteen fifteenths, "
+            "which leaves the 15th muhurta between it and sunrise.",
+            "This is the same fifteen-way division of the night that our festival calendar uses "
+            "to place Nishita Kaal, which is the 8th night muhurta. Because the night is longer in "
+            "winter and shorter in summer, Brahma Muhurta changes length through the year, and it "
+            "moves with the city.",
+        ),
+        "convention": (
+            "Our Panchang does not list Brahma Muhurta as a separate row; this page applies the "
+            "night-muhurta division described above. Sources differ on whether to divide the night "
+            "into fifteen parts or to use a fixed 48 minutes, and the two agree when the night is "
+            "12 hours long. We use the fifteen-part division."),
+        "live_h": None,
+        "live": ("This morning in {city} ({date}), the night ran from yesterday's sunset at "
+                 "{sunset_prev} to sunrise at {sunrise}. Brahma Muhurta is {brahma}, which is "
+                 "{minutes} minutes long."),
+        "use": (
+            "In many households Brahma Muhurta is the time associated with waking early for prayer, "
+            "meditation or study. Whether and how to keep it is a personal and family custom; this "
+            "page only works out when it falls.",
+        ),
+        "faq": (
+            ("What time is Brahma Muhurta?",
+             "It depends on sunrise and sunset in your city and changes through the year. With a "
+             "12-hour night it runs from about 96 minutes to about 48 minutes before sunrise. The "
+             "worked example above gives this morning's time for New Delhi."),
+            ("How long is Brahma Muhurta?",
+             "One fifteenth of the night: about 48 minutes when the night is 12 hours long, a little "
+             "longer in winter and shorter in summer."),
+            ("Why is it the 14th muhurta of the night?",
+             "Because it is the muhurta that ends one muhurta before sunrise. Counting fifteen "
+             "muhurtas from sunset, the 14th is followed only by the 15th before the Sun rises."),
+            ("Is Brahma Muhurta before sunrise on the same date?",
+             "Yes. The Brahma Muhurta of a morning belongs to the night that began at the previous "
+             "evening's sunset, so on a given date it falls in the early hours, before that day's "
+             "sunrise."),
+        ),
+    },
+    "hi": {
+        "label": "ब्रह्म मुहूर्त क्या है?",
+        "blurb": "रात के 15 मुहूर्तों में चौदहवाँ, जो सूर्योदय से एक मुहूर्त पहले समाप्त होता है।",
+        "h1": "ब्रह्म मुहूर्त क्या है और कितने बजे होता है?",
+        "title": "ब्रह्म मुहूर्त क्या है? भोर का मुहूर्त और उसका समय कैसे निकालें",
+        "desc": ("ब्रह्म मुहूर्त भोर से पहले का मुहूर्त है: रात के 15 भागों में चौदहवाँ। हमारे पन्ने का नियम और नई "
+                 "दिल्ली का आज का ब्रह्म मुहूर्त।"),
+        "answer": ("ब्रह्म मुहूर्त भोर से पहले का वह मुहूर्त है जो सूर्योदय से एक मुहूर्त पहले समाप्त होता है, और "
+                   "परंपरा में जल्दी उठने, प्रार्थना और अध्ययन से जुड़ा माना जाता है। इस पन्ने पर रात को, सूर्यास्त से "
+                   "अगले सूर्योदय तक, पंद्रह बराबर मुहूर्तों में बाँटा गया है और ब्रह्म मुहूर्त चौदहवाँ है: 12 घंटे की रात में "
+                   "लगभग 48 मिनट का, जो सूर्योदय से लगभग 96 मिनट पहले शुरू होकर लगभग 48 मिनट पहले समाप्त होता "
+                   "है।"),
+        "method": (
+            "हम उस स्थान का सूर्यास्त और अगला सूर्योदय लेते हैं (Swiss Ephemeris, दिखाई देने वाला ऊपरी किनारा) और "
+            "उनके बीच की रात को पंद्रह बराबर मुहूर्तों में बाँटते हैं। ब्रह्म मुहूर्त चौदहवाँ है: यह रात के "
+            "तेरह-पंद्रहवें हिस्से के बाद शुरू होता है और चौदह-पंद्रहवें पर समाप्त होता है, यानी इसके और सूर्योदय "
+            "के बीच पंद्रहवाँ मुहूर्त रहता है।",
+            "रात का यही पंद्रह-भागी विभाजन हमारा पर्व-कैलेंडर निशीथ काल रखने में लेता है, जो रात का आठवाँ मुहूर्त "
+            "है। रात सर्दियों में लंबी और गर्मियों में छोटी होती है, इसलिए ब्रह्म मुहूर्त की लंबाई साल भर बदलती है, "
+            "और यह शहर के साथ भी खिसकता है।",
+        ),
+        "convention": (
+            "हमारे पंचांग में ब्रह्म मुहूर्त अलग पंक्ति के रूप में नहीं दिया जाता; यह पन्ना ऊपर बताया रात का "
+            "मुहूर्त-विभाजन लागू करता है। स्रोतों में इस पर अंतर है कि रात को पंद्रह भागों में बाँटा जाए या निश्चित 48 "
+            "मिनट लिए जाएँ; 12 घंटे की रात में दोनों एक ही आते हैं। हम पंद्रह-भागी विभाजन लेते हैं।"),
+        "live_h": None,
+        "live": ("आज सुबह {city} में ({date}) रात कल के सूर्यास्त {sunset_prev} से सूर्योदय {sunrise} तक थी। "
+                 "ब्रह्म मुहूर्त {brahma} है, जो {minutes} मिनट का है।"),
+        "use": (
+            "कई घरों में ब्रह्म मुहूर्त प्रार्थना, ध्यान या अध्ययन के लिए जल्दी उठने का समय माना जाता है। इसे "
+            "रखना या न रखना और कैसे रखना, यह निजी और पारिवारिक रीति है; यह पन्ना केवल यह निकालता है कि यह कब "
+            "पड़ता है।",
+        ),
+        "faq": (
+            ("ब्रह्म मुहूर्त कितने बजे होता है?",
+             "यह आपके शहर के सूर्योदय और सूर्यास्त पर निर्भर है और साल भर बदलता है। 12 घंटे की रात में यह सूर्योदय "
+             "से लगभग 96 मिनट पहले से लगभग 48 मिनट पहले तक चलता है। ऊपर के उदाहरण में नई दिल्ली का आज सुबह का "
+             "समय दिया है।"),
+            ("ब्रह्म मुहूर्त कितनी देर का होता है?",
+             "रात का पंद्रहवाँ हिस्सा: 12 घंटे की रात में लगभग 48 मिनट, सर्दियों में थोड़ा ज़्यादा और गर्मियों में "
+             "कम।"),
+            ("इसे रात का चौदहवाँ मुहूर्त क्यों कहा गया?",
+             "क्योंकि यह वह मुहूर्त है जो सूर्योदय से एक मुहूर्त पहले समाप्त होता है। सूर्यास्त से पंद्रह मुहूर्त गिनें तो "
+             "चौदहवें के बाद सूर्य उगने तक केवल पंद्रहवाँ बचता है।"),
+            ("क्या ब्रह्म मुहूर्त उसी तारीख़ को सूर्योदय से पहले पड़ता है?",
+             "हाँ। किसी सुबह का ब्रह्म मुहूर्त उस रात का होता है जो पिछली शाम के सूर्यास्त से शुरू हुई, इसलिए किसी "
+             "तारीख़ को वह तड़के, उस दिन के सूर्योदय से पहले पड़ता है।"),
+        ),
+    },
+}
+
+# ---- what-is-pradosh-kaal --------------------------------------------------
+PAGES["what-is-pradosh-kaal"] = {
+    "en": {
+        "label": "What is Pradosh Kaal?",
+        "blurb": "The evening window after sunset used for Pradosh Vrat and Diwali.",
+        "h1": "What is Pradosh Kaal and how is it calculated?",
+        "title": "What is Pradosh Kaal? Evening Window After Sunset, Pradosh Vrat and Diwali",
+        "desc": ("Pradosh Kaal is the evening window after sunset used for Pradosh Vrat, Diwali and "
+                 "other observances. The engine's rule and today's Pradosh Kaal for New Delhi."),
+        "answer": ("Pradosh Kaal is the evening window just after sunset in which Pradosh Vrat and "
+                   "several festivals, such as Diwali Lakshmi Puja, are observed. In our engine it "
+                   "starts at sunset and runs for three of the night's fifteen muhurtas (about 2 hours "
+                   "24 minutes when the night is 12 hours), and to decide which day a festival falls on "
+                   "it tests the first 96 minutes after sunset."),
+        "method": (
+            "Sunset and the next sunrise come from the Swiss Ephemeris (visible upper limb). The "
+            "printed Pradosh Kaal is sunset to sunset plus three muhurtas, where a night muhurta is "
+            "one fifteenth of the night. For the Pradosh Vrat itself the window is also cut to the "
+            "Trayodashi tithi, as published Panchangs print it.",
+            "To decide which civil day keeps an observance, the engine asks which evening's Pradosh "
+            "the required tithi covers, and for this it tests the 96 minutes after sunset. If the "
+            "tithi touches Pradosh on two consecutive evenings, the earlier evening wins, except "
+            "where a festival has its own rule: Diwali takes the second evening when Amavasya "
+            "touches both and lasts more than one ghati (24 minutes) past the second sunset.",
+        ),
+        "convention": (
+            "Two lengths are in use, on purpose: three night muhurtas for the window we print, and "
+            "96 minutes for deciding the day. Almanacs differ on the length of Pradosh; our engine "
+            "follows the two stated here."),
+        "live_h": None,
+        "live": ("Today in {city} ({weekday}, {date}), sunset is at {sunset}. Pradosh Kaal, as printed, "
+                 "is {pradosh}, which is {minutes} minutes. The window used to decide the day is "
+                 "{dating}."),
+        "use": (
+            "Pradosh Kaal is when Pradosh Vrat puja is done on Trayodashi, and when evening "
+            "observances such as Diwali Lakshmi Puja, Dhanteras and Dev Deepawali are kept. How "
+            "closely to follow it is a matter of family custom; this page describes the "
+            "calculation.",
+        ),
+        "faq": (
+            ("What is the Pradosh Kaal time today?",
+             "It starts at sunset, which depends on the city. The worked example above gives today's "
+             "Pradosh Kaal for New Delhi."),
+            ("How long is Pradosh Kaal?",
+             "In our engine the printed window is three of the fifteen night muhurtas, about 2 hours "
+             "24 minutes when the night is 12 hours long. For deciding the day of an observance, the "
+             "first 96 minutes after sunset are used."),
+            ("Which observances depend on Pradosh Kaal?",
+             "In our calendar: Pradosh Vrat, Kalashtami, Holika Dahan, Dhanteras, Diwali Lakshmi "
+             "Puja and Dev Deepawali. The table above lists the tithi each needs."),
+            ("What if the tithi covers Pradosh on two evenings?",
+             "The earlier evening is taken, except for festivals with their own rule. For Diwali the "
+             "second evening is taken if Amavasya touches both and lasts more than 24 minutes past "
+             "the second sunset."),
+        ),
+    },
+    "hi": {
+        "label": "प्रदोष काल क्या है?",
+        "blurb": "सूर्यास्त के बाद की शाम की वह खिड़की जो प्रदोष व्रत और दिवाली में ली जाती है।",
+        "h1": "प्रदोष काल क्या है और कैसे निकाला जाता है?",
+        "title": "प्रदोष काल क्या है? सूर्यास्त के बाद का समय, प्रदोष व्रत और दिवाली",
+        "desc": ("प्रदोष काल सूर्यास्त के बाद की वह शाम की खिड़की है जो प्रदोष व्रत, दिवाली और अन्य पर्वों में ली जाती "
+                 "है। इंजन का नियम और नई दिल्ली का आज का प्रदोष काल।"),
+        "answer": ("प्रदोष काल सूर्यास्त के ठीक बाद की शाम की वह खिड़की है जिसमें प्रदोष व्रत और दिवाली लक्ष्मी पूजा जैसे "
+                   "कई पर्व मनाए जाते हैं। हमारे इंजन में यह सूर्यास्त से शुरू होकर रात के पंद्रह मुहूर्तों में से तीन तक चलता "
+                   "है (12 घंटे की रात में लगभग 2 घंटे 24 मिनट), और किसी पर्व का दिन तय करने के लिए सूर्यास्त के बाद के "
+                   "पहले 96 मिनट देखे जाते हैं।"),
+        "method": (
+            "सूर्यास्त और अगला सूर्योदय Swiss Ephemeris से आते हैं (दिखाई देने वाला ऊपरी किनारा)। छापा जाने वाला "
+            "प्रदोष काल सूर्यास्त से सूर्यास्त और तीन मुहूर्त बाद तक है, जहाँ रात का एक मुहूर्त रात का पंद्रहवाँ हिस्सा "
+            "है। प्रदोष व्रत के लिए खिड़की को त्रयोदशी तिथि तक भी काटा जाता है, जैसा प्रकाशित पंचांग छापते हैं।",
+            "कोई पर्व किस नागरिक दिन पड़ेगा, यह तय करने के लिए इंजन देखता है कि चाहिए वाली तिथि किस शाम के "
+            "प्रदोष को ढकती है, और इसके लिए सूर्यास्त के बाद के 96 मिनट जाँचता है। अगर तिथि लगातार दो शामों को "
+            "प्रदोष छूती है तो पहली शाम ली जाती है, सिवाय उन पर्वों के जिनका अपना नियम है: दीपावली में दूसरी शाम "
+            "तब ली जाती है जब अमावस्या दोनों शामों को छूती हो और दूसरे सूर्यास्त के बाद एक घटी (24 मिनट) से अधिक "
+            "चले।",
+        ),
+        "convention": (
+            "दो लंबाइयाँ जान-बूझकर प्रयोग में हैं: छापी जाने वाली खिड़की के लिए तीन रात्रि-मुहूर्त, और दिन तय करने के "
+            "लिए 96 मिनट। प्रदोष की लंबाई पर पंचांगों में अंतर है; हमारा इंजन यहाँ लिखी दो पद्धतियाँ लेता है।"),
+        "live_h": None,
+        "live": ("आज {city} में ({weekday}, {date}) सूर्यास्त {sunset} पर है। छापा जाने वाला प्रदोष काल {pradosh} "
+                 "है, जो {minutes} मिनट का है। दिन तय करने वाली खिड़की {dating} है।"),
+        "use": (
+            "प्रदोष काल वह समय है जब त्रयोदशी को प्रदोष व्रत की पूजा होती है, और जब दिवाली लक्ष्मी पूजा, धनतेरस और "
+            "देव दीपावली जैसे संध्या के पर्व मनाए जाते हैं। इसे कितनी बारीकी से मानना है, यह पारिवारिक रीति की बात "
+            "है; यह पन्ना गणना बताता है।",
+        ),
+        "faq": (
+            ("आज का प्रदोष काल कब है?",
+             "यह सूर्यास्त से शुरू होता है, जो शहर पर निर्भर है। ऊपर के उदाहरण में नई दिल्ली का आज का प्रदोष "
+             "काल दिया है।"),
+            ("प्रदोष काल कितनी देर का होता है?",
+             "हमारे इंजन में छापी जाने वाली खिड़की रात के पंद्रह मुहूर्तों में से तीन है, 12 घंटे की रात में लगभग 2 घंटे "
+             "24 मिनट। किसी पर्व का दिन तय करने के लिए सूर्यास्त के बाद के पहले 96 मिनट लिए जाते हैं।"),
+            ("कौन-से पर्व प्रदोष काल पर निर्भर हैं?",
+             "हमारे कैलेंडर में: प्रदोष व्रत, कालाष्टमी, होलिका दहन, धनतेरस, दिवाली लक्ष्मी पूजा और देव दीपावली। "
+             "ऊपर की सारणी में हर एक की चाहिए वाली तिथि दी है।"),
+            ("अगर तिथि दो शामों को प्रदोष ढके तो?",
+             "पहली शाम ली जाती है, सिवाय उन पर्वों के जिनका अपना नियम है। दीपावली में दूसरी शाम तब ली जाती है "
+             "जब अमावस्या दोनों शामों को छूती हो और दूसरे सूर्यास्त के बाद 24 मिनट से अधिक चले।"),
+        ),
+    },
+}
+
+# ---- what-is-sade-sati -----------------------------------------------------
+PAGES["what-is-sade-sati"] = {
+    "en": {
+        "label": "What is Sade Sati?",
+        "blurb": "Saturn's passage over the three signs around the natal Moon sign.",
+        "h1": "What is Sade Sati? The rule, as our engine checks it",
+        "title": "What is Sade Sati? Saturn and the Moon Sign, How the Rule Is Checked",
+        "desc": ("Sade Sati is the period when Saturn passes through the signs before, over and after "
+                 "the natal Moon sign. The rule our engine checks, and where Saturn is today."),
+        "answer": ("Sade Sati (साढ़ेसाती, \"seven and a half\") is the period in Vedic astrology when "
+                   "Saturn passes through the three zodiac signs around a person's natal Moon sign: the "
+                   "one before it, the one the Moon is in, and the one after it. Saturn stays about two "
+                   "and a half years in each sign, so the whole passage is about seven and a half "
+                   "years; it is a statement about where Saturn is, not a prediction."),
+        "method": (
+            "Sade Sati is judged from the Moon sign of the birth chart, which is the sign the Moon "
+            "was in at birth in the sidereal zodiac (Lahiri ayanamsa). It is not judged from the Sun "
+            "sign or the ascendant.",
+            "Our engine follows Saturn's sidereal sign with the Swiss Ephemeris. The period begins "
+            "the moment Saturn enters the sign before the Moon sign (the 12th from the Moon). It "
+            "continues while Saturn is in the Moon sign and then in the sign after it (the 2nd from "
+            "the Moon), and ends when Saturn leaves that third sign. It is a rule about signs, so "
+            "it does not matter at which degree the Moon stood.",
+            "Saturn sometimes turns retrograde and steps back across a sign boundary. When it "
+            "re-enters the Sade Sati signs within about 170 days, the engine reports one period, "
+            "with the gap visible, rather than two.",
+            "The engine labels the three stretches Rising (Saturn in the 12th from the Moon), Peak "
+            "(over the Moon sign) and Setting (the 2nd from the Moon). Separately it reports two "
+            "shorter stretches of about two and a half years, called Dhaiya, when Saturn is in the "
+            "4th or the 8th from the Moon.",
+        ),
+        "convention": (
+            "Traditions differ about how, or whether, to read these periods, and about the names for "
+            "the Dhaiya stretches (Kantaka Shani and Ashtama Shani are both in use). This page "
+            "makes no reading of them, and does not recommend any ritual, gemstone or paid remedy."),
+        "live_h": 'Where Saturn is today',
+        "live": ("Today ({date}), Saturn is in the sidereal sign {saturn}, {motion}. By this rule "
+                 "Sade Sati is running for people whose Moon sign is {signs}."),
+        "use": (
+            "Astrologers read Sade Sati in different ways and give it different weight. It describes "
+            "the position of one planet relative to the Moon sign, and is not a prediction that "
+            "anything will go wrong. On this site the Kundali page checks the rule for the Moon sign "
+            "of the chart you enter and shows the dates of the period and the current stretch.",
+        ),
+        "faq": (
+            ("How long does Sade Sati last?",
+             "About seven and a half years, because Saturn spends about two and a half years in each "
+             "of the three signs. The exact dates come from the days Saturn enters and leaves those "
+             "signs; if Saturn steps back into a sign, our engine still reports one period."),
+            ("How do I find my Moon sign?",
+             "It is the sign the Moon was in at your birth, in the sidereal zodiac. The free Kundali "
+             "shows it. It can differ from a Western (tropical) Moon sign."),
+            ("Is Sade Sati a prediction of bad luck?",
+             "No. It describes where Saturn is relative to your Moon sign. Traditions differ on how "
+             "to read it and there is no single agreed reading. Our pages do not predict anything "
+             "from it."),
+            ("What is Dhaiya?",
+             "Dhaiya is the similar stretch of about two and a half years when Saturn is in the 4th "
+             "or the 8th sign from the Moon sign. Our engine reports it separately from Sade Sati."),
+        ),
+    },
+    "hi": {
+        "label": "साढ़ेसाती क्या है?",
+        "blurb": "जन्म चंद्र राशि के आसपास की तीन राशियों से शनि का गुज़रना।",
+        "h1": "साढ़ेसाती क्या है? नियम, जैसा हमारा इंजन जाँचता है",
+        "title": "साढ़ेसाती क्या है? शनि और चंद्र राशि, नियम कैसे जाँचा जाता है",
+        "desc": ("साढ़ेसाती वह अवधि है जब शनि जन्म चंद्र राशि से पहले की, उसी की और उसके बाद की राशि से गुज़रता है। "
+                 "हमारे इंजन का नियम और आज शनि कहाँ है।"),
+        "answer": ("साढ़ेसाती वैदिक ज्योतिष में वह अवधि है जब शनि किसी व्यक्ति की जन्म चंद्र राशि के आसपास की तीन "
+                   "राशियों से गुज़रता है: उससे पहले की राशि, चंद्रमा जिस राशि में है वह, और उसके बाद की राशि। शनि हर "
+                   "राशि में लगभग ढाई वर्ष रहता है, इसलिए पूरा गोचर लगभग साढ़े सात वर्ष का होता है; यह इस बारे में एक "
+                   "कथन है कि शनि कहाँ है, कोई भविष्यवाणी नहीं।"),
+        "method": (
+            "साढ़ेसाती जन्म कुंडली की चंद्र राशि से देखी जाती है, यानी जन्म के समय चंद्रमा जिस राशि में था, निरयण "
+            "राशिचक्र (लाहिरी अयनांश) में। यह सूर्य राशि या लग्न से नहीं देखी जाती।",
+            "हमारा इंजन Swiss Ephemeris से शनि की निरयण राशि का पीछा करता है। अवधि उसी क्षण शुरू होती है जब "
+            "शनि चंद्र राशि से पहले की राशि (चंद्रमा से 12वीं) में प्रवेश करता है। वह तब तक चलती है जब शनि चंद्र "
+            "राशि में और फिर उसके बाद की राशि (चंद्रमा से दूसरी) में रहता है, और उस तीसरी राशि को छोड़ते ही "
+            "समाप्त होती है। यह राशियों का नियम है, इसलिए इससे फ़र्क नहीं पड़ता कि चंद्रमा किस अंश पर था।",
+            "शनि कभी वक्री होकर राशि की सीमा के पार पीछे लौट आता है। जब वह लगभग 170 दिन के भीतर साढ़ेसाती की "
+            "राशियों में फिर प्रवेश करता है, तो इंजन दो नहीं, एक अवधि दिखाता है, बीच का अंतराल साफ़ दिखाते हुए।",
+            "इंजन तीन खंडों को ये नाम देता है: आरंभ (शनि चंद्रमा से 12वीं में), मध्य (चंद्र राशि के ऊपर) और अंत "
+            "(चंद्रमा से दूसरी में)। इससे अलग वह लगभग ढाई वर्ष के दो छोटे खंड भी बताता है, जिन्हें ढैया कहते हैं, जब "
+            "शनि चंद्रमा से चौथी या आठवीं राशि में हो।",
+        ),
+        "convention": (
+            "इन अवधियों को कैसे पढ़ा जाए, या पढ़ा भी जाए या नहीं, इस पर परंपराएँ अलग हैं; ढैया के खंडों के नामों पर "
+            "भी (कंटक शनि और अष्टम शनि दोनों चलते हैं)। यह पन्ना इनका कोई फलादेश नहीं करता, और किसी अनुष्ठान, रत्न या "
+            "सशुल्क उपाय की सलाह नहीं देता।"),
+        "live_h": 'आज शनि कहाँ है',
+        "live": ("आज ({date}) शनि निरयण {saturn} राशि में है, {motion}। इस नियम से साढ़ेसाती उन लोगों के लिए चल "
+                 "रही है जिनकी चंद्र राशि {signs} है।"),
+        "use": (
+            "ज्योतिषी साढ़ेसाती को अलग-अलग ढंग से पढ़ते हैं और उसे अलग-अलग महत्व देते हैं। यह एक ग्रह की चंद्र राशि "
+            "के सापेक्ष स्थिति बताती है, और यह भविष्यवाणी नहीं है कि कुछ बुरा होगा। इस साइट पर कुंडली पेज आपकी "
+            "डाली हुई कुंडली की चंद्र राशि के लिए यह नियम जाँचता है और अवधि की तिथियाँ तथा चल रहा खंड दिखाता है।",
+        ),
+        "faq": (
+            ("साढ़ेसाती कितने समय चलती है?",
+             "लगभग साढ़े सात वर्ष, क्योंकि शनि तीनों राशियों में से हर एक में लगभग ढाई वर्ष रहता है। ठीक तिथियाँ "
+             "उन दिनों से आती हैं जब शनि उन राशियों में प्रवेश करता और उन्हें छोड़ता है; अगर शनि किसी राशि में "
+             "वापस लौटे तब भी हमारा इंजन एक ही अवधि दिखाता है।"),
+            ("अपनी चंद्र राशि कैसे जानें?",
+             "जन्म के समय चंद्रमा जिस राशि में था, निरयण राशिचक्र में, वही आपकी चंद्र राशि है। मुफ़्त कुंडली में यह "
+             "दिख जाती है। यह पश्चिमी (सायन) चंद्र राशि से अलग हो सकती है।"),
+            ("क्या साढ़ेसाती बुरे समय की भविष्यवाणी है?",
+             "नहीं। यह बताती है कि शनि आपकी चंद्र राशि के सापेक्ष कहाँ है। इसे कैसे पढ़ें, इस पर परंपराएँ अलग हैं "
+             "और कोई एक सर्वमान्य पाठ नहीं है। हमारे पन्ने इससे कोई भविष्यवाणी नहीं करते।"),
+            ("ढैया क्या है?",
+             "ढैया लगभग ढाई वर्ष का वैसा ही खंड है जब शनि चंद्र राशि से चौथी या आठवीं राशि में हो। हमारा इंजन इसे "
+             "साढ़ेसाती से अलग बताता है।"),
+        ),
+    },
+}
+
+# ---- what-is-mangal-dosha --------------------------------------------------
+PAGES["what-is-mangal-dosha"] = {
+    "en": {
+        "label": "What is Mangal Dosha?",
+        "blurb": "A traditional rule about where Mars sits in a birth chart, and what cancels it.",
+        "h1": "What is Mangal Dosha? The rule, as our engine checks it",
+        "title": "What is Mangal Dosha (Manglik)? The Rule and Its Cancellations",
+        "desc": ("Mangal Dosha is a traditional rule about Mars in a birth chart. The houses it counts, "
+                 "the cancellations our engine applies, and two illustrative charts."),
+        "answer": ("Mangal Dosha (also called Manglik or Kuja Dosha) is a traditional rule in Vedic "
+                   "astrology that looks at where Mars sits in a birth chart: it is said to be present "
+                   "when Mars is in the 1st, 2nd, 4th, 7th, 8th or 12th house. It is mostly looked at "
+                   "when two charts are compared for marriage; traditions differ on which houses count "
+                   "and on what cancels it, and it is not a prediction that anything will go wrong."),
+        "method": (
+            "Our engine counts houses by whole signs and checks Mars from three reference points: "
+            "the Lagna (ascendant), the Moon and Venus. The houses that count are 1, 2, 4, 7, 8 and "
+            "12. A reference point whose count lands Mars in one of those houses is flagged; the "
+            "Lagna carries a weight of 1.0 in the engine's score, the Moon 0.5 and Venus 0.3.",
+            "The engine then looks for cancellations (listed below). If any one applies, it reports "
+            "the dosha as cancelled and the score as 0. If none applies and at least one reference "
+            "point is flagged, it reports Manglik. The house-and-sign cancellations are tested "
+            "from the Lagna only; the others do not depend on the reference point.",
+        ),
+        "convention": (
+            "Sources differ on which reference points to use, on which houses count and on the "
+            "cancellations; this page states exactly what our Kundali check does. The Kundali Milan "
+            "tool uses its own, separate implementation of the same idea, with its own per-house "
+            "weights and severity grading, so its details can differ from this check."),
+        "live_h": 'How the rule works on two example charts',
+        "live_note": '',
+        "live": ("The charts below are illustrative: they are not real people. Each was built from a few "
+                 "stated placements and run through the engine's own Manglik function when this page "
+                 "loaded."),
+        "use": (
+            "Mangal Dosha is most often looked at when two charts are compared for marriage, and "
+            "families give it very different weight. Kundali Milan reports it separately from the "
+            "36-point Guna Milan score. It describes a placement of Mars; it does not say what will "
+            "happen in anyone's life, and this page does not recommend any ritual, gemstone or paid "
+            "remedy.",
+        ),
+        "faq": (
+            ("Which houses make a chart Manglik?",
+             "By our engine's rule, Mars in the 1st, 2nd, 4th, 7th, 8th or 12th house counted from the "
+             "Lagna, the Moon or Venus, provided no cancellation applies."),
+            ("Is Mangal Dosha always present when Mars is in those houses?",
+             "Not in our engine. It applies a list of cancellations, such as Mars being in its own "
+             "sign or exalted, or being joined or aspected by Jupiter or the Moon, and reports the "
+             "dosha as cancelled if any one applies. Traditions differ on the cancellations."),
+            ("Does a Manglik chart mean there will be a problem in marriage?",
+             "Our pages do not say that. It is a traditional consideration when charts are matched. "
+             "Families weigh it very differently, and many do not weigh it at all."),
+            ("Do the Kundali check and the Kundali Milan tool use the same rule?",
+             "They look at the same six houses and the same three reference points, but they are "
+             "separate implementations and differ in detail, for example in how cancellations and "
+             "severity are handled."),
+        ),
+    },
+    "hi": {
+        "label": "मंगल दोष क्या है?",
+        "blurb": "जन्म कुंडली में मंगल की स्थिति का एक पारंपरिक नियम, और उसका परिहार क्या है।",
+        "h1": "मंगल दोष क्या है? नियम, जैसा हमारा इंजन जाँचता है",
+        "title": "मंगल दोष (मांगलिक) क्या है? नियम और उसके परिहार",
+        "desc": ("मंगल दोष जन्म कुंडली में मंगल की स्थिति का एक पारंपरिक नियम है। कौन-से भाव गिने जाते हैं, इंजन कौन-से "
+                 "परिहार मानता है, और दो उदाहरण कुंडलियाँ।"),
+        "answer": ("मंगल दोष (मांगलिक या कुज दोष) वैदिक ज्योतिष का एक पारंपरिक नियम है जो देखता है कि जन्म कुंडली में "
+                   "मंगल कहाँ है: कहा जाता है कि यह तब होता है जब मंगल पहले, दूसरे, चौथे, सातवें, आठवें या बारहवें भाव में "
+                   "हो। इसे ज़्यादातर तब देखा जाता है जब विवाह के लिए दो कुंडलियाँ मिलाई जाती हैं; कौन-से भाव गिनें और "
+                   "क्या इसका परिहार करता है, इस पर परंपराएँ अलग हैं, और यह भविष्यवाणी नहीं है कि कुछ बुरा होगा।"),
+        "method": (
+            "हमारा इंजन भाव पूर्ण राशि से गिनता है और मंगल को तीन संदर्भ-बिंदुओं से जाँचता है: लग्न, चंद्रमा और "
+            "शुक्र। जो भाव गिने जाते हैं वे 1, 2, 4, 7, 8 और 12 हैं। जिस संदर्भ-बिंदु की गिनती मंगल को इन भावों में "
+            "से किसी में रखे, वह चिह्नित होता है; इंजन के अंक में लग्न का भार 1.0, चंद्रमा का 0.5 और शुक्र का 0.3 है।",
+            "इसके बाद इंजन परिहार खोजता है (नीचे सूची है)। इनमें से कोई एक भी लागू हो तो वह दोष को परिहृत और अंक "
+            "को 0 बताता है। कोई लागू न हो और कम से कम एक संदर्भ-बिंदु चिह्नित हो, तो वह मांगलिक बताता है। भाव-और-राशि "
+            "वाले परिहार केवल लग्न से जाँचे जाते हैं; बाकी संदर्भ-बिंदु पर निर्भर नहीं हैं।",
+        ),
+        "convention": (
+            "कौन-से संदर्भ-बिंदु लिए जाएँ, कौन-से भाव गिनें और परिहार क्या हों, इन पर स्रोतों में अंतर है; यह पन्ना "
+            "ठीक वही बताता है जो हमारी कुंडली जाँच करती है। कुंडली मिलान टूल उसी विचार का अपना अलग "
+            "कार्यान्वयन चलाता है, जिसमें भावों के अपने भार और तीव्रता का अपना वर्गीकरण है, इसलिए उसके ब्योरे इस "
+            "जाँच से अलग हो सकते हैं।"),
+        "live_h": 'दो उदाहरण कुंडलियों पर नियम कैसे चलता है',
+        "live_note": '',
+        "live": ("नीचे की कुंडलियाँ उदाहरण के लिए हैं: ये असली लोग नहीं हैं। हर एक कुछ बताई गई स्थितियों से बनाई गई और "
+                 "पन्ना खुलते समय इंजन के अपने मांगलिक फ़ंक्शन से चलाई गई।"),
+        "use": (
+            "मंगल दोष ज़्यादातर तब देखा जाता है जब विवाह के लिए दो कुंडलियाँ मिलाई जाती हैं, और परिवार इसे बहुत अलग-अलग "
+            "महत्व देते हैं। कुंडली मिलान इसे 36 गुण मिलान के अंक से अलग बताता है। यह मंगल की एक स्थिति बताता है; "
+            "यह नहीं बताता कि किसी के जीवन में क्या होगा, और यह पन्ना किसी अनुष्ठान, रत्न या सशुल्क उपाय की सलाह "
+            "नहीं देता।",
+        ),
+        "faq": (
+            ("कौन-से भाव कुंडली को मांगलिक बनाते हैं?",
+             "हमारे इंजन के नियम से, मंगल लग्न, चंद्रमा या शुक्र से गिनने पर पहले, दूसरे, चौथे, सातवें, आठवें या बारहवें "
+             "भाव में हो, बशर्ते कोई परिहार लागू न हो।"),
+            ("क्या मंगल इन भावों में हो तो मंगल दोष हमेशा रहता है?",
+             "हमारे इंजन में नहीं। वह परिहारों की एक सूची लगाता है, जैसे मंगल का स्वराशि या उच्च में होना, या गुरु अथवा "
+             "चंद्रमा से युत या दृष्ट होना, और कोई एक भी लागू हो तो दोष को परिहृत बताता है। परिहारों पर परंपराएँ अलग हैं।"),
+            ("क्या मांगलिक कुंडली का अर्थ है कि विवाह में समस्या होगी?",
+             "हमारे पन्ने ऐसा नहीं कहते। कुंडलियाँ मिलाते समय यह एक पारंपरिक विचार है। परिवार इसे बहुत अलग ढंग "
+             "से तौलते हैं, और बहुत-से बिल्कुल नहीं तौलते।"),
+            ("क्या कुंडली जाँच और कुंडली मिलान टूल एक ही नियम लेते हैं?",
+             "वे वही छह भाव और वही तीन संदर्भ-बिंदु देखते हैं, पर वे अलग-अलग कार्यान्वयन हैं और ब्योरों में भिन्न हैं, "
+             "जैसे परिहारों और तीव्रता को सँभालने के ढंग में।"),
+        ),
+    },
+}
+
+SLUGS: tuple[str, ...] = tuple(PAGES)
+
+# Rows of the "five limbs" table on /learn/what-is-panchang (limb, measured, divisions, size).
+# The divisions and sizes are asserted against the engine in tests/test_learn_pages.py.
+FIVE_LIMBS: dict[str, list[tuple[str, str, str, str]]] = {
+    "en": [
+        ("Tithi", "Moon's longitude minus Sun's longitude", "30 in a lunar month", "12°"),
+        ("Vara", "Weekday of the sunrise-to-sunrise day", "7", "one day"),
+        ("Nakshatra", "Moon's sidereal longitude", "27", "13°20′"),
+        ("Yoga", "Sun's plus Moon's sidereal longitudes", "27", "13°20′"),
+        ("Karana", "Half a tithi: Moon minus Sun", "60 in a lunar month (11 names)", "6°"),
+    ],
+    "hi": [
+        ("तिथि", "चंद्रमा का भोगांश घटा सूर्य का भोगांश", "चांद्र मास में 30", "12°"),
+        ("वार", "सूर्योदय से सूर्योदय तक के दिन का वार", "7", "एक दिन"),
+        ("नक्षत्र", "चंद्रमा का निरयण भोगांश", "27", "13°20′"),
+        ("योग", "सूर्य और चंद्रमा के निरयण भोगांशों का योग", "27", "13°20′"),
+        ("करण", "आधी तिथि: चंद्र घटा सूर्य", "चांद्र मास में 60 (11 नाम)", "6°"),
+    ],
+}
+
+# --------------------------------------------------------------------------
+# Review document: every factual claim and the engine code it comes from
+# --------------------------------------------------------------------------
+
+_P = "app/astro/panchang.py"
+_C = "app/astro/choghadiya.py"
+_F = "app/astro/festivals.py"
+_D = "app/astro/doshas.py"
+
+CLAIMS: dict[str, list[tuple[str, str]]] = {
+    "what-is-panchang": [
+        ("Five limbs: tithi, vara, nakshatra, yoga, karana, plus sunrise/sunset and timing windows.",
+         f"{_P} daily_panchang() return value (tithi, nakshatra, yoga, karana, vara, sun, muhurta)."),
+        ("pancha = five, anga = limb.", "General Sanskrit etymology; no engine source. REVIEW."),
+        ("Positions come from the Swiss Ephemeris.", f"{_P} module docstring and _sidereal()/_tropical()."),
+        ("Tithi = Moon-Sun angle; karana is half a tithi; nakshatra = sidereal Moon; yoga = sidereal Sun + Moon.",
+         f"{_P} daily_panchang(): elongation(), sidereal_moon(), yoga_angle(), _limb_run(...,30/27/27/60)."),
+        ("The Vedic day runs sunrise to sunrise; before dawn the vara is still the previous day's.",
+         f"{_P} module docstring 'Sunrise defines the day'; panchang_at() docstring."),
+        ("The limb listed for a day is the one running at sunrise.",
+         f"{_P} daily_panchang(): summary uses tithis[0] etc., the first limb of _limb_run from day_start."),
+        ("Sunrise = upper limb with refraction (HINDU_RISING = False); the alternative is disc centre, ~4-5 min later.",
+         f"{_P} module docstring and HINDU_RISING comment. The phrase 'how widely published Indian panchangs print it' restates the docstring's claim about Drik Panchang / Rashtriya Panchang. REVIEW."),
+        ("Lahiri ayanamsa is used for nakshatra and yoga; tithi/karana do not depend on ayanamsa.",
+         f"{_P} DEFAULT_AYANAMSA and the comment in daily_panchang() 'no choice of ayanamsa can move it'."),
+        ("Table: 30 tithis (12 deg), 27 nakshatras and yogas (13 deg 20 min), 60 karanas per month (6 deg), 11 karana names.",
+         f"{_P} _limb_run divisions; MOVABLE_KARANAS (7) + FIXED_KARANAS (4)."),
+        ("Tithi, nakshatra, yoga, karana are the same everywhere at the same instant.",
+         f"{_P}: all four are geocentric longitudes with no location input. REVIEW (astronomical statement)."),
+        ("Customs: people consult the Panchang for fasts, naming, timing windows.",
+         "Descriptive statement of use; no engine source. REVIEW."),
+    ],
+    "what-is-tithi": [
+        ("A tithi is 12 degrees of Moon-minus-Sun angle; 30 per month; 15 Shukla ending Purnima, 15 Krishna ending Amavasya.",
+         f"{_P} _tithi_label(), TITHI_NAMES, daily_panchang() _limb_run(elongation, 30,...)."),
+        ("Tithi number = completed 12 deg steps + 1; 15th tithi spans 168-180 deg, 30th spans 348-360 deg.",
+         f"{_P} _limb_run(): index = int(angle // step); _tithi_label(): index < 15 is Shukla, within == 14 is Purnima/Amavasya."),
+        ("Tithis differ in length and do not start at sunrise; the listed tithi is the one at sunrise; one tithi can cover two sunrises or fall between two.",
+         f"{_P} _limb_run() docstring and daily_panchang(); {_F} module docstring ('prevails at two sunrises', 'kshaya' = touches no sunrise)."),
+        ("Some festivals test a different part of the day; the vrat pages state the rule.",
+         f"{_F} module docstring (udaya, madhyahna, aparahna, pradosh, nishita, moonrise rules); each observance carries rule_en/rule_hi."),
+        ("Tithi does not depend on the ayanamsa.", f"{_P} elongation() comment in daily_panchang()."),
+        ("Ekadashi, Pradosh, Sankashti Chaturthi, Purnima, Amavasya recur every month.",
+         f"{_F} RECURRING specs (month=None)."),
+        ("The tithi is one of the factors a muhurat table checks.", "app/astro/muhurat.py EventRule.preferred_tithis / excluded_tithis."),
+        ("Table of 30 tithis with angle ranges.", "Generated from TITHI_NAMES in learn_pages; ranges are i*12 to (i+1)*12."),
+    ],
+    "what-is-nakshatra": [
+        ("27 nakshatras of 13 deg 20 min; 4 padas of 3 deg 20 min; 108 padas; 9 per sign.",
+         f"{_P} _nakshatra_entry(): span = 360/27, pada = into/(span/4); app/astro/namakshar.py NAK_MIN, PADA_MIN, sign_padas()."),
+        ("Index = sidereal Moon longitude / 13 deg 20 min, counted from Ashwini at 0 deg sidereal Aries.",
+         f"{_P} sidereal_moon, _limb_run(...,27), NAKSHATRAS order (app/chart_service.py); namakshar NAKSHATRA_LIST start_min."),
+        ("The Moon spends about a day in each nakshatra.",
+         f"{_P} _BRACKET_DAYS comment: 'no limb ever takes longer than ~27 h'. REVIEW wording 'about a day'."),
+        ("The nakshatra listed for a day is the one at sunrise; the end time is shown if it changes.",
+         f"{_P} daily_panchang(): nakshatra[0] and _named_entry 'ends'."),
+        ("Different spellings of Lahiri differ by ~20 arc-seconds, enough to move a nakshatra boundary by about a minute.",
+         f"{_P} DEFAULT_AYANAMSA comment."),
+        ("Used for namakshar, Vimshottari dasha start, and gana/yoni/nadi in Kundali Milan.",
+         "app/astro/namakshar.py (syllables); app/chart_service.py VIMSHOTTARI; app/astro/matching.py GANA/YONI/NADI_OF_NAKSHATRA. The dasha-start statement is the standard Vimshottari rule and is not itself coded on this page. REVIEW."),
+        ("Table of 27 nakshatras with spans.", "app/astro/namakshar.py NAKSHATRA_LIST via nakshatra_pages.span_text()."),
+    ],
+    "what-is-yoga-and-karana": [
+        ("Yoga = sidereal Sun + sidereal Moon, wrapped to 360, 27 divisions of 13 deg 20 min, from Vishkambha to Vaidhriti.",
+         f"{_P} yoga_angle(), YOGA_NAMES."),
+        ("Karana = half tithi (6 deg), 60 per month; #1 Kimstughna; #2-57 cycle Bava, Balava, Kaulava, Taitila, Gara, Vanija, Vishti eight times; #58-60 Shakuni, Chatushpada, Naga; 11 names.",
+         f"{_P} _karana_name(), MOVABLE_KARANAS, FIXED_KARANAS."),
+        ("Vishti is also called Bhadra.", "app/astro/names_hi.py KARANA_HI['Vishti'] = 'विष्टि (भद्रा)'; app/astro/festivals.py Bhadra rules."),
+        ("Muhurat pages exclude Vyatipata and Vaidhriti for every event; marriage also Ganda, Atiganda, Shula, Vishkambha; griha pravesh also Shula, Ganda.",
+         "app/astro/muhurat.py EventRule.excluded_yogas (default and per-rule)."),
+        ("Raksha Bandhan and Holika Dahan are timed around Bhadra (Vishti).",
+         f"{_F} module docstring ('Raksha Bandhan (+ Bhadra)', 'Raksha Bandhan and Holika Dahan (Bhadra)'), _bhadra_free()."),
+        ("Yoga depends on ayanamsa; karana does not.", f"{_P} yoga_angle() uses _sidereal(); elongation() is tropical."),
+        ("Panchang yoga is unrelated to yoga exercise or chart yogas.", "Plain clarification; no engine source."),
+    ],
+    "what-is-rahu-kaal": [
+        ("Daylight (sunrise to sunset) is cut into 8 equal parts.", f"{_P} _day_windows(): eighth = (sunset - sunrise) / 8."),
+        ("Rahu Kaal part by weekday: Sun 8, Mon 2, Tue 7, Wed 5, Thu 6, Fri 4, Sat 3.",
+         f"{_P} RAHU_SEGMENT = (7, 1, 6, 4, 5, 3, 2) zero-based; part() reports index + 1."),
+        ("Yamaganda and Gulika use their own weekday tables over the same eight parts.",
+         f"{_P} YAMAGANDA_SEGMENT, GULIKA_SEGMENT."),
+        ("Weekday is the Vedic day; before sunrise it is still the previous weekday.",
+         f"{_P} module docstring; panchang_at()."),
+        ("Cross-checked against Drik Panchang for Delhi and Varanasi on three weekdays.",
+         f"{_P} comment above RAHU_SEGMENT (tests/test_panchang.py). Quoted as 'checked against Drik Panchang for Delhi and Varanasi'."),
+        ("No night-time Rahu Kaal is computed.", f"{_P} _day_windows() covers daylight only."),
+        ("About 90 minutes when daylight is 12 hours.", "Arithmetic: 12 h / 8."),
+        ("Some people check Rahu Kaal before journeys, purchases, signings or ceremonies; others do not.",
+         "Descriptive statement of use; no engine source. REVIEW."),
+        ("'Named for Rahu' / 'traditional almanacs mark it as a window not preferred for starting new work'.",
+         "Traditional framing; app/seo_text.py 'What is Rahu Kaal?' section carries similar wording. REVIEW."),
+    ],
+    "what-is-choghadiya": [
+        ("Day (sunrise-sunset) and night (sunset-next sunrise) are each cut into 8 equal parts.",
+         f"{_C} eighths(), day_night_slots()."),
+        ("Seven names with rulers: Amrit Moon, Shubh Jupiter, Labh Mercury, Char Venus, Rog Mars, Kaal Saturn, Udveg Sun.",
+         f"{_C} CHOGHADIYA_INFO[*]['ruler']."),
+        ("Class: Amrit/Shubh/Labh auspicious, Char neutral, Rog/Kaal/Udveg inauspicious.",
+         f"{_C} CHOGHADIYA_INFO[*]['quality']."),
+        ("Day cycle Udveg, Char, Labh, Amrit, Kaal, Shubh, Rog; the first day part is the weekday ruler's name.",
+         f"{_C} DAY_SEQUENCE (the test checks all 7 weekdays against this cycle)."),
+        ("Night has its own cycle Shubh, Amrit, Char, Rog, Kaal, Labh, Udveg; its first part is the name of the weekday four days on (Sunday night Shubh).",
+         f"{_C} NIGHT_SEQUENCE and its comment 'starts with 5th weekday ruler from day ruler' (the test checks all 7 weekdays)."),
+        ("The choghadiya before sunrise belongs to the previous day's night.",
+         f"{_C} get_choghadiya_schedule() comment on prev_night."),
+        ("90 minutes per part with a 12-hour day and night.", "Arithmetic: 12 h / 8."),
+        ("Usage statement (travel, purchase, new start; some do not follow it).",
+         "Descriptive statement of use; no engine source. REVIEW. The engine's own descriptions are prescriptive and are deliberately NOT used."),
+    ],
+    "what-is-abhijit-muhurat": [
+        ("Abhijit is the 8th of 15 equal muhurtas of daylight, i.e. the one straddling the middle of the day.",
+         f"{_P} ABHIJIT_MUHURTA = 8 and comment; _day_windows(): fifteenth = (sunset - sunrise) / 15."),
+        ("It is omitted on Wednesday because Mercury is held to spoil it.",
+         f"{_P} ABHIJIT_EXCLUDED_VARA = 3 and its comment; daily_panchang() note 'Abhijit muhurta is omitted on Wednesday...'."),
+        ("About 48 minutes when daylight is 12 hours.", "Arithmetic: 12 h / 15."),
+        ("Centred on the midpoint between sunrise and sunset.",
+         "Arithmetic: muhurta 8 spans 7/15 to 8/15 of the daylight. The engine's comment says 'straddling local apparent noon'; this page says midpoint of sunrise and sunset, which is what the code computes. REVIEW."),
+        ("Almanacs differ on its length and on weekdays.",
+         "Matches the brief's instruction to state our convention; the engine comment only says Drik and North Indian almanacs also suppress it on Wednesday. REVIEW."),
+        ("Vrat calendar lists it as an optional window for Ghatasthapana at Navratri.",
+         f"{_F} _add_timings(): 'ghatasthapana_abhijit' = day_muhurta(8)."),
+        ("Usage statement.", "Descriptive statement of use; no engine source. REVIEW."),
+    ],
+    "what-is-brahma-muhurta": [
+        ("NOT IN THE ENGINE AS A FUNCTION. Our engine has only the name label 'Brahma Muhurta' (names_i18n TIMINGS) and no calculation. This page defines it by the same 15-way night division the festival engine uses for Nishita Kaal (8th night muhurta).",
+         f"{_F} Day.night_muhurta(n) = sunset + (n-1)*night_len/15; the page uses n = 14. tests/test_learn_pages.py asserts the page equals festivals._day(...).night_muhurta(14). OWNER MUST CONFIRM THIS DEFINITION."),
+        ("Brahma Muhurta is the 14th of 15 night muhurtas, ending one muhurta before sunrise; with a 12-hour night it runs 96 to 48 minutes before sunrise.",
+         "Arithmetic from the definition above (13/15 and 14/15 of a 12-hour night). The '96 to 48 minutes before sunrise' form is the commonly quoted figure; no engine source. REVIEW."),
+        ("Traditionally associated with waking early, prayer and study.", "Traditional association; no engine source. REVIEW."),
+        ("Sources differ between 15 parts and a fixed 48 minutes.", "Statement of convention; no engine source. REVIEW."),
+        ("The morning's Brahma Muhurta belongs to the night that began at the previous sunset.",
+         f"{_P} sun_times(date).next_sunrise is the following morning's sunrise (the page calls it for yesterday)."),
+    ],
+    "what-is-pradosh-kaal": [
+        ("Printed Pradosh Kaal = sunset to sunset + 3 night muhurtas (night muhurta = night/15).",
+         f"{_F} module docstring ('the Pradosh window printed is sunset + 3 night muhurtas') and _add_timings(): d.sunset + 3 * d.night_len / 15.0."),
+        ("Window used to decide the day = sunset + 96 minutes.",
+         f"{_F} _window(): rule 'pradosh' returns sunset, sunset + 96/1440; {_P} _festival_date()."),
+        ("For Pradosh Vrat the window is cut to the Trayodashi tithi.", f"{_F} _add_timings(): key == 'pradosh', _clip(..., span)."),
+        ("Tie rule: earlier evening wins, except per-festival rules; Diwali takes the second evening if Amavasya touches both and lasts > 1 ghati (24 min) after the second sunset.",
+         f"{_F} TIES in module docstring; _diwali() docstring and code."),
+        ("Observances that use Pradosh: Pradosh Vrat, Kalashtami, Holika Dahan, Dhanteras, Diwali, Dev Deepawali.",
+         f"{_F} RECURRING and FESTIVALS specs with rule == 'pradosh' (the table is generated from them, with the tithi each requires)."),
+        ("About 2 h 24 min when the night is 12 hours.", "Arithmetic: 3 x 48 min."),
+        ("Usage statement.", "Descriptive statement of use; no engine source. REVIEW."),
+    ],
+    "what-is-sade-sati": [
+        ("Judged from the natal Moon sign (sidereal, Lahiri), not Sun sign or ascendant.",
+         f"{_P} sade_sati_for_moon_sign() notes[0]."),
+        ("Phase signs: 12th, 1st and 2nd from the Moon; Dhaiya: 4th and 8th.",
+         f"{_P} sade_sati_for_moon_sign(): sade_signs = {{(m+11)%12: 12, m: 1, (m+1)%12: 2}}, dhaiya_signs = {{(m+3)%12: 4, (m+7)%12: 8}}."),
+        ("Starts the instant Saturn enters the 12th from the Moon, whatever degree the Moon holds.",
+         f"{_P} sade_sati_for_moon_sign() notes[0]."),
+        ("A retrograde re-entry within ~170 days is reported as one period.",
+         f"{_P} _RETROGRADE_GAP_DAYS = 170 and its comment; notes[1]."),
+        ("Phase names Rising / Peak / Setting; Dhaiya two and a half years.",
+         f"{_P} SADE_SATI_PHASES (names only; the engine's 'traditionally read as...' notes are deliberately NOT used) and the DHAIYA_HOUSES comment."),
+        ("Kantaka Shani and Ashtama Shani are both in use; names not settled.", f"{_P} DHAIYA_HOUSES comment."),
+        ("About 2.5 years per sign, about 7.5 years in all.", f"{_P} module docstring ('seven-and-a-half-year pass'); DHAIYA comment ('two and a half years apiece')."),
+        ("Live: Saturn's current sidereal sign and motion, and the Moon signs for which Sade Sati is running.",
+         f"{_P} sade_sati_for_moon_sign(...)['saturn']; the three signs are saturn_sign - 1, +0, +1 (the test checks all 12 Moon signs against the engine's own 'running' flag)."),
+        ("Kundali page checks the rule and shows dates and current stretch.", "app/main.py /api/doshas -> panchang.sade_sati(); app/static/app.js (Sade Sati panel)."),
+        ("'Astrologers read it differently and give it different weight'; 'no single agreed reading'.", "Statement about tradition; the engine's DHAIYA comment says names are not settled. REVIEW."),
+    ],
+    "what-is-mangal-dosha": [
+        ("Houses counted: 1, 2, 4, 7, 8, 12.", f"{_D} MANGLIK_HOUSES."),
+        ("Reference points Lagna, Moon, Venus; whole-sign houses; weights 1.0, 0.5, 0.3.",
+         f"{_D} analyze_manglik(): get_house('Lagna'/'Moon'/'Venus'), raw_score."),
+        ("Cancellation 1: Mars in Aries, Scorpio or Capricorn.", f"{_D} analyze_manglik() 'Mars is dignified'."),
+        ("Cancellation 2: house/sign pairs from the Lagna: 2nd Gemini/Virgo, 4th Taurus/Libra, 7th Cancer/Capricorn, 8th Sagittarius/Pisces, 12th Taurus/Libra.",
+         f"{_D} analyze_manglik() the h_lagna == n branches (tested from the Lagna only)."),
+        ("Cancellation 3: Mars conjunct Jupiter (same sign) or aspected by Jupiter (5th, 7th, 9th).",
+         f"{_D} _conjunct / _aspects from app/astro/vargas.py; GRAHA_DRISHTI['Jupiter'] = (5, 7, 9)."),
+        ("Cancellation 4: Mars conjunct the Moon or aspected by the Moon (7th).",
+         f"{_D} _conjunct / _aspects; DEFAULT_DRISHTI = (7,)."),
+        ("Any one cancellation -> dosha reported as cancelled, score 0; otherwise Manglik if any reference point flagged.",
+         f"{_D} is_cancelled, final_score, is_manglik."),
+        ("The Kundali Milan tool has its own implementation with per-house weights and severity.",
+         "app/astro/matching.py mangal_dosha(), MANGAL_HOUSE_WEIGHT, MANGAL_HOUSE_EXEMPTIONS (differs from doshas.py: e.g. its own-sign set is Aries/Scorpio plus Capricorn exaltation, and it grades severity). REVIEW."),
+        ("Mostly looked at in marriage matching; families weigh it differently.", "app/astro/matching.py reports it beside the 36-point score; the weighting statement is descriptive. REVIEW."),
+        ("Worked examples run analyze_manglik on two synthetic charts.", "learn_pages._mangal_examples(); tests/test_learn_pages.py re-runs them."),
+    ],
+}
