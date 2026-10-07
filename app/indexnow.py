@@ -11,7 +11,8 @@ IndexNow asks for) and the CLI can submit URLs:
 
 "Today's changed URLs" are the pages whose content is rebuilt every day: the
 Panchang / Rahu Kaal / Choghadiya pages of the default city and the 20 biggest
-cities, the Rashifal pages and the Vrat hub, in every translated language, plus
+cities, the Rashifal pages, the Vrat hub and this year's recurring-vrat pages (Purnima,
+Amavasya, ...: their "next date" answer moves daily), in every translated language, plus
 the katha index, tonight's katha pick and any katha story not submitted before.
 The other city pages change daily too but are left to the sitemap: a few hundred
 changed URLs a day is the honest signal, three thousand is noise.
@@ -155,7 +156,7 @@ def new_stories() -> list[str]:
 
 def daily_paths(day: dt.date) -> list[str]:
     """The paths whose content is rebuilt for `day` (see the module docstring)."""
-    from . import katha, rashifal_pages, seo_cities, vrat_pages
+    from . import katha, rashifal_pages, recurring_pages, seo_cities, vrat_pages
     from .seo_pages import TOOLS, TRANSLATED, _path
 
     cities = [seo_cities.DEFAULT] + [c for c in seo_cities.CITIES[:TOP_CITIES]
@@ -166,6 +167,7 @@ def daily_paths(day: dt.date) -> list[str]:
         out += [_path(tool, c, lang) for tool in TOOLS for c in cities]
         out += [rashifal_pages.path(r, lang) for r in (None, *rashifal_pages.RASHIS)]
         out.append(vrat_pages.hub_path(lang))
+    out += recurring_pages.daily_paths(day)      # their direct answer ("the next Amavasya") moves daily
     slugs = list(new_stories())
     try:
         tonight = katha.pick(day)

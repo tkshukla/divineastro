@@ -1081,10 +1081,12 @@ def sitemap_paths() -> list[str]:
     from .muhurat_pages import page_paths as muhurat_paths  # same: imports this module
     from .vrat_pages import page_paths as vrat_paths  # same: imports this module
     from .vrat_city_pages import page_paths as vrat_city_paths  # same (DIVASTRO-140)
+    from .recurring_pages import page_paths as recurring_paths  # same (DIVASTRO-141)
     from .nakshatra_pages import sitemap_paths as nakshatra_paths  # same (DIVASTRO-115)
     from .katha import sitemap_paths as katha_paths  # same
     from .site_hub import sitemap_paths as hub_paths  # same (DIVASTRO-133)
-    return paths + hub_paths() + rashifal_paths() + muhurat_paths() + vrat_paths() + vrat_city_paths() + nakshatra_paths() + katha_paths()
+    return (paths + hub_paths() + rashifal_paths() + muhurat_paths() + vrat_paths() + vrat_city_paths()
+            + recurring_paths() + nakshatra_paths() + katha_paths())
 
 
 LEGAL_PATHS = frozenset({"/terms", "/privacy", "/refund", "/contact"})

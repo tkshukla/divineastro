@@ -87,7 +87,8 @@ def seo_share_text(path: str) -> str | None:
     if parts[0] == "muhurat" and len(parts) == 2:
         kind, _, year = parts[1].rpartition("-")
         names = {"vivah": ("Vivah muhurat", "विवाह मुहूर्त"),
-                 "griha-pravesh": ("Griha Pravesh muhurat", "गृह प्रवेश मुहूर्त")}
+                 "griha-pravesh": ("Griha Pravesh muhurat", "गृह प्रवेश मुहूर्त"),
+                 "mundan": ("Mundan muhurat", "मुंडन मुहूर्त")}
         if kind not in names or not year.isdigit():
             return None
         name, name_hi = names[kind]
@@ -114,6 +115,9 @@ def seo_share_text(path: str) -> str | None:
         if names is None or not year.isdigit():
             return None
         return f"{names[0]} {year} — date & puja muhurat · {names[1]} {year} — तिथि और मुहूर्त:"
+    if len(parts) == 1 and parts[0].rpartition("-")[2].isdigit():
+        from .recurring_pages import share_text as recurring_share   # lazy (DIVASTRO-141)
+        return recurring_share(parts[0])                              # /purnima-2026 etc.
     if parts[0] not in SEO_TOOLS:
         return None
     name, name_hi = SEO_TOOLS[parts[0]]
@@ -133,6 +137,8 @@ def seo_share(path: str) -> str:
     tool = "katha" if _is_katha(path) else _parts(path)[0]
     if tool.startswith("ekadashi-"):
         tool = "ekadashi"
+    elif tool.rpartition("-")[2].isdigit():          # /purnima-2026 -> seo-purnima (DIVASTRO-141)
+        tool = tool.rpartition("-")[0]
     href = whatsapp_href(text, share_url(path, f"seo-{tool}"))
     if tool == "katha":
         lang = "en" if path.startswith("/en/") else "hi"

@@ -308,6 +308,9 @@ def _is_public_page(path: str) -> bool:
     if path.startswith(("/muhurat/", "/hi/muhurat/")):
         from .muhurat_pages import page_paths   # lazy: muhurat_pages pulls in the engines
         return path in page_paths()
+    from .recurring_pages import is_public_path as recurring_public   # lazy (DIVASTRO-141)
+    if recurring_public(path):
+        return True
     tool, _, slug = path.rpartition("/")
     return tool in SEO_CITY_TOOLS and seo_cities.get(slug) is not None
 MAX_BEACON_BYTES = 2048          # path + referrer + query string; real ones are a few hundred
