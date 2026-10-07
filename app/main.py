@@ -42,6 +42,7 @@ from . import indexnow
 from .share import router as share_router
 from .muhurat_pages import router as muhurat_pages_router
 from .vrat_pages import router as vrat_pages_router
+from .recurring_pages import router as recurring_pages_router
 from .push import router as push_router, start_sender as start_push_sender
 from .astro.names_hi import KARANA_HI, NAKSHATRAS_HI, TITHI_HI, YOGA_HI
 from .chart_service import BirthData, build, solar_return, timing_snapshot, transits, wheel_svg
@@ -96,6 +97,7 @@ app.include_router(naam_milan_router)  # /naam-se-kundali-milan + /hi/ (DIVASTRO
 app.include_router(share_router)   # /api/share/cities (DIVASTRO-107 WhatsApp share buttons)
 app.include_router(muhurat_pages_router)  # /muhurat/vivah-2026 etc. + /hi/ copies (DIVASTRO-109)
 app.include_router(vrat_pages_router)  # /vrat-tyohar, /tyohar/<x>-2026, /ekadashi-2026, /api/vrat/today (DIVASTRO-111)
+app.include_router(recurring_pages_router)  # /purnima-2026, /amavasya-2026, /pradosh-vrat-2026 ... (DIVASTRO-141)
 app.include_router(push_router)   # /sw.js, /api/push/* daily web push (DIVASTRO-112); 404 while VAPID keys are unset
 
 
