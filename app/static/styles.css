@@ -111,6 +111,11 @@ body {
 body.in-reading {
   height: 100vh;
   max-height: 100vh;
+  /* body's own min-height is 100vh. On a phone 100vh is the LARGE viewport (browser
+     toolbar hidden), taller than the visible screen, and min-height beats height:
+     it kept the page a toolbar's height too tall and pushed the question box below
+     the screen (DIVASTRO-138). The reading screen must be exactly the visible height. */
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -1891,9 +1896,9 @@ details.reasoning summary:hover { color: var(--gold); }
    height, and the viewport meta asks the browser to resize the page for the
    keyboard (interactive-widget=resizes-content), so the box rides above it. */
 @supports (height: 100dvh) {
-  body.in-reading { height: 100dvh; max-height: none; }
+  body.in-reading { height: 100dvh; max-height: none; min-height: 0; }
 }
-body.in-reading.js-height { height: var(--app-h); max-height: var(--app-h); }
+body.in-reading.js-height { height: var(--app-h); max-height: var(--app-h); min-height: 0; }
 .chat { position: relative; }
 
 .thread { padding: 22px 26px 8px; overscroll-behavior: contain; }
