@@ -15,7 +15,8 @@ from __future__ import annotations
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from . import i18n, muhurat_pages, nakshatra_pages, rashifal_pages, seo_cities, seo_pages, vrat_pages
+from . import (i18n, learn_pages, muhurat_pages, nakshatra_pages, rashifal_pages, recurring_pages,
+               seo_cities, seo_pages, vrat_pages)
 from .hub_text import label
 from .seo_pages import EN, HI, _e, _path, _render
 
@@ -81,11 +82,15 @@ def _body(lang: str) -> str:
                for y in muhurat_pages.YEARS for k in muhurat_pages.KINDS]
     out.append(_section(label("muhurat", lang), muhurat))
 
+    out.append(_section(*recurring_pages.hub_items(lang)))      # DIVASTRO-141
+
     out.append(_section(f"{label('nakshatra', lang)} / {label('rashi', lang)}", [
         (label("nakshatra", lang), nakshatra_pages.nak_path(None, lang)),
         (label("rashi", lang), nakshatra_pages.rashi_path(None, lang)),
         (label("naam", lang), nakshatra_pages.milan_path(lang)),
     ]))
+
+    out += learn_pages.hub_blocks(lang)    # [] unless ASTRO_LEARN_PAGES=1 (DIVASTRO-142)
 
     out.append(_section(label("katha", lang), [(label("katha", lang), _katha(lang))]))
 

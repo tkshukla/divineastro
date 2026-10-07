@@ -295,6 +295,9 @@ def _is_public_page(path: str) -> bool:
     from .nakshatra_pages import is_public_path as nakshatra_public   # lazy (DIVASTRO-115)
     if nakshatra_public(path):
         return True
+    from .learn_pages import is_public_path as learn_public   # lazy; False unless ASTRO_LEARN_PAGES=1 (DIVASTRO-142)
+    if learn_public(path):
+        return True
     if path.startswith(("/katha", "/en/katha")):
         from .katha import is_public_path as katha_public   # lazy, like the others
         return katha_public(path)
@@ -308,6 +311,9 @@ def _is_public_page(path: str) -> bool:
     if path.startswith(("/muhurat/", "/hi/muhurat/")):
         from .muhurat_pages import page_paths   # lazy: muhurat_pages pulls in the engines
         return path in page_paths()
+    from .recurring_pages import is_public_path as recurring_public   # lazy (DIVASTRO-141)
+    if recurring_public(path):
+        return True
     tool, _, slug = path.rpartition("/")
     return tool in SEO_CITY_TOOLS and seo_cities.get(slug) is not None
 MAX_BEACON_BYTES = 2048          # path + referrer + query string; real ones are a few hundred

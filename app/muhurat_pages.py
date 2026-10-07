@@ -68,7 +68,8 @@ class Kind:
 KINDS = {
     slug: Kind(slug, event, TEXT["en"][f"kind.{slug}"], TEXT["hi"][f"kind.{slug}"],
                TEXT["en"][f"noun.{slug}"])
-    for slug, event in (("vivah", "marriage"), ("griha-pravesh", "griha_pravesh"))
+    for slug, event in (("vivah", "marriage"), ("griha-pravesh", "griha_pravesh"),
+                        ("mundan", "mundan"))      # DIVASTRO-141
 }
 
 MONTHS_HI = list(MONTHS["hi"])
@@ -77,6 +78,13 @@ MONTHS_HI = list(MONTHS["hi"])
 def _tx(key: str, lang: str, **values) -> str:
     """This module's text for `key` in `lang` (muhurat_text.TEXT), formatted."""
     return i18n.fmt(key, lang, TEXT, **values)
+
+
+def _kind_tx(key: str, kind: Kind, lang: str, **values) -> str:
+    """"<key>.<kind>" where this kind has its own text in `lang` (muhurat_text
+    MUNDAN: the note that names the ceremony), else the shared `key`."""
+    own = f"{key}.{kind.slug}"
+    return _tx(own if i18n.has(own, lang, TEXT) else key, lang, **values)
 
 
 def _kind_vars(kind: Kind, lang: str) -> dict:
@@ -230,6 +238,39 @@ def _periods_section(kind: Kind, year: int, data: dict, lang: str) -> str:
             f'<ul class="periods">{"".join(items)}</ul>')
 
 
+# Kinds whose page also prints the engine's own rules for the ceremony
+# (muhurat_text "rules.h2" / "rules.body"): mundan has rules of its own that a
+# reader should see rather than assume are a wedding's (DIVASTRO-141).
+RULES_KINDS = frozenset({"mundan"})
+
+
+def _rules_section(kind: Kind, year: int, lang: str) -> str:
+    """The EventRule the dates were judged by, in the language's own names.
+    Everything is read from astro.muhurat.EVENT_RULES, nothing is typed here."""
+    rule = muhurat.EVENT_RULES[kind.event]
+    n = i18n.names(lang)
+    en = i18n.names("en")
+
+    def tithis(numbers) -> str:
+        names = [panchang_engine.TITHI_NAMES[x - 1] for x in sorted(numbers) if x <= 15]
+        names += ["Amavasya"] if 30 in numbers else []
+        return ", ".join(_e(n.TITHI.get(x, x)) for x in names)
+
+    def pick(table, wanted, order) -> str:
+        return ", ".join(_e(table.get(x, x)) for x in order if x in wanted)
+
+    week = list(en.VARA)
+    text = _tx("rules.body", lang,
+               tithi_bad=tithis(rule.excluded_tithis), tithi_good=tithis(rule.preferred_tithis),
+               nak_good=pick(n.NAKSHATRAS, rule.preferred_nakshatras, list(en.NAKSHATRAS)),
+               nak_bad=pick(n.NAKSHATRAS, rule.excluded_nakshatras, list(en.NAKSHATRAS)),
+               yoga_bad=pick(n.YOGA, rule.excluded_yogas, list(en.YOGA)),
+               vara_good=pick(n.VARA, rule.preferred_varas, week),
+               vara_bad=pick(n.VARA, rule.excluded_varas, week))
+    kv = {k: _e(v) for k, v in _kind_vars(kind, lang).items()}
+    return f"<h2>{_tx('rules.h2', lang, name=kv['name'], year=year)}</h2>{text}"
+
+
 _EXTRA_STYLE = """
   .seo .lang { float: right; font-size: 13px; }
   .seo .none { color: var(--ink-faint); }
@@ -289,7 +330,7 @@ def _page(kind_slug: str, year: int, lang: str) -> HTMLResponse:
     description = _tx("desc", lang, **raw)
     esc = {**{k: _e(v) for k, v in kv.items()}, "year": year, "count": data["count"]}
     intro = _tx("intro", lang, **esc, months=_e(months_txt) or "—")
-    note = _tx("note", lang)
+    note = _kind_tx("note", kind, lang)
     crumbs = [(i18n.chrome("home", lang), "/"), (_tx("crumb", lang, **raw), path)]
 
     links = []
@@ -306,6 +347,7 @@ def _page(kind_slug: str, year: int, lang: str) -> HTMLResponse:
     body = (f"<h1>{_e(h1)}</h1>{_tx('sub', lang, **esc)}"
             f'<p class="date">{_e(place)}</p>'
             f'{intro}<div class="box">{note}</div>{cta_html}'
+            + (_rules_section(kind, year, lang) if kind_slug in RULES_KINDS else "")
             + _periods_section(kind, year, data, lang)
             + "".join(_month_section(kind, year, m, data, lang) for m in range(1, 13))
             + cta_html

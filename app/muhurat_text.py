@@ -448,6 +448,179 @@ TEXT: dict[str, dict[str, str]] = {
     },
 }
 
+# DIVASTRO-141: /muhurat/mundan-<year>. Mundan (chudakarma) has its own rules in
+# astro/muhurat.EVENT_RULES["mundan"]; "rules.body" prints them from the engine
+# (muhurat_pages._rules_section) so the page can never disagree with the tool.
+# Placeholders of rules.body (comma-joined names in the language, from
+# names_<code>): {tithi_bad} {tithi_good} {nak_good} {nak_bad} {yoga_bad}
+# {vara_good} {vara_bad}. "note.mundan" replaces "note" (which names a wedding)
+# on this kind's page only.
+MUNDAN: dict[str, dict[str, str]] = {
+    "en": {
+        "kind.mundan": "Mundan Muhurat",
+        "noun.mundan": "mundan",
+        "note.mundan": ("<p><strong>Timings vary by city.</strong> These dates are reckoned from New "
+                        "Delhi's sunrise; elsewhere a tithi or nakshatra can change on a different "
+                        "day. The exact muhurat for the mundan (chudakarma) should be fixed by your "
+                        "family priest. Check your own city in the Muhurat Finder.</p>"),
+        "rules.h2": "{name} {year}: the rules these dates follow",
+        "rules.body": (
+            "<p>Mundan (chudakarma, the first haircut) is judged by its own rules, not a "
+            "wedding's. A day is listed only when none of the barred items below applies and it "
+            "falls in a favourable nakshatra:</p><ul>"
+            "<li><strong>Barred tithis:</strong> {tithi_bad}.</li>"
+            "<li><strong>Favoured tithis</strong> (in either paksha): {tithi_good}; the others are "
+            "neutral.</li>"
+            "<li><strong>Favourable nakshatras</strong> (every date below falls in one): "
+            "{nak_good}.</li>"
+            "<li><strong>Barred nakshatras:</strong> {nak_bad}.</li>"
+            "<li><strong>Barred yoga and karana:</strong> {yoga_bad}, and Bhadra (Vishti).</li>"
+            "<li><strong>Weekdays:</strong> {vara_good} are favoured; {vara_bad} count against a "
+            "day without ruling it out, so a few such dates appear - skip them if your family "
+            "avoids those days.</li></ul>"),
+    },
+    "hi": {
+        "kind.mundan": "मुंडन मुहूर्त",
+        "note.mundan": ("<p><strong>ध्यान दें:</strong> ये तिथियां नई दिल्ली के सूर्योदय पर आधारित हैं। "
+                        "दूसरे शहर में तिथि-नक्षत्र का समय बदलता है, और मुंडन (चूड़ाकरण) का सटीक "
+                        "मुहूर्त परिवार के पंडित जी से अवश्य दिखवाएं। अपने शहर की तिथियां मुहूर्त "
+                        "खोजक में देखें।</p>"),
+        "rules.h2": "{name} {year}: ये तिथियां किन नियमों से चुनी गई हैं",
+        "rules.body": (
+            "<p>मुंडन (चूड़ाकरण, पहली बार बाल उतारना) के अपने नियम हैं, विवाह के नियमों से अलग। कोई दिन तभी "
+            "सूची में आता है जब नीचे के वर्जित में से कुछ भी लागू न हो और वह शुभ नक्षत्र में पड़े:</p><ul>"
+            "<li><strong>वर्जित तिथियां:</strong> {tithi_bad}।</li>"
+            "<li><strong>शुभ तिथियां</strong> (दोनों पक्षों में): {tithi_good}; बाकी सामान्य हैं।</li>"
+            "<li><strong>शुभ नक्षत्र</strong> (नीचे की हर तिथि इनमें से किसी एक में है): {nak_good}।</li>"
+            "<li><strong>वर्जित नक्षत्र:</strong> {nak_bad}।</li>"
+            "<li><strong>वर्जित योग व करण:</strong> {yoga_bad} और भद्रा (विष्टि)।</li>"
+            "<li><strong>वार:</strong> {vara_good} शुभ माने गए हैं; {vara_bad} दिन के विरुद्ध गिने जाते हैं "
+            "पर उसे सूची से बाहर नहीं करते, इसलिए ऐसे कुछ दिन सूची में आ जाते हैं - परिवार में ये वार "
+            "वर्जित हों तो उन्हें छोड़ दें।</li></ul>"),
+    },
+    "kn": {
+        "kind.mundan": "ಮುಂಡನ ಮುಹೂರ್ತ",
+        "noun.mundan": "ಮುಂಡನಕ್ಕೆ",
+        "note.mundan": ("<p><strong>ಸಮಯ ನಗರದಿಂದ ನಗರಕ್ಕೆ ಬದಲಾಗುತ್ತದೆ.</strong> ಈ ದಿನಾಂಕಗಳನ್ನು "
+                        "ನವದೆಹಲಿಯ ಸೂರ್ಯೋದಯದಿಂದ ಲೆಕ್ಕಹಾಕಲಾಗಿದೆ; ಬೇರೆಡೆ ತಿಥಿ ಅಥವಾ ನಕ್ಷತ್ರ ಬೇರೆ "
+                        "ದಿನದಲ್ಲಿ ಬದಲಾಗಬಹುದು. ಮುಂಡನ (ಚೌಲ) ದ ನಿಖರ ಮುಹೂರ್ತವನ್ನು ನಿಮ್ಮ ಕುಟುಂಬದ "
+                        "ಪುರೋಹಿತರಿಂದ ನಿಗದಿಪಡಿಸಿಕೊಳ್ಳಿ. ನಿಮ್ಮ ನಗರದ ದಿನಾಂಕಗಳನ್ನು ‘ಮುಹೂರ್ತ ಹುಡುಕಿ’ಯಲ್ಲಿ "
+                        "ನೋಡಿ.</p>"),
+        "rules.h2": "{name} {year}: ಈ ದಿನಾಂಕಗಳು ಅನುಸರಿಸುವ ನಿಯಮಗಳು",
+        "rules.body": (
+            "<p>ಮುಂಡನ (ಚೌಲ, ಮೊದಲ ಕ್ಷೌರ)ಕ್ಕೆ ಮದುವೆಗಿಂತ ಬೇರೆಯೇ ನಿಯಮಗಳಿವೆ. ಕೆಳಗಿನ ನಿಷಿದ್ಧಗಳಲ್ಲಿ ಯಾವುದೂ "
+            "ಅನ್ವಯಿಸದೆ, ಶುಭ ನಕ್ಷತ್ರದಲ್ಲಿ ಬಂದರೆ ಮಾತ್ರ ದಿನವನ್ನು ಪಟ್ಟಿ ಮಾಡಲಾಗಿದೆ:</p><ul>"
+            "<li><strong>ನಿಷಿದ್ಧ ತಿಥಿಗಳು:</strong> {tithi_bad}.</li>"
+            "<li><strong>ಶುಭ ತಿಥಿಗಳು</strong> (ಎರಡೂ ಪಕ್ಷಗಳಲ್ಲಿ): {tithi_good}; ಉಳಿದವು ಸಾಮಾನ್ಯ.</li>"
+            "<li><strong>ಶುಭ ನಕ್ಷತ್ರಗಳು</strong> (ಕೆಳಗಿನ ಪ್ರತಿ ದಿನಾಂಕವೂ ಇವುಗಳಲ್ಲಿ ಒಂದರಲ್ಲಿದೆ): {nak_good}.</li>"
+            "<li><strong>ನಿಷಿದ್ಧ ನಕ್ಷತ್ರಗಳು:</strong> {nak_bad}.</li>"
+            "<li><strong>ನಿಷಿದ್ಧ ಯೋಗ ಮತ್ತು ಕರಣ:</strong> {yoga_bad} ಹಾಗೂ ಭದ್ರಾ (ವಿಷ್ಟಿ).</li>"
+            "<li><strong>ವಾರಗಳು:</strong> {vara_good} ಶುಭ; {vara_bad} ದಿನದ ವಿರುದ್ಧ ಎಣಿಕೆಯಾಗುತ್ತವೆ, ಆದರೆ ದಿನವನ್ನು "
+            "ಹೊರಗಿಡುವುದಿಲ್ಲ; ಆದ್ದರಿಂದ ಅಂಥ ಕೆಲವು ದಿನಗಳು ಪಟ್ಟಿಯಲ್ಲಿ ಬರುತ್ತವೆ - ನಿಮ್ಮ ಕುಟುಂಬ ಆ ವಾರಗಳನ್ನು "
+            "ವರ್ಜಿಸಿದರೆ ಬಿಟ್ಟುಬಿಡಿ.</li></ul>"),
+    },
+    "te": {
+        "kind.mundan": "ముండన ముహూర్తాలు",
+        "noun.mundan": "ముండన",
+        "note.mundan": ("<p><strong>సమయాలు ఊరిని బట్టి మారుతాయి.</strong> ఈ తేదీలు న్యూఢిల్లీ "
+                        "సూర్యోదయం ఆధారంగా లెక్కించినవి; ఇతర ప్రాంతాల్లో తిథి లేదా నక్షత్రం వేరే రోజున "
+                        "మారవచ్చు. ముండన (చౌలం) కు ఖచ్చితమైన ముహూర్తాన్ని మీ కుటుంబ పురోహితుల ద్వారా "
+                        "నిర్ణయించుకోండి. మీ ఊరి తేదీలను ‘ముహూర్తం వెతకండి’లో చూడండి.</p>"),
+        "rules.h2": "{name} {year}: ఈ తేదీలు అనుసరించే నియమాలు",
+        "rules.body": (
+            "<p>ముండన (చౌలం, మొదటి కేశఖండన)కు వివాహానికి భిన్నమైన సొంత నియమాలు ఉన్నాయి. కింది నిషిద్ధాల్లో ఏదీ "
+            "వర్తించకుండా, శుభ నక్షత్రంలో వస్తేనే రోజును జాబితాలో చేర్చాం:</p><ul>"
+            "<li><strong>నిషిద్ధ తిథులు:</strong> {tithi_bad}.</li>"
+            "<li><strong>శుభ తిథులు</strong> (రెండు పక్షాల్లో): {tithi_good}; మిగతావి సాధారణం.</li>"
+            "<li><strong>శుభ నక్షత్రాలు</strong> (కింది ప్రతి తేదీ వీటిలో ఒకదానిలో ఉంది): {nak_good}.</li>"
+            "<li><strong>నిషిద్ధ నక్షత్రాలు:</strong> {nak_bad}.</li>"
+            "<li><strong>నిషిద్ధ యోగం, కరణం:</strong> {yoga_bad}, భద్ర (విష్టి).</li>"
+            "<li><strong>వారాలు:</strong> {vara_good} శుభం; {vara_bad} రోజుకు వ్యతిరేకంగా లెక్కవేస్తారు కానీ రోజును "
+            "పూర్తిగా తొలగించవు, అందుకే అలాంటి కొన్ని తేదీలు కనిపిస్తాయి - మీ కుటుంబంలో ఆ వారాలు వర్జ్యమైతే "
+            "వదిలేయండి.</li></ul>"),
+    },
+    "ta": {
+        "kind.mundan": "முண்டன முகூர்த்தம்",
+        "noun.mundan": "முண்டன",
+        "note.mundan": ("<p><strong>ஊருக்கு ஊர் நேரம் மாறும்.</strong> இந்த நாட்கள் புது தில்லியின் "
+                        "சூரிய உதயத்தை வைத்துக் கணக்கிடப்பட்டவை; வேறு ஊரில் ஒரு திதியோ நட்சத்திரமோ "
+                        "வேறு நாளில் மாறலாம். முண்டன (சௌளம்) முகூர்த்தத்தை உங்கள் குடும்ப புரோகிதரிடம் "
+                        "உறுதி செய்துகொள்ளுங்கள். உங்கள் ஊருக்கான நாட்களை முகூர்த்தம் தேடலில் பாருங்கள்.</p>"),
+        "rules.h2": "{name} {year}: இந்த நாட்கள் பின்பற்றும் விதிகள்",
+        "rules.body": (
+            "<p>முண்டனத்துக்கு (சௌளம், முதல் முடி எடுத்தல்) திருமணத்திலிருந்து வேறுபட்ட சொந்த விதிகள் உள்ளன. கீழே உள்ள "
+            "விலக்குகளில் எதுவும் பொருந்தாமல், நல்ல நட்சத்திரத்தில் வந்தால் மட்டுமே நாள் பட்டியலில் சேர்க்கப்படும்:</p><ul>"
+            "<li><strong>விலக்கப்பட்ட திதிகள்:</strong> {tithi_bad}.</li>"
+            "<li><strong>நல்ல திதிகள்</strong> (இரு பட்சங்களிலும்): {tithi_good}; மற்றவை சாதாரணம்.</li>"
+            "<li><strong>நல்ல நட்சத்திரங்கள்</strong> (கீழுள்ள ஒவ்வொரு நாளும் இவற்றில் ஒன்றில் உள்ளது): {nak_good}.</li>"
+            "<li><strong>விலக்கப்பட்ட நட்சத்திரங்கள்:</strong> {nak_bad}.</li>"
+            "<li><strong>விலக்கப்பட்ட யோகம், கரணம்:</strong> {yoga_bad}, பத்ரா (விஷ்டி).</li>"
+            "<li><strong>கிழமைகள்:</strong> {vara_good} நல்லவை; {vara_bad} நாளுக்கு எதிராகக் கணக்கிடப்படும், ஆனால் "
+            "நாளை முழுமையாக நீக்காது; அதனால் அத்தகைய சில நாட்கள் தென்படும் - உங்கள் குடும்பத்தில் அந்தக் கிழமைகள் "
+            "விலக்கப்பட்டால் தவிர்த்துவிடுங்கள்.</li></ul>"),
+    },
+    "ml": {
+        "kind.mundan": "മുണ്ഡന മുഹൂർത്തം",
+        "noun.mundan": "മുണ്ഡന",
+        "note.mundan": ("<p><strong>സമയം നഗരത്തിനനുസരിച്ച് മാറും.</strong> ഈ തീയതികൾ ന്യൂഡൽഹിയിലെ "
+                        "സൂര്യോദയം അടിസ്ഥാനമാക്കി കണക്കാക്കിയതാണ്; മറ്റിടങ്ങളിൽ തിഥിയോ നക്ഷത്രമോ മറ്റൊരു "
+                        "ദിവസം മാറാം. മുണ്ഡനത്തിന്റെ (ചൗളം) കൃത്യമായ മുഹൂർത്തം നിങ്ങളുടെ കുടുംബ പുരോഹിതനെക്കൊണ്ട് "
+                        "നിശ്ചയിപ്പിക്കുക. നിങ്ങളുടെ നഗരത്തിലെ തീയതികൾ ‘മുഹൂർത്ത ഫൈൻഡറി’ൽ കാണുക.</p>"),
+        "rules.h2": "{name} {year}: ഈ തീയതികൾ പാലിക്കുന്ന നിയമങ്ങൾ",
+        "rules.body": (
+            "<p>മുണ്ഡനത്തിന് (ചൗളം, ആദ്യ ക്ഷൗരം) വിവാഹത്തിൽ നിന്ന് വ്യത്യസ്തമായ സ്വന്തം നിയമങ്ങളുണ്ട്. താഴെയുള്ള "
+            "വർജ്യങ്ങളിൽ ഒന്നും ബാധകമാകാതെ, ശുഭ നക്ഷത്രത്തിൽ വന്നാൽ മാത്രമേ ദിവസം പട്ടികയിൽ ചേർക്കൂ:</p><ul>"
+            "<li><strong>വർജ്യ തിഥികൾ:</strong> {tithi_bad}.</li>"
+            "<li><strong>ശുഭ തിഥികൾ</strong> (രണ്ടു പക്ഷത്തിലും): {tithi_good}; മറ്റുള്ളവ സാധാരണം.</li>"
+            "<li><strong>ശുഭ നക്ഷത്രങ്ങൾ</strong> (താഴെയുള്ള ഓരോ തീയതിയും ഇവയിലൊന്നിലാണ്): {nak_good}.</li>"
+            "<li><strong>വർജ്യ നക്ഷത്രങ്ങൾ:</strong> {nak_bad}.</li>"
+            "<li><strong>വർജ്യ യോഗവും കരണവും:</strong> {yoga_bad}, ഭദ്ര (വിഷ്ടി).</li>"
+            "<li><strong>ആഴ്ചകൾ:</strong> {vara_good} ശുഭം; {vara_bad} ദിവസത്തിന് എതിരായി കണക്കാക്കും, പക്ഷേ ദിവസത്തെ "
+            "പൂർണമായി ഒഴിവാക്കില്ല; അതിനാൽ അത്തരം ചില തീയതികൾ കാണാം - നിങ്ങളുടെ കുടുംബത്തിൽ ആ ദിവസങ്ങൾ "
+            "വർജ്യമെങ്കിൽ ഒഴിവാക്കുക.</li></ul>"),
+    },
+    "bn": {
+        "kind.mundan": "মুণ্ডনের শুভ মুহূর্ত",
+        "noun.mundan": "মুণ্ডনের",
+        "note.mundan": ("<p><strong>শহরভেদে সময় বদলায়।</strong> এই দিনগুলি নয়াদিল্লির সূর্যোদয় ধরে "
+                        "গণনা করা; অন্য জায়গায় তিথি বা নক্ষত্র অন্য দিনে বদলাতে পারে। মুণ্ডনের (চূড়াকরণ) সঠিক "
+                        "মুহূর্ত আপনার পারিবারিক পুরোহিতের কাছ থেকে ঠিক করিয়ে নিন। নিজের শহরের দিন দেখুন শুভ "
+                        "মুহূর্ত সন্ধানে।</p>"),
+        "rules.h2": "{name} {year}: এই তারিখগুলি যে নিয়ম মেনে বাছা",
+        "rules.body": (
+            "<p>মুণ্ডনের (চূড়াকরণ, প্রথম চুল কাটা) নিজস্ব নিয়ম আছে, বিবাহের নিয়ম থেকে আলাদা। নিচের নিষিদ্ধ বিষয়ের "
+            "কোনোটি না পড়লে এবং শুভ নক্ষত্রে হলেই কেবল দিনটি তালিকায় আসে:</p><ul>"
+            "<li><strong>নিষিদ্ধ তিথি:</strong> {tithi_bad}।</li>"
+            "<li><strong>শুভ তিথি</strong> (দুই পক্ষেই): {tithi_good}; বাকিগুলি সাধারণ।</li>"
+            "<li><strong>শুভ নক্ষত্র</strong> (নিচের প্রতিটি তারিখ এর কোনো একটিতে পড়ে): {nak_good}।</li>"
+            "<li><strong>নিষিদ্ধ নক্ষত্র:</strong> {nak_bad}।</li>"
+            "<li><strong>নিষিদ্ধ যোগ ও করণ:</strong> {yoga_bad} এবং ভদ্রা (বিষ্টি)।</li>"
+            "<li><strong>বার:</strong> {vara_good} শুভ; {vara_bad} দিনের বিপক্ষে গণ্য হয়, কিন্তু দিনটি বাদ দেয় না, "
+            "তাই এমন কিছু তারিখ তালিকায় আসে - আপনার পরিবারে ওই বারগুলি নিষিদ্ধ হলে এড়িয়ে যান।</li></ul>"),
+    },
+    "or": {
+        "kind.mundan": "ମୁଣ୍ଡନ ଶୁଭ ମୁହୂର୍ତ୍ତ",
+        "noun.mundan": "ମୁଣ୍ଡନର",
+        "note.mundan": ("<p><strong>ସହର ଅନୁସାରେ ସମୟ ବଦଳେ।</strong> ଏହି ତାରିଖଗୁଡ଼ିକ ନୂଆଦିଲ୍ଲୀର "
+                        "ସୂର୍ଯ୍ୟୋଦୟ ଅନୁସାରେ ଗଣନା କରାଯାଇଛି; ଅନ୍ୟ ସ୍ଥାନରେ ତିଥି ବା ନକ୍ଷତ୍ର ଭିନ୍ନ ଦିନରେ "
+                        "ବଦଳିପାରେ। ମୁଣ୍ଡନ (ଚୂଡ଼ାକରଣ)ର ସଠିକ୍ ମୁହୂର୍ତ୍ତ ଆପଣଙ୍କ ପରିବାରର ପୁରୋହିତଙ୍କ ଦ୍ୱାରା "
+                        "ସ୍ଥିର କରାନ୍ତୁ। ନିଜ ସହରର ତାରିଖ ଶୁଭ ମୁହୂର୍ତ୍ତ ସନ୍ଧାନରେ ଦେଖନ୍ତୁ।</p>"),
+        "rules.h2": "{name} {year}: ଏହି ତାରିଖଗୁଡ଼ିକ ମାନୁଥିବା ନିୟମ",
+        "rules.body": (
+            "<p>ମୁଣ୍ଡନ (ଚୂଡ଼ାକରଣ, ପ୍ରଥମ କେଶ କାଟିବା)ର ନିଜସ୍ୱ ନିୟମ ଅଛି, ବିବାହର ନିୟମଠାରୁ ଭିନ୍ନ। ତଳେ ଥିବା ନିଷିଦ୍ଧ "
+            "ବିଷୟ ମଧ୍ୟରୁ କୌଣସି ପ୍ରଯୁଜ୍ୟ ନହେଲେ ଏବଂ ଶୁଭ ନକ୍ଷତ୍ରରେ ପଡ଼ିଲେ ହିଁ ଦିନଟି ତାଲିକାରେ ଆସେ:</p><ul>"
+            "<li><strong>ନିଷିଦ୍ଧ ତିଥି:</strong> {tithi_bad}।</li>"
+            "<li><strong>ଶୁଭ ତିଥି</strong> (ଉଭୟ ପକ୍ଷରେ): {tithi_good}; ବାକି ସାଧାରଣ।</li>"
+            "<li><strong>ଶୁଭ ନକ୍ଷତ୍ର</strong> (ତଳର ପ୍ରତ୍ୟେକ ତାରିଖ ଏଥିରୁ ଗୋଟିଏରେ ପଡ଼େ): {nak_good}।</li>"
+            "<li><strong>ନିଷିଦ୍ଧ ନକ୍ଷତ୍ର:</strong> {nak_bad}।</li>"
+            "<li><strong>ନିଷିଦ୍ଧ ଯୋଗ ଓ କରଣ:</strong> {yoga_bad} ଏବଂ ଭଦ୍ରା (ବିଷ୍ଟି)।</li>"
+            "<li><strong>ବାର:</strong> {vara_good} ଶୁଭ; {vara_bad} ଦିନ ବିପକ୍ଷରେ ଗଣାଯାଏ, କିନ୍ତୁ ଦିନଟିକୁ ବାଦ ଦିଏ ନାହିଁ, "
+            "ତେଣୁ ଏପରି କିଛି ତାରିଖ ତାଲିକାରେ ଆସେ - ଆପଣଙ୍କ ପରିବାରରେ ସେହି ବାର ନିଷିଦ୍ଧ ହେଲେ ଛାଡ଼ିଦିଅନ୍ତୁ।</li></ul>"),
+    },
+}
+for _l, _t in MUNDAN.items():
+    TEXT[_l].update(_t)
+
 # The classical periods with no muhurat (Chaturmas, Kharmas ...): name and what
 # it is, read from the engine (astro/muhurat.PERIODS) so the page and the
 # Muhurat Finder's reasons never disagree. Add "period.<key>" /
