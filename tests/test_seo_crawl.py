@@ -100,6 +100,21 @@ def main() -> int:
           is not None and "divineastro.org, www.divineastro.org" not in cf)
     check("Caddy marks /api and /admin noindex", "X-Robots-Tag" in cf and "/api/* /admin" in cf)
 
+    print("\nLegal pages are canonical, distinct pages (DIVASTRO-139)")
+    import re as _re
+    descs = []
+    for path in ("/terms", "/privacy", "/refund", "/contact"):
+        h = client.get(path).text
+        can = _re.search(r'<link rel="canonical" href="([^"]*)"', h)
+        d = _re.search(r'<meta name="description" content="([^"]*)"', h)
+        check(f"{path}: canonical is itself", bool(can) and can.group(1) == f"https://divineastro.org{path}",
+              can.group(1) if can else "none")
+        check(f"{path}: has a description", bool(d) and len(d.group(1)) > 40)
+        descs.append(d.group(1) if d else "")
+    check("the four legal descriptions are all different", len(set(descs)) == 4)
+    check("the home page declares its canonical",
+          '<link rel="canonical" href="https://divineastro.org/"' in client.get("/").text)
+
     print("\n" + "=" * 60)
     if failures:
         print(f"{len(failures)} FAILURES")

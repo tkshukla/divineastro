@@ -77,6 +77,8 @@ _SHELL = """<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>{title} — {brand}</title>
+<meta name="description" content="{description}"/>
+<link rel="canonical" href="{site}{path}"/>
 <link rel="stylesheet" href="/static/styles.css"/>
 <style>
   body {{ overflow: auto; }}
@@ -110,9 +112,13 @@ _SHELL = """<!DOCTYPE html>
 UPDATED = "6 October 2026"
 
 
-def _page(title: str, body: str) -> HTMLResponse:
+def _page(title: str, body: str, path: str, description: str) -> HTMLResponse:
+    """`path` and `description` make each legal page its own, canonical page: without a
+    canonical and a distinct description Google treated them as near-duplicates
+    ("Duplicate without user-selected canonical", DIVASTRO-139)."""
     return HTMLResponse(_SHELL.format(
-        title=title, brand=BRAND, updated=UPDATED, body=body))
+        title=title, brand=BRAND, updated=UPDATED, body=body, path=path,
+        description=description, site=SITE))
 
 
 DISCLAIMER = f"""
@@ -202,7 +208,8 @@ claim. We are not liable for decisions you take based on a reading.</p>
 <h2>9. Governing law</h2>
 <p>These terms are governed by the laws of India, and the courts of India shall
 have exclusive jurisdiction.</p>
-{_source_note()}""")
+{_source_note()}""", "/terms",
+        "The terms of service for using Divine Astro: what the readings are, accounts and credits, acceptable use and limits of liability.")
 
 
 @router.get("/privacy", response_class=HTMLResponse)
@@ -294,7 +301,8 @@ consent before any advertising cookies are set.</p>
 
 <h2>Children</h2>
 <p>{BRAND} is not intended for anyone under 18 and we do not knowingly collect
-their data.</p>""")
+their data.</p>""", "/privacy",
+        "How Divine Astro collects, uses and protects your data: account details, birth details, questions, anonymous visit statistics, and your choices.")
 
 
 @router.get("/refund", response_class=HTMLResponse)
@@ -332,7 +340,8 @@ before you buy.</p>
 <h2>How refunds are made</h2>
 <p>Refunds go back to the original payment method within <strong>5–7 working
 days</strong> of approval. The gateway may take a further few days to show it on
-your statement.</p>""")
+your statement.</p>""", "/refund",
+        "Divine Astro refund and cancellation policy: when credits and paid reports can be refunded and how to ask.")
 
 
 @router.get("/contact", response_class=HTMLResponse)
@@ -352,7 +361,8 @@ def contact() -> HTMLResponse:
 5–7 working days of approval.</p>
 <h2>Grievance Officer</h2>
 <p>For complaints about how your personal data has been handled, write to
-<a href="mailto:{EMAIL}">{EMAIL}</a> with "Grievance" in the subject line.</p>""")
+<a href="mailto:{EMAIL}">{EMAIL}</a> with "Grievance" in the subject line.</p>""", "/contact",
+        "Contact Divine Astro: support email, phone, registered address and the grievance officer.")
 
 
 def _source_note() -> str:
