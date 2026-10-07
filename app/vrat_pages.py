@@ -166,7 +166,10 @@ _PUBLIC = frozenset(page_paths() + [hub_path(lang) + f"/{CITY.slug}"
 
 
 def is_public_path(path: str) -> bool:
-    return path in _PUBLIC
+    if path in _PUBLIC:
+        return True
+    from . import vrat_city_pages              # lazy: it imports this module (DIVASTRO-140)
+    return vrat_city_pages.is_public_path(path)
 
 
 # --------------------------------------------------------------------------
@@ -566,6 +569,11 @@ def render_ekadashi(year: int, lang: str) -> HTMLResponse:
                    body=body, lang=lang, extra_ld=(items,))
 
 
+def _city_pills(slug: str, year: int, lang: str) -> str:
+    from . import vrat_city_pages              # lazy: it imports this module (DIVASTRO-140)
+    return vrat_city_pages.city_pills(slug, year, lang)
+
+
 def render_festival(slug: str, year: int, lang: str) -> HTMLResponse:
     o = festival_index(year).get(slug)
     if o is None or slug not in _festival_slugs(year):
@@ -600,7 +608,7 @@ def render_festival(slug: str, year: int, lang: str) -> HTMLResponse:
             + f"<h2>{_e(_tx('fest.rule_h2', lang))}</h2><p>{_e(rule)}.</p>"
             + (f"<p><small>{_e(note)}</small></p>" if note else "")
             + f"<h2>{_e(_tx('fest.faq_h2', lang))}</h2>{faq_html}"
-            + _city_note(lang) + _cta(lang)
+            + _city_note(lang) + _city_pills(slug, year, lang) + _cta(lang)
             + _festival_links(year, lang, skip=slug) + _more_links(lang))
     crumbs = [(_tx("crumb", lang), hub_path(lang)), (f"{name} {year}", path)]
     return _render(title=title, description=description, path=path, alt=alt, crumbs=crumbs,

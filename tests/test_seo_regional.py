@@ -54,7 +54,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 from app import (i18n, katha, muhurat_pages, muhurat_text, naam_milan_text,  # noqa: E402
                  nakshatra_page_text, nakshatra_pages, nakshatra_text, rashifal_pages,
                  rashifal_text, seo_cities, seo_city_names, seo_pages, seo_text, vrat_pages,
-                 vrat_text)
+                 vrat_text, vrat_city_pages)
 from app.main import app  # noqa: E402
 
 client = TestClient(app, raise_server_exceptions=False)
@@ -401,6 +401,8 @@ def en_pages(lang: str) -> list[str]:
         last = p.rstrip("/").rsplit("/", 1)[-1]
         if last in slugs and last not in OWN_CITIES[lang]:
             continue
+        if vrat_city_pages.is_public_path(p):       # DIVASTRO-140: en/hi only for now; the
+            continue                                # other languages are noindex fallbacks
         out.append(p)
     return list(dict.fromkeys(out))
 
