@@ -1080,10 +1080,11 @@ def sitemap_paths() -> list[str]:
     from .rashifal_pages import sitemap_paths as rashifal_paths  # lazy: it imports this module
     from .muhurat_pages import page_paths as muhurat_paths  # same: imports this module
     from .vrat_pages import page_paths as vrat_paths  # same: imports this module
+    from .vrat_city_pages import page_paths as vrat_city_paths  # same (DIVASTRO-140)
     from .nakshatra_pages import sitemap_paths as nakshatra_paths  # same (DIVASTRO-115)
     from .katha import sitemap_paths as katha_paths  # same
     from .site_hub import sitemap_paths as hub_paths  # same (DIVASTRO-133)
-    return paths + hub_paths() + rashifal_paths() + muhurat_paths() + vrat_paths() + nakshatra_paths() + katha_paths()
+    return paths + hub_paths() + rashifal_paths() + muhurat_paths() + vrat_paths() + vrat_city_paths() + nakshatra_paths() + katha_paths()
 
 
 LEGAL_PATHS = frozenset({"/terms", "/privacy", "/refund", "/contact"})
@@ -1121,6 +1122,8 @@ def sitemap_priority(path: str) -> float:
             score = 0.7
         else:                                   # a city page of a tool
             score = 0.6 if parts[1] in _TOP_CITY_SLUGS else 0.5
+    elif root == "tyohar" and len(parts) >= 3:  # a festival's city page (DIVASTRO-140)
+        score = 0.5
     else:
         score = 0.8 if len(parts) <= 1 else 0.7
     return round(score - (0.1 if lang not in (EN, HI) else 0.0), 1)
