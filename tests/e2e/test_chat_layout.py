@@ -356,6 +356,13 @@ def after_an_answer_on_a_phone(p, browser, base: str) -> None:
         check(f"{label}: a leftover page scroll is undone",
               scrolled > 0 and pg.page.evaluate("window.scrollY") == 0, f"{scrolled} -> {pg.page.evaluate('window.scrollY')}")
         pg.page.evaluate("document.documentElement.style.minHeight = ''")
+        # DIVASTRO-138: body{min-height:100vh} beat height:100dvh, so on a real phone (where 100vh
+        # is taller than the visible screen once the toolbar shows) the page ran a toolbar's height
+        # too tall and the box sat under the screen. Headless browsers have no toolbar, so assert the
+        # cause: nothing may give the reading screen a minimum height.
+        check(f"{label}: the reading screen has no minimum height (100vh would exceed the visible screen)",
+              pg.page.evaluate("getComputedStyle(document.body).minHeight") == "0px",
+              pg.page.evaluate("getComputedStyle(document.body).minHeight"))
         if init:
             check(f"{label}: sized from the real window height",
                   pg.page.evaluate("document.body.classList.contains('js-height') && "
