@@ -349,13 +349,20 @@ def after_an_answer_on_a_phone(p, browser, base: str) -> None:
         check(f"{label}: the question box is on screen after the answer", ok, why)
         check(f"{label}: the answer did not pop the keyboard (box not focused)",
               pg.page.evaluate("document.activeElement !== document.querySelector('#q')"))
-        # A browser side-effect scrolls the page; the box goes under the bottom edge.
-        pg.page.evaluate("document.documentElement.style.minHeight = '3000px'; window.scrollTo(0, 240)")
-        scrolled = pg.page.evaluate("window.scrollY")
-        pg.page.evaluate("resetWindowScroll()")
+        # A browser side-effect scrolls the page; the box goes under the bottom edge. The app also
+        # undoes this by itself on the scroll event, so scroll, read and reset in ONE synchronous
+        # step: otherwise the event handler can run in between and the test races it.
+        res = pg.page.evaluate("""() => {
+            document.documentElement.style.minHeight = '3000px';
+            window.scrollTo({top: 240, behavior: 'instant'});
+            const scrolled = window.scrollY;
+            resetWindowScroll();
+            const after = window.scrollY;
+            document.documentElement.style.minHeight = '';
+            return {scrolled, after};
+        }""")
         check(f"{label}: a leftover page scroll is undone",
-              scrolled > 0 and pg.page.evaluate("window.scrollY") == 0, f"{scrolled} -> {pg.page.evaluate('window.scrollY')}")
-        pg.page.evaluate("document.documentElement.style.minHeight = ''")
+              res["scrolled"] > 0 and res["after"] == 0, str(res))
         # DIVASTRO-138: body{min-height:100vh} beat height:100dvh, so on a real phone (where 100vh
         # is taller than the visible screen once the toolbar shows) the page ran a toolbar's height
         # too tall and the box sat under the screen. Headless browsers have no toolbar, so assert the
