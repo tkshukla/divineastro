@@ -323,6 +323,46 @@ def every_way_in(p, browser, base: str) -> None:
         ctx.close()
 
 
+def after_an_answer_on_a_phone(p, browser, base: str) -> None:
+    """DIVASTRO-137: after an answer the question box must still be on screen, the
+    keyboard must not be summoned unasked, and a page scroll left behind by a browser
+    (keyboard, in-app toolbar) is undone. Also: where the browser has no 100dvh (old
+    WebViews), the reading screen is sized from the real window height."""
+    print("\n[after an answer on a phone: box on screen, no keyboard, scroll undone, no-dvh fallback]")
+    spec = PHONES["iphone_375x812"]
+    for label, init in (("normal browser", None),
+                        ("browser without 100dvh", "const o = CSS.supports.bind(CSS);"
+                         "CSS.supports = (a, b) => String(b).includes('dvh') ? false : o(a, b);")):
+        ctx = browser.new_context(**context_args(p, spec))
+        if init:
+            ctx.add_init_script(init)
+        pg = Page(ctx.new_page(), base)
+        pg.open_chat()
+        bot_before = pg.page.locator(".msg.bot").count()
+        pg.page.fill("#q", "Will my career improve this year?")
+        pg.page.click("#send")
+        pg.page.wait_for_function("state.busy === false", timeout=30000)
+        pg.page.wait_for_function("n => document.querySelectorAll('.msg.bot').length > n",
+                                  arg=bot_before, timeout=20000)
+        pg.page.wait_for_timeout(500)
+        ok, why = box_on_screen(pg)
+        check(f"{label}: the question box is on screen after the answer", ok, why)
+        check(f"{label}: the answer did not pop the keyboard (box not focused)",
+              pg.page.evaluate("document.activeElement !== document.querySelector('#q')"))
+        # A browser side-effect scrolls the page; the box goes under the bottom edge.
+        pg.page.evaluate("document.documentElement.style.minHeight = '3000px'; window.scrollTo(0, 240)")
+        scrolled = pg.page.evaluate("window.scrollY")
+        pg.page.evaluate("resetWindowScroll()")
+        check(f"{label}: a leftover page scroll is undone",
+              scrolled > 0 and pg.page.evaluate("window.scrollY") == 0, f"{scrolled} -> {pg.page.evaluate('window.scrollY')}")
+        pg.page.evaluate("document.documentElement.style.minHeight = ''")
+        if init:
+            check(f"{label}: sized from the real window height",
+                  pg.page.evaluate("document.body.classList.contains('js-height') && "
+                                   "getComputedStyle(document.documentElement).getPropertyValue('--app-h').trim() === innerHeight + 'px'"))
+        ctx.close()
+
+
 def main() -> int:
     only = set(sys.argv[1:])         # optional: profile names, for a quick run
     with server() as base, sync_playwright() as p:
@@ -336,6 +376,7 @@ def main() -> int:
                     desktop_checks(p, browser, base, name, spec)
             if not only:
                 every_way_in(p, browser, base)
+                after_an_answer_on_a_phone(p, browser, base)
         finally:
             browser.close()
     return check.finish("chat layout")

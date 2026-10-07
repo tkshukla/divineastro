@@ -1893,6 +1893,7 @@ details.reasoning summary:hover { color: var(--gold); }
 @supports (height: 100dvh) {
   body.in-reading { height: 100dvh; max-height: none; }
 }
+body.in-reading.js-height { height: var(--app-h); max-height: var(--app-h); }
 .chat { position: relative; }
 
 .thread { padding: 22px 26px 8px; overscroll-behavior: contain; }

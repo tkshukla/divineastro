@@ -1961,7 +1961,44 @@ qBox.addEventListener("keydown", (e) => {
 qBox.addEventListener("focus", () => {
   if (!hasKeyboardAndMouse.matches) document.body.classList.add("kbd");
 });
-qBox.addEventListener("blur", () => document.body.classList.remove("kbd"));
+qBox.addEventListener("blur", () => {
+  document.body.classList.remove("kbd");
+  // The keyboard just closed: some browsers leave the page scrolled down, with the
+  // question box under the bottom edge. Put the page back.
+  setTimeout(resetWindowScroll, 120);
+  setTimeout(resetWindowScroll, 450);
+});
+
+/* The reading screen is exactly one screen tall and never scrolls as a page, so any
+   page scroll is a browser side-effect (keyboard, focus, in-app toolbar) that pushes
+   the question box out of sight. Undo it, but never while the box is being typed in
+   (the browser is deliberately scrolling to keep it above the keyboard then). */
+function resetWindowScroll() {
+  if (!document.body.classList.contains("in-reading") || document.activeElement === qBox) return;
+  if (window.scrollY || document.documentElement.scrollTop || document.body.scrollTop) {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }
+}
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("scroll", resetWindowScroll);
+  window.visualViewport.addEventListener("resize", resetWindowScroll);
+}
+window.addEventListener("scroll", resetWindowScroll, { passive: true });
+
+/* Old Android WebViews (and some in-app browsers) do not know 100dvh and fall back to
+   100vh, which counts the area under the toolbar - the box sits below the screen. Where
+   dvh is missing, size the reading screen from the real window height instead. */
+if (!(window.CSS && CSS.supports && CSS.supports("height", "100dvh"))) {
+  const sizeToWindow = () => {
+    document.documentElement.style.setProperty("--app-h", `${window.innerHeight}px`);
+    document.body.classList.add("js-height");
+  };
+  sizeToWindow();
+  window.addEventListener("resize", sizeToWindow);
+  window.addEventListener("orientationchange", () => setTimeout(sizeToWindow, 200));
+}
 
 // The on-screen keyboard: the page is told to RESIZE for it (interactive-widget=
 // resizes-content in the viewport meta tag), so 100dvh is the visible height and
@@ -2205,7 +2242,12 @@ $("#ask-form").addEventListener("submit", async (e) => {
     $("#send").disabled = false;
     $("#send").hidden = false;
     $("#stop").hidden = true;
-    input.focus({ preventScroll: true });
+    // A desktop keeps the cursor in the box for the next question. A phone must NOT:
+    // focusing pops the keyboard unasked, and on iOS and in-app browsers (WhatsApp,
+    // Facebook) that scrolls the page and can leave the question box below the screen
+    // when the keyboard goes away. The reader taps the box when they want to ask.
+    if (hasKeyboardAndMouse.matches) input.focus({ preventScroll: true });
+    else resetWindowScroll();
   }
 });
 
