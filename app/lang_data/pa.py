@@ -20,7 +20,7 @@ from __future__ import annotations
 
 # Page modules that are complete for this language (the table groups below):
 #   "seo" "rashifal" "vrat" "nakshatra" "muhurat" "recurring" "hub" "app"
-READY = frozenset({"seo", "app", "rashifal", "hub", "vrat", "recurring"})
+READY = frozenset({"seo", "app", "rashifal", "hub", "vrat", "recurring", "muhurat"})
 
 # Latin-script words the pa text may keep besides the defaults (WhatsApp, UPI, PDF ...).
 ALLOW_LATIN = frozenset({"name", "gmail.com"})  # the e-mail placeholder name@gmail.com
@@ -2513,126 +2513,126 @@ NAAM_MILAN_ENGINE = {
 # app/muhurat_text.py TEXT["pa"] — page text of /muhurat/<kind>-<year> (the mundan-only keys are MUHURAT_MUNDAN)  [37]
 MUHURAT_TEXT = {
     # EN: Vivah Muhurat
-    "kind.vivah": "",
+    "kind.vivah": "ਵਿਆਹ ਮਹੂਰਤ",
     # EN: Griha Pravesh Muhurat
-    "kind.griha-pravesh": "",
+    "kind.griha-pravesh": "ਗ੍ਰਹਿ ਪ੍ਰਵੇਸ਼ ਮਹੂਰਤ",
     # EN: wedding
-    "noun.vivah": "",
+    "noun.vivah": "ਵਿਆਹ ਦੇ",
     # EN: house-warming
-    "noun.griha-pravesh": "",
+    "noun.griha-pravesh": "ਗ੍ਰਹਿ ਪ੍ਰਵੇਸ਼ ਦੇ",
     # EN: {name} {year}: Auspicious {noun_title} Dates (New Delhi) | {brand}
     # keep: {brand} {year}
     # may also use: {name} {noun_title} {noun}
-    "title": "",
+    "title": "{name} {year}: ਸ਼ੁਭ ਦਿਨ ਅਤੇ ਤਾਰੀਖ਼ਾਂ (ਨਵੀਂ ਦਿੱਲੀ) | {brand}",
     # EN: {name} {year}: auspicious {noun} dates
     # keep: {year}
     # may also use: {name} {noun}
-    "h1": "",
+    "h1": "{name} {year}: {noun} ਸ਼ੁਭ ਦਿਨ",
     # EN: {name} {year} for New Delhi — month-by-month auspicious {noun} dates with tithi and
     #     nakshatra. {count} dates; Chaturmas, Kharmas, Adhik Maas, Pitru Paksha and Guru/Shukra
     #     asta explained.
     # keep: {count} {year}
     # may also use: {name} {noun}
-    "desc": "",
+    "desc": "{name} {year} ਨਵੀਂ ਦਿੱਲੀ ਲਈ — ਮਹੀਨੇ ਦਰ ਮਹੀਨੇ {noun} ਸ਼ੁਭ ਦਿਨ, ਤਿਥੀ ਅਤੇ ਨਕਸ਼ਤਰ ਸਮੇਤ। ਕੁੱਲ {count} ਦਿਨ; ਚਾਤੁਰਮਾਸ, ਖਰਮਾਸ, ਅਧਿਕ ਮਾਸ, ਪਿਤਰ ਪੱਖ ਅਤੇ ਗੁਰੂ/ਸ਼ੁੱਕਰ ਅਸਤ ਦੀ ਵਿਆਖਿਆ ਵੀ।",
     # EN: <p class="hi" lang="hi">{name_hi} {year}</p>
     # keep: {year}
     # may also use: {name} {noun}
-    "sub": "",
+    "sub": "<p class=\"hi\">ਪੰਚਾਂਗ ਮੁਤਾਬਕ ਮਹੀਨੇਵਾਰ ਸ਼ੁਭ ਦਿਨਾਂ ਦੀ ਸੂਚੀ · {year}</p>",
     # EN: {label} · IST
     # keep: {label}
-    "place": "",
+    "place": "{label} · IST",
     # EN: <p>By the panchang there are <strong>{count}</strong> {name_lower} dates in {year} for New
     #     Delhi, in {months}. Each date passes the classical checks on the sunrise tithi, nakshatra,
     #     weekday, yoga and Bhadra, and falls outside Chaturmas, Kharmas, Adhik Maas, Pitru Paksha
     #     and the combustion (asta) of Jupiter and Venus.</p>
     # keep: {count} {months} {year}
     # may also use: {name_lower} {name} {noun}
-    "intro": "",
+    "intro": "<p>ਪੰਚਾਂਗ ਮੁਤਾਬਕ ਨਵੀਂ ਦਿੱਲੀ ਲਈ {year} ਵਿੱਚ {name_lower} ਲਈ <strong>{count}</strong> ਦਿਨ ਮਿਲਦੇ ਹਨ, ਇਨ੍ਹਾਂ ਮਹੀਨਿਆਂ ਵਿੱਚ: {months}। ਹਰ ਤਾਰੀਖ਼ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਦੀ ਤਿਥੀ, ਨਕਸ਼ਤਰ, ਵਾਰ, ਯੋਗ ਅਤੇ ਭਦਰਾ ਦੀਆਂ ਸ਼ਾਸਤਰੀ ਜਾਂਚਾਂ ਵਿੱਚੋਂ ਲੰਘਦੀ ਹੈ, ਅਤੇ ਚਾਤੁਰਮਾਸ, ਖਰਮਾਸ, ਅਧਿਕ ਮਾਸ, ਪਿਤਰ ਪੱਖ ਅਤੇ ਬ੍ਰਿਹਸਪਤੀ ਤੇ ਸ਼ੁੱਕਰ ਦੇ ਅਸਤ ਤੋਂ ਬਾਹਰ ਪੈਂਦੀ ਹੈ।</p>",
     # EN: <p><strong>Timings vary by city.</strong> These dates are reckoned from New Delhi's
     #     sunrise; elsewhere a tithi or nakshatra can change on a different day. The exact muhurat
     #     (lagna) for a wedding or griha pravesh should be fixed by your family priest. Check your
     #     own city in the Muhurat Finder.</p>
-    "note": "",
+    "note": "<p><strong>ਸਮੇਂ ਸ਼ਹਿਰ ਮੁਤਾਬਕ ਬਦਲਦੇ ਹਨ।</strong> ਇਹ ਤਾਰੀਖ਼ਾਂ ਨਵੀਂ ਦਿੱਲੀ ਦੇ ਸੂਰਜ ਚੜ੍ਹਨ ਮੁਤਾਬਕ ਗਿਣੀਆਂ ਗਈਆਂ ਹਨ; ਹੋਰ ਥਾਂ ਕੋਈ ਤਿਥੀ ਜਾਂ ਨਕਸ਼ਤਰ ਕਿਸੇ ਹੋਰ ਦਿਨ ਬਦਲ ਸਕਦਾ ਹੈ। ਵਿਆਹ ਜਾਂ ਗ੍ਰਹਿ ਪ੍ਰਵੇਸ਼ ਦਾ ਸਹੀ ਮਹੂਰਤ (ਲਗਨ) ਤੁਹਾਡੇ ਪਰਿਵਾਰ ਦੇ ਪੰਡਿਤ ਜੀ ਤੋਂ ਤੈਅ ਕਰਵਾਉਣਾ ਚਾਹੀਦਾ ਹੈ। ਆਪਣੇ ਸ਼ਹਿਰ ਲਈ ਮਹੂਰਤ ਖੋਜੋ ਵਿੱਚ ਵੇਖੋ।</p>",
     # EN: Find muhurat for your city — free
-    "cta": "",
+    "cta": "ਆਪਣੇ ਸ਼ਹਿਰ ਦਾ ਮਹੂਰਤ ਲੱਭੋ — ਮੁਫ਼ਤ",
     # EN: {name} {year}
     # keep: {name} {year}
-    "crumb": "",
+    "crumb": "{name} {year}",
     # EN: More muhurat dates
-    "more": "",
+    "more": "ਹੋਰ ਮਹੂਰਤ ਤਾਰੀਖ਼ਾਂ",
     # EN: {name} {year}
     # keep: {name} {year}
-    "link.kind": "",
+    "link.kind": "{name} {year}",
     # EN: Today's Panchang
-    "link.panchang": "",
+    "link.panchang": "ਅੱਜ ਦਾ ਪੰਚਾਂਗ",
     # EN: Kundali Milan
-    "link.milan": "",
+    "link.milan": "ਕੁੰਡਲੀ ਮਿਲਾਨ",
     # EN: When there is no {name_lower} in {year}
     # keep: {year}
     # may also use: {name_lower} {name} {noun}
-    "periods.h2": "",
+    "periods.h2": "{year} ਵਿੱਚ {name_lower} ਕਦੋਂ ਨਹੀਂ ਹੁੰਦਾ",
     # EN: No {name_lower} is given during these periods. The dates are computed from the panchang
     #     (New Delhi, sunrise):
     # may also use: {name_lower} {name} {noun}
-    "periods.intro": "",
+    "periods.intro": "ਇਨ੍ਹਾਂ ਸਮਿਆਂ ਵਿੱਚ ਕੋਈ {name_lower} ਨਹੀਂ ਦਿੱਤਾ ਜਾਂਦਾ। ਤਾਰੀਖ਼ਾਂ ਪੰਚਾਂਗ ਤੋਂ ਗਿਣੀਆਂ ਗਈਆਂ ਹਨ (ਨਵੀਂ ਦਿੱਲੀ, ਸੂਰਜ ਚੜ੍ਹਨ):",
     # EN: <li><strong>{period}</strong>, {range} — {about}.</li>
     # keep: {about} {period} {range}
-    "periods.item": "",
+    "periods.item": "<li><strong>{period}</strong>, {range} — {about}।</li>",
     # EN: No {name_lower} in {month} — {periods}.
     # keep: {month} {periods}
     # may also use: {name_lower} {name} {noun}
-    "none.periods": "",
+    "none.periods": "{month} ਵਿੱਚ ਕੋਈ {name_lower} ਨਹੀਂ — {periods}।",
     # EN: No {name_lower} in {month} — no day this month passes the tithi, nakshatra, weekday and
     #     yoga checks.
     # keep: {month}
     # may also use: {name_lower} {name} {noun}
-    "none.plain": "",
+    "none.plain": "{month} ਵਿੱਚ ਕੋਈ {name_lower} ਨਹੀਂ — ਇਸ ਮਹੀਨੇ ਦਾ ਕੋਈ ਵੀ ਦਿਨ ਤਿਥੀ, ਨਕਸ਼ਤਰ, ਵਾਰ ਅਤੇ ਯੋਗ ਦੀਆਂ ਜਾਂਚਾਂ ਪਾਸ ਨਹੀਂ ਕਰਦਾ।",
     # EN: <tr><th>Date</th><th>Day</th><th>Tithi</th><th>Nakshatra</th></tr>
-    "th": "",
+    "th": "<tr><th>ਤਾਰੀਖ਼</th><th>ਦਿਨ</th><th>ਤਿਥੀ</th><th>ਨਕਸ਼ਤਰ</th></tr>",
     # EN: Muhurat page not found
-    "nf.title": "",
+    "nf.title": "ਮਹੂਰਤ ਪੰਨਾ ਨਹੀਂ ਮਿਲਿਆ",
     # EN: Open the Muhurat Finder
-    "nf.open": "",
+    "nf.open": "ਮਹੂਰਤ ਖੋਜੋ ਖੋਲ੍ਹੋ",
     # EN: Chaturmas
-    "period.chaturmas": "",
+    "period.chaturmas": "ਚਾਤੁਰਮਾਸ",
     # EN: Devshayani Ekadashi to Devuthani Ekadashi, when Lord Vishnu is in yoga-nidra
-    "period_about.chaturmas": "",
+    "period_about.chaturmas": "ਦੇਵਸ਼ਯਨੀ ਇਕਾਦਸ਼ੀ ਤੋਂ ਦੇਵਉਠਨੀ ਇਕਾਦਸ਼ੀ ਤੱਕ, ਜਦੋਂ ਭਗਵਾਨ ਵਿਸ਼ਨੂੰ ਯੋਗ-ਨਿਦਰਾ ਵਿੱਚ ਹੁੰਦੇ ਹਨ",
     # EN: Kharmas
-    "period.kharmas": "",
+    "period.kharmas": "ਖਰਮਾਸ",
     # EN: the Sun in Dhanu (Sagittarius) or Meena (Pisces)
-    "period_about.kharmas": "",
+    "period_about.kharmas": "ਸੂਰਜ ਦਾ ਧਨੁ ਜਾਂ ਮੀਨ ਰਾਸ਼ੀ ਵਿੱਚ ਹੋਣਾ",
     # EN: Adhik Maas
-    "period.adhik_maas": "",
+    "period.adhik_maas": "ਅਧਿਕ ਮਾਸ",
     # EN: an intercalary lunar month with no solar ingress
-    "period_about.adhik_maas": "",
+    "period_about.adhik_maas": "ਵਾਧੂ ਚੰਦਰ ਮਹੀਨਾ, ਜਿਸ ਵਿੱਚ ਸੂਰਜ ਦੀ ਸੰਕ੍ਰਾਂਤੀ ਨਹੀਂ ਹੁੰਦੀ",
     # EN: Pitru Paksha
-    "period.pitru_paksha": "",
+    "period.pitru_paksha": "ਪਿਤਰ ਪੱਖ",
     # EN: Bhadrapada Purnima to Sarva Pitru Amavasya, the fortnight of shraddha
-    "period_about.pitru_paksha": "",
+    "period_about.pitru_paksha": "ਭਾਦੋਂ ਦੀ ਪੂਰਨਮਾਸ਼ੀ ਤੋਂ ਸਰਵ ਪਿਤਰ ਮੱਸਿਆ ਤੱਕ, ਸ਼ਰਾਧ ਦਾ ਪੰਦਰਵਾੜਾ",
     # EN: Shukra Asta
-    "period.shukra_asta": "",
+    "period.shukra_asta": "ਸ਼ੁੱਕਰ ਅਸਤ",
     # EN: Venus combust (too close to the Sun to be seen), with 3 days either side
-    "period_about.shukra_asta": "",
+    "period_about.shukra_asta": "ਸ਼ੁੱਕਰ ਅਸਤ ਹੈ (ਸੂਰਜ ਦੇ ਇੰਨਾ ਨੇੜੇ ਕਿ ਦਿਸਦਾ ਨਹੀਂ), ਦੋਵੇਂ ਪਾਸੇ 3 ਦਿਨ ਸਮੇਤ",
     # EN: Guru Asta
-    "period.guru_asta": "",
+    "period.guru_asta": "ਗੁਰੂ ਅਸਤ",
     # EN: Jupiter combust (too close to the Sun to be seen), with 3 days either side
-    "period_about.guru_asta": "",
+    "period_about.guru_asta": "ਬ੍ਰਿਹਸਪਤੀ ਅਸਤ ਹੈ (ਸੂਰਜ ਦੇ ਇੰਨਾ ਨੇੜੇ ਕਿ ਦਿਸਦਾ ਨਹੀਂ), ਦੋਵੇਂ ਪਾਸੇ 3 ਦਿਨ ਸਮੇਤ",
 }
 
 # app/muhurat_text.py MUNDAN["pa"] — the mundan (first haircut) muhurat's own wording  [5]
 MUHURAT_MUNDAN = {
     # EN: Mundan Muhurat
-    "kind.mundan": "",
+    "kind.mundan": "ਮੁੰਡਨ ਮਹੂਰਤ",
     # EN: mundan
-    "noun.mundan": "",
+    "noun.mundan": "ਮੁੰਡਨ ਦੇ",
     # EN: <p><strong>Timings vary by city.</strong> These dates are reckoned from New Delhi's
     #     sunrise; elsewhere a tithi or nakshatra can change on a different day. The exact muhurat
     #     for the mundan (chudakarma) should be fixed by your family priest. Check your own city in
     #     the Muhurat Finder.</p>
-    "note.mundan": "",
+    "note.mundan": "<p><strong>ਸਮੇਂ ਸ਼ਹਿਰ ਮੁਤਾਬਕ ਬਦਲਦੇ ਹਨ।</strong> ਇਹ ਤਾਰੀਖ਼ਾਂ ਨਵੀਂ ਦਿੱਲੀ ਦੇ ਸੂਰਜ ਚੜ੍ਹਨ ਮੁਤਾਬਕ ਗਿਣੀਆਂ ਗਈਆਂ ਹਨ; ਹੋਰ ਥਾਂ ਕੋਈ ਤਿਥੀ ਜਾਂ ਨਕਸ਼ਤਰ ਕਿਸੇ ਹੋਰ ਦਿਨ ਬਦਲ ਸਕਦਾ ਹੈ। ਮੁੰਡਨ (ਚੂੜਾਕਰਮ) ਦਾ ਸਹੀ ਮਹੂਰਤ ਤੁਹਾਡੇ ਪਰਿਵਾਰ ਦੇ ਪੰਡਿਤ ਜੀ ਤੋਂ ਤੈਅ ਕਰਵਾਉਣਾ ਚਾਹੀਦਾ ਹੈ। ਆਪਣੇ ਸ਼ਹਿਰ ਲਈ ਮਹੂਰਤ ਖੋਜੋ ਵਿੱਚ ਵੇਖੋ।</p>",
     # EN: {name} {year}: the rules these dates follow
     # keep: {name} {year}
-    "rules.h2": "",
+    "rules.h2": "{name} {year}: ਇਹ ਤਾਰੀਖ਼ਾਂ ਕਿਹੜੇ ਨਿਯਮਾਂ ’ਤੇ ਚੱਲਦੀਆਂ ਹਨ",
     # EN: <p>Mundan (chudakarma, the first haircut) is judged by its own rules, not a wedding's. A
     #     day is listed only when none of the barred items below applies and it falls in a
     #     favourable nakshatra:</p><ul><li><strong>Barred tithis:</strong>
@@ -2644,7 +2644,7 @@ MUHURAT_MUNDAN = {
     #     against a day without ruling it out, so a few such dates appear - skip them if your family
     #     avoids those days.</li></ul>
     # keep: {nak_bad} {nak_good} {tithi_bad} {tithi_good} {vara_bad} {vara_good} {yoga_bad}
-    "rules.body": "",
+    "rules.body": "<p>ਮੁੰਡਨ (ਚੂੜਾਕਰਮ, ਪਹਿਲੀ ਵਾਰ ਵਾਲ ਕਟਵਾਉਣਾ) ਦੇ ਆਪਣੇ ਨਿਯਮ ਹੁੰਦੇ ਹਨ, ਵਿਆਹ ਵਾਲੇ ਨਹੀਂ। ਕੋਈ ਦਿਨ ਸਿਰਫ਼ ਉਦੋਂ ਸੂਚੀ ਵਿੱਚ ਆਉਂਦਾ ਹੈ ਜਦੋਂ ਹੇਠਾਂ ਦਿੱਤੀਆਂ ਵਰਜਿਤ ਗੱਲਾਂ ਵਿੱਚੋਂ ਕੋਈ ਲਾਗੂ ਨਾ ਹੋਵੇ ਅਤੇ ਉਹ ਸ਼ੁਭ ਨਕਸ਼ਤਰ ਵਿੱਚ ਪੈਂਦਾ ਹੋਵੇ:</p><ul><li><strong>ਵਰਜਿਤ ਤਿਥੀਆਂ:</strong> {tithi_bad}।</li><li><strong>ਪਸੰਦੀਦਾ ਤਿਥੀਆਂ</strong> (ਕਿਸੇ ਵੀ ਪੱਖ ਵਿੱਚ): {tithi_good}; ਬਾਕੀ ਮੱਧਮ ਹਨ।</li><li><strong>ਸ਼ੁਭ ਨਕਸ਼ਤਰ</strong> (ਹੇਠਾਂ ਦਿੱਤੀ ਹਰ ਤਾਰੀਖ਼ ਇਨ੍ਹਾਂ ਵਿੱਚੋਂ ਕਿਸੇ ਇੱਕ ਵਿੱਚ ਪੈਂਦੀ ਹੈ): {nak_good}।</li><li><strong>ਵਰਜਿਤ ਨਕਸ਼ਤਰ:</strong> {nak_bad}।</li><li><strong>ਵਰਜਿਤ ਯੋਗ ਅਤੇ ਕਰਣ:</strong> {yoga_bad}, ਅਤੇ ਭਦਰਾ (ਵਿਸ਼ਟੀ)।</li><li><strong>ਵਾਰ:</strong> {vara_good} ਪਸੰਦੀਦਾ ਹਨ; {vara_bad} ਕਿਸੇ ਦਿਨ ਨੂੰ ਪੂਰੀ ਤਰ੍ਹਾਂ ਬਾਹਰ ਕੀਤੇ ਬਿਨਾਂ ਉਸ ਦੇ ਵਿਰੁੱਧ ਗਿਣੇ ਜਾਂਦੇ ਹਨ, ਇਸ ਲਈ ਅਜਿਹੀਆਂ ਕੁਝ ਤਾਰੀਖ਼ਾਂ ਵੀ ਦਿਸਦੀਆਂ ਹਨ - ਜੇ ਤੁਹਾਡਾ ਪਰਿਵਾਰ ਉਨ੍ਹਾਂ ਦਿਨਾਂ ਤੋਂ ਪਰਹੇਜ਼ ਕਰਦਾ ਹੈ ਤਾਂ ਉਨ੍ਹਾਂ ਨੂੰ ਛੱਡ ਦਿਓ।</li></ul>",
 }
 
 # app/muhurat_text.py MONTHS["pa"] — only if this page must spell the months differently from names_<code>.MONTHS; else leave ()  [12]
