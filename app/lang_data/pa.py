@@ -20,13 +20,13 @@ from __future__ import annotations
 
 # Page modules that are complete for this language (the table groups below):
 #   "seo" "rashifal" "vrat" "nakshatra" "muhurat" "recurring" "hub" "app"
-READY = frozenset()
+READY = frozenset({"seo", "app"})
 
 # Latin-script words the pa text may keep besides the defaults (WhatsApp, UPI, PDF ...).
-ALLOW_LATIN = frozenset()
+ALLOW_LATIN = frozenset({"name", "gmail.com"})  # the e-mail placeholder name@gmail.com
 
 # static/i18n/pa.json keys whose value is deliberately the English word (brand names, "OK").
-KEEP_ENGLISH = frozenset()
+KEEP_ENGLISH = frozenset({"acct.emailPlaceholder"})  # an example e-mail address, not a sentence
 
 # Namakshar syllables are Devanagari in the engine; this maps a letter to this script:
 # (Unicode block start, {Devanagari letter: this script's letter where the offset is wrong}).
@@ -41,160 +41,160 @@ AKSHAR = (0x0A00, {'ष': 'ਸ਼'})
 # app/seo_text.py TEXT["pa"] — page text of /panchang /rahu-kaal /choghadiya /kundali-milan /free-kundali  [134]
 SEO_TEXT = {
     # EN: Panchang
-    "tool.panchang": "",
+    "tool.panchang": "ਪੰਚਾਂਗ",
     # EN: Rahu Kaal
-    "tool.rahu-kaal": "",
+    "tool.rahu-kaal": "ਰਾਹੂ ਕਾਲ",
     # EN: Choghadiya
-    "tool.choghadiya": "",
+    "tool.choghadiya": "ਚੌਘੜੀਆ",
     # EN: {vara}, {date} · {place} · IST
     # keep: {date} {place} {vara}
-    "when": "",
+    "when": "{vara}, {date} · {place} · IST",
     # EN: {name} until {time}
     # keep: {name} {time}
-    "limb.until": "",
+    "limb.until": "{name} {time} ਤੱਕ",
     # EN: then {name}
     # keep: {name}
-    "limb.then": "",
+    "limb.then": "ਫਿਰ {name}",
     # EN: pada
-    "limb.pada": "",
+    "limb.pada": "ਚਰਣ",
     # EN: {paksha} paksha
     # keep: {paksha}
-    "paksha.full": "",
+    "paksha.full": "{paksha} ਪੱਖ",
     # EN: {tool} in other cities
     # keep: {tool}
-    "cities.heading": "",
+    "cities.heading": "ਹੋਰ ਸ਼ਹਿਰਾਂ ਵਿੱਚ {tool}",
     # EN: More free tools
-    "links.heading": "",
+    "links.heading": "ਹੋਰ ਮੁਫ਼ਤ ਟੂਲ",
     # EN: {tool} in {city}
     # keep: {city} {tool}
-    "links.tool_in_city": "",
+    "links.tool_in_city": "{city} ਵਿੱਚ {tool}",
     # EN: Kundali Milan (36 guna)
-    "links.milan": "",
+    "links.milan": "ਕੁੰਡਲੀ ਮਿਲਾਨ (36 ਗੁਣ)",
     # EN: Free Janam Kundali
-    "links.kundali": "",
+    "links.kundali": "ਮੁਫ਼ਤ ਜਨਮ ਕੁੰਡਲੀ",
     # EN: Muhurat Finder
-    "links.muhurat": "",
+    "links.muhurat": "ਮਹੂਰਤ ਖੋਜੋ",
     # EN: Today's Rashifal
-    "links.rashifal": "",
+    "links.rashifal": "ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ",
     # EN: Today's Vrat & Festivals in {city}
     # keep: {city}
-    "links.vrat": "",
+    "links.vrat": "{city} ਵਿੱਚ ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: City not found — {brand}
     # keep: {brand}
-    "nf.title": "",
+    "nf.title": "ਸ਼ਹਿਰ ਨਹੀਂ ਮਿਲਿਆ — {brand}",
     # EN: {tool} city not found.
     # keep: {tool}
-    "nf.desc": "",
+    "nf.desc": "{tool} ਲਈ ਇਹ ਸ਼ਹਿਰ ਨਹੀਂ ਮਿਲਿਆ।",
     # EN: <h1>{tool}: city not found</h1><p>We don't have a page for “{slug}” yet. Pick a city
     #     below, or <a href="{app}">open the {tool} tool</a> to use any place in the world.</p>
     # keep: {app} {slug} {tool}
-    "nf.body": "",
+    "nf.body": "<h1>{tool}: ਸ਼ਹਿਰ ਨਹੀਂ ਮਿਲਿਆ</h1><p>“{slug}” ਲਈ ਸਾਡੇ ਕੋਲ ਹਾਲੇ ਕੋਈ ਪੰਨਾ ਨਹੀਂ ਹੈ। ਹੇਠਾਂ ਤੋਂ ਕੋਈ ਸ਼ਹਿਰ ਚੁਣੋ, ਜਾਂ ਦੁਨੀਆ ਦੀ ਕੋਈ ਵੀ ਥਾਂ ਵਰਤਣ ਲਈ <a href=\"{app}\">{tool} ਟੂਲ ਖੋਲ੍ਹੋ</a>।</p>",
     # EN: Today's Panchang in {city}, {date} — Tithi, Nakshatra, Rahu Kaal | {brand}
     # keep: {brand} {city} {date}
-    "p.title": "",
+    "p.title": "{city} ਵਿੱਚ ਅੱਜ ਦਾ ਪੰਚਾਂਗ, {date} — ਤਿਥੀ, ਨਕਸ਼ਤਰ, ਰਾਹੂ ਕਾਲ | {brand}",
     # EN: Aaj ka Panchang for {city} on {vara}, {date}: {tithi} tithi ({paksha} paksha), {nakshatra}
     #     nakshatra, sunrise {sunrise}, Rahu Kaal {rahu}. Computed with Swiss Ephemeris.
     # keep: {city} {date} {nakshatra} {rahu} {sunrise} {tithi} {vara}
     # may also use: {paksha_full} {paksha}
-    "p.desc": "",
+    "p.desc": "{city} ਦਾ ਅੱਜ ਦਾ ਪੰਚਾਂਗ, {vara}, {date}: {paksha} ਪੱਖ ਦੀ {tithi} ਤਿਥੀ, {nakshatra} ਨਕਸ਼ਤਰ, ਸੂਰਜ ਚੜ੍ਹਨ ਦਾ ਸਮਾਂ {sunrise}, ਰਾਹੂ ਕਾਲ {rahu}। ਸਵਿਸ ਐਫ਼ੇਮੇਰਿਸ ਨਾਲ ਸਹੀ ਗਣਨਾ।",
     # EN: <h1>Today's Panchang in {city}</h1>
     # keep: {city}
-    "p.h1": "",
+    "p.h1": "<h1>{city} ਵਿੱਚ ਅੱਜ ਦਾ ਪੰਚਾਂਗ</h1>",
     # EN: <p class="hi" lang="hi">आज का पंचांग — {city_hi}</p>
     # keep: {city}
-    "p.sub": "",
+    "p.sub": "<p class=\"hi\">ਤਿਥੀ, ਨਕਸ਼ਤਰ, ਯੋਗ, ਕਰਣ ਅਤੇ ਰਾਹੂ ਕਾਲ — {city}</p>",
     # EN: <div class="box"><p>Today in {city} is <strong>{paksha} {tithi}</strong> with the Moon in
     #     <strong>{nakshatra}</strong> nakshatra. Rahu Kaal runs <strong>{rahu}</strong> — avoid
     #     starting anything new in that window.</p></div>
     # keep: {city} {nakshatra} {rahu} {tithi}
     # may also use: {paksha_full} {paksha}
-    "p.box": "",
+    "p.box": "<div class=\"box\"><p>ਅੱਜ {city} ਵਿੱਚ <strong>{paksha} {tithi}</strong> ਹੈ ਅਤੇ ਚੰਦਰਮਾ <strong>{nakshatra}</strong> ਨਕਸ਼ਤਰ ਵਿੱਚ ਹੈ। ਰਾਹੂ ਕਾਲ <strong>{rahu}</strong> ਹੈ — ਇਸ ਸਮੇਂ ਕੋਈ ਨਵਾਂ ਕੰਮ ਸ਼ੁਰੂ ਨਾ ਕਰੋ।</p></div>",
     # EN: Vaar (weekday)
-    "p.r_vara": "",
+    "p.r_vara": "ਵਾਰ (ਦਿਨ)",
     # EN: Tithi
-    "p.r_tithi": "",
+    "p.r_tithi": "ਤਿਥੀ",
     # EN: Paksha
-    "p.r_paksha": "",
+    "p.r_paksha": "ਪੱਖ",
     # EN: Nakshatra
-    "p.r_nakshatra": "",
+    "p.r_nakshatra": "ਨਕਸ਼ਤਰ",
     # EN: Yoga
-    "p.r_yoga": "",
+    "p.r_yoga": "ਯੋਗ",
     # EN: Karana
-    "p.r_karana": "",
+    "p.r_karana": "ਕਰਣ",
     # EN: Sunrise
-    "p.r_sunrise": "",
+    "p.r_sunrise": "ਸੂਰਜ ਚੜ੍ਹਨ ਦਾ ਸਮਾਂ",
     # EN: Sunset
-    "p.r_sunset": "",
+    "p.r_sunset": "ਸੂਰਜ ਛਿਪਣ ਦਾ ਸਮਾਂ",
     # EN: Moonrise
-    "p.r_moonrise": "",
+    "p.r_moonrise": "ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਦਾ ਸਮਾਂ",
     # EN: Moonset
-    "p.r_moonset": "",
+    "p.r_moonset": "ਚੰਦਰਮਾ ਛਿਪਣ ਦਾ ਸਮਾਂ",
     # EN: Moon sign
-    "p.r_moon_sign": "",
+    "p.r_moon_sign": "ਚੰਦਰ ਰਾਸ਼ੀ",
     # EN: Rahu Kaal
-    "p.r_rahu": "",
+    "p.r_rahu": "ਰਾਹੂ ਕਾਲ",
     # EN: Yamaganda
-    "p.r_yama": "",
+    "p.r_yama": "ਯਮਗੰਡ",
     # EN: Gulika Kaal
-    "p.r_gulika": "",
+    "p.r_gulika": "ਗੁਲਿਕ ਕਾਲ",
     # EN: Abhijit Muhurat
-    "p.r_abhijit": "",
+    "p.r_abhijit": "ਅਭਿਜੀਤ ਮਹੂਰਤ",
     # EN: {vara_en} — {weekday} <span lang="hi">({vara_hi})</span>
     # keep: {vara}
-    "p.v_vara": "",
+    "p.v_vara": "{vara}",
     # EN: {paksha_en} <span lang="hi">({paksha_hi_full})</span>
     # keep: {paksha_full}
-    "p.v_paksha": "",
+    "p.v_paksha": "{paksha_full}",
     # EN: No moonrise this day
-    "p.no_moonrise": "",
+    "p.no_moonrise": "ਇਸ ਦਿਨ ਚੰਦਰਮਾ ਨਹੀਂ ਚੜ੍ਹਦਾ",
     # EN: No moonset this day
-    "p.no_moonset": "",
+    "p.no_moonset": "ਇਸ ਦਿਨ ਚੰਦਰਮਾ ਨਹੀਂ ਛਿਪਦਾ",
     # EN: Not observed on Wednesday (Budhavara)
-    "p.no_abhijit": "",
+    "p.no_abhijit": "ਬੁੱਧਵਾਰ ਨੂੰ ਨਹੀਂ ਮੰਨਿਆ ਜਾਂਦਾ",
     # EN: <p>Times are for {place} ({lat}°N, {lon}°E) in Indian Standard Time. The panchang day runs
     #     from sunrise to the next sunrise, so a tithi or nakshatra may end after midnight. Sunrise
     #     is the visible upper limb with refraction, as printed in Indian almanacs; nakshatra and
     #     yoga use the Lahiri ayanamsa.</p>
     # keep: {lat} {lon}
     # may also use: {city} {place}
-    "p.note": "",
+    "p.note": "<p>ਸਮੇਂ {place} ({lat}° ਉੱਤਰ, {lon}° ਪੂਰਬ) ਲਈ ਭਾਰਤੀ ਮਿਆਰੀ ਸਮੇਂ ਵਿੱਚ ਹਨ। ਪੰਚਾਂਗ ਦਾ ਦਿਨ ਇੱਕ ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਅਗਲੇ ਸੂਰਜ ਚੜ੍ਹਨ ਤੱਕ ਚੱਲਦਾ ਹੈ, ਇਸ ਲਈ ਕੋਈ ਤਿਥੀ ਜਾਂ ਨਕਸ਼ਤਰ ਅੱਧੀ ਰਾਤ ਤੋਂ ਬਾਅਦ ਵੀ ਖ਼ਤਮ ਹੋ ਸਕਦਾ ਹੈ। ਸੂਰਜ ਚੜ੍ਹਨਾ ਭਾਰਤੀ ਪੰਚਾਂਗਾਂ ਵਾਂਗ ਸੂਰਜ ਦੇ ਉੱਪਰਲੇ ਕਿਨਾਰੇ ਦੇ ਦਿਸਣ (ਵਾਯੂਮੰਡਲੀ ਵਿਵਰਤਨ ਸਮੇਤ) ਦੇ ਪਲ ਨੂੰ ਮੰਨਿਆ ਗਿਆ ਹੈ; ਨਕਸ਼ਤਰ ਅਤੇ ਯੋਗ ਲਾਹਿੜੀ ਅਯਨਾਂਸ਼ ਨਾਲ ਗਿਣੇ ਗਏ ਹਨ।</p>",
     # EN: Open the full Panchang — any city, any date
-    "p.cta": "",
+    "p.cta": "ਪੂਰਾ ਪੰਚਾਂਗ ਖੋਲ੍ਹੋ — ਕੋਈ ਵੀ ਸ਼ਹਿਰ, ਕੋਈ ਵੀ ਤਾਰੀਖ਼",
     # EN: <h2>The five limbs of the Panchang</h2> <p><strong>Tithi</strong> is the lunar day — each
     #     12° the Moon gains on the Sun. <strong>Nakshatra</strong> is the Moon's lunar mansion, one
     #     of 27. <strong>Yoga</strong> comes from the combined longitudes of Sun and Moon, and
     #     <strong>Karana</strong> is half a tithi. <strong>Vaar</strong> is the weekday, reckoned
     #     from sunrise. Together they are the <span lang="hi">पंचांग</span> (“five limbs”) consulted
     #     before any auspicious work.</p>
-    "p.limbs": "",
+    "p.limbs": "<h2>ਪੰਚਾਂਗ ਦੇ ਪੰਜ ਅੰਗ</h2><p><strong>ਤਿਥੀ</strong> ਚੰਦਰ ਦਿਨ ਹੈ — ਚੰਦਰਮਾ ਜਦੋਂ ਸੂਰਜ ਤੋਂ 12° ਅੱਗੇ ਵਧ ਜਾਂਦਾ ਹੈ। <strong>ਨਕਸ਼ਤਰ</strong> ਚੰਦਰਮਾ ਦਾ ਟਿਕਾਣਾ ਹੈ, ਕੁੱਲ 27 ਵਿੱਚੋਂ ਇੱਕ। <strong>ਯੋਗ</strong> ਸੂਰਜ ਅਤੇ ਚੰਦਰਮਾ ਦੇ ਮਿਲੇ ਹੋਏ ਅੰਸ਼ਾਂ ਤੋਂ ਬਣਦਾ ਹੈ, ਅਤੇ <strong>ਕਰਣ</strong> ਤਿਥੀ ਦਾ ਅੱਧਾ ਹਿੱਸਾ ਹੁੰਦਾ ਹੈ। <strong>ਵਾਰ</strong> ਹਫ਼ਤੇ ਦਾ ਦਿਨ ਹੈ, ਜੋ ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ। ਇਹ ਸਾਰੇ ਮਿਲ ਕੇ ਪੰਚਾਂਗ (“ਪੰਜ ਅੰਗ”) ਬਣਾਉਂਦੇ ਹਨ, ਜੋ ਹਰ ਸ਼ੁਭ ਕੰਮ ਤੋਂ ਪਹਿਲਾਂ ਵੇਖਿਆ ਜਾਂਦਾ ਹੈ।</p>",
     # EN: Rahu Kaal Today in {city} — {rahu}, {date} | {brand}
     # keep: {brand} {city} {rahu}
     # may also use: {date}
-    "rk.title": "",
+    "rk.title": "{city} ਵਿੱਚ ਅੱਜ ਦਾ ਰਾਹੂ ਕਾਲ — {rahu}, {date} | {brand}",
     # EN: Rahu Kaal today in {city} ({vara}, {date}) is {rahu}. Also Yamaganda {yama} and Gulika
     #     {gulika}, with this week's timings and what Rahu Kaal means.
     # keep: {city} {date} {gulika} {rahu} {vara} {yama}
-    "rk.desc": "",
+    "rk.desc": "{city} ਵਿੱਚ ਅੱਜ ({vara}, {date}) ਦਾ ਰਾਹੂ ਕਾਲ {rahu} ਹੈ। ਨਾਲ ਯਮਗੰਡ {yama} ਅਤੇ ਗੁਲਿਕ {gulika}, ਇਸ ਹਫ਼ਤੇ ਦੇ ਸਮੇਂ ਅਤੇ ਰਾਹੂ ਕਾਲ ਦਾ ਮਤਲਬ।",
     # EN: <h1>Rahu Kaal Today in {city}</h1>
     # keep: {city}
-    "rk.h1": "",
+    "rk.h1": "<h1>{city} ਵਿੱਚ ਅੱਜ ਦਾ ਰਾਹੂ ਕਾਲ</h1>",
     # EN: <p class="hi" lang="hi">आज का राहु काल — {city_hi}</p>
     # keep: {city}
-    "rk.sub": "",
+    "rk.sub": "<p class=\"hi\">ਅੱਜ ਰਾਹੂ ਕਾਲ, ਯਮਗੰਡ ਅਤੇ ਗੁਲਿਕ ਕਾਲ ਕਦੋਂ ਹੈ — {city}</p>",
     # EN: Rahu Kaal <span lang="hi">(राहु काल)</span>
-    "rk.r_rahu": "",
+    "rk.r_rahu": "ਰਾਹੂ ਕਾਲ",
     # EN: Yamaganda <span lang="hi">(यमगण्ड)</span>
-    "rk.r_yama": "",
+    "rk.r_yama": "ਯਮਗੰਡ",
     # EN: Gulika Kaal <span lang="hi">(गुलिक काल)</span>
-    "rk.r_gulika": "",
+    "rk.r_gulika": "ਗੁਲਿਕ ਕਾਲ",
     # EN: Abhijit Muhurat
-    "rk.r_abhijit": "",
+    "rk.r_abhijit": "ਅਭਿਜੀਤ ਮਹੂਰਤ",
     # EN: Sunrise / Sunset
-    "rk.r_sun": "",
+    "rk.r_sun": "ਸੂਰਜ ਚੜ੍ਹਨਾ / ਛਿਪਣਾ",
     # EN: Not observed on Wednesday
-    "rk.no_abhijit": "",
+    "rk.no_abhijit": "ਬੁੱਧਵਾਰ ਨੂੰ ਨਹੀਂ ਮੰਨਿਆ ਜਾਂਦਾ",
     # EN: Check Rahu Kaal for any city or date
-    "rk.cta": "",
+    "rk.cta": "ਕਿਸੇ ਵੀ ਸ਼ਹਿਰ ਜਾਂ ਤਾਰੀਖ਼ ਦਾ ਰਾਹੂ ਕਾਲ ਵੇਖੋ",
     # EN: <h2>What is Rahu Kaal?</h2> <p>Rahu Kaal (<span lang="hi">राहु काल</span>) is a period of
     #     roughly an hour and a half each day that is traditionally held to be ruled by Rahu, the
     #     north lunar node. Daylight — sunrise to sunset — is divided into eight equal parts, and
@@ -206,53 +206,53 @@ SEO_TEXT = {
     #     starting journeys or making major purchases during Rahu Kaal; work already under way can
     #     continue. Yamaganda and Gulika Kaal are two further eighths of the day treated with
     #     similar caution.</p>
-    "rk.about": "",
+    "rk.about": "<h2>ਰਾਹੂ ਕਾਲ ਕੀ ਹੁੰਦਾ ਹੈ?</h2><p>ਰਾਹੂ ਕਾਲ ਹਰ ਰੋਜ਼ ਲਗਭਗ ਡੇਢ ਘੰਟੇ ਦਾ ਉਹ ਸਮਾਂ ਹੁੰਦਾ ਹੈ ਜਿਸ ਨੂੰ ਪਰੰਪਰਾ ਅਨੁਸਾਰ ਉੱਤਰੀ ਚੰਦਰ ਬਿੰਦੂ ਰਾਹੂ ਦੇ ਅਧੀਨ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ। ਦਿਨ ਦੀ ਰੌਸ਼ਨੀ — ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਛਿਪਣ ਤੱਕ — ਨੂੰ ਅੱਠ ਬਰਾਬਰ ਹਿੱਸਿਆਂ ਵਿੱਚ ਵੰਡਿਆ ਜਾਂਦਾ ਹੈ ਅਤੇ ਉਨ੍ਹਾਂ ਵਿੱਚੋਂ ਇੱਕ ਹਿੱਸਾ ਰਾਹੂ ਦਾ ਹੁੰਦਾ ਹੈ। ਕਿਹੜਾ ਹਿੱਸਾ, ਇਹ ਵਾਰ ਉੱਤੇ ਨਿਰਭਰ ਹੈ: ਐਤਵਾਰ ਨੂੰ ਅੱਠਵਾਂ, ਸੋਮਵਾਰ ਨੂੰ ਦੂਜਾ, ਮੰਗਲਵਾਰ ਨੂੰ ਸੱਤਵਾਂ, ਬੁੱਧਵਾਰ ਨੂੰ ਪੰਜਵਾਂ, ਵੀਰਵਾਰ ਨੂੰ ਛੇਵਾਂ, ਸ਼ੁੱਕਰਵਾਰ ਨੂੰ ਚੌਥਾ ਅਤੇ ਸ਼ਨਿੱਚਰਵਾਰ ਨੂੰ ਤੀਜਾ।</p><p>ਇਹ ਅਸਲੀ ਸੂਰਜ ਚੜ੍ਹਨ ਤੇ ਛਿਪਣ ਦੇ ਸਮੇਂ ਮੁਤਾਬਕ ਚੱਲਦਾ ਹੈ, ਇਸ ਲਈ ਹਰ ਸ਼ਹਿਰ ਵਿੱਚ ਵੱਖਰਾ ਹੁੰਦਾ ਹੈ ਅਤੇ ਸਾਲ ਭਰ ਖਿਸਕਦਾ ਰਹਿੰਦਾ ਹੈ — ਇਸੇ ਕਰਕੇ “ਸੋਮਵਾਰ 7:30–9:00” ਵਾਲੀ ਪੱਕੀ ਸਾਰਣੀ ਸਿਰਫ਼ ਮੋਟਾ ਅੰਦਾਜ਼ਾ ਹੈ। ਰੀਤ ਅਨੁਸਾਰ ਲੋਕ ਰਾਹੂ ਕਾਲ ਵਿੱਚ ਨਵਾਂ ਕੰਮ ਸ਼ੁਰੂ ਕਰਨ, ਸਮਝੌਤਿਆਂ ’ਤੇ ਦਸਤਖ਼ਤ ਕਰਨ, ਸਫ਼ਰ ’ਤੇ ਨਿਕਲਣ ਜਾਂ ਵੱਡੀ ਖ਼ਰੀਦਦਾਰੀ ਕਰਨ ਤੋਂ ਬਚਦੇ ਹਨ; ਪਹਿਲਾਂ ਤੋਂ ਚੱਲ ਰਿਹਾ ਕੰਮ ਜਾਰੀ ਰੱਖਿਆ ਜਾ ਸਕਦਾ ਹੈ। ਯਮਗੰਡ ਅਤੇ ਗੁਲਿਕ ਕਾਲ ਦਿਨ ਦੇ ਦੋ ਹੋਰ ਅੱਠਵੇਂ ਹਿੱਸੇ ਹਨ, ਜਿਨ੍ਹਾਂ ਬਾਰੇ ਵੀ ਇਸੇ ਤਰ੍ਹਾਂ ਸਾਵਧਾਨੀ ਵਰਤੀ ਜਾਂਦੀ ਹੈ।</p>",
     # EN: <h2>Rahu Kaal in {city} this week</h2>
     # keep: {city}
-    "rk.week_h2": "",
+    "rk.week_h2": "<h2>ਇਸ ਹਫ਼ਤੇ {city} ਵਿੱਚ ਰਾਹੂ ਕਾਲ</h2>",
     # EN: Day
-    "rk.th_day": "",
+    "rk.th_day": "ਦਿਨ",
     # EN: Rahu Kaal
-    "rk.th_rahu": "",
+    "rk.th_rahu": "ਰਾਹੂ ਕਾਲ",
     # EN: Yamaganda
-    "rk.th_yama": "",
+    "rk.th_yama": "ਯਮਗੰਡ",
     # EN: Gulika
-    "rk.th_gulika": "",
+    "rk.th_gulika": "ਗੁਲਿਕ",
     # EN: Choghadiya Today in {city}, {date} — Day & Night Timings | {brand}
     # keep: {brand} {city} {date}
-    "ch.title": "",
+    "ch.title": "{city} ਵਿੱਚ ਅੱਜ ਦਾ ਚੌਘੜੀਆ, {date} — ਦਿਨ ਅਤੇ ਰਾਤ ਦੇ ਸਮੇਂ | {brand}",
     # EN: Today's choghadiya for {city} ({vara}, {date}): all 16 day and night muhurtas — Amrit,
     #     Shubh, Labh, Char, Rog, Kaal, Udveg — with exact start and end times from sunrise
     #     {sunrise}.
     # keep: {city} {date} {sunrise} {vara}
-    "ch.desc": "",
+    "ch.desc": "{city} ਲਈ ਅੱਜ ਦਾ ਚੌਘੜੀਆ ({vara}, {date}): ਦਿਨ ਅਤੇ ਰਾਤ ਦੇ ਸਾਰੇ 16 ਮਹੂਰਤ — ਅੰਮ੍ਰਿਤ, ਸ਼ੁਭ, ਲਾਭ, ਚਰ, ਰੋਗ, ਕਾਲ, ਉਦਵੇਗ — ਸੂਰਜ ਚੜ੍ਹਨ {sunrise} ਤੋਂ ਸ਼ੁਰੂ ਹੋ ਕੇ ਸਹੀ ਸ਼ੁਰੂ ਤੇ ਅੰਤ ਦੇ ਸਮਿਆਂ ਸਮੇਤ।",
     # EN: <h1>Choghadiya Today in {city}</h1>
     # keep: {city}
-    "ch.h1": "",
+    "ch.h1": "<h1>{city} ਵਿੱਚ ਅੱਜ ਦਾ ਚੌਘੜੀਆ</h1>",
     # EN: <p class="hi" lang="hi">आज का चौघड़िया — {city_hi}</p>
     # keep: {city}
-    "ch.sub": "",
+    "ch.sub": "<p class=\"hi\">ਅੱਜ ਦੇ ਦਿਨ ਅਤੇ ਰਾਤ ਦੇ ਚੌਘੜੀਆ ਮਹੂਰਤ — {city}</p>",
     # EN: {name} from {time}
     # keep: {name} {time}
-    "ch.first_good": "",
+    "ch.first_good": "{name} {time} ਤੋਂ",
     # EN: none
-    "ch.none": "",
+    "ch.none": "ਕੋਈ ਨਹੀਂ",
     # EN: <div class="box"><p>Sunrise <strong>{sunrise}</strong>, sunset <strong>{sunset}</strong>.
     #     First auspicious daytime choghadiya: <strong>{first_good}</strong>.</p></div>
     # keep: {first_good} {sunrise} {sunset}
-    "ch.box": "",
+    "ch.box": "<div class=\"box\"><p>ਸੂਰਜ ਚੜ੍ਹਨ ਦਾ ਸਮਾਂ <strong>{sunrise}</strong>, ਸੂਰਜ ਛਿਪਣ ਦਾ ਸਮਾਂ <strong>{sunset}</strong>। ਦਿਨ ਦਾ ਪਹਿਲਾ ਸ਼ੁਭ ਚੌਘੜੀਆ: <strong>{first_good}</strong>।</p></div>",
     # EN: <h2>Day Choghadiya <span lang="hi">(दिन का चौघड़िया)</span></h2>
-    "ch.day_h2": "",
+    "ch.day_h2": "<h2>ਦਿਨ ਦਾ ਚੌਘੜੀਆ</h2>",
     # EN: <h2>Night Choghadiya <span lang="hi">(रात का चौघड़िया)</span></h2>
-    "ch.night_h2": "",
+    "ch.night_h2": "<h2>ਰਾਤ ਦਾ ਚੌਘੜੀਆ</h2>",
     # EN: <tr><th>Time</th><th>Choghadiya</th><th>Nature</th></tr>
-    "ch.th": "",
+    "ch.th": "<tr><th>ਸਮਾਂ</th><th>ਚੌਘੜੀਆ</th><th>ਸੁਭਾਅ</th></tr>",
     # EN: <tr><td>{when}</td><td class="{cls}"><strong>{name}</strong> <span lang="hi">({name_hi})</
     #     span><small>{ruler}</small></td><td>{quality}<small>{desc}</small></td></tr>
     # keep: {cls} {desc} {name} {quality} {ruler} {when}
-    "ch.row": "",
+    "ch.row": "<tr><td>{when}</td><td class=\"{cls}\"><strong>{name}</strong><small>{ruler}</small></td><td>{quality}<small>{desc}</small></td></tr>",
     # EN: Open the live Choghadiya clock
-    "ch.cta": "",
+    "ch.cta": "ਲਾਈਵ ਚੌਘੜੀਆ ਘੜੀ ਖੋਲ੍ਹੋ",
     # EN: <h2>How choghadiya works</h2> <p>The day from sunrise to sunset, and the night from sunset
     #     to the next sunrise, are each divided into eight equal parts called choghadiya (<span
     #     lang="hi">चौघड़िया</span>, “four ghadis”). Each is ruled by a planet and named for its
@@ -262,17 +262,17 @@ SEO_TEXT = {
     #     beginnings. The order starts from the weekday's ruler, so it changes every day — and the
     #     length of each slot follows the real day length in {city}.</p>
     # keep: {city}
-    "ch.about": "",
+    "ch.about": "<h2>ਚੌਘੜੀਆ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ</h2><p>ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਛਿਪਣ ਤੱਕ ਦਾ ਦਿਨ ਅਤੇ ਸੂਰਜ ਛਿਪਣ ਤੋਂ ਅਗਲੇ ਸੂਰਜ ਚੜ੍ਹਨ ਤੱਕ ਦੀ ਰਾਤ, ਦੋਵੇਂ ਅੱਠ-ਅੱਠ ਬਰਾਬਰ ਹਿੱਸਿਆਂ ਵਿੱਚ ਵੰਡੇ ਜਾਂਦੇ ਹਨ, ਜਿਨ੍ਹਾਂ ਨੂੰ ਚੌਘੜੀਆ (“ਚਾਰ ਘੜੀਆਂ”) ਕਿਹਾ ਜਾਂਦਾ ਹੈ। ਹਰ ਇੱਕ ਦਾ ਇੱਕ ਗ੍ਰਹਿ ਸੁਆਮੀ ਹੁੰਦਾ ਹੈ ਅਤੇ ਉਸ ਦਾ ਨਾਂ ਉਸ ਦੇ ਸੁਭਾਅ ਮੁਤਾਬਕ ਹੈ: <strong>ਅੰਮ੍ਰਿਤ</strong>, <strong>ਸ਼ੁਭ</strong> ਅਤੇ <strong>ਲਾਭ</strong> ਸ਼ੁਭ ਹਨ, <strong>ਚਰ</strong> ਮੱਧਮ ਹੈ ਅਤੇ ਸਫ਼ਰ ਲਈ ਚੰਗਾ ਹੈ, ਜਦਕਿ <strong>ਰੋਗ</strong>, <strong>ਕਾਲ</strong> ਅਤੇ <strong>ਉਦਵੇਗ</strong> ਨਵੀਂ ਸ਼ੁਰੂਆਤ ਲਈ ਛੱਡ ਦਿੱਤੇ ਜਾਂਦੇ ਹਨ। ਕ੍ਰਮ ਉਸ ਦਿਨ ਦੇ ਸੁਆਮੀ ਤੋਂ ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ, ਇਸ ਲਈ ਹਰ ਰੋਜ਼ ਬਦਲਦਾ ਹੈ — ਅਤੇ ਹਰ ਹਿੱਸੇ ਦੀ ਲੰਬਾਈ {city} ਵਿੱਚ ਦਿਨ ਦੀ ਅਸਲੀ ਲੰਬਾਈ ਮੁਤਾਬਕ ਹੁੰਦੀ ਹੈ।</p>",
     # EN: Kundali Milan — Ashtakoot Guna Milan ({total} Gun) Explained | {brand}
     # keep: {brand} {total}
-    "km.title": "",
+    "km.title": "ਕੁੰਡਲੀ ਮਿਲਾਨ — ਅਸ਼ਟਕੂਟ ਗੁਣ ਮਿਲਾਨ ({total} ਗੁਣ) ਦੀ ਵਿਆਖਿਆ | {brand}",
     # EN: How Kundali Milan works: the 8 kootas of Ashtakoot Guna Milan, {total} points, what score
     #     is good for marriage, and how Mangal Dosha is checked. Free online matching in English and
     #     Hindi.
     # keep: {total}
-    "km.desc": "",
+    "km.desc": "ਕੁੰਡਲੀ ਮਿਲਾਨ ਕਿਵੇਂ ਹੁੰਦਾ ਹੈ: ਅਸ਼ਟਕੂਟ ਗੁਣ ਮਿਲਾਨ ਦੇ 8 ਕੂਟ, {total} ਅੰਕ, ਵਿਆਹ ਲਈ ਕਿੰਨੇ ਅੰਕ ਚੰਗੇ ਹਨ, ਅਤੇ ਮੰਗਲ ਦੋਸ਼ ਦੀ ਜਾਂਚ ਕਿਵੇਂ ਹੁੰਦੀ ਹੈ। ਅੰਗਰੇਜ਼ੀ ਅਤੇ ਹਿੰਦੀ ਵਿੱਚ ਮੁਫ਼ਤ ਆਨਲਾਈਨ ਮਿਲਾਨ।",
     # EN: Kundali Milan
-    "km.crumb": "",
+    "km.crumb": "ਕੁੰਡਲੀ ਮਿਲਾਨ",
     # EN: <h1>Kundali Milan: Ashtakoot Guna Milan explained</h1> <p class="hi" lang="hi">कुंडली
     #     मिलान — अष्टकूट गुण मिलान ({total} गुण)</p> <p>Kundali Milan (<span lang="hi">कुंडली
     #     मिलान</span>) is the traditional Vedic way of checking marriage compatibility. The most
@@ -282,47 +282,47 @@ SEO_TEXT = {
     #     <strong>Moon</strong> — its sign (rashi) and its nakshatra at birth — which is why the
     #     score needs an accurate birth date and place, but barely depends on the birth time.</p>
     # keep: {total}
-    "km.intro": "",
+    "km.intro": "<h1>ਕੁੰਡਲੀ ਮਿਲਾਨ: ਅਸ਼ਟਕੂਟ ਗੁਣ ਮਿਲਾਨ ਦੀ ਵਿਆਖਿਆ</h1><p class=\"hi\">ਕੁੰਡਲੀ ਮਿਲਾਨ — ਅਸ਼ਟਕੂਟ ਗੁਣ ਮਿਲਾਨ ({total} ਗੁਣ)</p><p>ਕੁੰਡਲੀ ਮਿਲਾਨ ਵਿਆਹ ਦੇ ਮੇਲ ਦੀ ਜਾਂਚ ਕਰਨ ਦਾ ਰਵਾਇਤੀ ਵੈਦਿਕ ਤਰੀਕਾ ਹੈ। ਉੱਤਰੀ ਭਾਰਤ ਵਿੱਚ ਸਭ ਤੋਂ ਵੱਧ ਵਰਤਿਆ ਜਾਂਦਾ ਤਰੀਕਾ <strong>ਅਸ਼ਟਕੂਟ ਗੁਣ ਮਿਲਾਨ</strong> ਹੈ: ਲਾੜੀ ਤੇ ਲਾੜੇ ਦੀਆਂ ਕੁੰਡਲੀਆਂ ਦੇ ਅੱਠ ਪੱਖਾਂ (<em>ਕੂਟ</em>) ਦੀ ਤੁਲਨਾ ਕੀਤੀ ਜਾਂਦੀ ਹੈ ਅਤੇ ਕੁੱਲ <strong>{total} ਅੰਕਾਂ (ਗੁਣਾਂ)</strong> ਵਿੱਚੋਂ ਅੰਕ ਦਿੱਤੇ ਜਾਂਦੇ ਹਨ। ਇਹ ਸਾਰੇ <strong>ਚੰਦਰਮਾ</strong> ਤੋਂ ਪੜ੍ਹੇ ਜਾਂਦੇ ਹਨ — ਜਨਮ ਵੇਲੇ ਉਸ ਦੀ ਰਾਸ਼ੀ ਅਤੇ ਨਕਸ਼ਤਰ ਤੋਂ — ਇਸੇ ਲਈ ਅੰਕਾਂ ਵਾਸਤੇ ਜਨਮ ਦੀ ਸਹੀ ਤਾਰੀਖ਼ ਅਤੇ ਥਾਂ ਚਾਹੀਦੀ ਹੈ, ਪਰ ਜਨਮ ਦੇ ਸਮੇਂ ’ਤੇ ਇਹ ਮੁਸ਼ਕਿਲ ਨਾਲ ਹੀ ਨਿਰਭਰ ਕਰਦੇ ਹਨ।</p>",
     # EN: Match two kundalis now — free
-    "km.cta1": "",
+    "km.cta1": "ਹੁਣੇ ਦੋ ਕੁੰਡਲੀਆਂ ਮਿਲਾਓ — ਮੁਫ਼ਤ",
     # EN: <p>Don't know the birth times? Try <a href="{href}">Naam se Kundali Milan</a> — the
     #     traditional match by the first letter of each name.</p>
     # keep: {href}
-    "km.naam": "",
+    "km.naam": "<p>ਜਨਮ ਦਾ ਸਮਾਂ ਨਹੀਂ ਪਤਾ? <a href=\"{href}\">ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ</a> ਅਜ਼ਮਾਓ — ਹਰ ਨਾਂ ਦੇ ਪਹਿਲੇ ਅੱਖਰ ਤੋਂ ਹੋਣ ਵਾਲਾ ਰਵਾਇਤੀ ਮਿਲਾਨ।</p>",
     # EN: <h2>The 8 kootas and their points</h2>
-    "km.kootas_h2": "",
+    "km.kootas_h2": "<h2>8 ਕੂਟ ਅਤੇ ਉਨ੍ਹਾਂ ਦੇ ਅੰਕ</h2>",
     # EN: <tr><th>Koota</th><th>Points</th><th>What it measures</th></tr>
-    "km.th": "",
+    "km.th": "<tr><th>ਕੂਟ</th><th>ਅੰਕ</th><th>ਕੀ ਮਾਪਦਾ ਹੈ</th></tr>",
     # EN: <tr><td><strong>{name}</strong> <span
     #     lang="hi">({name_hi})</span></td><td>{pts}</td><td>{text}</td></tr>
     # keep: {name} {pts} {text}
-    "km.row": "",
+    "km.row": "<tr><td><strong>{name}</strong></td><td>{pts}</td><td>{text}</td></tr>",
     # EN: Total
-    "km.total": "",
+    "km.total": "ਕੁੱਲ",
     # EN: <h2>What is a good Guna Milan score?</h2>
-    "km.score_h2": "",
+    "km.score_h2": "<h2>ਗੁਣ ਮਿਲਾਨ ਦਾ ਚੰਗਾ ਅੰਕ ਕਿੰਨਾ ਹੁੰਦਾ ਹੈ?</h2>",
     # EN: <tr><th>Gunas</th><th>Conventional reading</th></tr>
-    "km.score_th": "",
+    "km.score_th": "<tr><th>ਗੁਣ</th><th>ਰਵਾਇਤੀ ਮਤਲਬ</th></tr>",
     # EN: Below {n}
     # keep: {n}
-    "km.below": "",
+    "km.below": "{n} ਤੋਂ ਘੱਟ",
     # EN: <p>18 is the conventional minimum. The total alone is not the whole story: a high score
     #     with an uncancelled Nadi or Bhakoot dosha is read with caution, and a modest score with
     #     strong Graha Maitri and no doshas is often considered workable. These bands are a
     #     convention with a long history, not a measurement — they are guidance, not a verdict on a
     #     relationship.</p>
-    "km.score_p": "",
+    "km.score_p": "<p>ਰਵਾਇਤ ਅਨੁਸਾਰ ਘੱਟੋ-ਘੱਟ 18 ਅੰਕ ਚਾਹੀਦੇ ਹਨ। ਸਿਰਫ਼ ਕੁੱਲ ਅੰਕ ਪੂਰੀ ਗੱਲ ਨਹੀਂ ਦੱਸਦੇ: ਜੇ ਨਾੜੀ ਜਾਂ ਭਕੂਟ ਦੋਸ਼ ਕੱਟਿਆ ਨਾ ਗਿਆ ਹੋਵੇ ਤਾਂ ਉੱਚੇ ਅੰਕ ਵੀ ਸਾਵਧਾਨੀ ਨਾਲ ਪੜ੍ਹੇ ਜਾਂਦੇ ਹਨ, ਅਤੇ ਮਜ਼ਬੂਤ ਗ੍ਰਹਿ ਮੈਤਰੀ ਤੇ ਬਿਨਾਂ ਦੋਸ਼ ਦੇ ਦਰਮਿਆਨੇ ਅੰਕ ਅਕਸਰ ਚੱਲਣਯੋਗ ਮੰਨੇ ਜਾਂਦੇ ਹਨ। ਇਹ ਸ਼੍ਰੇਣੀਆਂ ਲੰਮੇ ਇਤਿਹਾਸ ਵਾਲੀ ਰਵਾਇਤ ਹਨ, ਕੋਈ ਮਾਪ ਨਹੀਂ — ਇਹ ਮਾਰਗ-ਦਰਸ਼ਨ ਹਨ, ਕਿਸੇ ਰਿਸ਼ਤੇ ਬਾਰੇ ਫ਼ੈਸਲਾ ਨਹੀਂ।</p>",
     # EN: {n}st
     # keep: {n}
-    "km.ord1": "",
+    "km.ord1": "{n}",
     # EN: {n}nd
     # keep: {n}
-    "km.ord2": "",
+    "km.ord2": "{n}",
     # EN: {n}th
     # keep: {n}
-    "km.ordn": "",
+    "km.ordn": "{n}",
     # EN: or
-    "km.or": "",
+    "km.or": "ਜਾਂ",
     # EN: <h2>Mangal Dosha (Manglik)</h2> <p>Mangal Dosha is checked separately from the 36 points.
     #     A chart is Manglik when Mars sits in the {houses} house counted from the
     #     <strong>Lagna</strong> (ascendant), the <strong>Moon</strong> or <strong>Venus</strong>.
@@ -332,7 +332,7 @@ SEO_TEXT = {
     #     why Manglik matches are made with Manglik partners. Because it depends on the Lagna,
     #     Mangal Dosha does need a reliable birth time.</p>
     # keep: {houses}
-    "km.mangal": "",
+    "km.mangal": "<h2>ਮੰਗਲ ਦੋਸ਼ (ਮੰਗਲੀਕ)</h2><p>ਮੰਗਲ ਦੋਸ਼ ਦੀ ਜਾਂਚ 36 ਅੰਕਾਂ ਤੋਂ ਵੱਖਰੀ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। ਕੁੰਡਲੀ ਮੰਗਲੀਕ ਉਦੋਂ ਹੁੰਦੀ ਹੈ ਜਦੋਂ <strong>ਲਗਨ</strong>, <strong>ਚੰਦਰਮਾ</strong> ਜਾਂ <strong>ਸ਼ੁੱਕਰ</strong> ਤੋਂ ਗਿਣਨ ’ਤੇ ਮੰਗਲ ਭਾਵ {houses} ਵਿੱਚ ਬੈਠਾ ਹੋਵੇ। ਸ਼ਾਸਤਰਾਂ ਵਿੱਚ ਕੁਝ ਰਾਸ਼ੀ ਸਥਿਤੀਆਂ ਨੂੰ ਛੋਟ ਦਿੱਤੀ ਗਈ ਹੈ (ਜਿਵੇਂ ਮੰਗਲ ਆਪਣੀ ਰਾਸ਼ੀ ਮੇਖ ਵਿੱਚ ਪਹਿਲੇ ਭਾਵ ਵਿੱਚ), ਅਤੇ ਮੰਗਲ ’ਤੇ ਬ੍ਰਿਹਸਪਤੀ ਦੀ ਦ੍ਰਿਸ਼ਟੀ ਇਸ ਨੂੰ ਨਰਮ ਕਰਨ ਵਾਲੀ ਮੰਨੀ ਜਾਂਦੀ ਹੈ। ਜਦੋਂ <strong>ਦੋਵੇਂ</strong> ਜੀਅ ਮੰਗਲੀਕ ਹੋਣ ਤਾਂ ਰਵਾਇਤ ਅਨੁਸਾਰ ਦੋਸ਼ ਆਪਸ ਵਿੱਚ ਕੱਟਿਆ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ — ਇਸੇ ਕਰਕੇ ਮੰਗਲੀਕ ਦਾ ਰਿਸ਼ਤਾ ਮੰਗਲੀਕ ਨਾਲ ਹੀ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਕਿਉਂਕਿ ਇਹ ਲਗਨ ’ਤੇ ਨਿਰਭਰ ਕਰਦਾ ਹੈ, ਮੰਗਲ ਦੋਸ਼ ਲਈ ਜਨਮ ਦਾ ਭਰੋਸੇਯੋਗ ਸਮਾਂ ਚਾਹੀਦਾ ਹੈ।</p>",
     # EN: <h2>How our matching tool works</h2> <p>Enter both people's date, time and place of birth.
     #     Both charts are cast with the sidereal zodiac (Lahiri ayanamsa) from the Swiss Ephemeris,
     #     and each koota is scored by table lookup from the classical tables, with every
@@ -340,56 +340,56 @@ SEO_TEXT = {
     #     Dosha status, in English or <span lang="hi">हिन्दी</span>, free and without signing
     #     up.</p>
     # keep: {total}
-    "km.how": "",
+    "km.how": "<h2>ਸਾਡਾ ਮਿਲਾਨ ਟੂਲ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ</h2><p>ਦੋਵਾਂ ਦੀ ਜਨਮ ਤਾਰੀਖ਼, ਸਮਾਂ ਅਤੇ ਥਾਂ ਭਰੋ। ਦੋਵੇਂ ਕੁੰਡਲੀਆਂ ਸਵਿਸ ਐਫ਼ੇਮੇਰਿਸ ਤੋਂ ਨਿਰਯਨ ਰਾਸ਼ੀ ਚੱਕਰ (ਲਾਹਿੜੀ ਅਯਨਾਂਸ਼) ਨਾਲ ਬਣਾਈਆਂ ਜਾਂਦੀਆਂ ਹਨ, ਅਤੇ ਹਰ ਕੂਟ ਦੇ ਅੰਕ ਸ਼ਾਸਤਰੀ ਸਾਰਣੀਆਂ ਵਿੱਚੋਂ ਵੇਖ ਕੇ ਦਿੱਤੇ ਜਾਂਦੇ ਹਨ, ਹਰ ਛੋਟ ਦਾ ਨਾਂ ਲੈ ਕੇ। ਤੁਹਾਨੂੰ {total} ਅੰਕਾਂ ਦਾ ਪੂਰਾ ਵੇਰਵਾ ਅਤੇ ਦੋਵਾਂ ਦੇ ਮੰਗਲ ਦੋਸ਼ ਦੀ ਸਥਿਤੀ ਮਿਲਦੀ ਹੈ, ਅੰਗਰੇਜ਼ੀ ਜਾਂ ਹਿੰਦੀ ਵਿੱਚ, ਮੁਫ਼ਤ ਅਤੇ ਬਿਨਾਂ ਸਾਈਨ ਅੱਪ ਕੀਤੇ।</p>",
     # EN: Open Kundali Milan
-    "km.cta2": "",
+    "km.cta2": "ਕੁੰਡਲੀ ਮਿਲਾਨ ਖੋਲ੍ਹੋ",
     # EN: Varna
-    "koota.varna": "",
+    "koota.varna": "ਵਰਣ",
     # EN: Vashya
-    "koota.vashya": "",
+    "koota.vashya": "ਵਸ਼ਯ",
     # EN: Tara
-    "koota.tara": "",
+    "koota.tara": "ਤਾਰਾ",
     # EN: Yoni
-    "koota.yoni": "",
+    "koota.yoni": "ਯੋਨੀ",
     # EN: Graha Maitri
-    "koota.graha_maitri": "",
+    "koota.graha_maitri": "ਗ੍ਰਹਿ ਮੈਤਰੀ",
     # EN: Gana
-    "koota.gana": "",
+    "koota.gana": "ਗਣ",
     # EN: Bhakoot
-    "koota.bhakoot": "",
+    "koota.bhakoot": "ਭਕੂਟ",
     # EN: Nadi
-    "koota.nadi": "",
+    "koota.nadi": "ਨਾੜੀ",
     # EN: Spiritual and working temperament, from the Moon sign's varna. Full point when the groom's
     #     varna is not below the bride's.
-    "koota_about.varna": "",
+    "koota_about.varna": "ਚੰਦਰ ਰਾਸ਼ੀ ਦੇ ਵਰਣ ਤੋਂ ਆਤਮਿਕ ਅਤੇ ਕੰਮਕਾਜੀ ਸੁਭਾਅ। ਪੂਰੇ ਅੰਕ ਉਦੋਂ ਮਿਲਦੇ ਹਨ ਜਦੋਂ ਲਾੜੇ ਦਾ ਵਰਣ ਲਾੜੀ ਦੇ ਵਰਣ ਤੋਂ ਹੇਠਾਂ ਨਾ ਹੋਵੇ।",
     # EN: Mutual attraction and influence — which sign “draws” the other.
-    "koota_about.vashya": "",
+    "koota_about.vashya": "ਆਪਸੀ ਖਿੱਚ ਅਤੇ ਪ੍ਰਭਾਵ — ਕਿਹੜੀ ਰਾਸ਼ੀ ਦੂਜੀ ਨੂੰ “ਖਿੱਚਦੀ” ਹੈ।",
     # EN: Health and wellbeing, from the count between the two birth nakshatras; the 3rd, 5th and
     #     7th taras are unfavourable.
-    "koota_about.tara": "",
+    "koota_about.tara": "ਸਿਹਤ ਅਤੇ ਭਲਾਈ, ਦੋਵਾਂ ਜਨਮ ਨਕਸ਼ਤਰਾਂ ਵਿਚਲੀ ਗਿਣਤੀ ਤੋਂ; ਤੀਜਾ, ਪੰਜਵਾਂ ਅਤੇ ਸੱਤਵਾਂ ਤਾਰਾ ਅਸ਼ੁਭ ਹੈ।",
     # EN: Physical and intimate compatibility; each nakshatra has an animal yoni, and sworn-enemy
     #     animals score zero.
-    "koota_about.yoni": "",
+    "koota_about.yoni": "ਸਰੀਰਕ ਅਤੇ ਨੇੜਤਾ ਦਾ ਮੇਲ; ਹਰ ਨਕਸ਼ਤਰ ਦੀ ਇੱਕ ਪਸ਼ੂ ਯੋਨੀ ਹੁੰਦੀ ਹੈ, ਅਤੇ ਪੱਕੇ ਵੈਰੀ ਪਸ਼ੂਆਂ ਨੂੰ ਸਿਫ਼ਰ ਅੰਕ ਮਿਲਦੇ ਹਨ।",
     # EN: Friendship between the lords of the two Moon signs — the mental wavelength of the couple.
-    "koota_about.graha_maitri": "",
+    "koota_about.graha_maitri": "ਦੋਵਾਂ ਚੰਦਰ ਰਾਸ਼ੀਆਂ ਦੇ ਸੁਆਮੀਆਂ ਵਿਚਲੀ ਦੋਸਤੀ — ਜੋੜੇ ਦੀ ਮਾਨਸਿਕ ਤਾਲ-ਮੇਲ।",
     # EN: Temperament: Deva (divine), Manushya (human) or Rakshasa (fierce).
-    "koota_about.gana": "",
+    "koota_about.gana": "ਸੁਭਾਅ: ਦੇਵ (ਦੈਵੀ), ਮਨੁੱਖ ਜਾਂ ਰਾਖਸ਼ (ਉਗਰ)।",
     # EN: The relative placement of the two Moon signs. The 2/12, 5/9 and 6/8 positions form Bhakoot
     #     dosha, cancelled when the sign lords are the same or friends.
-    "koota_about.bhakoot": "",
+    "koota_about.bhakoot": "ਦੋਵਾਂ ਚੰਦਰ ਰਾਸ਼ੀਆਂ ਦੀ ਆਪਸੀ ਸਥਿਤੀ। 2/12, 5/9 ਅਤੇ 6/8 ਦੀਆਂ ਸਥਿਤੀਆਂ ਭਕੂਟ ਦੋਸ਼ ਬਣਾਉਂਦੀਆਂ ਹਨ, ਜੋ ਰਾਸ਼ੀ ਸੁਆਮੀ ਇੱਕੋ ਹੋਣ ਜਾਂ ਮਿੱਤਰ ਹੋਣ ’ਤੇ ਕੱਟਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: The highest-weighted koota, tied to health and progeny. The same nadi for both is Nadi
     #     dosha, with classical cancellations for the same sign/different nakshatra or same
     #     nakshatra/different pada.
-    "koota_about.nadi": "",
+    "koota_about.nadi": "ਸਭ ਤੋਂ ਵੱਧ ਭਾਰ ਵਾਲਾ ਕੂਟ, ਜੋ ਸਿਹਤ ਅਤੇ ਸੰਤਾਨ ਨਾਲ ਜੁੜਿਆ ਹੈ। ਦੋਵਾਂ ਦੀ ਇੱਕੋ ਨਾੜੀ ਹੋਣਾ ਨਾੜੀ ਦੋਸ਼ ਹੈ, ਜਿਸ ਦੀਆਂ ਸ਼ਾਸਤਰੀ ਛੋਟਾਂ ਹਨ: ਇੱਕੋ ਰਾਸ਼ੀ ਪਰ ਵੱਖਰਾ ਨਕਸ਼ਤਰ, ਜਾਂ ਇੱਕੋ ਨਕਸ਼ਤਰ ਪਰ ਵੱਖਰਾ ਚਰਣ।",
     # EN: Free Kundali Online — Janam Kundali (Birth Chart) in English & Hindi | {brand}
     # keep: {brand}
-    "fk.title": "",
+    "fk.title": "ਮੁਫ਼ਤ ਕੁੰਡਲੀ ਆਨਲਾਈਨ — ਪੰਜਾਬੀ, ਹਿੰਦੀ ਅਤੇ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਜਨਮ ਕੁੰਡਲੀ | {brand}",
     # EN: Make your free janam kundali online: Lagna chart in North or South Indian style, planet
     #     positions, Moon nakshatra, Vimshottari dasha, Navamsa and other divisional charts,
     #     Manglik, Sade Sati and Kaal Sarp check — in English or Hindi, no sign-in needed.
-    "fk.desc": "",
+    "fk.desc": "ਆਨਲਾਈਨ ਆਪਣੀ ਮੁਫ਼ਤ ਜਨਮ ਕੁੰਡਲੀ ਬਣਾਓ: ਉੱਤਰੀ ਜਾਂ ਦੱਖਣੀ ਭਾਰਤੀ ਸ਼ੈਲੀ ਵਿੱਚ ਲਗਨ ਕੁੰਡਲੀ, ਗ੍ਰਹਿ ਸਥਿਤੀ, ਚੰਦਰ ਨਕਸ਼ਤਰ, ਵਿਮਸ਼ੋਤਰੀ ਦਸ਼ਾ, ਨਵਾਂਸ਼ ਅਤੇ ਹੋਰ ਵਰਗ ਕੁੰਡਲੀਆਂ, ਮੰਗਲੀਕ, ਸਾੜ੍ਹਸਾਤੀ ਅਤੇ ਕਾਲ ਸਰਪ ਦੀ ਜਾਂਚ — ਸਾਈਨ ਇਨ ਤੋਂ ਬਿਨਾਂ।",
     # EN: Free Kundali
-    "fk.crumb": "",
+    "fk.crumb": "ਮੁਫ਼ਤ ਕੁੰਡਲੀ",
     # EN: <h1>Free Janam Kundali online</h1> <p class="hi" lang="hi">मुफ़्त जन्म कुंडली — हिंदी और
     #     अंग्रेज़ी में</p> <p>A <strong>janam kundali</strong> (<span lang="hi">जन्म कुंडली</span>,
     #     birth chart) is a map of the sky at the exact moment and place you were born: which of the
@@ -398,12 +398,12 @@ SEO_TEXT = {
     #     and the 27 nakshatras. Vedic astrology reads everything else — personality, the twelve
     #     areas of life, and above all <em>timing</em> through the dasha periods — from this one
     #     chart. Ours is computed to the minute and is free.</p>
-    "fk.intro": "",
+    "fk.intro": "<h1>ਆਨਲਾਈਨ ਮੁਫ਼ਤ ਜਨਮ ਕੁੰਡਲੀ</h1><p class=\"hi\">ਮੁਫ਼ਤ ਜਨਮ ਕੁੰਡਲੀ — ਲਗਨ, ਗ੍ਰਹਿ, ਦਸ਼ਾ ਅਤੇ ਦੋਸ਼ ਦੀ ਜਾਂਚ</p><p><strong>ਜਨਮ ਕੁੰਡਲੀ</strong> ਤੁਹਾਡੇ ਜਨਮ ਦੇ ਠੀਕ ਪਲ ਅਤੇ ਥਾਂ ਦੇ ਅਸਮਾਨ ਦਾ ਨਕਸ਼ਾ ਹੈ: ਉਸ ਵੇਲੇ ਪੂਰਬੀ ਦਿਸਹੱਦੇ ’ਤੇ ਬਾਰਾਂ ਰਾਸ਼ੀਆਂ ਵਿੱਚੋਂ ਕਿਹੜੀ ਚੜ੍ਹ ਰਹੀ ਸੀ (ਤੁਹਾਡੀ <strong>ਲਗਨ</strong>), ਅਤੇ ਸੂਰਜ, ਚੰਦਰਮਾ, ਮੰਗਲ, ਬੁੱਧ, ਬ੍ਰਿਹਸਪਤੀ, ਸ਼ੁੱਕਰ, ਸ਼ਨੀ, ਰਾਹੂ ਅਤੇ ਕੇਤੂ ਕਿਹੜੀਆਂ ਰਾਸ਼ੀਆਂ ਅਤੇ 27 ਨਕਸ਼ਤਰਾਂ ਵਿੱਚ ਸਨ। ਵੈਦਿਕ ਜੋਤਿਸ਼ ਬਾਕੀ ਸਭ ਕੁਝ — ਸੁਭਾਅ, ਜ਼ਿੰਦਗੀ ਦੇ ਬਾਰਾਂ ਖੇਤਰ, ਅਤੇ ਸਭ ਤੋਂ ਵੱਧ ਦਸ਼ਾਵਾਂ ਰਾਹੀਂ <em>ਸਮਾਂ</em> — ਇਸੇ ਇੱਕ ਕੁੰਡਲੀ ਤੋਂ ਪੜ੍ਹਦਾ ਹੈ। ਸਾਡੀ ਕੁੰਡਲੀ ਮਿੰਟ ਦੀ ਸ਼ੁੱਧਤਾ ਨਾਲ ਗਿਣੀ ਜਾਂਦੀ ਹੈ ਅਤੇ ਮੁਫ਼ਤ ਹੈ।</p>",
     # EN: Make my free kundali now
-    "fk.cta1": "",
+    "fk.cta1": "ਹੁਣੇ ਮੇਰੀ ਮੁਫ਼ਤ ਕੁੰਡਲੀ ਬਣਾਓ",
     # EN: <p>You need your <strong>date</strong>, <strong>time</strong> and <strong>place</strong>
     #     of birth. No sign-in, no card.</p>
-    "fk.need": "",
+    "fk.need": "<p>ਤੁਹਾਨੂੰ ਜਨਮ ਦੀ <strong>ਤਾਰੀਖ਼</strong>, <strong>ਸਮਾਂ</strong> ਅਤੇ <strong>ਥਾਂ</strong> ਚਾਹੀਦੀ ਹੈ। ਸਾਈਨ ਇਨ ਨਹੀਂ, ਕਾਰਡ ਨਹੀਂ।</p>",
     # EN: <h2>What your free kundali includes</h2> <ul> <li><strong>Lagna chart (D1)</strong> in
     #     North Indian or South Indian style — switch with one tap.</li> <li><strong>Planet
     #     positions</strong>: sign, degree, house, dignity and retrograde status of all nine grahas
@@ -422,7 +422,7 @@ SEO_TEXT = {
     #     Swiss Ephemeris. With a free account you can also save charts, download the kundali as a
     #     PDF in English or Hindi, and ask the AI astrologer your first questions free.</p>
     # keep: {vargas}
-    "fk.includes": "",
+    "fk.includes": "<h2>ਤੁਹਾਡੀ ਮੁਫ਼ਤ ਕੁੰਡਲੀ ਵਿੱਚ ਕੀ ਕੁਝ ਹੈ</h2><ul><li><strong>ਲਗਨ ਕੁੰਡਲੀ (D1)</strong> ਉੱਤਰੀ ਜਾਂ ਦੱਖਣੀ ਭਾਰਤੀ ਸ਼ੈਲੀ ਵਿੱਚ — ਇੱਕ ਟੈਪ ਨਾਲ ਬਦਲੋ।</li><li><strong>ਗ੍ਰਹਿ ਸਥਿਤੀ</strong>: ਨੌਂ ਗ੍ਰਹਿਆਂ ਅਤੇ ਲਗਨ ਦੀ ਰਾਸ਼ੀ, ਅੰਸ਼, ਭਾਵ, ਬਲ ਅਤੇ ਵੱਕਰੀ ਹਾਲਤ, ਨਾਲ ਤੁਹਾਡੇ ਚੰਦਰਮਾ ਦਾ ਨਕਸ਼ਤਰ ਤੇ ਚਰਣ।</li><li><strong>ਬਾਰਾਂ ਭਾਵ</strong> ਅਤੇ ਹਰ ਇੱਕ ਵਿੱਚ ਬੈਠੇ ਗ੍ਰਹਿ।</li><li><strong>ਵਿਮਸ਼ੋਤਰੀ ਦਸ਼ਾ</strong>: ਤੁਹਾਡੀ ਮੌਜੂਦਾ ਮਹਾਦਸ਼ਾ ਅਤੇ ਅੰਤਰਦਸ਼ਾ ਮਿਤੀਆਂ ਸਮੇਤ, ਇੱਕ ਚਿੱਤਰ ਸਮਾਂ-ਰੇਖਾ ’ਤੇ।</li><li><strong>ਵਰਗ ਕੁੰਡਲੀਆਂ</strong>: {vargas}।</li><li><strong>ਅਸ਼ਟਕਵਰਗ</strong>: ਸਰਵਾਸ਼ਟਕਵਰਗ ਅਤੇ ਭਿੰਨਾਸ਼ਟਕਵਰਗ ਦੇ ਬਿੰਦੂ, ਭਾਵ ਮੁਤਾਬਕ।</li><li><strong>ਜੈਮਿਨੀ</strong> ਚਰ ਕਾਰਕ (ਆਤਮਕਾਰਕ ਤੋਂ ਦਾਰਾਕਾਰਕ ਤੱਕ) ਅਤੇ ਆਰੂੜ੍ਹ ਪਦ, ਅਤੇ ਲਗਨ, ਚੰਦਰਮਾ ਤੇ ਸੂਰਜ ਤਿੰਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਦਾ <strong>ਸੁਦਰਸ਼ਨ ਚੱਕਰ</strong> ਵਿਸ਼ਲੇਸ਼ਣ।</li><li><strong>ਦੋਸ਼ ਦੀ ਜਾਂਚ</strong>: ਮੰਗਲ ਦੋਸ਼ (ਮੰਗਲੀਕ), ਸਾੜ੍ਹਸਾਤੀ ਅਤੇ ਕਾਲ ਸਰਪ।</li><li>ਤੁਹਾਡੀ ਕੁੰਡਲੀ ਅਤੇ ਮੌਜੂਦਾ ਦਸ਼ਾ ਲਈ <strong>ਰਤਨ ਅਤੇ ਉਪਾਅ</strong> ਦੇ ਸੁਝਾਅ।</li><li>ਤੁਹਾਡੀ ਕੁੰਡਲੀ ਦੇ ਡੈਸ਼ਬੋਰਡ ’ਤੇ ਤੁਹਾਡਾ <strong>ਰੋਜ਼ਾਨਾ ਫਲਾਦੇਸ਼</strong> ਅਤੇ ਅੱਜ ਦਾ ਪੰਚਾਂਗ।</li></ul><p>ਸਭ ਕੁਝ <strong>ਲਾਹਿੜੀ ਅਯਨਾਂਸ਼ ਵਾਲੇ ਨਿਰਯਨ ਰਾਸ਼ੀ ਚੱਕਰ</strong> ਵਿੱਚ, ਪੂਰੀ ਰਾਸ਼ੀ ਵਾਲੇ ਭਾਵਾਂ ਸਮੇਤ, ਸਵਿਸ ਐਫ਼ੇਮੇਰਿਸ ਤੋਂ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ। ਮੁਫ਼ਤ ਖਾਤੇ ਨਾਲ ਤੁਸੀਂ ਕੁੰਡਲੀਆਂ ਸੰਭਾਲ ਸਕਦੇ ਹੋ, ਕੁੰਡਲੀ ਨੂੰ ਅੰਗਰੇਜ਼ੀ ਜਾਂ ਹਿੰਦੀ ਵਿੱਚ PDF ਵਜੋਂ ਡਾਊਨਲੋਡ ਕਰ ਸਕਦੇ ਹੋ, ਅਤੇ ਏਆਈ ਜੋਤਸ਼ੀ ਤੋਂ ਆਪਣੇ ਪਹਿਲੇ ਸਵਾਲ ਮੁਫ਼ਤ ਪੁੱਛ ਸਕਦੇ ਹੋ।</p>",
     # EN: <h2>How to read your kundali</h2> <h3>1. Start with the Lagna</h3> <p>The first house is
     #     the sign rising at birth. In the North Indian chart it is the top centre diamond, and the
     #     number written in each house is the <em>sign</em> (1 = Aries … 12 = Pisces), not the
@@ -443,31 +443,31 @@ SEO_TEXT = {
     #     context</h3> <p>A dosha is a pattern to read, not a verdict. Mangal Dosha has classical
     #     cancellations; Sade Sati is a seven-and-a-half-year transit everyone meets two or three
     #     times. The dosha report names the cancellations it found.</p>
-    "fk.read": "",
+    "fk.read": "<h2>ਆਪਣੀ ਕੁੰਡਲੀ ਕਿਵੇਂ ਪੜ੍ਹੀਏ</h2><h3>1. ਲਗਨ ਤੋਂ ਸ਼ੁਰੂ ਕਰੋ</h3><p>ਪਹਿਲਾ ਭਾਵ ਜਨਮ ਵੇਲੇ ਚੜ੍ਹ ਰਹੀ ਰਾਸ਼ੀ ਹੈ। ਉੱਤਰੀ ਭਾਰਤੀ ਕੁੰਡਲੀ ਵਿੱਚ ਇਹ ਉੱਪਰ ਵਿਚਕਾਰਲਾ ਹੀਰਾ ਹੈ, ਅਤੇ ਹਰ ਭਾਵ ਵਿੱਚ ਲਿਖਿਆ ਅੰਕ <em>ਰਾਸ਼ੀ</em> ਦਾ ਹੁੰਦਾ ਹੈ (1 = ਮੇਖ … 12 = ਮੀਨ), ਭਾਵ ਦਾ ਨਹੀਂ। ਦੱਖਣੀ ਭਾਰਤੀ ਕੁੰਡਲੀ ਵਿੱਚ ਰਾਸ਼ੀਆਂ ਪੱਕੇ ਖਾਨਿਆਂ ਵਿੱਚ ਰਹਿੰਦੀਆਂ ਹਨ ਅਤੇ ਲਗਨ ’ਤੇ ਨਿਸ਼ਾਨ ਲੱਗਿਆ ਹੁੰਦਾ ਹੈ। ਲਗਨ ਅਤੇ ਉਸ ਦਾ ਸੁਆਮੀ ਸਰੀਰ, ਸੁਭਾਅ ਅਤੇ ਜ਼ਿੰਦਗੀ ਦੀ ਸਮੁੱਚੀ ਦਿਸ਼ਾ ਦੱਸਦੇ ਹਨ।</p><h3>2. ਆਪਣੀ ਚੰਦਰ ਰਾਸ਼ੀ ਤੇ ਨਕਸ਼ਤਰ ਵੇਖੋ</h3><p>ਭਾਰਤੀ ਵਰਤੋਂ ਵਿੱਚ ਤੁਹਾਡੀ <strong>ਰਾਸ਼ੀ</strong> ਚੰਦਰਮਾ ਦੀ ਰਾਸ਼ੀ ਹੁੰਦੀ ਹੈ, ਸੂਰਜ ਦੀ ਨਹੀਂ। ਰਾਸ਼ੀਫਲ, ਸਾੜ੍ਹਸਾਤੀ ਅਤੇ ਕੁੰਡਲੀ ਮਿਲਾਨ ਇਸੇ ਰਾਸ਼ੀ ਤੋਂ ਵੇਖੇ ਜਾਂਦੇ ਹਨ, ਅਤੇ ਚੰਦਰਮਾ ਦਾ ਨਕਸ਼ਤਰ ਤੈਅ ਕਰਦਾ ਹੈ ਕਿ ਤੁਹਾਡੀ ਵਿਮਸ਼ੋਤਰੀ ਦਸ਼ਾ ਕਿੱਥੋਂ ਸ਼ੁਰੂ ਹੁੰਦੀ ਹੈ।</p><h3>3. ਗ੍ਰਹਿਆਂ ਨੂੰ ਭਾਵ ਮੁਤਾਬਕ ਪੜ੍ਹੋ</h3><p>ਹਰ ਭਾਵ ਜ਼ਿੰਦਗੀ ਦਾ ਇੱਕ ਖੇਤਰ ਹੈ: ਪਹਿਲਾ ਆਪਾ, ਦੂਜਾ ਧਨ ਅਤੇ ਪਰਿਵਾਰ, ਤੀਜਾ ਹਿੰਮਤ ਅਤੇ ਭੈਣ-ਭਰਾ, ਚੌਥਾ ਘਰ ਅਤੇ ਮਾਂ, ਪੰਜਵਾਂ ਸੰਤਾਨ ਅਤੇ ਬੁੱਧੀ, ਛੇਵਾਂ ਸਿਹਤ ਅਤੇ ਵਿਰੋਧੀ, ਸੱਤਵਾਂ ਵਿਆਹ ਅਤੇ ਸਾਂਝੇਦਾਰੀ, ਅੱਠਵਾਂ ਉਮਰ ਅਤੇ ਅਚਾਨਕ ਬਦਲਾਅ, ਨੌਵਾਂ ਕਿਸਮਤ ਅਤੇ ਧਰਮ, ਦਸਵਾਂ ਕਰੀਅਰ, ਗਿਆਰ੍ਹਵਾਂ ਲਾਭ, ਬਾਰ੍ਹਵਾਂ ਖ਼ਰਚ ਅਤੇ ਮੋਕਸ਼। ਗ੍ਰਹਿ ਉਸ ਭਾਵ ਨੂੰ ਰੰਗਦਾ ਹੈ ਜਿਸ ਵਿੱਚ ਉਹ ਬੈਠਾ ਹੈ ਅਤੇ ਉਨ੍ਹਾਂ ਭਾਵਾਂ ਨੂੰ ਵੀ ਜਿਨ੍ਹਾਂ ਦਾ ਉਹ ਸੁਆਮੀ ਹੈ; ਉਸ ਦਾ ਬਲ (ਉੱਚ, ਆਪਣੀ ਰਾਸ਼ੀ, ਨੀਚ) ਦੱਸਦਾ ਹੈ ਕਿ ਉਹ ਕਿੰਨਾ ਫਲ ਦੇ ਸਕਦਾ ਹੈ।</p><h3>4. ਦੇਖੋ ਕਿ ਕਿਹੜੀ ਦਸ਼ਾ ਚੱਲ ਰਹੀ ਹੈ</h3><p>ਦਸ਼ਾ ਦੱਸਦੀ ਹੈ ਕਿ <em>ਕਦੋਂ</em>। ਮਹਾਦਸ਼ਾ ਦਾ ਸੁਆਮੀ, ਅਤੇ ਉਸ ਦੇ ਅੰਦਰ ਅੰਤਰਦਸ਼ਾ ਦਾ ਸੁਆਮੀ, ਉਹ ਗ੍ਰਹਿ ਹਨ ਜਿਨ੍ਹਾਂ ਦੇ ਭਾਵ ਇਸ ਦੌਰ ਵਿੱਚ ਜਾਗ ਪੈਂਦੇ ਹਨ — ਇਸੇ ਲਈ ਇੱਕੋ ਜਿਹੀਆਂ ਕੁੰਡਲੀਆਂ ਵਾਲੇ ਦੋ ਜਣਿਆਂ ਦੇ ਸਾਲ ਬਹੁਤ ਵੱਖਰੇ ਹੋ ਸਕਦੇ ਹਨ।</p><h3>5. ਦੋਸ਼ਾਂ ਨੂੰ ਪ੍ਰਸੰਗ ਵਿੱਚ ਵੇਖੋ</h3><p>ਦੋਸ਼ ਇੱਕ ਪੈਟਰਨ ਹੈ ਜਿਸ ਨੂੰ ਪੜ੍ਹਨਾ ਹੁੰਦਾ ਹੈ, ਕੋਈ ਫ਼ੈਸਲਾ ਨਹੀਂ। ਮੰਗਲ ਦੋਸ਼ ਦੀਆਂ ਸ਼ਾਸਤਰੀ ਛੋਟਾਂ ਹਨ; ਸਾੜ੍ਹਸਾਤੀ ਸਾਢੇ ਸੱਤ ਸਾਲ ਦਾ ਗੋਚਰ ਹੈ ਜੋ ਹਰ ਕਿਸੇ ਦੇ ਜੀਵਨ ਵਿੱਚ ਦੋ-ਤਿੰਨ ਵਾਰ ਆਉਂਦਾ ਹੈ। ਦੋਸ਼ ਰਿਪੋਰਟ ਉਹ ਛੋਟਾਂ ਦੱਸਦੀ ਹੈ ਜੋ ਉਸ ਨੂੰ ਮਿਲੀਆਂ।</p>",
     # EN: Create my janam kundali — free
-    "fk.cta2": "",
+    "fk.cta2": "ਮੇਰੀ ਜਨਮ ਕੁੰਡਲੀ ਬਣਾਓ — ਮੁਫ਼ਤ",
     # EN: <h2>Frequently asked questions</h2>
-    "fk.faq_h2": "",
+    "fk.faq_h2": "<h2>ਅਕਸਰ ਪੁੱਛੇ ਜਾਂਦੇ ਸਵਾਲ</h2>",
     # EN: Rashi
-    "varga.D1": "",
+    "varga.D1": "ਰਾਸ਼ੀ",
     # EN: Drekkana
-    "varga.D3": "",
+    "varga.D3": "ਦ੍ਰੇਸ਼ਕਾਣ",
     # EN: Saptamsa
-    "varga.D7": "",
+    "varga.D7": "ਸਪਤਾਂਸ਼",
     # EN: Navamsa
-    "varga.D9": "",
+    "varga.D9": "ਨਵਾਂਸ਼",
     # EN: Dashamsa
-    "varga.D10": "",
+    "varga.D10": "ਦਸ਼ਾਂਸ਼",
     # EN: Dwadashamsa
-    "varga.D12": "",
+    "varga.D12": "ਦ੍ਵਾਦਸ਼ਾਂਸ਼",
     # EN: Not recommended
-    "km.band0": "",
+    "km.band0": "ਸਿਫ਼ਾਰਸ਼ ਨਹੀਂ",
     # EN: Acceptable
-    "km.band1": "",
+    "km.band1": "ਚੱਲਣਯੋਗ",
     # EN: Good
-    "km.band2": "",
+    "km.band2": "ਚੰਗਾ",
     # EN: Excellent
-    "km.band3": "",
+    "km.band3": "ਉੱਤਮ",
 }
 
 # app/seo_text.py FAQ["pa"] — the seven free-kundali FAQ pairs (plain text)  [7]
@@ -476,401 +476,401 @@ SEO_FAQ = (
     # EN a: Yes. Casting the chart, the dashas, the divisional charts and the dosha check cost
     #       nothing, and you do not need to sign in to see them. Only the AI astrologer's answers
     #       beyond your free questions, and in-depth paid reports such as the Life Book, cost money.
-    ("", ""),
+    ("ਕੀ ਕੁੰਡਲੀ ਸੱਚਮੁੱਚ ਮੁਫ਼ਤ ਹੈ?", "ਹਾਂ। ਕੁੰਡਲੀ ਬਣਾਉਣ, ਦਸ਼ਾਵਾਂ, ਵਰਗ ਕੁੰਡਲੀਆਂ ਅਤੇ ਦੋਸ਼ ਦੀ ਜਾਂਚ ਵਿੱਚ ਕੋਈ ਖ਼ਰਚ ਨਹੀਂ ਆਉਂਦਾ, ਅਤੇ ਇਨ੍ਹਾਂ ਨੂੰ ਵੇਖਣ ਲਈ ਸਾਈਨ ਇਨ ਕਰਨ ਦੀ ਲੋੜ ਨਹੀਂ। ਸਿਰਫ਼ ਮੁਫ਼ਤ ਸਵਾਲਾਂ ਤੋਂ ਬਾਅਦ ਏਆਈ ਜੋਤਸ਼ੀ ਦੇ ਜਵਾਬਾਂ ਅਤੇ ਲਾਈਫ਼ ਬੁੱਕ ਵਰਗੀਆਂ ਵਿਸਥਾਰ ਵਾਲੀਆਂ ਭੁਗਤਾਨ ਵਾਲੀਆਂ ਰਿਪੋਰਟਾਂ ਲਈ ਪੈਸੇ ਲੱਗਦੇ ਹਨ।"),
     # EN q: What details do I need?
     # EN a: Your date of birth, time of birth and place of birth. The place sets the latitude,
     #       longitude and time zone, which decide the Lagna (ascendant) and the house positions.
-    ("", ""),
+    ("ਮੈਨੂੰ ਕਿਹੜਾ ਵੇਰਵਾ ਚਾਹੀਦਾ ਹੈ?", "ਤੁਹਾਡੀ ਜਨਮ ਤਾਰੀਖ਼, ਜਨਮ ਦਾ ਸਮਾਂ ਅਤੇ ਜਨਮ ਸਥਾਨ। ਥਾਂ ਤੋਂ ਅਕਸ਼ਾਂਸ਼, ਰੇਖਾਂਸ਼ ਅਤੇ ਸਮਾਂ ਖੇਤਰ ਤੈਅ ਹੁੰਦੇ ਹਨ, ਜਿਨ੍ਹਾਂ ਨਾਲ ਲਗਨ ਅਤੇ ਭਾਵਾਂ ਦੀ ਸਥਿਤੀ ਨਿਕਲਦੀ ਹੈ।"),
     # EN q: What if I don't know my exact birth time?
     # EN a: The chart is still cast, at 12:00 noon. The Moon sign and nakshatra are usually still
     #       right (unless the Moon changed sign or nakshatra that day), so Moon-based readings, Sade
     #       Sati and Kundali Milan stay useful — but the Lagna, the houses and Mangal Dosha need a
     #       reliable time. A time from a birth certificate or hospital record is best.
-    ("", ""),
+    ("ਜੇ ਮੈਨੂੰ ਜਨਮ ਦਾ ਸਹੀ ਸਮਾਂ ਨਾ ਪਤਾ ਹੋਵੇ ਤਾਂ?", "ਕੁੰਡਲੀ ਫਿਰ ਵੀ ਬਣ ਜਾਂਦੀ ਹੈ, ਦੁਪਹਿਰ 12:00 ਵਜੇ ਦੇ ਸਮੇਂ ਨਾਲ। ਚੰਦਰ ਰਾਸ਼ੀ ਅਤੇ ਨਕਸ਼ਤਰ ਆਮ ਤੌਰ ’ਤੇ ਫਿਰ ਵੀ ਸਹੀ ਰਹਿੰਦੇ ਹਨ (ਜਦੋਂ ਤੱਕ ਉਸ ਦਿਨ ਚੰਦਰਮਾ ਨੇ ਰਾਸ਼ੀ ਜਾਂ ਨਕਸ਼ਤਰ ਨਾ ਬਦਲਿਆ ਹੋਵੇ), ਇਸ ਲਈ ਚੰਦਰਮਾ ਆਧਾਰਿਤ ਫਲ, ਸਾੜ੍ਹਸਾਤੀ ਅਤੇ ਕੁੰਡਲੀ ਮਿਲਾਨ ਕੰਮ ਦੇ ਰਹਿੰਦੇ ਹਨ — ਪਰ ਲਗਨ, ਭਾਵਾਂ ਅਤੇ ਮੰਗਲ ਦੋਸ਼ ਲਈ ਭਰੋਸੇਯੋਗ ਸਮਾਂ ਚਾਹੀਦਾ ਹੈ। ਜਨਮ ਸਰਟੀਫ਼ਿਕੇਟ ਜਾਂ ਹਸਪਤਾਲ ਦੇ ਰਿਕਾਰਡ ਵਾਲਾ ਸਮਾਂ ਸਭ ਤੋਂ ਵਧੀਆ ਹੈ।"),
     # EN q: Which system do you use — Lahiri, KP, tropical?
     # EN a: Every chart is sidereal (Nirayana) with the Lahiri (Chitrapaksha) ayanamsa, whole-sign
     #       houses and Vimshottari dasha — the convention of most Indian almanacs and astrologers.
     #       Planet positions come from the Swiss Ephemeris.
-    ("", ""),
+    ("ਤੁਸੀਂ ਕਿਹੜੀ ਪ੍ਰਣਾਲੀ ਵਰਤਦੇ ਹੋ — ਲਾਹਿੜੀ, ਕੇਪੀ, ਸਾਇਨ?", "ਹਰ ਕੁੰਡਲੀ ਨਿਰਯਨ ਹੈ, ਲਾਹਿੜੀ (ਚਿਤ੍ਰਪੱਖ) ਅਯਨਾਂਸ਼, ਪੂਰੀ ਰਾਸ਼ੀ ਵਾਲੇ ਭਾਵਾਂ ਅਤੇ ਵਿਮਸ਼ੋਤਰੀ ਦਸ਼ਾ ਨਾਲ — ਜੋ ਜ਼ਿਆਦਾਤਰ ਭਾਰਤੀ ਪੰਚਾਂਗਾਂ ਅਤੇ ਜੋਤਸ਼ੀਆਂ ਦੀ ਰਵਾਇਤ ਹੈ। ਗ੍ਰਹਿਆਂ ਦੀਆਂ ਸਥਿਤੀਆਂ ਸਵਿਸ ਐਫ਼ੇਮੇਰਿਸ ਤੋਂ ਆਉਂਦੀਆਂ ਹਨ।"),
     # EN q: Can I see my kundali in Hindi?
     # EN a: Yes. Switch the app to हिन्दी and the chart, planet and sign names, dashas and readings
     #       all appear in Hindi; the PDF can be downloaded in Hindi too.
-    ("", ""),
+    ("ਕੀ ਮੈਂ ਆਪਣੀ ਕੁੰਡਲੀ ਹਿੰਦੀ ਵਿੱਚ ਵੇਖ ਸਕਦਾ ਹਾਂ?", "ਹਾਂ। ਐਪ ਨੂੰ ਹਿੰਦੀ ਵਿੱਚ ਬਦਲੋ ਅਤੇ ਕੁੰਡਲੀ, ਗ੍ਰਹਿਆਂ ਅਤੇ ਰਾਸ਼ੀਆਂ ਦੇ ਨਾਂ, ਦਸ਼ਾਵਾਂ ਅਤੇ ਫਲ ਸਭ ਹਿੰਦੀ ਵਿੱਚ ਦਿਸਣਗੇ; PDF ਵੀ ਹਿੰਦੀ ਵਿੱਚ ਡਾਊਨਲੋਡ ਹੋ ਸਕਦੀ ਹੈ।"),
     # EN q: North Indian or South Indian chart?
     # EN a: Both. The same chart can be shown as the North Indian diamond chart (houses fixed, signs
     #       numbered) or the South Indian square chart (signs fixed), with one tap.
-    ("", ""),
+    ("ਉੱਤਰੀ ਭਾਰਤੀ ਜਾਂ ਦੱਖਣੀ ਭਾਰਤੀ ਕੁੰਡਲੀ?", "ਦੋਵੇਂ। ਇੱਕੋ ਕੁੰਡਲੀ ਨੂੰ ਇੱਕ ਟੈਪ ਨਾਲ ਉੱਤਰੀ ਭਾਰਤੀ ਹੀਰੇ ਵਾਲੀ ਕੁੰਡਲੀ (ਭਾਵ ਪੱਕੇ, ਰਾਸ਼ੀਆਂ ਦੇ ਅੰਕ) ਜਾਂ ਦੱਖਣੀ ਭਾਰਤੀ ਚੌਰਸ ਕੁੰਡਲੀ (ਰਾਸ਼ੀਆਂ ਪੱਕੀਆਂ) ਵਜੋਂ ਵੇਖਿਆ ਜਾ ਸਕਦਾ ਹੈ।"),
     # EN q: Is this the same as a horoscope?
     # EN a: A janam kundali is the birth chart itself — the fixed map of the sky at your birth. A
     #       daily horoscope or rashifal is a short general forecast for everyone with the same Moon
     #       sign. Your kundali is personal; a rashifal is not.
-    ("", ""),
+    ("ਕੀ ਇਹ ਰਾਸ਼ੀਫਲ ਵਾਂਗ ਹੀ ਹੈ?", "ਜਨਮ ਕੁੰਡਲੀ ਖ਼ੁਦ ਜਨਮ ਦਾ ਨਕਸ਼ਾ ਹੈ — ਤੁਹਾਡੇ ਜਨਮ ਵੇਲੇ ਅਸਮਾਨ ਦਾ ਪੱਕਾ ਨਕਸ਼ਾ। ਰੋਜ਼ਾਨਾ ਰਾਸ਼ੀਫਲ ਇੱਕੋ ਚੰਦਰ ਰਾਸ਼ੀ ਵਾਲੇ ਸਭ ਲੋਕਾਂ ਲਈ ਇੱਕ ਛੋਟਾ ਆਮ ਪੂਰਵ-ਅਨੁਮਾਨ ਹੁੰਦਾ ਹੈ। ਤੁਹਾਡੀ ਕੁੰਡਲੀ ਨਿੱਜੀ ਹੈ; ਰਾਸ਼ੀਫਲ ਨਹੀਂ।"),
 )
 
 # app/i18n.py CHROME["pa"] — chrome shared by every server page: breadcrumb, footer links, disclaimer (HTML: write &amp;)  [10]
 CHROME = {
     # EN: Home
-    "home": "",
+    "home": "ਮੁੱਖ ਪੰਨਾ",
     # EN: Breadcrumb
-    "breadcrumb": "",
+    "breadcrumb": "ਬ੍ਰੈੱਡਕ੍ਰੰਬ",
     # EN: Share on WhatsApp
-    "share": "",
+    "share": "WhatsApp ’ਤੇ ਸਾਂਝਾ ਕਰੋ",
     # EN: Kathas
-    "f_katha": "",
+    "f_katha": "ਕਥਾਵਾਂ",
     # EN: Terms &amp; Conditions
-    "f_terms": "",
+    "f_terms": "ਸ਼ਰਤਾਂ ਅਤੇ ਨਿਯਮ",
     # EN: Privacy Policy
-    "f_privacy": "",
+    "f_privacy": "ਗੋਪਨੀਯਤਾ ਨੀਤੀ",
     # EN: Refund &amp; Cancellation
-    "f_refund": "",
+    "f_refund": "ਰਿਫ਼ੰਡ ਅਤੇ ਰੱਦ ਕਰਨਾ",
     # EN: Contact Us
-    "f_contact": "",
+    "f_contact": "ਸਾਡੇ ਨਾਲ ਸੰਪਰਕ ਕਰੋ",
     # EN: Feedback
-    "f_feedback": "",
+    "f_feedback": "ਸੁਝਾਅ",
     # EN: Astrological readings are provided for guidance and entertainment. They are not medical,
     #     legal or financial advice.
-    "disclaimer": "",
+    "disclaimer": "ਜੋਤਿਸ਼ੀ ਫਲ ਮਾਰਗ-ਦਰਸ਼ਨ ਅਤੇ ਮਨੋਰੰਜਨ ਲਈ ਦਿੱਤੇ ਜਾਂਦੇ ਹਨ। ਇਹ ਡਾਕਟਰੀ, ਕਾਨੂੰਨੀ ਜਾਂ ਵਿੱਤੀ ਸਲਾਹ ਨਹੀਂ ਹਨ।",
 }
 
 # app/stay_strip.py TEXT["pa"] — the 'Stay in touch' strip at the foot of the pages  [8]
 STAY_STRIP = {
     # EN: Stay in touch
-    "head": "",
+    "head": "ਸਾਡੇ ਨਾਲ ਜੁੜੇ ਰਹੋ",
     # EN: Get today's panchang on your phone every morning
-    "push": "",
+    "push": "ਹਰ ਸਵੇਰ ਆਪਣੇ ਫ਼ੋਨ ’ਤੇ ਅੱਜ ਦਾ ਪੰਚਾਂਗ ਪਾਓ",
     # EN: Turning on…
-    "busy": "",
+    "busy": "ਚਾਲੂ ਹੋ ਰਿਹਾ ਹੈ…",
     # EN: Done — you will get it every morning.
-    "on": "",
+    "on": "ਹੋ ਗਿਆ — ਤੁਹਾਨੂੰ ਹਰ ਸਵੇਰ ਮਿਲੇਗਾ।",
     # EN: Could not turn on alerts. Please try again.
-    "err": "",
+    "err": "ਅਲਰਟ ਚਾਲੂ ਨਹੀਂ ਹੋ ਸਕੇ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
     # EN: Notifications are blocked for this site in your browser settings.
-    "denied": "",
+    "denied": "ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਰ ਦੀਆਂ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਇਸ ਸਾਈਟ ਲਈ ਨੋਟੀਫ਼ਿਕੇਸ਼ਨ ਬੰਦ ਹਨ।",
     # EN: Join our WhatsApp channel
-    "channel": "",
+    "channel": "ਸਾਡੇ WhatsApp ਚੈਨਲ ਨਾਲ ਜੁੜੋ",
     # EN: Share this page on WhatsApp
-    "share": "",
+    "share": "ਇਸ ਪੰਨੇ ਨੂੰ WhatsApp ’ਤੇ ਸਾਂਝਾ ਕਰੋ",
 }
 
 # app/seo_city_names.py CITIES["pa"] — the 114 cities as that language's newspapers spell them (key = URL slug)  [114]
 CITY_NAMES = {
     # EN: New Delhi
-    "new-delhi": "",
+    "new-delhi": "ਨਵੀਂ ਦਿੱਲੀ",
     # EN: Mumbai
-    "mumbai": "",
+    "mumbai": "ਮੁੰਬਈ",
     # EN: Kolkata
-    "kolkata": "",
+    "kolkata": "ਕੋਲਕਾਤਾ",
     # EN: Chennai
-    "chennai": "",
+    "chennai": "ਚੇਨਈ",
     # EN: Bengaluru
-    "bengaluru": "",
+    "bengaluru": "ਬੰਗਲੁਰੂ",
     # EN: Hyderabad
-    "hyderabad": "",
+    "hyderabad": "ਹੈਦਰਾਬਾਦ",
     # EN: Ahmedabad
-    "ahmedabad": "",
+    "ahmedabad": "ਅਹਿਮਦਾਬਾਦ",
     # EN: Pune
-    "pune": "",
+    "pune": "ਪੁਣੇ",
     # EN: Jaipur
-    "jaipur": "",
+    "jaipur": "ਜੈਪੁਰ",
     # EN: Lucknow
-    "lucknow": "",
+    "lucknow": "ਲਖਨਊ",
     # EN: Kanpur
-    "kanpur": "",
+    "kanpur": "ਕਾਨਪੁਰ",
     # EN: Nagpur
-    "nagpur": "",
+    "nagpur": "ਨਾਗਪੁਰ",
     # EN: Indore
-    "indore": "",
+    "indore": "ਇੰਦੌਰ",
     # EN: Bhopal
-    "bhopal": "",
+    "bhopal": "ਭੋਪਾਲ",
     # EN: Patna
-    "patna": "",
+    "patna": "ਪਟਨਾ",
     # EN: Varanasi
-    "varanasi": "",
+    "varanasi": "ਵਾਰਾਣਸੀ",
     # EN: Prayagraj
-    "prayagraj": "",
+    "prayagraj": "ਪ੍ਰਯਾਗਰਾਜ",
     # EN: Surat
-    "surat": "",
+    "surat": "ਸੂਰਤ",
     # EN: Vadodara
-    "vadodara": "",
+    "vadodara": "ਵਡੋਦਰਾ",
     # EN: Chandigarh
-    "chandigarh": "",
+    "chandigarh": "ਚੰਡੀਗੜ੍ਹ",
     # EN: Amritsar
-    "amritsar": "",
+    "amritsar": "ਅੰਮ੍ਰਿਤਸਰ",
     # EN: Dehradun
-    "dehradun": "",
+    "dehradun": "ਦੇਹਰਾਦੂਨ",
     # EN: Haridwar
-    "haridwar": "",
+    "haridwar": "ਹਰਿਦੁਆਰ",
     # EN: Noida
-    "noida": "",
+    "noida": "ਨੋਇਡਾ",
     # EN: Gurugram
-    "gurugram": "",
+    "gurugram": "ਗੁਰੂਗ੍ਰਾਮ",
     # EN: Bhubaneswar
-    "bhubaneswar": "",
+    "bhubaneswar": "ਭੁਵਨੇਸ਼ਵਰ",
     # EN: Guwahati
-    "guwahati": "",
+    "guwahati": "ਗੁਹਾਟੀ",
     # EN: Ranchi
-    "ranchi": "",
+    "ranchi": "ਰਾਂਚੀ",
     # EN: Kochi
-    "kochi": "",
+    "kochi": "ਕੋਚੀ",
     # EN: Visakhapatnam
-    "visakhapatnam": "",
+    "visakhapatnam": "ਵਿਸ਼ਾਖਾਪਟਨਮ",
     # EN: Thane
-    "thane": "",
+    "thane": "ਠਾਣੇ",
     # EN: Navi Mumbai
-    "navi-mumbai": "",
+    "navi-mumbai": "ਨਵੀਂ ਮੁੰਬਈ",
     # EN: Nashik
-    "nashik": "",
+    "nashik": "ਨਾਸ਼ਿਕ",
     # EN: Chhatrapati Sambhajinagar
-    "chhatrapati-sambhajinagar": "",
+    "chhatrapati-sambhajinagar": "ਛਤਰਪਤੀ ਸੰਭਾਜੀਨਗਰ",
     # EN: Solapur
-    "solapur": "",
+    "solapur": "ਸ਼ੋਲਾਪੁਰ",
     # EN: Kolhapur
-    "kolhapur": "",
+    "kolhapur": "ਕੋਲਹਾਪੁਰ",
     # EN: Amravati
-    "amravati": "",
+    "amravati": "ਅਮਰਾਵਤੀ",
     # EN: Shirdi
-    "shirdi": "",
+    "shirdi": "ਸ਼ਿਰਡੀ",
     # EN: Rajkot
-    "rajkot": "",
+    "rajkot": "ਰਾਜਕੋਟ",
     # EN: Bhavnagar
-    "bhavnagar": "",
+    "bhavnagar": "ਭਾਵਨਗਰ",
     # EN: Jamnagar
-    "jamnagar": "",
+    "jamnagar": "ਜਾਮਨਗਰ",
     # EN: Gandhinagar
-    "gandhinagar": "",
+    "gandhinagar": "ਗਾਂਧੀਨਗਰ",
     # EN: Dwarka
-    "dwarka": "",
+    "dwarka": "ਦਵਾਰਕਾ",
     # EN: Somnath
-    "somnath": "",
+    "somnath": "ਸੋਮਨਾਥ",
     # EN: Jodhpur
-    "jodhpur": "",
+    "jodhpur": "ਜੋਧਪੁਰ",
     # EN: Udaipur
-    "udaipur": "",
+    "udaipur": "ਉਦੈਪੁਰ",
     # EN: Kota
-    "kota": "",
+    "kota": "ਕੋਟਾ",
     # EN: Ajmer
-    "ajmer": "",
+    "ajmer": "ਅਜਮੇਰ",
     # EN: Bikaner
-    "bikaner": "",
+    "bikaner": "ਬੀਕਾਨੇਰ",
     # EN: Agra
-    "agra": "",
+    "agra": "ਆਗਰਾ",
     # EN: Ghaziabad
-    "ghaziabad": "",
+    "ghaziabad": "ਗਾਜ਼ੀਆਬਾਦ",
     # EN: Meerut
-    "meerut": "",
+    "meerut": "ਮੇਰਠ",
     # EN: Bareilly
-    "bareilly": "",
+    "bareilly": "ਬਰੇਲੀ",
     # EN: Aligarh
-    "aligarh": "",
+    "aligarh": "ਅਲੀਗੜ੍ਹ",
     # EN: Moradabad
-    "moradabad": "",
+    "moradabad": "ਮੁਰਾਦਾਬਾਦ",
     # EN: Gorakhpur
-    "gorakhpur": "",
+    "gorakhpur": "ਗੋਰਖਪੁਰ",
     # EN: Saharanpur
-    "saharanpur": "",
+    "saharanpur": "ਸਹਾਰਨਪੁਰ",
     # EN: Ayodhya
-    "ayodhya": "",
+    "ayodhya": "ਅਯੁੱਧਿਆ",
     # EN: Mathura
-    "mathura": "",
+    "mathura": "ਮਥੁਰਾ",
     # EN: Vrindavan
-    "vrindavan": "",
+    "vrindavan": "ਵ੍ਰਿੰਦਾਵਨ",
     # EN: Jhansi
-    "jhansi": "",
+    "jhansi": "ਝਾਂਸੀ",
     # EN: Faridabad
-    "faridabad": "",
+    "faridabad": "ਫ਼ਰੀਦਾਬਾਦ",
     # EN: Kurukshetra
-    "kurukshetra": "",
+    "kurukshetra": "ਕੁਰੂਕਸ਼ੇਤਰ",
     # EN: Ludhiana
-    "ludhiana": "",
+    "ludhiana": "ਲੁਧਿਆਣਾ",
     # EN: Jalandhar
-    "jalandhar": "",
+    "jalandhar": "ਜਲੰਧਰ",
     # EN: Patiala
-    "patiala": "",
+    "patiala": "ਪਟਿਆਲਾ",
     # EN: Rishikesh
-    "rishikesh": "",
+    "rishikesh": "ਰਿਸ਼ੀਕੇਸ਼",
     # EN: Shimla
-    "shimla": "",
+    "shimla": "ਸ਼ਿਮਲਾ",
     # EN: Jammu
-    "jammu": "",
+    "jammu": "ਜੰਮੂ",
     # EN: Srinagar
-    "srinagar": "",
+    "srinagar": "ਸ੍ਰੀਨਗਰ",
     # EN: Katra
-    "katra": "",
+    "katra": "ਕਟੜਾ",
     # EN: Gwalior
-    "gwalior": "",
+    "gwalior": "ਗਵਾਲੀਅਰ",
     # EN: Jabalpur
-    "jabalpur": "",
+    "jabalpur": "ਜਬਲਪੁਰ",
     # EN: Ujjain
-    "ujjain": "",
+    "ujjain": "ਉੱਜੈਨ",
     # EN: Raipur
-    "raipur": "",
+    "raipur": "ਰਾਇਪੁਰ",
     # EN: Bhilai
-    "bhilai": "",
+    "bhilai": "ਭਿਲਾਈ",
     # EN: Gaya
-    "gaya": "",
+    "gaya": "ਗਯਾ",
     # EN: Bhagalpur
-    "bhagalpur": "",
+    "bhagalpur": "ਭਾਗਲਪੁਰ",
     # EN: Muzaffarpur
-    "muzaffarpur": "",
+    "muzaffarpur": "ਮੁਜ਼ੱਫ਼ਰਪੁਰ",
     # EN: Jamshedpur
-    "jamshedpur": "",
+    "jamshedpur": "ਜਮਸ਼ੇਦਪੁਰ",
     # EN: Dhanbad
-    "dhanbad": "",
+    "dhanbad": "ਧਨਬਾਦ",
     # EN: Deoghar
-    "deoghar": "",
+    "deoghar": "ਦੇਵਘਰ",
     # EN: Howrah
-    "howrah": "",
+    "howrah": "ਹਾਵੜਾ",
     # EN: Asansol
-    "asansol": "",
+    "asansol": "ਆਸਨਸੋਲ",
     # EN: Siliguri
-    "siliguri": "",
+    "siliguri": "ਸਿਲੀਗੁੜੀ",
     # EN: Cuttack
-    "cuttack": "",
+    "cuttack": "ਕਟਕ",
     # EN: Puri
-    "puri": "",
+    "puri": "ਪੁਰੀ",
     # EN: Coimbatore
-    "coimbatore": "",
+    "coimbatore": "ਕੋਇੰਬਟੂਰ",
     # EN: Madurai
-    "madurai": "",
+    "madurai": "ਮਦੁਰਈ",
     # EN: Tiruchirappalli
-    "tiruchirappalli": "",
+    "tiruchirappalli": "ਤਿਰੂਚਿਰਾਪੱਲੀ",
     # EN: Salem
-    "salem": "",
+    "salem": "ਸਲੇਮ",
     # EN: Rameswaram
-    "rameswaram": "",
+    "rameswaram": "ਰਾਮੇਸ਼ਵਰਮ",
     # EN: Thiruvananthapuram
-    "thiruvananthapuram": "",
+    "thiruvananthapuram": "ਤਿਰੂਵਨੰਤਪੁਰਮ",
     # EN: Kozhikode
-    "kozhikode": "",
+    "kozhikode": "ਕੋਜ਼ੀਕੋਡ",
     # EN: Thrissur
-    "thrissur": "",
+    "thrissur": "ਤ੍ਰਿਸ਼ੂਰ",
     # EN: Kollam
-    "kollam": "",
+    "kollam": "ਕੋਲਮ",
     # EN: Kannur
-    "kannur": "",
+    "kannur": "ਕੰਨੂਰ",
     # EN: Malappuram
-    "malappuram": "",
+    "malappuram": "ਮਲੱਪੁਰਮ",
     # EN: Mysuru
-    "mysuru": "",
+    "mysuru": "ਮੈਸੂਰ",
     # EN: Mangaluru
-    "mangaluru": "",
+    "mangaluru": "ਮੰਗਲੁਰੂ",
     # EN: Hubballi
-    "hubballi": "",
+    "hubballi": "ਹੁਬਲੀ",
     # EN: Warangal
-    "warangal": "",
+    "warangal": "ਵਾਰੰਗਲ",
     # EN: Vijayawada
-    "vijayawada": "",
+    "vijayawada": "ਵਿਜੈਵਾੜਾ",
     # EN: Tirupati
-    "tirupati": "",
+    "tirupati": "ਤਿਰੂਪਤੀ",
     # EN: Guntur
-    "guntur": "",
+    "guntur": "ਗੁੰਟੂਰ",
     # EN: Panaji
-    "panaji": "",
+    "panaji": "ਪਣਜੀ",
     # EN: Shillong
-    "shillong": "",
+    "shillong": "ਸ਼ਿਲਾਂਗ",
     # EN: Imphal
-    "imphal": "",
+    "imphal": "ਇੰਫ਼ਾਲ",
     # EN: Agartala
-    "agartala": "",
+    "agartala": "ਅਗਰਤਲਾ",
     # EN: Gangtok
-    "gangtok": "",
+    "gangtok": "ਗੰਗਟੋਕ",
     # EN: Aizawl
-    "aizawl": "",
+    "aizawl": "ਆਈਜ਼ੋਲ",
     # EN: Kohima
-    "kohima": "",
+    "kohima": "ਕੋਹਿਮਾ",
     # EN: Itanagar
-    "itanagar": "",
+    "itanagar": "ਈਟਾਨਗਰ",
     # EN: Puducherry
-    "puducherry": "",
+    "puducherry": "ਪੁਡੂਚੇਰੀ",
 }
 
 # app/seo_city_names.py STATES["pa"] — the states and union territories (key = English state name)  [32]
 STATE_NAMES = {
     # EN: Andhra Pradesh
-    "Andhra Pradesh": "",
+    "Andhra Pradesh": "ਆਂਧਰਾ ਪ੍ਰਦੇਸ਼",
     # EN: Arunachal Pradesh
-    "Arunachal Pradesh": "",
+    "Arunachal Pradesh": "ਅਰੁਣਾਚਲ ਪ੍ਰਦੇਸ਼",
     # EN: Assam
-    "Assam": "",
+    "Assam": "ਅਸਾਮ",
     # EN: Bihar
-    "Bihar": "",
+    "Bihar": "ਬਿਹਾਰ",
     # EN: Chandigarh
-    "Chandigarh": "",
+    "Chandigarh": "ਚੰਡੀਗੜ੍ਹ",
     # EN: Chhattisgarh
-    "Chhattisgarh": "",
+    "Chhattisgarh": "ਛੱਤੀਸਗੜ੍ਹ",
     # EN: Delhi
-    "Delhi": "",
+    "Delhi": "ਦਿੱਲੀ",
     # EN: Goa
-    "Goa": "",
+    "Goa": "ਗੋਆ",
     # EN: Gujarat
-    "Gujarat": "",
+    "Gujarat": "ਗੁਜਰਾਤ",
     # EN: Haryana
-    "Haryana": "",
+    "Haryana": "ਹਰਿਆਣਾ",
     # EN: Himachal Pradesh
-    "Himachal Pradesh": "",
+    "Himachal Pradesh": "ਹਿਮਾਚਲ ਪ੍ਰਦੇਸ਼",
     # EN: Jammu and Kashmir
-    "Jammu and Kashmir": "",
+    "Jammu and Kashmir": "ਜੰਮੂ ਅਤੇ ਕਸ਼ਮੀਰ",
     # EN: Jharkhand
-    "Jharkhand": "",
+    "Jharkhand": "ਝਾਰਖੰਡ",
     # EN: Karnataka
-    "Karnataka": "",
+    "Karnataka": "ਕਰਨਾਟਕ",
     # EN: Kerala
-    "Kerala": "",
+    "Kerala": "ਕੇਰਲ",
     # EN: Madhya Pradesh
-    "Madhya Pradesh": "",
+    "Madhya Pradesh": "ਮੱਧ ਪ੍ਰਦੇਸ਼",
     # EN: Maharashtra
-    "Maharashtra": "",
+    "Maharashtra": "ਮਹਾਰਾਸ਼ਟਰ",
     # EN: Manipur
-    "Manipur": "",
+    "Manipur": "ਮਨੀਪੁਰ",
     # EN: Meghalaya
-    "Meghalaya": "",
+    "Meghalaya": "ਮੇਘਾਲਿਆ",
     # EN: Mizoram
-    "Mizoram": "",
+    "Mizoram": "ਮਿਜ਼ੋਰਮ",
     # EN: Nagaland
-    "Nagaland": "",
+    "Nagaland": "ਨਾਗਾਲੈਂਡ",
     # EN: Odisha
-    "Odisha": "",
+    "Odisha": "ਓਡੀਸ਼ਾ",
     # EN: Puducherry
-    "Puducherry": "",
+    "Puducherry": "ਪੁਡੂਚੇਰੀ",
     # EN: Punjab
-    "Punjab": "",
+    "Punjab": "ਪੰਜਾਬ",
     # EN: Rajasthan
-    "Rajasthan": "",
+    "Rajasthan": "ਰਾਜਸਥਾਨ",
     # EN: Sikkim
-    "Sikkim": "",
+    "Sikkim": "ਸਿੱਕਮ",
     # EN: Tamil Nadu
-    "Tamil Nadu": "",
+    "Tamil Nadu": "ਤਾਮਿਲ ਨਾਡੂ",
     # EN: Telangana
-    "Telangana": "",
+    "Telangana": "ਤੇਲੰਗਾਨਾ",
     # EN: Tripura
-    "Tripura": "",
+    "Tripura": "ਤ੍ਰਿਪੁਰਾ",
     # EN: Uttar Pradesh
-    "Uttar Pradesh": "",
+    "Uttar Pradesh": "ਉੱਤਰ ਪ੍ਰਦੇਸ਼",
     # EN: Uttarakhand
-    "Uttarakhand": "",
+    "Uttarakhand": "ਉੱਤਰਾਖੰਡ",
     # EN: West Bengal
-    "West Bengal": "",
+    "West Bengal": "ਪੱਛਮੀ ਬੰਗਾਲ",
 }
 
 # app/astro/choghadiya.py CHOGHADIYA_INFO["pa"] — one-line description of each of the seven choghadiya slots  [7]
 CHOGHADIYA_DESC = {
     # EN: Best time for all ceremonies, investments, agreements, and starting important endeavors.
-    "Amrit": "",
+    "Amrit": "ਸਾਰੇ ਸੰਸਕਾਰਾਂ, ਨਿਵੇਸ਼ਾਂ, ਸਮਝੌਤਿਆਂ ਅਤੇ ਅਹਿਮ ਕੰਮ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਸਭ ਤੋਂ ਵਧੀਆ ਸਮਾਂ।",
     # EN: Highly auspicious for ceremonies, religious rituals, education, and purchasing property.
-    "Shubh": "",
+    "Shubh": "ਸੰਸਕਾਰਾਂ, ਧਾਰਮਿਕ ਕਰਮਾਂ, ਪੜ੍ਹਾਈ ਅਤੇ ਜਾਇਦਾਦ ਖ਼ਰੀਦਣ ਲਈ ਬਹੁਤ ਸ਼ੁਭ।",
     # EN: Favorable for business, trade, financial transactions, launching products, and interviews.
-    "Labh": "",
+    "Labh": "ਕਾਰੋਬਾਰ, ਵਪਾਰ, ਲੈਣ-ਦੇਣ, ਨਵੀਂ ਚੀਜ਼ ਸ਼ੁਰੂ ਕਰਨ ਅਤੇ ਇੰਟਰਵਿਊ ਲਈ ਅਨੁਕੂਲ।",
     # EN: Neutral. Excellent for journeys, travel, vehicle purchases, and shifting places.
-    "Char": "",
+    "Char": "ਮੱਧਮ। ਯਾਤਰਾ, ਸਫ਼ਰ, ਗੱਡੀ ਖ਼ਰੀਦਣ ਅਤੇ ਟਿਕਾਣਾ ਬਦਲਣ ਲਈ ਬਹੁਤ ਵਧੀਆ।",
     # EN: Inauspicious. Avoid medical procedures or conflict. Only suitable for competitive sports
     #     or defeating rivals.
-    "Rog": "",
+    "Rog": "ਅਸ਼ੁਭ। ਡਾਕਟਰੀ ਇਲਾਜ ਜਾਂ ਝਗੜੇ ਤੋਂ ਬਚੋ। ਸਿਰਫ਼ ਮੁਕਾਬਲੇ ਵਾਲੀਆਂ ਖੇਡਾਂ ਜਾਂ ਵਿਰੋਧੀਆਂ ਨੂੰ ਹਰਾਉਣ ਲਈ ਠੀਕ।",
     # EN: Inauspicious. Ruled by Saturn; causes delays and setbacks. Avoid new ventures or signing
     #     documents.
-    "Kaal": "",
+    "Kaal": "ਅਸ਼ੁਭ। ਸ਼ਨੀ ਦੇ ਅਧੀਨ; ਦੇਰੀ ਅਤੇ ਰੁਕਾਵਟਾਂ ਪਾਉਂਦਾ ਹੈ। ਨਵੇਂ ਕੰਮ ਜਾਂ ਦਸਤਾਵੇਜ਼ਾਂ ’ਤੇ ਦਸਤਖ਼ਤ ਤੋਂ ਬਚੋ।",
     # EN: Inauspicious. Causes restlessness and anxiety. Favorable only for government filings or
     #     official duties.
-    "Udveg": "",
+    "Udveg": "ਅਸ਼ੁਭ। ਬੇਚੈਨੀ ਅਤੇ ਚਿੰਤਾ ਪੈਦਾ ਕਰਦਾ ਹੈ। ਸਿਰਫ਼ ਸਰਕਾਰੀ ਕਾਗਜ਼ਾਂ ਜਾਂ ਦਫ਼ਤਰੀ ਡਿਊਟੀਆਂ ਲਈ ਅਨੁਕੂਲ।",
 }
 
 # ----------------------------------------------------------------------------
@@ -2919,37 +2919,37 @@ HUB_LABELS = {
 # app/astro_terms.py TERMS["pa"] — house / dasha / sign vocabulary for the AI narration and the chart labels  [16]
 ASTRO_TERMS = {
     # EN: house
-    "house": "",
+    "house": "ਭਾਵ",
     # EN: sign
-    "sign": "",
+    "sign": "ਰਾਸ਼ੀ",
     # EN: lord
-    "lord": "",
+    "lord": "ਸੁਆਮੀ",
     # EN: dasha
-    "dasha": "",
+    "dasha": "ਦਸ਼ਾ",
     # EN: mahadasha
-    "mahadasha": "",
+    "mahadasha": "ਮਹਾਦਸ਼ਾ",
     # EN: antardasha
-    "antardasha": "",
+    "antardasha": "ਅੰਤਰਦਸ਼ਾ",
     # EN: ascendant
-    "ascendant": "",
+    "ascendant": "ਲਗਨ",
     # EN: transit
-    "transit": "",
+    "transit": "ਗੋਚਰ",
     # EN: retrograde
-    "retrograde": "",
+    "retrograde": "ਵੱਕਰੀ",
     # EN: exalted
-    "exalted": "",
+    "exalted": "ਉੱਚ ਦਾ",
     # EN: debilitated
-    "debilitated": "",
+    "debilitated": "ਨੀਚ ਦਾ",
     # EN: own sign
-    "own sign": "",
+    "own sign": "ਆਪਣੀ ਰਾਸ਼ੀ",
     # EN: Sade Sati
-    "Sade Sati": "",
+    "Sade Sati": "ਸਾੜ੍ਹਸਾਤੀ",
     # EN: Navamsa
-    "Navamsa": "",
+    "Navamsa": "ਨਵਾਂਸ਼",
     # EN: yoga
-    "yoga": "",
+    "yoga": "ਯੋਗ",
     # EN: remedy
-    "remedy": "",
+    "remedy": "ਉਪਾਅ",
 }
 
 # app/astro_terms.py MONTH_VARIANTS["pa"] — other spellings of a Gregorian month the AI may write (month number -> spellings)
