@@ -483,6 +483,9 @@ def report(code: str, results: list[Result], *, limit: int = 8, quiet: bool = Fa
             continue
         summary = ", ".join(f"{len(v)} {k}" for k, v in r.problems.items())
         print(f"  FAIL  {r.name:<28} {r.filled}/{r.total} filled: {summary}", file=out)
+        if list(r.problems) == ["empty"] and len(r.problems["empty"]) == r.total and limit < 10 ** 5:
+            print("          (nothing translated yet; --all lists every key)", file=out)
+            continue
         for cat, details in r.problems.items():
             for d in details[:limit]:
                 print(f"          {cat}: {d}", file=out)
