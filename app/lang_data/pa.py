@@ -20,7 +20,7 @@ from __future__ import annotations
 
 # Page modules that are complete for this language (the table groups below):
 #   "seo" "rashifal" "vrat" "nakshatra" "muhurat" "recurring" "hub" "app"
-READY = frozenset({"seo", "app", "rashifal", "hub", "vrat"})
+READY = frozenset({"seo", "app", "rashifal", "hub", "vrat", "recurring"})
 
 # Latin-script words the pa text may keep besides the defaults (WhatsApp, UPI, PDF ...).
 ALLOW_LATIN = frozenset({"name", "gmail.com"})  # the e-mail placeholder name@gmail.com
@@ -2658,99 +2658,99 @@ MUHURAT_MONTHS = ()   # or 12 month names, January first
 # app/recurring_text.py TEXT["pa"] — page text of /purnima-<year>, /amavasya-<year>, /pradosh-vrat-<year> ... (the keys it shares with VRAT_TEXT are taken from there)  [60]
 RECURRING_TEXT = {
     # EN: Full Moon Dates and Tithi Time
-    "what.purnima": "",
+    "what.purnima": "ਪੂਰਨਮਾਸ਼ੀ ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਤਿਥੀ ਦਾ ਸਮਾਂ",
     # EN: New Moon Dates and Tithi Time
-    "what.amavasya": "",
+    "what.amavasya": "ਮੱਸਿਆ ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਤਿਥੀ ਦਾ ਸਮਾਂ",
     # EN: All Dates and Pradosh Puja Time
-    "what.pradosh": "",
+    "what.pradosh": "ਸਾਰੀਆਂ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਪ੍ਰਦੋਸ਼ ਪੂਜਾ ਦਾ ਸਮਾਂ",
     # EN: All Dates and Moonrise Time
-    "what.sankashti": "",
+    "what.sankashti": "ਸਾਰੀਆਂ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਦਾ ਸਮਾਂ",
     # EN: All Dates and Nishita Puja Time
-    "what.masik_shivratri": "",
+    "what.masik_shivratri": "ਸਾਰੀਆਂ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਨਿਸ਼ੀਥ ਪੂਜਾ ਦਾ ਸਮਾਂ",
     # EN: All Dates and Kala Bhairav Puja
-    "what.kalashtami": "",
+    "what.kalashtami": "ਸਾਰੀਆਂ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਕਾਲ ਭੈਰਵ ਪੂਜਾ",
     # EN: {name} {year}: {what} (New Delhi)
     # keep: {name} {what} {year}
-    "title": "",
+    "title": "{name} {year}: {what} (ਨਵੀਂ ਦਿੱਲੀ)",
     # EN: {name} {year}: {what}
     # keep: {name} {what} {year}
-    "h1": "",
+    "h1": "{name} {year}: {what}",
     # EN: All {count} {name} dates in {year} with weekday, Hindu month and tithi start and end for
     #     New Delhi. {about}{keytime}{next}
     # keep: {about} {count} {keytime} {name} {next} {year}
-    "desc": "",
+    "desc": "{year} ਵਿੱਚ {name} ਦੀਆਂ ਸਾਰੀਆਂ {count} ਤਾਰੀਖ਼ਾਂ, ਵਾਰ, ਹਿੰਦੂ ਮਹੀਨੇ ਅਤੇ ਤਿਥੀ ਦੇ ਸ਼ੁਰੂ ਤੇ ਅੰਤ ਸਮੇਤ, ਨਵੀਂ ਦਿੱਲੀ ਲਈ। {about}{keytime}{next}",
     # EN: Full-moon vrat days for Satyanarayan puja, bathing and charity.
-    "desc.about.purnima": "",
+    "desc.about.purnima": "ਸਤਿਨਾਰਾਇਣ ਪੂਜਾ, ਇਸ਼ਨਾਨ ਅਤੇ ਦਾਨ ਲਈ ਪੂਰਨਮਾਸ਼ੀ ਦੇ ਵਰਤ ਦੇ ਦਿਨ।",
     # EN: New-moon days for shraddha and tarpan, with Somvati and Shani Amavasya.
-    "desc.about.amavasya": "",
+    "desc.about.amavasya": "ਸ਼ਰਾਧ ਅਤੇ ਤਰਪਣ ਲਈ ਮੱਸਿਆ ਦੇ ਦਿਨ, ਸੋਮਵਤੀ ਅਤੇ ਸ਼ਨੀ ਮੱਸਿਆ ਸਮੇਤ।",
     # EN: Lord Shiva's twilight fast on Trayodashi, with the puja window.
-    "desc.about.pradosh": "",
+    "desc.about.pradosh": "ਤ੍ਰਯੋਦਸ਼ੀ ਨੂੰ ਭਗਵਾਨ ਸ਼ਿਵ ਦਾ ਸੰਧਿਆ ਵਰਤ, ਪੂਜਾ ਦੇ ਸਮੇਂ ਸਮੇਤ।",
     # EN: Lord Ganesha's fast on Krishna Chaturthi, broken after moonrise.
-    "desc.about.sankashti": "",
+    "desc.about.sankashti": "ਕ੍ਰਿਸ਼ਨ ਚੌਥ ਨੂੰ ਭਗਵਾਨ ਗਣੇਸ਼ ਦਾ ਵਰਤ, ਜੋ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਤੋਂ ਬਾਅਦ ਖੋਲ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: The monthly night of Shiva on Krishna Chaturdashi, with the midnight puja.
-    "desc.about.masik_shivratri": "",
+    "desc.about.masik_shivratri": "ਕ੍ਰਿਸ਼ਨ ਚੌਦਸ ਨੂੰ ਸ਼ਿਵ ਦੀ ਮਹੀਨਾਵਾਰ ਰਾਤ, ਅੱਧੀ ਰਾਤ ਦੀ ਪੂਜਾ ਸਮੇਤ।",
     # EN: Kala Bhairava worship on Krishna Ashtami, every month.
-    "desc.about.kalashtami": "",
+    "desc.about.kalashtami": "ਹਰ ਮਹੀਨੇ ਕ੍ਰਿਸ਼ਨ ਅਸ਼ਟਮੀ ਨੂੰ ਕਾਲ ਭੈਰਵ ਦੀ ਪੂਜਾ।",
     # EN: Includes {label}.
     # keep: {label}
-    "desc.key": "",
+    "desc.key": "{label} ਸਮੇਤ।",
     # EN: Next: {date}.
     # keep: {date}
-    "desc.next": "",
+    "desc.next": "ਅਗਲੀ: {date}।",
     # EN: The next {name} is on <strong>{when}</strong> ({details}).
     # keep: {details} {name} {when}
-    "ans.next": "",
+    "ans.next": "{name} ਦੀ ਅਗਲੀ ਤਾਰੀਖ਼ <strong>{when}</strong> ਹੈ ({details})।",
     # EN: The first {name} of {year} is on <strong>{when}</strong> ({details}). All {count} dates
     #     for {year} are listed below.
     # keep: {count} {details} {name} {when} {year}
-    "ans.first": "",
+    "ans.first": "{year} ਵਿੱਚ {name} ਦੀ ਪਹਿਲੀ ਤਾਰੀਖ਼ <strong>{when}</strong> ਹੈ ({details})। {year} ਦੀਆਂ ਸਾਰੀਆਂ {count} ਤਾਰੀਖ਼ਾਂ ਹੇਠਾਂ ਦਿੱਤੀਆਂ ਹਨ।",
     # EN: All {count} {name} dates for {year} are listed below; the last was on
     #     <strong>{when}</strong>.
     # keep: {count} {name} {when} {year}
-    "ans.past": "",
+    "ans.past": "{year} ਵਿੱਚ {name} ਦੀਆਂ ਸਾਰੀਆਂ {count} ਤਾਰੀਖ਼ਾਂ ਹੇਠਾਂ ਦਿੱਤੀਆਂ ਹਨ; ਆਖ਼ਰੀ ਤਾਰੀਖ਼ <strong>{when}</strong> ਸੀ।",
     # EN: Dates for {year}: {link}.
     # keep: {link} {year}
-    "ans.more": "",
+    "ans.more": "{year} ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ: {link}।",
     # EN: {name} {year}: all dates
     # keep: {name} {year}
-    "table.h2": "",
+    "table.h2": "{name} {year}: ਸਾਰੀਆਂ ਤਾਰੀਖ਼ਾਂ",
     # EN: Date
-    "th.date": "",
+    "th.date": "ਤਾਰੀਖ਼",
     # EN: Hindu month
-    "th.month": "",
+    "th.month": "ਹਿੰਦੂ ਮਹੀਨਾ",
     # EN: Tithi
-    "th.tithi": "",
+    "th.tithi": "ਤਿਥੀ",
     # EN: Adhik {month}
     # keep: {month}
-    "adhika": "",
+    "adhika": "ਅਧਿਕ {month}",
     # EN: Also:
-    "also": "",
+    "also": "ਇਹ ਵੀ:",
     # EN: <p class="note"><small>Months are amanta (a month ends on Amavasya, as in South and West
     #     India). North Indian purnimanta calendars name the dark fortnight one month
     #     later.</small></p>
-    "months.note": "",
+    "months.note": "<p class=\"note\"><small>ਮਹੀਨੇ ਅਮਾਂਤ ਹਨ (ਮਹੀਨਾ ਮੱਸਿਆ ’ਤੇ ਖ਼ਤਮ ਹੁੰਦਾ ਹੈ, ਜਿਵੇਂ ਦੱਖਣੀ ਅਤੇ ਪੱਛਮੀ ਭਾਰਤ ਵਿੱਚ)। ਉੱਤਰੀ ਭਾਰਤ ਦੇ ਪੂਰਨਿਮਾਂਤ ਕੈਲੰਡਰ ਕ੍ਰਿਸ਼ਨ ਪੱਖ ਨੂੰ ਇੱਕ ਮਹੀਨਾ ਅੱਗੇ ਦਾ ਨਾਂ ਦਿੰਦੇ ਹਨ।</small></p>",
     # EN: Som Pradosh
-    "variant.pradosh.0": "",
+    "variant.pradosh.0": "ਸੋਮ ਪ੍ਰਦੋਸ਼",
     # EN: Bhauma Pradosh
-    "variant.pradosh.1": "",
+    "variant.pradosh.1": "ਭੌਮ ਪ੍ਰਦੋਸ਼",
     # EN: Shani Pradosh
-    "variant.pradosh.5": "",
+    "variant.pradosh.5": "ਸ਼ਨੀ ਪ੍ਰਦੋਸ਼",
     # EN: Angarki Chaturthi
-    "variant.sankashti.1": "",
+    "variant.sankashti.1": "ਅੰਗਾਰਕੀ ਚੌਥ",
     # EN: Somvati Amavasya
-    "variant.amavasya.0": "",
+    "variant.amavasya.0": "ਸੋਮਵਤੀ ਮੱਸਿਆ",
     # EN: Shani Amavasya
-    "variant.amavasya.5": "",
+    "variant.amavasya.5": "ਸ਼ਨੀ ਮੱਸਿਆ",
     # EN: What {name} is and how it is observed
     # keep: {name}
-    "about.h2": "",
+    "about.h2": "{name} ਕੀ ਹੈ ਅਤੇ ਇਸ ਨੂੰ ਕਿਵੇਂ ਮਨਾਇਆ ਜਾਂਦਾ ਹੈ",
     # EN: Panchang for your city
-    "city.h2": "",
+    "city.h2": "ਤੁਹਾਡੇ ਸ਼ਹਿਰ ਦਾ ਪੰਚਾਂਗ",
     # EN: Related dates and calendars
-    "related.h2": "",
+    "related.h2": "ਸੰਬੰਧਿਤ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਕੈਲੰਡਰ",
     # EN: {name} {year}
     # keep: {name} {year}
-    "crumb.page": "",
+    "crumb.page": "{name} {year}",
     # EN: <p>Purnima is the full-moon tithi, the last (15th) tithi of the bright fortnight (Shukla
     #     paksha), when the Moon stands opposite the Sun and shines full. Devotees keep a fast,
     #     bathe at dawn (in a river or tirtha where they can), worship Lord Vishnu - Satyanarayan
@@ -2758,7 +2758,7 @@ RECURRING_TEXT = {
     #     (daan) of food, clothes or money on this day is said to bring multiplied merit.</p><p>Some
     #     Purnimas are festivals in their own right: Guru Purnima, Sharad Purnima, Kartik Purnima
     #     and Buddha Purnima, and Holika Dahan is kept on the Purnima of Phalguna.</p>
-    "about.purnima": "",
+    "about.purnima": "<p>ਪੂਰਨਮਾਸ਼ੀ ਚੰਦਰਮਾ ਦੇ ਪੂਰੇ ਹੋਣ ਦੀ ਤਿਥੀ ਹੈ, ਸ਼ੁਕਲ ਪੱਖ ਦੀ ਆਖ਼ਰੀ (15ਵੀਂ) ਤਿਥੀ, ਜਦੋਂ ਚੰਦਰਮਾ ਸੂਰਜ ਦੇ ਸਾਹਮਣੇ ਹੁੰਦਾ ਹੈ ਅਤੇ ਪੂਰਾ ਚਮਕਦਾ ਹੈ। ਸ਼ਰਧਾਲੂ ਵਰਤ ਰੱਖਦੇ ਹਨ, ਤੜਕੇ ਇਸ਼ਨਾਨ ਕਰਦੇ ਹਨ (ਜਿੱਥੇ ਹੋ ਸਕੇ ਦਰਿਆ ਜਾਂ ਤੀਰਥ ਵਿੱਚ), ਭਗਵਾਨ ਵਿਸ਼ਨੂੰ ਦੀ ਪੂਜਾ ਕਰਦੇ ਹਨ - ਸਤਿਨਾਰਾਇਣ ਕਥਾ ਪੂਰਨਮਾਸ਼ੀ ਦੀ ਆਮ ਪੂਜਾ ਹੈ - ਅਤੇ ਸ਼ਾਮ ਨੂੰ ਚੰਦਰਮਾ ਨੂੰ ਅਰਘ ਦਿੰਦੇ ਹਨ। ਇਸ ਦਿਨ ਭੋਜਨ, ਕੱਪੜੇ ਜਾਂ ਪੈਸੇ ਦਾ ਦਾਨ ਕਈ ਗੁਣਾ ਪੁੰਨ ਦੇਣ ਵਾਲਾ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ।</p><p>ਕੁਝ ਪੂਰਨਮਾਸ਼ੀਆਂ ਆਪਣੇ ਆਪ ਵਿੱਚ ਤਿਉਹਾਰ ਹਨ: ਗੁਰੂ ਪੂਰਨਿਮਾ, ਸ਼ਰਦ ਪੂਰਨਿਮਾ, ਕੱਤਕ ਪੂਰਨਮਾਸ਼ੀ ਅਤੇ ਬੁੱਧ ਪੂਰਨਿਮਾ, ਅਤੇ ਹੋਲਿਕਾ ਦਹਨ ਫੱਗਣ ਦੀ ਪੂਰਨਮਾਸ਼ੀ ਨੂੰ ਹੁੰਦਾ ਹੈ।</p>",
     # EN: <p>Amavasya is the new-moon tithi, the 30th and last tithi of the dark fortnight (Krishna
     #     paksha), when the Moon is in conjunction with the Sun and cannot be seen. It is the day of
     #     the ancestors (pitru): families offer tarpan and shraddha, feed Brahmins and the poor,
@@ -2766,7 +2766,7 @@ RECURRING_TEXT = {
     #     new.</p><p>An Amavasya on a Monday is called Somvati Amavasya and one on a Saturday Shani
     #     Amavasya, both given extra weight. The great Amavasyas are Mauni Amavasya, Sarva Pitru
     #     Amavasya (the end of Pitru Paksha) and the Amavasya of Diwali.</p>
-    "about.amavasya": "",
+    "about.amavasya": "<p>ਮੱਸਿਆ ਨਵੇਂ ਚੰਦਰਮਾ ਦੀ ਤਿਥੀ ਹੈ, ਕ੍ਰਿਸ਼ਨ ਪੱਖ ਦੀ 30ਵੀਂ ਅਤੇ ਆਖ਼ਰੀ ਤਿਥੀ, ਜਦੋਂ ਚੰਦਰਮਾ ਸੂਰਜ ਨਾਲ ਯੁਤੀ ਵਿੱਚ ਹੁੰਦਾ ਹੈ ਅਤੇ ਦਿਖਾਈ ਨਹੀਂ ਦਿੰਦਾ। ਇਹ ਪਿਤਰਾਂ ਦਾ ਦਿਨ ਹੈ: ਪਰਿਵਾਰ ਤਰਪਣ ਅਤੇ ਸ਼ਰਾਧ ਕਰਦੇ ਹਨ, ਬ੍ਰਾਹਮਣਾਂ ਅਤੇ ਗ਼ਰੀਬਾਂ ਨੂੰ ਭੋਜਨ ਖੁਆਉਂਦੇ ਹਨ, ਦਾਨ ਦਿੰਦੇ ਹਨ ਅਤੇ ਪਵਿੱਤਰ ਜਲ ਵਿੱਚ ਇਸ਼ਨਾਨ ਕਰਦੇ ਹਨ। ਬਹੁਤ ਸਾਰੇ ਲੋਕ ਵਰਤ ਰੱਖਦੇ ਹਨ ਅਤੇ ਕੋਈ ਨਵਾਂ ਕੰਮ ਸ਼ੁਰੂ ਕਰਨ ਤੋਂ ਬਚਦੇ ਹਨ।</p><p>ਸੋਮਵਾਰ ਨੂੰ ਪੈਣ ਵਾਲੀ ਮੱਸਿਆ ਨੂੰ ਸੋਮਵਤੀ ਮੱਸਿਆ ਅਤੇ ਸ਼ਨਿੱਚਰਵਾਰ ਨੂੰ ਪੈਣ ਵਾਲੀ ਨੂੰ ਸ਼ਨੀ ਮੱਸਿਆ ਕਿਹਾ ਜਾਂਦਾ ਹੈ, ਦੋਵਾਂ ਨੂੰ ਵਾਧੂ ਮਹੱਤਵ ਦਿੱਤਾ ਜਾਂਦਾ ਹੈ। ਵੱਡੀਆਂ ਮੱਸਿਆਵਾਂ ਹਨ ਮੌਨੀ ਮੱਸਿਆ, ਸਰਵ ਪਿਤਰ ਮੱਸਿਆ (ਪਿਤਰ ਪੱਖ ਦਾ ਅੰਤ) ਅਤੇ ਦੀਵਾਲੀ ਦੀ ਮੱਸਿਆ।</p>",
     # EN: <p>Pradosh Vrat is the fast of Lord Shiva kept on Trayodashi, the 13th tithi, of both
     #     fortnights - so twice a month. Pradosh kaal is the twilight window just after sunset, when
     #     Shiva is believed to be most pleased. Devotees fast through the day, bathe, and do Shiva
@@ -2774,7 +2774,7 @@ RECURRING_TEXT = {
     #     the Pradosh stotra or Shiva Chalisa. The fast is broken after the puja.</p><p>A Pradosh on
     #     Monday is Som Pradosh, on Tuesday Bhauma Pradosh and on Saturday Shani Pradosh; the
     #     Saturday one is considered especially powerful.</p>
-    "about.pradosh": "",
+    "about.pradosh": "<p>ਪ੍ਰਦੋਸ਼ ਵਰਤ ਭਗਵਾਨ ਸ਼ਿਵ ਦਾ ਵਰਤ ਹੈ ਜੋ ਦੋਵਾਂ ਪੱਖਾਂ ਦੀ ਤ੍ਰਯੋਦਸ਼ੀ, 13ਵੀਂ ਤਿਥੀ, ਨੂੰ ਰੱਖਿਆ ਜਾਂਦਾ ਹੈ - ਯਾਨੀ ਮਹੀਨੇ ਵਿੱਚ ਦੋ ਵਾਰ। ਪ੍ਰਦੋਸ਼ ਕਾਲ ਸੂਰਜ ਛਿਪਣ ਤੋਂ ਠੀਕ ਬਾਅਦ ਦਾ ਸੰਧਿਆ ਸਮਾਂ ਹੈ, ਜਦੋਂ ਸ਼ਿਵ ਸਭ ਤੋਂ ਵੱਧ ਪ੍ਰਸੰਨ ਮੰਨੇ ਜਾਂਦੇ ਹਨ। ਸ਼ਰਧਾਲੂ ਸਾਰਾ ਦਿਨ ਵਰਤ ਰੱਖਦੇ ਹਨ, ਇਸ਼ਨਾਨ ਕਰਦੇ ਹਨ ਅਤੇ ਪ੍ਰਦੋਸ਼ ਦੇ ਸਮੇਂ ਸ਼ਿਵ ਪੂਜਾ ਕਰਦੇ ਹਨ: ਜਲ, ਦੁੱਧ ਅਤੇ ਬੇਲ ਪੱਤਰ ਨਾਲ ਅਭਿਸ਼ੇਕ, ਦੀਵਾ ਅਤੇ ਪ੍ਰਦੋਸ਼ ਸਤੋਤਰ ਜਾਂ ਸ਼ਿਵ ਚਾਲੀਸਾ। ਵਰਤ ਪੂਜਾ ਤੋਂ ਬਾਅਦ ਖੋਲ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।</p><p>ਸੋਮਵਾਰ ਨੂੰ ਪ੍ਰਦੋਸ਼ ਸੋਮ ਪ੍ਰਦੋਸ਼, ਮੰਗਲਵਾਰ ਨੂੰ ਭੌਮ ਪ੍ਰਦੋਸ਼ ਅਤੇ ਸ਼ਨਿੱਚਰਵਾਰ ਨੂੰ ਸ਼ਨੀ ਪ੍ਰਦੋਸ਼ ਹੁੰਦਾ ਹੈ; ਸ਼ਨਿੱਚਰਵਾਰ ਵਾਲਾ ਖ਼ਾਸ ਤੌਰ ’ਤੇ ਸ਼ਕਤੀਸ਼ਾਲੀ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ।</p>",
     # EN: <p>Sankashti Chaturthi (Sankat Hara Chaturthi) is the monthly fast of Lord Ganesha on
     #     Chaturthi, the 4th tithi, of the dark fortnight (Krishna paksha); "sankashti" means
     #     deliverance from trouble. Devotees fast through the day, worship Ganesha in the evening
@@ -2782,86 +2782,86 @@ RECURRING_TEXT = {
     #     moonrise is the key time on this page.</p><p>A Sankashti on a Tuesday is Angarki Sankashti
     #     Chaturthi, believed to be especially fruitful. The Sankashti of Magha (purnimanta) is kept
     #     in North India as Sakat Chauth.</p>
-    "about.sankashti": "",
+    "about.sankashti": "<p>ਸੰਕਸ਼ਟੀ ਚੌਥ (ਸੰਕਟ ਹਰਾ ਚਤੁਰਥੀ) ਕ੍ਰਿਸ਼ਨ ਪੱਖ ਦੀ ਚਤੁਰਥੀ, ਚੌਥੀ ਤਿਥੀ, ਨੂੰ ਭਗਵਾਨ ਗਣੇਸ਼ ਦਾ ਮਹੀਨਾਵਾਰ ਵਰਤ ਹੈ; “ਸੰਕਸ਼ਟੀ” ਦਾ ਮਤਲਬ ਹੈ ਮੁਸੀਬਤ ਤੋਂ ਛੁਟਕਾਰਾ। ਸ਼ਰਧਾਲੂ ਸਾਰਾ ਦਿਨ ਵਰਤ ਰੱਖਦੇ ਹਨ, ਸ਼ਾਮ ਨੂੰ ਗਣੇਸ਼ ਦੀ ਪੂਜਾ ਕਰਦੇ ਹਨ ਅਤੇ ਚੰਦਰਮਾ ਨੂੰ ਵੇਖ ਕੇ ਤੇ ਉਸ ਨੂੰ ਅਰਘ ਦੇ ਕੇ ਹੀ ਵਰਤ ਖੋਲ੍ਹਦੇ ਹਨ, ਇਸੇ ਲਈ ਇਸ ਪੰਨੇ ’ਤੇ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਦਾ ਸਮਾਂ ਮੁੱਖ ਸਮਾਂ ਹੈ।</p><p>ਮੰਗਲਵਾਰ ਨੂੰ ਪੈਣ ਵਾਲੀ ਸੰਕਸ਼ਟੀ ਅੰਗਾਰਕੀ ਸੰਕਸ਼ਟੀ ਚਤੁਰਥੀ ਹੈ, ਜੋ ਖ਼ਾਸ ਤੌਰ ’ਤੇ ਫਲਦਾਇਕ ਮੰਨੀ ਜਾਂਦੀ ਹੈ। ਮਾਘ (ਪੂਰਨਿਮਾਂਤ) ਦੀ ਸੰਕਸ਼ਟੀ ਉੱਤਰੀ ਭਾਰਤ ਵਿੱਚ ਸਕਟ ਚੌਥ ਵਜੋਂ ਮਨਾਈ ਜਾਂਦੀ ਹੈ।</p>",
     # EN: <p>Masik Shivratri (monthly Shivratri) is the night of Lord Shiva kept on Chaturdashi, the
     #     14th tithi, of the dark fortnight (Krishna paksha) every month. Devotees fast and keep
     #     vigil through the night, bathing the Shiva linga with water, milk, honey and bilva leaves
     #     and chanting "Om Namah Shivaya". The best time for the puja is Nishita kaal, the midnight
     #     window.</p><p>Maha Shivratri, which falls on Krishna Chaturdashi of Phalguna (Magha in the
     #     amanta calendar), is the greatest of the twelve.</p>
-    "about.masik_shivratri": "",
+    "about.masik_shivratri": "<p>ਮਾਸਿਕ ਸ਼ਿਵਰਾਤਰੀ (ਮਹੀਨਾਵਾਰ ਸ਼ਿਵਰਾਤਰੀ) ਹਰ ਮਹੀਨੇ ਕ੍ਰਿਸ਼ਨ ਪੱਖ ਦੀ ਚੌਦਸ, 14ਵੀਂ ਤਿਥੀ, ਨੂੰ ਭਗਵਾਨ ਸ਼ਿਵ ਦੀ ਰਾਤ ਹੈ। ਸ਼ਰਧਾਲੂ ਵਰਤ ਰੱਖਦੇ ਹਨ ਅਤੇ ਰਾਤ ਭਰ ਜਾਗਦੇ ਹਨ, ਸ਼ਿਵਲਿੰਗ ਨੂੰ ਜਲ, ਦੁੱਧ, ਸ਼ਹਿਦ ਅਤੇ ਬੇਲ ਪੱਤਰ ਨਾਲ ਇਸ਼ਨਾਨ ਕਰਾਉਂਦੇ ਹਨ ਅਤੇ “ਓਮ ਨਮਃ ਸ਼ਿਵਾਯ” ਦਾ ਜਾਪ ਕਰਦੇ ਹਨ। ਪੂਜਾ ਲਈ ਸਭ ਤੋਂ ਵਧੀਆ ਸਮਾਂ ਨਿਸ਼ੀਥ ਕਾਲ, ਅੱਧੀ ਰਾਤ ਦਾ ਸਮਾਂ, ਹੈ।</p><p>ਮਹਾਂ ਸ਼ਿਵਰਾਤਰੀ, ਜੋ ਫੱਗਣ ਦੀ ਕ੍ਰਿਸ਼ਨ ਚੌਦਸ (ਅਮਾਂਤ ਕੈਲੰਡਰ ਵਿੱਚ ਮਾਘ) ਨੂੰ ਆਉਂਦੀ ਹੈ, ਇਨ੍ਹਾਂ ਬਾਰਾਂ ਵਿੱਚੋਂ ਸਭ ਤੋਂ ਮਹਾਨ ਹੈ।</p>",
     # EN: <p>Kalashtami (Kala Ashtami) is the monthly day of Lord Kala Bhairava, the fierce form of
     #     Shiva who guards time, kept on Ashtami, the 8th tithi, of the dark fortnight (Krishna
     #     paksha). Devotees fast, worship Bhairava at night with a mustard-oil lamp and offerings
     #     such as black sesame, and feed dogs, which are associated with him.</p><p>The Kalashtami
     #     of Margashirsha in the purnimanta calendar (Kartika in the amanta calendar) is
     #     Kalabhairava Jayanti, his appearance day and the most important of the year.</p>
-    "about.kalashtami": "",
+    "about.kalashtami": "<p>ਕਾਲ ਅਸ਼ਟਮੀ ਭਗਵਾਨ ਕਾਲ ਭੈਰਵ, ਸ਼ਿਵ ਦੇ ਉਸ ਭਿਆਨਕ ਰੂਪ ਜੋ ਸਮੇਂ ਦੀ ਰਾਖੀ ਕਰਦਾ ਹੈ, ਦਾ ਮਹੀਨਾਵਾਰ ਦਿਨ ਹੈ, ਜੋ ਕ੍ਰਿਸ਼ਨ ਪੱਖ ਦੀ ਅਸ਼ਟਮੀ, 8ਵੀਂ ਤਿਥੀ, ਨੂੰ ਮਨਾਇਆ ਜਾਂਦਾ ਹੈ। ਸ਼ਰਧਾਲੂ ਵਰਤ ਰੱਖਦੇ ਹਨ, ਰਾਤ ਨੂੰ ਸਰ੍ਹੋਂ ਦੇ ਤੇਲ ਦੇ ਦੀਵੇ ਅਤੇ ਕਾਲੇ ਤਿਲ ਵਰਗੀਆਂ ਭੇਟਾਂ ਨਾਲ ਭੈਰਵ ਦੀ ਪੂਜਾ ਕਰਦੇ ਹਨ, ਅਤੇ ਕੁੱਤਿਆਂ ਨੂੰ ਖੁਆਉਂਦੇ ਹਨ, ਜੋ ਉਨ੍ਹਾਂ ਨਾਲ ਜੁੜੇ ਮੰਨੇ ਜਾਂਦੇ ਹਨ।</p><p>ਪੂਰਨਿਮਾਂਤ ਕੈਲੰਡਰ ਵਿੱਚ ਮੱਘਰ ਦੀ (ਅਮਾਂਤ ਕੈਲੰਡਰ ਵਿੱਚ ਕੱਤਕ ਦੀ) ਕਾਲ ਅਸ਼ਟਮੀ ਕਾਲ ਭੈਰਵ ਜਯੰਤੀ ਹੈ, ਉਨ੍ਹਾਂ ਦਾ ਪ੍ਰਗਟ ਦਿਵਸ ਅਤੇ ਸਾਲ ਦਾ ਸਭ ਤੋਂ ਅਹਿਮ ਦਿਨ।</p>",
     # EN: Purnima can begin one evening and end the next afternoon, so the day the tithi starts and
     #     the day of the vrat can differ. The rule settles it: the vrat goes to the day on which the
     #     tithi covers Madhyahna (the middle fifth of the daytime); if it covers Madhyahna on both
     #     days, the earlier day is taken. Some traditions use the sunrise tithi for the holy bath
     #     and charity instead; the table gives the start and end of the tithi so you can check.
-    "note.purnima": "",
+    "note.purnima": "ਪੂਰਨਮਾਸ਼ੀ ਇੱਕ ਸ਼ਾਮ ਸ਼ੁਰੂ ਹੋ ਕੇ ਅਗਲੇ ਦਿਨ ਦੁਪਹਿਰ ਤੋਂ ਬਾਅਦ ਖ਼ਤਮ ਹੋ ਸਕਦੀ ਹੈ, ਇਸ ਲਈ ਤਿਥੀ ਸ਼ੁਰੂ ਹੋਣ ਦਾ ਦਿਨ ਅਤੇ ਵਰਤ ਦਾ ਦਿਨ ਵੱਖਰੇ ਹੋ ਸਕਦੇ ਹਨ। ਨਿਯਮ ਇਸ ਨੂੰ ਤੈਅ ਕਰਦਾ ਹੈ: ਵਰਤ ਉਸ ਦਿਨ ਦਾ ਹੁੰਦਾ ਹੈ ਜਿਸ ਦਿਨ ਤਿਥੀ ਮੱਧਾਹਨ (ਦਿਨ ਦਾ ਵਿਚਕਾਰਲਾ ਪੰਜਵਾਂ ਹਿੱਸਾ) ਨੂੰ ਢੱਕੇ; ਜੇ ਇਹ ਦੋਵਾਂ ਦਿਨਾਂ ਦੇ ਮੱਧਾਹਨ ਨੂੰ ਢੱਕੇ ਤਾਂ ਪਹਿਲਾ ਦਿਨ ਲਿਆ ਜਾਂਦਾ ਹੈ। ਕੁਝ ਰਵਾਇਤਾਂ ਪਵਿੱਤਰ ਇਸ਼ਨਾਨ ਅਤੇ ਦਾਨ ਲਈ ਇਸ ਦੀ ਥਾਂ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਦੀ ਤਿਥੀ ਵਰਤਦੀਆਂ ਹਨ; ਸਾਰਣੀ ਵਿੱਚ ਤਿਥੀ ਦਾ ਸ਼ੁਰੂ ਅਤੇ ਅੰਤ ਦਿੱਤਾ ਗਿਆ ਹੈ ਤਾਂ ਜੋ ਤੁਸੀਂ ਆਪ ਪਰਖ ਸਕੋ।",
     # EN: Amavasya is a daytime observance (shraddha and tarpan are done in the day), so the date is
     #     the day on which the Amavasya tithi is running at sunrise. The tithi often starts the
     #     evening before, so the times in the table can begin on the previous date. Festival
     #     Amavasyas follow their own rules - Diwali is fixed by Pradosh, Sarva Pitru Amavasya by
     #     Aparahna - and can fall a day away from the date here.
-    "note.amavasya": "",
+    "note.amavasya": "ਮੱਸਿਆ ਦਿਨ ਦਾ ਕਰਮ ਹੈ (ਸ਼ਰਾਧ ਅਤੇ ਤਰਪਣ ਦਿਨ ਵੇਲੇ ਕੀਤੇ ਜਾਂਦੇ ਹਨ), ਇਸ ਲਈ ਤਾਰੀਖ਼ ਉਹ ਦਿਨ ਹੈ ਜਿਸ ਦਿਨ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਮੱਸਿਆ ਤਿਥੀ ਚੱਲ ਰਹੀ ਹੋਵੇ। ਤਿਥੀ ਅਕਸਰ ਇੱਕ ਸ਼ਾਮ ਪਹਿਲਾਂ ਸ਼ੁਰੂ ਹੋ ਜਾਂਦੀ ਹੈ, ਇਸ ਲਈ ਸਾਰਣੀ ਦੇ ਸਮੇਂ ਪਿਛਲੀ ਤਾਰੀਖ਼ ਤੋਂ ਸ਼ੁਰੂ ਹੋ ਸਕਦੇ ਹਨ। ਤਿਉਹਾਰਾਂ ਵਾਲੀਆਂ ਮੱਸਿਆਵਾਂ ਆਪਣੇ ਨਿਯਮਾਂ ਮੁਤਾਬਕ ਚੱਲਦੀਆਂ ਹਨ - ਦੀਵਾਲੀ ਪ੍ਰਦੋਸ਼ ਨਾਲ ਤੈਅ ਹੁੰਦੀ ਹੈ, ਸਰਵ ਪਿਤਰ ਮੱਸਿਆ ਅਪਰਾਹਨ ਨਾਲ - ਅਤੇ ਇੱਥੇ ਦਿੱਤੀ ਤਾਰੀਖ਼ ਤੋਂ ਇੱਕ ਦਿਨ ਦੂਰ ਪੈ ਸਕਦੀਆਂ ਹਨ।",
     # EN: The date is decided in the evening, not at sunrise: the vrat goes to the day on which
     #     Trayodashi is running in Pradosh kaal after sunset, so a Trayodashi that starts at noon
     #     and ends the next afternoon is kept on the first day. If the tithi touches Pradosh kaal on
     #     two evenings, the earlier evening is taken. The puja window in the table starts at sunset
     #     in New Delhi, so it moves through the year and from city to city.
-    "note.pradosh": "",
+    "note.pradosh": "ਤਾਰੀਖ਼ ਦਾ ਫ਼ੈਸਲਾ ਸ਼ਾਮ ਨੂੰ ਹੁੰਦਾ ਹੈ, ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਨਹੀਂ: ਵਰਤ ਉਸ ਦਿਨ ਦਾ ਹੁੰਦਾ ਹੈ ਜਿਸ ਦਿਨ ਸੂਰਜ ਛਿਪਣ ਤੋਂ ਬਾਅਦ ਪ੍ਰਦੋਸ਼ ਕਾਲ ਵਿੱਚ ਤ੍ਰਯੋਦਸ਼ੀ ਚੱਲ ਰਹੀ ਹੋਵੇ, ਇਸ ਲਈ ਜੋ ਤ੍ਰਯੋਦਸ਼ੀ ਦੁਪਹਿਰ ਨੂੰ ਸ਼ੁਰੂ ਹੋ ਕੇ ਅਗਲੇ ਦਿਨ ਦੁਪਹਿਰ ਤੋਂ ਬਾਅਦ ਖ਼ਤਮ ਹੋਵੇ, ਉਹ ਪਹਿਲੇ ਦਿਨ ਰੱਖੀ ਜਾਂਦੀ ਹੈ। ਜੇ ਤਿਥੀ ਦੋ ਸ਼ਾਮਾਂ ਨੂੰ ਪ੍ਰਦੋਸ਼ ਕਾਲ ਨੂੰ ਛੂਹੇ ਤਾਂ ਪਹਿਲੀ ਸ਼ਾਮ ਲਈ ਜਾਂਦੀ ਹੈ। ਸਾਰਣੀ ਵਿੱਚ ਪੂਜਾ ਦੀ ਵਿੰਡੋ ਨਵੀਂ ਦਿੱਲੀ ਵਿੱਚ ਸੂਰਜ ਛਿਪਣ ਤੋਂ ਸ਼ੁਰੂ ਹੁੰਦੀ ਹੈ, ਇਸ ਲਈ ਇਹ ਸਾਲ ਭਰ ਅਤੇ ਸ਼ਹਿਰ ਤੋਂ ਸ਼ਹਿਰ ਬਦਲਦੀ ਹੈ।",
     # EN: Sankashti is decided by the Moon, not the Sun: the vrat goes to the evening on which
     #     Chaturthi is running at moonrise, since that is when the fast is broken. The date can
     #     therefore differ from the Chaturthi date of a Panchang that goes by sunrise. Moonrise is
     #     roughly 50 minutes later each day and differs by several minutes between cities, so check
     #     it for your own city.
-    "note.sankashti": "",
+    "note.sankashti": "ਸੰਕਸ਼ਟੀ ਦਾ ਫ਼ੈਸਲਾ ਚੰਦਰਮਾ ਨਾਲ ਹੁੰਦਾ ਹੈ, ਸੂਰਜ ਨਾਲ ਨਹੀਂ: ਵਰਤ ਉਸ ਸ਼ਾਮ ਦਾ ਹੁੰਦਾ ਹੈ ਜਿਸ ਵੇਲੇ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ’ਤੇ ਚਤੁਰਥੀ ਚੱਲ ਰਹੀ ਹੋਵੇ, ਕਿਉਂਕਿ ਉਦੋਂ ਹੀ ਵਰਤ ਖੋਲ੍ਹਿਆ ਜਾਂਦਾ ਹੈ। ਇਸ ਲਈ ਤਾਰੀਖ਼ ਸੂਰਜ ਚੜ੍ਹਨ ਮੁਤਾਬਕ ਚੱਲਣ ਵਾਲੇ ਪੰਚਾਂਗ ਦੀ ਚਤੁਰਥੀ ਤਾਰੀਖ਼ ਤੋਂ ਵੱਖਰੀ ਹੋ ਸਕਦੀ ਹੈ। ਚੰਦਰਮਾ ਹਰ ਰੋਜ਼ ਲਗਭਗ 50 ਮਿੰਟ ਦੇਰ ਨਾਲ ਚੜ੍ਹਦਾ ਹੈ ਅਤੇ ਸ਼ਹਿਰਾਂ ਵਿਚਕਾਰ ਕਈ ਮਿੰਟ ਦਾ ਫ਼ਰਕ ਹੁੰਦਾ ਹੈ, ਇਸ ਲਈ ਆਪਣੇ ਸ਼ਹਿਰ ਦਾ ਸਮਾਂ ਜ਼ਰੂਰ ਵੇਖੋ।",
     # EN: This is a midnight observance, so the date is the day on which Chaturdashi is running at
     #     Nishita kaal (the 8th of the 15 muhurtas of the night, around midnight). Nishita can fall
     #     just after 12 o'clock, in which case the puja is done in the early hours of the next date
     #     and the time shown carries that date. If the tithi touches Nishita on two nights, the
     #     earlier night is taken.
-    "note.masik_shivratri": "",
+    "note.masik_shivratri": "ਇਹ ਅੱਧੀ ਰਾਤ ਦਾ ਕਰਮ ਹੈ, ਇਸ ਲਈ ਤਾਰੀਖ਼ ਉਹ ਦਿਨ ਹੈ ਜਿਸ ਦਿਨ ਨਿਸ਼ੀਥ ਕਾਲ (ਰਾਤ ਦੇ 15 ਮਹੂਰਤਾਂ ਵਿੱਚੋਂ 8ਵਾਂ, ਅੱਧੀ ਰਾਤ ਦੇ ਆਲੇ-ਦੁਆਲੇ) ਵਿੱਚ ਚੌਦਸ ਚੱਲ ਰਹੀ ਹੋਵੇ। ਨਿਸ਼ੀਥ 12 ਵਜੇ ਤੋਂ ਠੀਕ ਬਾਅਦ ਵੀ ਪੈ ਸਕਦਾ ਹੈ, ਅਜਿਹੀ ਹਾਲਤ ਵਿੱਚ ਪੂਜਾ ਅਗਲੀ ਤਾਰੀਖ਼ ਦੇ ਤੜਕੇ ਹੁੰਦੀ ਹੈ ਅਤੇ ਦਿਖਾਏ ਗਏ ਸਮੇਂ ਨਾਲ ਉਹੀ ਤਾਰੀਖ਼ ਲੱਗਦੀ ਹੈ। ਜੇ ਤਿਥੀ ਦੋ ਰਾਤਾਂ ਨੂੰ ਨਿਸ਼ੀਥ ਨੂੰ ਛੂਹੇ ਤਾਂ ਪਹਿਲੀ ਰਾਤ ਲਈ ਜਾਂਦੀ ਹੈ।",
     # EN: Kalashtami is a night worship, so the date is the day on which Ashtami is running in
     #     Pradosh kaal (the evening window after sunset); the tithi may begin the previous morning
     #     or end during the night, so check its start and end times in the table. If it touches
     #     Pradosh kaal on two evenings, the earlier evening is taken. Some traditions go by the
     #     midnight tithi instead, which can occasionally differ by a day.
-    "note.kalashtami": "",
+    "note.kalashtami": "ਕਾਲ ਅਸ਼ਟਮੀ ਰਾਤ ਦੀ ਪੂਜਾ ਹੈ, ਇਸ ਲਈ ਤਾਰੀਖ਼ ਉਹ ਦਿਨ ਹੈ ਜਿਸ ਦਿਨ ਪ੍ਰਦੋਸ਼ ਕਾਲ (ਸੂਰਜ ਛਿਪਣ ਤੋਂ ਬਾਅਦ ਦੀ ਸ਼ਾਮ ਦੀ ਵਿੰਡੋ) ਵਿੱਚ ਅਸ਼ਟਮੀ ਚੱਲ ਰਹੀ ਹੋਵੇ; ਤਿਥੀ ਪਿਛਲੀ ਸਵੇਰ ਸ਼ੁਰੂ ਹੋ ਸਕਦੀ ਹੈ ਜਾਂ ਰਾਤ ਦੌਰਾਨ ਖ਼ਤਮ ਹੋ ਸਕਦੀ ਹੈ, ਇਸ ਲਈ ਸਾਰਣੀ ਵਿੱਚ ਇਸ ਦੇ ਸ਼ੁਰੂ ਅਤੇ ਅੰਤ ਦੇ ਸਮੇਂ ਵੇਖੋ। ਜੇ ਇਹ ਦੋ ਸ਼ਾਮਾਂ ਨੂੰ ਪ੍ਰਦੋਸ਼ ਕਾਲ ਨੂੰ ਛੂਹੇ ਤਾਂ ਪਹਿਲੀ ਸ਼ਾਮ ਲਈ ਜਾਂਦੀ ਹੈ। ਕੁਝ ਰਵਾਇਤਾਂ ਇਸ ਦੀ ਥਾਂ ਅੱਧੀ ਰਾਤ ਦੀ ਤਿਥੀ ਮੁਤਾਬਕ ਚੱਲਦੀਆਂ ਹਨ, ਜੋ ਕਦੇ-ਕਦੇ ਇੱਕ ਦਿਨ ਦਾ ਫ਼ਰਕ ਪਾ ਸਕਦੀ ਹੈ।",
     # EN: What are the {name} dates in {year}?
     # keep: {name} {year}
-    "faq.all_q": "",
+    "faq.all_q": "{year} ਵਿੱਚ {name} ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ ਕਿਹੜੀਆਂ ਹਨ?",
     # EN: There are {count} {name} dates in {year} (New Delhi): {dates}.
     # keep: {count} {dates} {name} {year}
-    "faq.all_a": "",
+    "faq.all_a": "{year} ਵਿੱਚ {name} ਦੀਆਂ {count} ਤਾਰੀਖ਼ਾਂ ਹਨ (ਨਵੀਂ ਦਿੱਲੀ): {dates}।",
     # EN: When is the next {name}?
     # keep: {name}
-    "faq.next_q": "",
+    "faq.next_q": "{name} ਦੀ ਅਗਲੀ ਤਾਰੀਖ਼ ਕਦੋਂ ਹੈ?",
     # EN: When is the first {name} of {year}?
     # keep: {name} {year}
-    "faq.first_q": "",
+    "faq.first_q": "{year} ਵਿੱਚ {name} ਦੀ ਪਹਿਲੀ ਤਾਰੀਖ਼ ਕਦੋਂ ਹੈ?",
     # EN: {name} is on {when} ({details}).
     # keep: {details} {name} {when}
-    "faq.on_a": "",
+    "faq.on_a": "{name} {when} ਨੂੰ ਹੈ ({details})।",
     # EN: What is the {label} on {name} {short}?
     # keep: {label} {name} {short}
-    "faq.key_q": "",
+    "faq.key_q": "{short} ਨੂੰ {name} ਦਾ {label} ਕੀ ਹੈ?",
     # EN: At what time does the {name} tithi start and end on {short}?
     # keep: {name} {short}
-    "faq.tithi_q": "",
+    "faq.tithi_q": "{short} ਨੂੰ {name} ਦੀ ਤਿਥੀ ਕਿੰਨੇ ਵਜੇ ਸ਼ੁਰੂ ਅਤੇ ਖ਼ਤਮ ਹੁੰਦੀ ਹੈ?",
     # EN: How is the {name} date decided?
     # keep: {name}
-    "faq.why_q": "",
+    "faq.why_q": "{name} ਦੀ ਤਾਰੀਖ਼ ਕਿਵੇਂ ਤੈਅ ਹੁੰਦੀ ਹੈ?",
     # EN: The date follows the rule: {rule}. In {year} this gives {count} dates (New Delhi).
     # keep: {count} {rule} {year}
-    "faq.why_a": "",
+    "faq.why_a": "ਤਾਰੀਖ਼ ਦਾ ਨਿਯਮ ਇਹ ਹੈ: {rule}। {year} ਵਿੱਚ ਇਸ ਨਾਲ {count} ਤਾਰੀਖ਼ਾਂ ਬਣਦੀਆਂ ਹਨ (ਨਵੀਂ ਦਿੱਲੀ)।",
     # EN: Monthly vrat dates
-    "hub.h2": "",
+    "hub.h2": "ਮਹੀਨਾਵਾਰ ਵਰਤ ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ",
 }
 
 # ----------------------------------------------------------------------------
