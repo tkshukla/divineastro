@@ -20,13 +20,13 @@ from __future__ import annotations
 
 # Page modules that are complete for this language (the table groups below):
 #   "seo" "rashifal" "vrat" "nakshatra" "muhurat" "recurring" "hub" "app"
-READY = frozenset()
+READY = frozenset({"seo", "app", "rashifal", "hub", "vrat", "recurring", "muhurat", "nakshatra"})
 
 # Latin-script words the pa text may keep besides the defaults (WhatsApp, UPI, PDF ...).
-ALLOW_LATIN = frozenset()
+ALLOW_LATIN = frozenset({"name", "gmail.com"})  # the e-mail placeholder name@gmail.com
 
 # static/i18n/pa.json keys whose value is deliberately the English word (brand names, "OK").
-KEEP_ENGLISH = frozenset()
+KEEP_ENGLISH = frozenset({"acct.emailPlaceholder"})  # an example e-mail address, not a sentence
 
 # Namakshar syllables are Devanagari in the engine; this maps a letter to this script:
 # (Unicode block start, {Devanagari letter: this script's letter where the offset is wrong}).
@@ -41,160 +41,160 @@ AKSHAR = (0x0A00, {'ष': 'ਸ਼'})
 # app/seo_text.py TEXT["pa"] — page text of /panchang /rahu-kaal /choghadiya /kundali-milan /free-kundali  [134]
 SEO_TEXT = {
     # EN: Panchang
-    "tool.panchang": "",
+    "tool.panchang": "ਪੰਚਾਂਗ",
     # EN: Rahu Kaal
-    "tool.rahu-kaal": "",
+    "tool.rahu-kaal": "ਰਾਹੂ ਕਾਲ",
     # EN: Choghadiya
-    "tool.choghadiya": "",
+    "tool.choghadiya": "ਚੌਘੜੀਆ",
     # EN: {vara}, {date} · {place} · IST
     # keep: {date} {place} {vara}
-    "when": "",
+    "when": "{vara}, {date} · {place} · IST",
     # EN: {name} until {time}
     # keep: {name} {time}
-    "limb.until": "",
+    "limb.until": "{name} {time} ਤੱਕ",
     # EN: then {name}
     # keep: {name}
-    "limb.then": "",
+    "limb.then": "ਫਿਰ {name}",
     # EN: pada
-    "limb.pada": "",
+    "limb.pada": "ਚਰਣ",
     # EN: {paksha} paksha
     # keep: {paksha}
-    "paksha.full": "",
+    "paksha.full": "{paksha} ਪੱਖ",
     # EN: {tool} in other cities
     # keep: {tool}
-    "cities.heading": "",
+    "cities.heading": "ਹੋਰ ਸ਼ਹਿਰਾਂ ਵਿੱਚ {tool}",
     # EN: More free tools
-    "links.heading": "",
+    "links.heading": "ਹੋਰ ਮੁਫ਼ਤ ਟੂਲ",
     # EN: {tool} in {city}
     # keep: {city} {tool}
-    "links.tool_in_city": "",
+    "links.tool_in_city": "{city} ਵਿੱਚ {tool}",
     # EN: Kundali Milan (36 guna)
-    "links.milan": "",
+    "links.milan": "ਕੁੰਡਲੀ ਮਿਲਾਨ (36 ਗੁਣ)",
     # EN: Free Janam Kundali
-    "links.kundali": "",
+    "links.kundali": "ਮੁਫ਼ਤ ਜਨਮ ਕੁੰਡਲੀ",
     # EN: Muhurat Finder
-    "links.muhurat": "",
+    "links.muhurat": "ਮਹੂਰਤ ਖੋਜੋ",
     # EN: Today's Rashifal
-    "links.rashifal": "",
+    "links.rashifal": "ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ",
     # EN: Today's Vrat & Festivals in {city}
     # keep: {city}
-    "links.vrat": "",
+    "links.vrat": "{city} ਵਿੱਚ ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: City not found — {brand}
     # keep: {brand}
-    "nf.title": "",
+    "nf.title": "ਸ਼ਹਿਰ ਨਹੀਂ ਮਿਲਿਆ — {brand}",
     # EN: {tool} city not found.
     # keep: {tool}
-    "nf.desc": "",
+    "nf.desc": "{tool} ਲਈ ਇਹ ਸ਼ਹਿਰ ਨਹੀਂ ਮਿਲਿਆ।",
     # EN: <h1>{tool}: city not found</h1><p>We don't have a page for “{slug}” yet. Pick a city
     #     below, or <a href="{app}">open the {tool} tool</a> to use any place in the world.</p>
     # keep: {app} {slug} {tool}
-    "nf.body": "",
+    "nf.body": "<h1>{tool}: ਸ਼ਹਿਰ ਨਹੀਂ ਮਿਲਿਆ</h1><p>“{slug}” ਲਈ ਸਾਡੇ ਕੋਲ ਹਾਲੇ ਕੋਈ ਪੰਨਾ ਨਹੀਂ ਹੈ। ਹੇਠਾਂ ਤੋਂ ਕੋਈ ਸ਼ਹਿਰ ਚੁਣੋ, ਜਾਂ ਦੁਨੀਆ ਦੀ ਕੋਈ ਵੀ ਥਾਂ ਵਰਤਣ ਲਈ <a href=\"{app}\">{tool} ਟੂਲ ਖੋਲ੍ਹੋ</a>।</p>",
     # EN: Today's Panchang in {city}, {date} — Tithi, Nakshatra, Rahu Kaal | {brand}
     # keep: {brand} {city} {date}
-    "p.title": "",
+    "p.title": "{city} ਵਿੱਚ ਅੱਜ ਦਾ ਪੰਚਾਂਗ, {date} — ਤਿਥੀ, ਨਕਸ਼ਤਰ, ਰਾਹੂ ਕਾਲ | {brand}",
     # EN: Aaj ka Panchang for {city} on {vara}, {date}: {tithi} tithi ({paksha} paksha), {nakshatra}
     #     nakshatra, sunrise {sunrise}, Rahu Kaal {rahu}. Computed with Swiss Ephemeris.
     # keep: {city} {date} {nakshatra} {rahu} {sunrise} {tithi} {vara}
     # may also use: {paksha_full} {paksha}
-    "p.desc": "",
+    "p.desc": "{city} ਦਾ ਅੱਜ ਦਾ ਪੰਚਾਂਗ, {vara}, {date}: {paksha} ਪੱਖ ਦੀ {tithi} ਤਿਥੀ, {nakshatra} ਨਕਸ਼ਤਰ, ਸੂਰਜ ਚੜ੍ਹਨ ਦਾ ਸਮਾਂ {sunrise}, ਰਾਹੂ ਕਾਲ {rahu}। ਸਵਿਸ ਐਫ਼ੇਮੇਰਿਸ ਨਾਲ ਸਹੀ ਗਣਨਾ।",
     # EN: <h1>Today's Panchang in {city}</h1>
     # keep: {city}
-    "p.h1": "",
+    "p.h1": "<h1>{city} ਵਿੱਚ ਅੱਜ ਦਾ ਪੰਚਾਂਗ</h1>",
     # EN: <p class="hi" lang="hi">आज का पंचांग — {city_hi}</p>
     # keep: {city}
-    "p.sub": "",
+    "p.sub": "<p class=\"hi\">ਤਿਥੀ, ਨਕਸ਼ਤਰ, ਯੋਗ, ਕਰਣ ਅਤੇ ਰਾਹੂ ਕਾਲ — {city}</p>",
     # EN: <div class="box"><p>Today in {city} is <strong>{paksha} {tithi}</strong> with the Moon in
     #     <strong>{nakshatra}</strong> nakshatra. Rahu Kaal runs <strong>{rahu}</strong> — avoid
     #     starting anything new in that window.</p></div>
     # keep: {city} {nakshatra} {rahu} {tithi}
     # may also use: {paksha_full} {paksha}
-    "p.box": "",
+    "p.box": "<div class=\"box\"><p>ਅੱਜ {city} ਵਿੱਚ <strong>{paksha} {tithi}</strong> ਹੈ ਅਤੇ ਚੰਦਰਮਾ <strong>{nakshatra}</strong> ਨਕਸ਼ਤਰ ਵਿੱਚ ਹੈ। ਰਾਹੂ ਕਾਲ <strong>{rahu}</strong> ਹੈ — ਇਸ ਸਮੇਂ ਕੋਈ ਨਵਾਂ ਕੰਮ ਸ਼ੁਰੂ ਨਾ ਕਰੋ।</p></div>",
     # EN: Vaar (weekday)
-    "p.r_vara": "",
+    "p.r_vara": "ਵਾਰ (ਦਿਨ)",
     # EN: Tithi
-    "p.r_tithi": "",
+    "p.r_tithi": "ਤਿਥੀ",
     # EN: Paksha
-    "p.r_paksha": "",
+    "p.r_paksha": "ਪੱਖ",
     # EN: Nakshatra
-    "p.r_nakshatra": "",
+    "p.r_nakshatra": "ਨਕਸ਼ਤਰ",
     # EN: Yoga
-    "p.r_yoga": "",
+    "p.r_yoga": "ਯੋਗ",
     # EN: Karana
-    "p.r_karana": "",
+    "p.r_karana": "ਕਰਣ",
     # EN: Sunrise
-    "p.r_sunrise": "",
+    "p.r_sunrise": "ਸੂਰਜ ਚੜ੍ਹਨ ਦਾ ਸਮਾਂ",
     # EN: Sunset
-    "p.r_sunset": "",
+    "p.r_sunset": "ਸੂਰਜ ਛਿਪਣ ਦਾ ਸਮਾਂ",
     # EN: Moonrise
-    "p.r_moonrise": "",
+    "p.r_moonrise": "ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਦਾ ਸਮਾਂ",
     # EN: Moonset
-    "p.r_moonset": "",
+    "p.r_moonset": "ਚੰਦਰਮਾ ਛਿਪਣ ਦਾ ਸਮਾਂ",
     # EN: Moon sign
-    "p.r_moon_sign": "",
+    "p.r_moon_sign": "ਚੰਦਰ ਰਾਸ਼ੀ",
     # EN: Rahu Kaal
-    "p.r_rahu": "",
+    "p.r_rahu": "ਰਾਹੂ ਕਾਲ",
     # EN: Yamaganda
-    "p.r_yama": "",
+    "p.r_yama": "ਯਮਗੰਡ",
     # EN: Gulika Kaal
-    "p.r_gulika": "",
+    "p.r_gulika": "ਗੁਲਿਕ ਕਾਲ",
     # EN: Abhijit Muhurat
-    "p.r_abhijit": "",
+    "p.r_abhijit": "ਅਭਿਜੀਤ ਮਹੂਰਤ",
     # EN: {vara_en} — {weekday} <span lang="hi">({vara_hi})</span>
     # keep: {vara}
-    "p.v_vara": "",
+    "p.v_vara": "{vara}",
     # EN: {paksha_en} <span lang="hi">({paksha_hi_full})</span>
     # keep: {paksha_full}
-    "p.v_paksha": "",
+    "p.v_paksha": "{paksha_full}",
     # EN: No moonrise this day
-    "p.no_moonrise": "",
+    "p.no_moonrise": "ਇਸ ਦਿਨ ਚੰਦਰਮਾ ਨਹੀਂ ਚੜ੍ਹਦਾ",
     # EN: No moonset this day
-    "p.no_moonset": "",
+    "p.no_moonset": "ਇਸ ਦਿਨ ਚੰਦਰਮਾ ਨਹੀਂ ਛਿਪਦਾ",
     # EN: Not observed on Wednesday (Budhavara)
-    "p.no_abhijit": "",
+    "p.no_abhijit": "ਬੁੱਧਵਾਰ ਨੂੰ ਨਹੀਂ ਮੰਨਿਆ ਜਾਂਦਾ",
     # EN: <p>Times are for {place} ({lat}°N, {lon}°E) in Indian Standard Time. The panchang day runs
     #     from sunrise to the next sunrise, so a tithi or nakshatra may end after midnight. Sunrise
     #     is the visible upper limb with refraction, as printed in Indian almanacs; nakshatra and
     #     yoga use the Lahiri ayanamsa.</p>
     # keep: {lat} {lon}
     # may also use: {city} {place}
-    "p.note": "",
+    "p.note": "<p>ਸਮੇਂ {place} ({lat}° ਉੱਤਰ, {lon}° ਪੂਰਬ) ਲਈ ਭਾਰਤੀ ਮਿਆਰੀ ਸਮੇਂ ਵਿੱਚ ਹਨ। ਪੰਚਾਂਗ ਦਾ ਦਿਨ ਇੱਕ ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਅਗਲੇ ਸੂਰਜ ਚੜ੍ਹਨ ਤੱਕ ਚੱਲਦਾ ਹੈ, ਇਸ ਲਈ ਕੋਈ ਤਿਥੀ ਜਾਂ ਨਕਸ਼ਤਰ ਅੱਧੀ ਰਾਤ ਤੋਂ ਬਾਅਦ ਵੀ ਖ਼ਤਮ ਹੋ ਸਕਦਾ ਹੈ। ਸੂਰਜ ਚੜ੍ਹਨਾ ਭਾਰਤੀ ਪੰਚਾਂਗਾਂ ਵਾਂਗ ਸੂਰਜ ਦੇ ਉੱਪਰਲੇ ਕਿਨਾਰੇ ਦੇ ਦਿਸਣ (ਵਾਯੂਮੰਡਲੀ ਵਿਵਰਤਨ ਸਮੇਤ) ਦੇ ਪਲ ਨੂੰ ਮੰਨਿਆ ਗਿਆ ਹੈ; ਨਕਸ਼ਤਰ ਅਤੇ ਯੋਗ ਲਾਹਿੜੀ ਅਯਨਾਂਸ਼ ਨਾਲ ਗਿਣੇ ਗਏ ਹਨ।</p>",
     # EN: Open the full Panchang — any city, any date
-    "p.cta": "",
+    "p.cta": "ਪੂਰਾ ਪੰਚਾਂਗ ਖੋਲ੍ਹੋ — ਕੋਈ ਵੀ ਸ਼ਹਿਰ, ਕੋਈ ਵੀ ਤਾਰੀਖ਼",
     # EN: <h2>The five limbs of the Panchang</h2> <p><strong>Tithi</strong> is the lunar day — each
     #     12° the Moon gains on the Sun. <strong>Nakshatra</strong> is the Moon's lunar mansion, one
     #     of 27. <strong>Yoga</strong> comes from the combined longitudes of Sun and Moon, and
     #     <strong>Karana</strong> is half a tithi. <strong>Vaar</strong> is the weekday, reckoned
     #     from sunrise. Together they are the <span lang="hi">पंचांग</span> (“five limbs”) consulted
     #     before any auspicious work.</p>
-    "p.limbs": "",
+    "p.limbs": "<h2>ਪੰਚਾਂਗ ਦੇ ਪੰਜ ਅੰਗ</h2><p><strong>ਤਿਥੀ</strong> ਚੰਦਰ ਦਿਨ ਹੈ — ਚੰਦਰਮਾ ਜਦੋਂ ਸੂਰਜ ਤੋਂ 12° ਅੱਗੇ ਵਧ ਜਾਂਦਾ ਹੈ। <strong>ਨਕਸ਼ਤਰ</strong> ਚੰਦਰਮਾ ਦਾ ਟਿਕਾਣਾ ਹੈ, ਕੁੱਲ 27 ਵਿੱਚੋਂ ਇੱਕ। <strong>ਯੋਗ</strong> ਸੂਰਜ ਅਤੇ ਚੰਦਰਮਾ ਦੇ ਮਿਲੇ ਹੋਏ ਅੰਸ਼ਾਂ ਤੋਂ ਬਣਦਾ ਹੈ, ਅਤੇ <strong>ਕਰਣ</strong> ਤਿਥੀ ਦਾ ਅੱਧਾ ਹਿੱਸਾ ਹੁੰਦਾ ਹੈ। <strong>ਵਾਰ</strong> ਹਫ਼ਤੇ ਦਾ ਦਿਨ ਹੈ, ਜੋ ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ। ਇਹ ਸਾਰੇ ਮਿਲ ਕੇ ਪੰਚਾਂਗ (“ਪੰਜ ਅੰਗ”) ਬਣਾਉਂਦੇ ਹਨ, ਜੋ ਹਰ ਸ਼ੁਭ ਕੰਮ ਤੋਂ ਪਹਿਲਾਂ ਵੇਖਿਆ ਜਾਂਦਾ ਹੈ।</p>",
     # EN: Rahu Kaal Today in {city} — {rahu}, {date} | {brand}
     # keep: {brand} {city} {rahu}
     # may also use: {date}
-    "rk.title": "",
+    "rk.title": "{city} ਵਿੱਚ ਅੱਜ ਦਾ ਰਾਹੂ ਕਾਲ — {rahu}, {date} | {brand}",
     # EN: Rahu Kaal today in {city} ({vara}, {date}) is {rahu}. Also Yamaganda {yama} and Gulika
     #     {gulika}, with this week's timings and what Rahu Kaal means.
     # keep: {city} {date} {gulika} {rahu} {vara} {yama}
-    "rk.desc": "",
+    "rk.desc": "{city} ਵਿੱਚ ਅੱਜ ({vara}, {date}) ਦਾ ਰਾਹੂ ਕਾਲ {rahu} ਹੈ। ਨਾਲ ਯਮਗੰਡ {yama} ਅਤੇ ਗੁਲਿਕ {gulika}, ਇਸ ਹਫ਼ਤੇ ਦੇ ਸਮੇਂ ਅਤੇ ਰਾਹੂ ਕਾਲ ਦਾ ਮਤਲਬ।",
     # EN: <h1>Rahu Kaal Today in {city}</h1>
     # keep: {city}
-    "rk.h1": "",
+    "rk.h1": "<h1>{city} ਵਿੱਚ ਅੱਜ ਦਾ ਰਾਹੂ ਕਾਲ</h1>",
     # EN: <p class="hi" lang="hi">आज का राहु काल — {city_hi}</p>
     # keep: {city}
-    "rk.sub": "",
+    "rk.sub": "<p class=\"hi\">ਅੱਜ ਰਾਹੂ ਕਾਲ, ਯਮਗੰਡ ਅਤੇ ਗੁਲਿਕ ਕਾਲ ਕਦੋਂ ਹੈ — {city}</p>",
     # EN: Rahu Kaal <span lang="hi">(राहु काल)</span>
-    "rk.r_rahu": "",
+    "rk.r_rahu": "ਰਾਹੂ ਕਾਲ",
     # EN: Yamaganda <span lang="hi">(यमगण्ड)</span>
-    "rk.r_yama": "",
+    "rk.r_yama": "ਯਮਗੰਡ",
     # EN: Gulika Kaal <span lang="hi">(गुलिक काल)</span>
-    "rk.r_gulika": "",
+    "rk.r_gulika": "ਗੁਲਿਕ ਕਾਲ",
     # EN: Abhijit Muhurat
-    "rk.r_abhijit": "",
+    "rk.r_abhijit": "ਅਭਿਜੀਤ ਮਹੂਰਤ",
     # EN: Sunrise / Sunset
-    "rk.r_sun": "",
+    "rk.r_sun": "ਸੂਰਜ ਚੜ੍ਹਨਾ / ਛਿਪਣਾ",
     # EN: Not observed on Wednesday
-    "rk.no_abhijit": "",
+    "rk.no_abhijit": "ਬੁੱਧਵਾਰ ਨੂੰ ਨਹੀਂ ਮੰਨਿਆ ਜਾਂਦਾ",
     # EN: Check Rahu Kaal for any city or date
-    "rk.cta": "",
+    "rk.cta": "ਕਿਸੇ ਵੀ ਸ਼ਹਿਰ ਜਾਂ ਤਾਰੀਖ਼ ਦਾ ਰਾਹੂ ਕਾਲ ਵੇਖੋ",
     # EN: <h2>What is Rahu Kaal?</h2> <p>Rahu Kaal (<span lang="hi">राहु काल</span>) is a period of
     #     roughly an hour and a half each day that is traditionally held to be ruled by Rahu, the
     #     north lunar node. Daylight — sunrise to sunset — is divided into eight equal parts, and
@@ -206,53 +206,53 @@ SEO_TEXT = {
     #     starting journeys or making major purchases during Rahu Kaal; work already under way can
     #     continue. Yamaganda and Gulika Kaal are two further eighths of the day treated with
     #     similar caution.</p>
-    "rk.about": "",
+    "rk.about": "<h2>ਰਾਹੂ ਕਾਲ ਕੀ ਹੁੰਦਾ ਹੈ?</h2><p>ਰਾਹੂ ਕਾਲ ਹਰ ਰੋਜ਼ ਲਗਭਗ ਡੇਢ ਘੰਟੇ ਦਾ ਉਹ ਸਮਾਂ ਹੁੰਦਾ ਹੈ ਜਿਸ ਨੂੰ ਪਰੰਪਰਾ ਅਨੁਸਾਰ ਉੱਤਰੀ ਚੰਦਰ ਬਿੰਦੂ ਰਾਹੂ ਦੇ ਅਧੀਨ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ। ਦਿਨ ਦੀ ਰੌਸ਼ਨੀ — ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਛਿਪਣ ਤੱਕ — ਨੂੰ ਅੱਠ ਬਰਾਬਰ ਹਿੱਸਿਆਂ ਵਿੱਚ ਵੰਡਿਆ ਜਾਂਦਾ ਹੈ ਅਤੇ ਉਨ੍ਹਾਂ ਵਿੱਚੋਂ ਇੱਕ ਹਿੱਸਾ ਰਾਹੂ ਦਾ ਹੁੰਦਾ ਹੈ। ਕਿਹੜਾ ਹਿੱਸਾ, ਇਹ ਵਾਰ ਉੱਤੇ ਨਿਰਭਰ ਹੈ: ਐਤਵਾਰ ਨੂੰ ਅੱਠਵਾਂ, ਸੋਮਵਾਰ ਨੂੰ ਦੂਜਾ, ਮੰਗਲਵਾਰ ਨੂੰ ਸੱਤਵਾਂ, ਬੁੱਧਵਾਰ ਨੂੰ ਪੰਜਵਾਂ, ਵੀਰਵਾਰ ਨੂੰ ਛੇਵਾਂ, ਸ਼ੁੱਕਰਵਾਰ ਨੂੰ ਚੌਥਾ ਅਤੇ ਸ਼ਨਿੱਚਰਵਾਰ ਨੂੰ ਤੀਜਾ।</p><p>ਇਹ ਅਸਲੀ ਸੂਰਜ ਚੜ੍ਹਨ ਤੇ ਛਿਪਣ ਦੇ ਸਮੇਂ ਮੁਤਾਬਕ ਚੱਲਦਾ ਹੈ, ਇਸ ਲਈ ਹਰ ਸ਼ਹਿਰ ਵਿੱਚ ਵੱਖਰਾ ਹੁੰਦਾ ਹੈ ਅਤੇ ਸਾਲ ਭਰ ਖਿਸਕਦਾ ਰਹਿੰਦਾ ਹੈ — ਇਸੇ ਕਰਕੇ “ਸੋਮਵਾਰ 7:30–9:00” ਵਾਲੀ ਪੱਕੀ ਸਾਰਣੀ ਸਿਰਫ਼ ਮੋਟਾ ਅੰਦਾਜ਼ਾ ਹੈ। ਰੀਤ ਅਨੁਸਾਰ ਲੋਕ ਰਾਹੂ ਕਾਲ ਵਿੱਚ ਨਵਾਂ ਕੰਮ ਸ਼ੁਰੂ ਕਰਨ, ਸਮਝੌਤਿਆਂ ’ਤੇ ਦਸਤਖ਼ਤ ਕਰਨ, ਸਫ਼ਰ ’ਤੇ ਨਿਕਲਣ ਜਾਂ ਵੱਡੀ ਖ਼ਰੀਦਦਾਰੀ ਕਰਨ ਤੋਂ ਬਚਦੇ ਹਨ; ਪਹਿਲਾਂ ਤੋਂ ਚੱਲ ਰਿਹਾ ਕੰਮ ਜਾਰੀ ਰੱਖਿਆ ਜਾ ਸਕਦਾ ਹੈ। ਯਮਗੰਡ ਅਤੇ ਗੁਲਿਕ ਕਾਲ ਦਿਨ ਦੇ ਦੋ ਹੋਰ ਅੱਠਵੇਂ ਹਿੱਸੇ ਹਨ, ਜਿਨ੍ਹਾਂ ਬਾਰੇ ਵੀ ਇਸੇ ਤਰ੍ਹਾਂ ਸਾਵਧਾਨੀ ਵਰਤੀ ਜਾਂਦੀ ਹੈ।</p>",
     # EN: <h2>Rahu Kaal in {city} this week</h2>
     # keep: {city}
-    "rk.week_h2": "",
+    "rk.week_h2": "<h2>ਇਸ ਹਫ਼ਤੇ {city} ਵਿੱਚ ਰਾਹੂ ਕਾਲ</h2>",
     # EN: Day
-    "rk.th_day": "",
+    "rk.th_day": "ਦਿਨ",
     # EN: Rahu Kaal
-    "rk.th_rahu": "",
+    "rk.th_rahu": "ਰਾਹੂ ਕਾਲ",
     # EN: Yamaganda
-    "rk.th_yama": "",
+    "rk.th_yama": "ਯਮਗੰਡ",
     # EN: Gulika
-    "rk.th_gulika": "",
+    "rk.th_gulika": "ਗੁਲਿਕ",
     # EN: Choghadiya Today in {city}, {date} — Day & Night Timings | {brand}
     # keep: {brand} {city} {date}
-    "ch.title": "",
+    "ch.title": "{city} ਵਿੱਚ ਅੱਜ ਦਾ ਚੌਘੜੀਆ, {date} — ਦਿਨ ਅਤੇ ਰਾਤ ਦੇ ਸਮੇਂ | {brand}",
     # EN: Today's choghadiya for {city} ({vara}, {date}): all 16 day and night muhurtas — Amrit,
     #     Shubh, Labh, Char, Rog, Kaal, Udveg — with exact start and end times from sunrise
     #     {sunrise}.
     # keep: {city} {date} {sunrise} {vara}
-    "ch.desc": "",
+    "ch.desc": "{city} ਲਈ ਅੱਜ ਦਾ ਚੌਘੜੀਆ ({vara}, {date}): ਦਿਨ ਅਤੇ ਰਾਤ ਦੇ ਸਾਰੇ 16 ਮਹੂਰਤ — ਅੰਮ੍ਰਿਤ, ਸ਼ੁਭ, ਲਾਭ, ਚਰ, ਰੋਗ, ਕਾਲ, ਉਦਵੇਗ — ਸੂਰਜ ਚੜ੍ਹਨ {sunrise} ਤੋਂ ਸ਼ੁਰੂ ਹੋ ਕੇ ਸਹੀ ਸ਼ੁਰੂ ਤੇ ਅੰਤ ਦੇ ਸਮਿਆਂ ਸਮੇਤ।",
     # EN: <h1>Choghadiya Today in {city}</h1>
     # keep: {city}
-    "ch.h1": "",
+    "ch.h1": "<h1>{city} ਵਿੱਚ ਅੱਜ ਦਾ ਚੌਘੜੀਆ</h1>",
     # EN: <p class="hi" lang="hi">आज का चौघड़िया — {city_hi}</p>
     # keep: {city}
-    "ch.sub": "",
+    "ch.sub": "<p class=\"hi\">ਅੱਜ ਦੇ ਦਿਨ ਅਤੇ ਰਾਤ ਦੇ ਚੌਘੜੀਆ ਮਹੂਰਤ — {city}</p>",
     # EN: {name} from {time}
     # keep: {name} {time}
-    "ch.first_good": "",
+    "ch.first_good": "{name} {time} ਤੋਂ",
     # EN: none
-    "ch.none": "",
+    "ch.none": "ਕੋਈ ਨਹੀਂ",
     # EN: <div class="box"><p>Sunrise <strong>{sunrise}</strong>, sunset <strong>{sunset}</strong>.
     #     First auspicious daytime choghadiya: <strong>{first_good}</strong>.</p></div>
     # keep: {first_good} {sunrise} {sunset}
-    "ch.box": "",
+    "ch.box": "<div class=\"box\"><p>ਸੂਰਜ ਚੜ੍ਹਨ ਦਾ ਸਮਾਂ <strong>{sunrise}</strong>, ਸੂਰਜ ਛਿਪਣ ਦਾ ਸਮਾਂ <strong>{sunset}</strong>। ਦਿਨ ਦਾ ਪਹਿਲਾ ਸ਼ੁਭ ਚੌਘੜੀਆ: <strong>{first_good}</strong>।</p></div>",
     # EN: <h2>Day Choghadiya <span lang="hi">(दिन का चौघड़िया)</span></h2>
-    "ch.day_h2": "",
+    "ch.day_h2": "<h2>ਦਿਨ ਦਾ ਚੌਘੜੀਆ</h2>",
     # EN: <h2>Night Choghadiya <span lang="hi">(रात का चौघड़िया)</span></h2>
-    "ch.night_h2": "",
+    "ch.night_h2": "<h2>ਰਾਤ ਦਾ ਚੌਘੜੀਆ</h2>",
     # EN: <tr><th>Time</th><th>Choghadiya</th><th>Nature</th></tr>
-    "ch.th": "",
+    "ch.th": "<tr><th>ਸਮਾਂ</th><th>ਚੌਘੜੀਆ</th><th>ਸੁਭਾਅ</th></tr>",
     # EN: <tr><td>{when}</td><td class="{cls}"><strong>{name}</strong> <span lang="hi">({name_hi})</
     #     span><small>{ruler}</small></td><td>{quality}<small>{desc}</small></td></tr>
     # keep: {cls} {desc} {name} {quality} {ruler} {when}
-    "ch.row": "",
+    "ch.row": "<tr><td>{when}</td><td class=\"{cls}\"><strong>{name}</strong><small>{ruler}</small></td><td>{quality}<small>{desc}</small></td></tr>",
     # EN: Open the live Choghadiya clock
-    "ch.cta": "",
+    "ch.cta": "ਲਾਈਵ ਚੌਘੜੀਆ ਘੜੀ ਖੋਲ੍ਹੋ",
     # EN: <h2>How choghadiya works</h2> <p>The day from sunrise to sunset, and the night from sunset
     #     to the next sunrise, are each divided into eight equal parts called choghadiya (<span
     #     lang="hi">चौघड़िया</span>, “four ghadis”). Each is ruled by a planet and named for its
@@ -262,17 +262,17 @@ SEO_TEXT = {
     #     beginnings. The order starts from the weekday's ruler, so it changes every day — and the
     #     length of each slot follows the real day length in {city}.</p>
     # keep: {city}
-    "ch.about": "",
+    "ch.about": "<h2>ਚੌਘੜੀਆ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ</h2><p>ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਛਿਪਣ ਤੱਕ ਦਾ ਦਿਨ ਅਤੇ ਸੂਰਜ ਛਿਪਣ ਤੋਂ ਅਗਲੇ ਸੂਰਜ ਚੜ੍ਹਨ ਤੱਕ ਦੀ ਰਾਤ, ਦੋਵੇਂ ਅੱਠ-ਅੱਠ ਬਰਾਬਰ ਹਿੱਸਿਆਂ ਵਿੱਚ ਵੰਡੇ ਜਾਂਦੇ ਹਨ, ਜਿਨ੍ਹਾਂ ਨੂੰ ਚੌਘੜੀਆ (“ਚਾਰ ਘੜੀਆਂ”) ਕਿਹਾ ਜਾਂਦਾ ਹੈ। ਹਰ ਇੱਕ ਦਾ ਇੱਕ ਗ੍ਰਹਿ ਸੁਆਮੀ ਹੁੰਦਾ ਹੈ ਅਤੇ ਉਸ ਦਾ ਨਾਂ ਉਸ ਦੇ ਸੁਭਾਅ ਮੁਤਾਬਕ ਹੈ: <strong>ਅੰਮ੍ਰਿਤ</strong>, <strong>ਸ਼ੁਭ</strong> ਅਤੇ <strong>ਲਾਭ</strong> ਸ਼ੁਭ ਹਨ, <strong>ਚਰ</strong> ਮੱਧਮ ਹੈ ਅਤੇ ਸਫ਼ਰ ਲਈ ਚੰਗਾ ਹੈ, ਜਦਕਿ <strong>ਰੋਗ</strong>, <strong>ਕਾਲ</strong> ਅਤੇ <strong>ਉਦਵੇਗ</strong> ਨਵੀਂ ਸ਼ੁਰੂਆਤ ਲਈ ਛੱਡ ਦਿੱਤੇ ਜਾਂਦੇ ਹਨ। ਕ੍ਰਮ ਉਸ ਦਿਨ ਦੇ ਸੁਆਮੀ ਤੋਂ ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ, ਇਸ ਲਈ ਹਰ ਰੋਜ਼ ਬਦਲਦਾ ਹੈ — ਅਤੇ ਹਰ ਹਿੱਸੇ ਦੀ ਲੰਬਾਈ {city} ਵਿੱਚ ਦਿਨ ਦੀ ਅਸਲੀ ਲੰਬਾਈ ਮੁਤਾਬਕ ਹੁੰਦੀ ਹੈ।</p>",
     # EN: Kundali Milan — Ashtakoot Guna Milan ({total} Gun) Explained | {brand}
     # keep: {brand} {total}
-    "km.title": "",
+    "km.title": "ਕੁੰਡਲੀ ਮਿਲਾਨ — ਅਸ਼ਟਕੂਟ ਗੁਣ ਮਿਲਾਨ ({total} ਗੁਣ) ਦੀ ਵਿਆਖਿਆ | {brand}",
     # EN: How Kundali Milan works: the 8 kootas of Ashtakoot Guna Milan, {total} points, what score
     #     is good for marriage, and how Mangal Dosha is checked. Free online matching in English and
     #     Hindi.
     # keep: {total}
-    "km.desc": "",
+    "km.desc": "ਕੁੰਡਲੀ ਮਿਲਾਨ ਕਿਵੇਂ ਹੁੰਦਾ ਹੈ: ਅਸ਼ਟਕੂਟ ਗੁਣ ਮਿਲਾਨ ਦੇ 8 ਕੂਟ, {total} ਅੰਕ, ਵਿਆਹ ਲਈ ਕਿੰਨੇ ਅੰਕ ਚੰਗੇ ਹਨ, ਅਤੇ ਮੰਗਲ ਦੋਸ਼ ਦੀ ਜਾਂਚ ਕਿਵੇਂ ਹੁੰਦੀ ਹੈ। ਅੰਗਰੇਜ਼ੀ ਅਤੇ ਹਿੰਦੀ ਵਿੱਚ ਮੁਫ਼ਤ ਆਨਲਾਈਨ ਮਿਲਾਨ।",
     # EN: Kundali Milan
-    "km.crumb": "",
+    "km.crumb": "ਕੁੰਡਲੀ ਮਿਲਾਨ",
     # EN: <h1>Kundali Milan: Ashtakoot Guna Milan explained</h1> <p class="hi" lang="hi">कुंडली
     #     मिलान — अष्टकूट गुण मिलान ({total} गुण)</p> <p>Kundali Milan (<span lang="hi">कुंडली
     #     मिलान</span>) is the traditional Vedic way of checking marriage compatibility. The most
@@ -282,47 +282,47 @@ SEO_TEXT = {
     #     <strong>Moon</strong> — its sign (rashi) and its nakshatra at birth — which is why the
     #     score needs an accurate birth date and place, but barely depends on the birth time.</p>
     # keep: {total}
-    "km.intro": "",
+    "km.intro": "<h1>ਕੁੰਡਲੀ ਮਿਲਾਨ: ਅਸ਼ਟਕੂਟ ਗੁਣ ਮਿਲਾਨ ਦੀ ਵਿਆਖਿਆ</h1><p class=\"hi\">ਕੁੰਡਲੀ ਮਿਲਾਨ — ਅਸ਼ਟਕੂਟ ਗੁਣ ਮਿਲਾਨ ({total} ਗੁਣ)</p><p>ਕੁੰਡਲੀ ਮਿਲਾਨ ਵਿਆਹ ਦੇ ਮੇਲ ਦੀ ਜਾਂਚ ਕਰਨ ਦਾ ਰਵਾਇਤੀ ਵੈਦਿਕ ਤਰੀਕਾ ਹੈ। ਉੱਤਰੀ ਭਾਰਤ ਵਿੱਚ ਸਭ ਤੋਂ ਵੱਧ ਵਰਤਿਆ ਜਾਂਦਾ ਤਰੀਕਾ <strong>ਅਸ਼ਟਕੂਟ ਗੁਣ ਮਿਲਾਨ</strong> ਹੈ: ਲਾੜੀ ਤੇ ਲਾੜੇ ਦੀਆਂ ਕੁੰਡਲੀਆਂ ਦੇ ਅੱਠ ਪੱਖਾਂ (<em>ਕੂਟ</em>) ਦੀ ਤੁਲਨਾ ਕੀਤੀ ਜਾਂਦੀ ਹੈ ਅਤੇ ਕੁੱਲ <strong>{total} ਅੰਕਾਂ (ਗੁਣਾਂ)</strong> ਵਿੱਚੋਂ ਅੰਕ ਦਿੱਤੇ ਜਾਂਦੇ ਹਨ। ਇਹ ਸਾਰੇ <strong>ਚੰਦਰਮਾ</strong> ਤੋਂ ਪੜ੍ਹੇ ਜਾਂਦੇ ਹਨ — ਜਨਮ ਵੇਲੇ ਉਸ ਦੀ ਰਾਸ਼ੀ ਅਤੇ ਨਕਸ਼ਤਰ ਤੋਂ — ਇਸੇ ਲਈ ਅੰਕਾਂ ਵਾਸਤੇ ਜਨਮ ਦੀ ਸਹੀ ਤਾਰੀਖ਼ ਅਤੇ ਥਾਂ ਚਾਹੀਦੀ ਹੈ, ਪਰ ਜਨਮ ਦੇ ਸਮੇਂ ’ਤੇ ਇਹ ਮੁਸ਼ਕਿਲ ਨਾਲ ਹੀ ਨਿਰਭਰ ਕਰਦੇ ਹਨ।</p>",
     # EN: Match two kundalis now — free
-    "km.cta1": "",
+    "km.cta1": "ਹੁਣੇ ਦੋ ਕੁੰਡਲੀਆਂ ਮਿਲਾਓ — ਮੁਫ਼ਤ",
     # EN: <p>Don't know the birth times? Try <a href="{href}">Naam se Kundali Milan</a> — the
     #     traditional match by the first letter of each name.</p>
     # keep: {href}
-    "km.naam": "",
+    "km.naam": "<p>ਜਨਮ ਦਾ ਸਮਾਂ ਨਹੀਂ ਪਤਾ? <a href=\"{href}\">ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ</a> ਅਜ਼ਮਾਓ — ਹਰ ਨਾਂ ਦੇ ਪਹਿਲੇ ਅੱਖਰ ਤੋਂ ਹੋਣ ਵਾਲਾ ਰਵਾਇਤੀ ਮਿਲਾਨ।</p>",
     # EN: <h2>The 8 kootas and their points</h2>
-    "km.kootas_h2": "",
+    "km.kootas_h2": "<h2>8 ਕੂਟ ਅਤੇ ਉਨ੍ਹਾਂ ਦੇ ਅੰਕ</h2>",
     # EN: <tr><th>Koota</th><th>Points</th><th>What it measures</th></tr>
-    "km.th": "",
+    "km.th": "<tr><th>ਕੂਟ</th><th>ਅੰਕ</th><th>ਕੀ ਮਾਪਦਾ ਹੈ</th></tr>",
     # EN: <tr><td><strong>{name}</strong> <span
     #     lang="hi">({name_hi})</span></td><td>{pts}</td><td>{text}</td></tr>
     # keep: {name} {pts} {text}
-    "km.row": "",
+    "km.row": "<tr><td><strong>{name}</strong></td><td>{pts}</td><td>{text}</td></tr>",
     # EN: Total
-    "km.total": "",
+    "km.total": "ਕੁੱਲ",
     # EN: <h2>What is a good Guna Milan score?</h2>
-    "km.score_h2": "",
+    "km.score_h2": "<h2>ਗੁਣ ਮਿਲਾਨ ਦਾ ਚੰਗਾ ਅੰਕ ਕਿੰਨਾ ਹੁੰਦਾ ਹੈ?</h2>",
     # EN: <tr><th>Gunas</th><th>Conventional reading</th></tr>
-    "km.score_th": "",
+    "km.score_th": "<tr><th>ਗੁਣ</th><th>ਰਵਾਇਤੀ ਮਤਲਬ</th></tr>",
     # EN: Below {n}
     # keep: {n}
-    "km.below": "",
+    "km.below": "{n} ਤੋਂ ਘੱਟ",
     # EN: <p>18 is the conventional minimum. The total alone is not the whole story: a high score
     #     with an uncancelled Nadi or Bhakoot dosha is read with caution, and a modest score with
     #     strong Graha Maitri and no doshas is often considered workable. These bands are a
     #     convention with a long history, not a measurement — they are guidance, not a verdict on a
     #     relationship.</p>
-    "km.score_p": "",
+    "km.score_p": "<p>ਰਵਾਇਤ ਅਨੁਸਾਰ ਘੱਟੋ-ਘੱਟ 18 ਅੰਕ ਚਾਹੀਦੇ ਹਨ। ਸਿਰਫ਼ ਕੁੱਲ ਅੰਕ ਪੂਰੀ ਗੱਲ ਨਹੀਂ ਦੱਸਦੇ: ਜੇ ਨਾੜੀ ਜਾਂ ਭਕੂਟ ਦੋਸ਼ ਕੱਟਿਆ ਨਾ ਗਿਆ ਹੋਵੇ ਤਾਂ ਉੱਚੇ ਅੰਕ ਵੀ ਸਾਵਧਾਨੀ ਨਾਲ ਪੜ੍ਹੇ ਜਾਂਦੇ ਹਨ, ਅਤੇ ਮਜ਼ਬੂਤ ਗ੍ਰਹਿ ਮੈਤਰੀ ਤੇ ਬਿਨਾਂ ਦੋਸ਼ ਦੇ ਦਰਮਿਆਨੇ ਅੰਕ ਅਕਸਰ ਚੱਲਣਯੋਗ ਮੰਨੇ ਜਾਂਦੇ ਹਨ। ਇਹ ਸ਼੍ਰੇਣੀਆਂ ਲੰਮੇ ਇਤਿਹਾਸ ਵਾਲੀ ਰਵਾਇਤ ਹਨ, ਕੋਈ ਮਾਪ ਨਹੀਂ — ਇਹ ਮਾਰਗ-ਦਰਸ਼ਨ ਹਨ, ਕਿਸੇ ਰਿਸ਼ਤੇ ਬਾਰੇ ਫ਼ੈਸਲਾ ਨਹੀਂ।</p>",
     # EN: {n}st
     # keep: {n}
-    "km.ord1": "",
+    "km.ord1": "{n}",
     # EN: {n}nd
     # keep: {n}
-    "km.ord2": "",
+    "km.ord2": "{n}",
     # EN: {n}th
     # keep: {n}
-    "km.ordn": "",
+    "km.ordn": "{n}",
     # EN: or
-    "km.or": "",
+    "km.or": " ਜਾਂ ",
     # EN: <h2>Mangal Dosha (Manglik)</h2> <p>Mangal Dosha is checked separately from the 36 points.
     #     A chart is Manglik when Mars sits in the {houses} house counted from the
     #     <strong>Lagna</strong> (ascendant), the <strong>Moon</strong> or <strong>Venus</strong>.
@@ -332,7 +332,7 @@ SEO_TEXT = {
     #     why Manglik matches are made with Manglik partners. Because it depends on the Lagna,
     #     Mangal Dosha does need a reliable birth time.</p>
     # keep: {houses}
-    "km.mangal": "",
+    "km.mangal": "<h2>ਮੰਗਲ ਦੋਸ਼ (ਮੰਗਲੀਕ)</h2><p>ਮੰਗਲ ਦੋਸ਼ ਦੀ ਜਾਂਚ 36 ਅੰਕਾਂ ਤੋਂ ਵੱਖਰੀ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। ਕੁੰਡਲੀ ਮੰਗਲੀਕ ਉਦੋਂ ਹੁੰਦੀ ਹੈ ਜਦੋਂ <strong>ਲਗਨ</strong>, <strong>ਚੰਦਰਮਾ</strong> ਜਾਂ <strong>ਸ਼ੁੱਕਰ</strong> ਤੋਂ ਗਿਣਨ ’ਤੇ ਮੰਗਲ ਭਾਵ {houses} ਵਿੱਚ ਬੈਠਾ ਹੋਵੇ। ਸ਼ਾਸਤਰਾਂ ਵਿੱਚ ਕੁਝ ਰਾਸ਼ੀ ਸਥਿਤੀਆਂ ਨੂੰ ਛੋਟ ਦਿੱਤੀ ਗਈ ਹੈ (ਜਿਵੇਂ ਮੰਗਲ ਆਪਣੀ ਰਾਸ਼ੀ ਮੇਖ ਵਿੱਚ ਪਹਿਲੇ ਭਾਵ ਵਿੱਚ), ਅਤੇ ਮੰਗਲ ’ਤੇ ਬ੍ਰਿਹਸਪਤੀ ਦੀ ਦ੍ਰਿਸ਼ਟੀ ਇਸ ਨੂੰ ਨਰਮ ਕਰਨ ਵਾਲੀ ਮੰਨੀ ਜਾਂਦੀ ਹੈ। ਜਦੋਂ <strong>ਦੋਵੇਂ</strong> ਜੀਅ ਮੰਗਲੀਕ ਹੋਣ ਤਾਂ ਰਵਾਇਤ ਅਨੁਸਾਰ ਦੋਸ਼ ਆਪਸ ਵਿੱਚ ਕੱਟਿਆ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ — ਇਸੇ ਕਰਕੇ ਮੰਗਲੀਕ ਦਾ ਰਿਸ਼ਤਾ ਮੰਗਲੀਕ ਨਾਲ ਹੀ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਕਿਉਂਕਿ ਇਹ ਲਗਨ ’ਤੇ ਨਿਰਭਰ ਕਰਦਾ ਹੈ, ਮੰਗਲ ਦੋਸ਼ ਲਈ ਜਨਮ ਦਾ ਭਰੋਸੇਯੋਗ ਸਮਾਂ ਚਾਹੀਦਾ ਹੈ।</p>",
     # EN: <h2>How our matching tool works</h2> <p>Enter both people's date, time and place of birth.
     #     Both charts are cast with the sidereal zodiac (Lahiri ayanamsa) from the Swiss Ephemeris,
     #     and each koota is scored by table lookup from the classical tables, with every
@@ -340,56 +340,56 @@ SEO_TEXT = {
     #     Dosha status, in English or <span lang="hi">हिन्दी</span>, free and without signing
     #     up.</p>
     # keep: {total}
-    "km.how": "",
+    "km.how": "<h2>ਸਾਡਾ ਮਿਲਾਨ ਟੂਲ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ</h2><p>ਦੋਵਾਂ ਦੀ ਜਨਮ ਤਾਰੀਖ਼, ਸਮਾਂ ਅਤੇ ਥਾਂ ਭਰੋ। ਦੋਵੇਂ ਕੁੰਡਲੀਆਂ ਸਵਿਸ ਐਫ਼ੇਮੇਰਿਸ ਤੋਂ ਨਿਰਯਨ ਰਾਸ਼ੀ ਚੱਕਰ (ਲਾਹਿੜੀ ਅਯਨਾਂਸ਼) ਨਾਲ ਬਣਾਈਆਂ ਜਾਂਦੀਆਂ ਹਨ, ਅਤੇ ਹਰ ਕੂਟ ਦੇ ਅੰਕ ਸ਼ਾਸਤਰੀ ਸਾਰਣੀਆਂ ਵਿੱਚੋਂ ਵੇਖ ਕੇ ਦਿੱਤੇ ਜਾਂਦੇ ਹਨ, ਹਰ ਛੋਟ ਦਾ ਨਾਂ ਲੈ ਕੇ। ਤੁਹਾਨੂੰ {total} ਅੰਕਾਂ ਦਾ ਪੂਰਾ ਵੇਰਵਾ ਅਤੇ ਦੋਵਾਂ ਦੇ ਮੰਗਲ ਦੋਸ਼ ਦੀ ਸਥਿਤੀ ਮਿਲਦੀ ਹੈ, ਅੰਗਰੇਜ਼ੀ ਜਾਂ ਹਿੰਦੀ ਵਿੱਚ, ਮੁਫ਼ਤ ਅਤੇ ਬਿਨਾਂ ਸਾਈਨ ਅੱਪ ਕੀਤੇ।</p>",
     # EN: Open Kundali Milan
-    "km.cta2": "",
+    "km.cta2": "ਕੁੰਡਲੀ ਮਿਲਾਨ ਖੋਲ੍ਹੋ",
     # EN: Varna
-    "koota.varna": "",
+    "koota.varna": "ਵਰਣ",
     # EN: Vashya
-    "koota.vashya": "",
+    "koota.vashya": "ਵਸ਼ਯ",
     # EN: Tara
-    "koota.tara": "",
+    "koota.tara": "ਤਾਰਾ",
     # EN: Yoni
-    "koota.yoni": "",
+    "koota.yoni": "ਯੋਨੀ",
     # EN: Graha Maitri
-    "koota.graha_maitri": "",
+    "koota.graha_maitri": "ਗ੍ਰਹਿ ਮੈਤਰੀ",
     # EN: Gana
-    "koota.gana": "",
+    "koota.gana": "ਗਣ",
     # EN: Bhakoot
-    "koota.bhakoot": "",
+    "koota.bhakoot": "ਭਕੂਟ",
     # EN: Nadi
-    "koota.nadi": "",
+    "koota.nadi": "ਨਾੜੀ",
     # EN: Spiritual and working temperament, from the Moon sign's varna. Full point when the groom's
     #     varna is not below the bride's.
-    "koota_about.varna": "",
+    "koota_about.varna": "ਚੰਦਰ ਰਾਸ਼ੀ ਦੇ ਵਰਣ ਤੋਂ ਆਤਮਿਕ ਅਤੇ ਕੰਮਕਾਜੀ ਸੁਭਾਅ। ਪੂਰੇ ਅੰਕ ਉਦੋਂ ਮਿਲਦੇ ਹਨ ਜਦੋਂ ਲਾੜੇ ਦਾ ਵਰਣ ਲਾੜੀ ਦੇ ਵਰਣ ਤੋਂ ਹੇਠਾਂ ਨਾ ਹੋਵੇ।",
     # EN: Mutual attraction and influence — which sign “draws” the other.
-    "koota_about.vashya": "",
+    "koota_about.vashya": "ਆਪਸੀ ਖਿੱਚ ਅਤੇ ਪ੍ਰਭਾਵ — ਕਿਹੜੀ ਰਾਸ਼ੀ ਦੂਜੀ ਨੂੰ “ਖਿੱਚਦੀ” ਹੈ।",
     # EN: Health and wellbeing, from the count between the two birth nakshatras; the 3rd, 5th and
     #     7th taras are unfavourable.
-    "koota_about.tara": "",
+    "koota_about.tara": "ਸਿਹਤ ਅਤੇ ਭਲਾਈ, ਦੋਵਾਂ ਜਨਮ ਨਕਸ਼ਤਰਾਂ ਵਿਚਲੀ ਗਿਣਤੀ ਤੋਂ; ਤੀਜਾ, ਪੰਜਵਾਂ ਅਤੇ ਸੱਤਵਾਂ ਤਾਰਾ ਅਸ਼ੁਭ ਹੈ।",
     # EN: Physical and intimate compatibility; each nakshatra has an animal yoni, and sworn-enemy
     #     animals score zero.
-    "koota_about.yoni": "",
+    "koota_about.yoni": "ਸਰੀਰਕ ਅਤੇ ਨੇੜਤਾ ਦਾ ਮੇਲ; ਹਰ ਨਕਸ਼ਤਰ ਦੀ ਇੱਕ ਪਸ਼ੂ ਯੋਨੀ ਹੁੰਦੀ ਹੈ, ਅਤੇ ਪੱਕੇ ਵੈਰੀ ਪਸ਼ੂਆਂ ਨੂੰ ਸਿਫ਼ਰ ਅੰਕ ਮਿਲਦੇ ਹਨ।",
     # EN: Friendship between the lords of the two Moon signs — the mental wavelength of the couple.
-    "koota_about.graha_maitri": "",
+    "koota_about.graha_maitri": "ਦੋਵਾਂ ਚੰਦਰ ਰਾਸ਼ੀਆਂ ਦੇ ਸੁਆਮੀਆਂ ਵਿਚਲੀ ਦੋਸਤੀ — ਜੋੜੇ ਦੀ ਮਾਨਸਿਕ ਤਾਲ-ਮੇਲ।",
     # EN: Temperament: Deva (divine), Manushya (human) or Rakshasa (fierce).
-    "koota_about.gana": "",
+    "koota_about.gana": "ਸੁਭਾਅ: ਦੇਵ (ਦੈਵੀ), ਮਨੁੱਖ ਜਾਂ ਰਾਖਸ਼ (ਉਗਰ)।",
     # EN: The relative placement of the two Moon signs. The 2/12, 5/9 and 6/8 positions form Bhakoot
     #     dosha, cancelled when the sign lords are the same or friends.
-    "koota_about.bhakoot": "",
+    "koota_about.bhakoot": "ਦੋਵਾਂ ਚੰਦਰ ਰਾਸ਼ੀਆਂ ਦੀ ਆਪਸੀ ਸਥਿਤੀ। 2/12, 5/9 ਅਤੇ 6/8 ਦੀਆਂ ਸਥਿਤੀਆਂ ਭਕੂਟ ਦੋਸ਼ ਬਣਾਉਂਦੀਆਂ ਹਨ, ਜੋ ਰਾਸ਼ੀ ਸੁਆਮੀ ਇੱਕੋ ਹੋਣ ਜਾਂ ਮਿੱਤਰ ਹੋਣ ’ਤੇ ਕੱਟਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: The highest-weighted koota, tied to health and progeny. The same nadi for both is Nadi
     #     dosha, with classical cancellations for the same sign/different nakshatra or same
     #     nakshatra/different pada.
-    "koota_about.nadi": "",
+    "koota_about.nadi": "ਸਭ ਤੋਂ ਵੱਧ ਭਾਰ ਵਾਲਾ ਕੂਟ, ਜੋ ਸਿਹਤ ਅਤੇ ਸੰਤਾਨ ਨਾਲ ਜੁੜਿਆ ਹੈ। ਦੋਵਾਂ ਦੀ ਇੱਕੋ ਨਾੜੀ ਹੋਣਾ ਨਾੜੀ ਦੋਸ਼ ਹੈ, ਜਿਸ ਦੀਆਂ ਸ਼ਾਸਤਰੀ ਛੋਟਾਂ ਹਨ: ਇੱਕੋ ਰਾਸ਼ੀ ਪਰ ਵੱਖਰਾ ਨਕਸ਼ਤਰ, ਜਾਂ ਇੱਕੋ ਨਕਸ਼ਤਰ ਪਰ ਵੱਖਰਾ ਚਰਣ।",
     # EN: Free Kundali Online — Janam Kundali (Birth Chart) in English & Hindi | {brand}
     # keep: {brand}
-    "fk.title": "",
+    "fk.title": "ਮੁਫ਼ਤ ਕੁੰਡਲੀ ਆਨਲਾਈਨ — ਪੰਜਾਬੀ, ਹਿੰਦੀ ਅਤੇ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਜਨਮ ਕੁੰਡਲੀ | {brand}",
     # EN: Make your free janam kundali online: Lagna chart in North or South Indian style, planet
     #     positions, Moon nakshatra, Vimshottari dasha, Navamsa and other divisional charts,
     #     Manglik, Sade Sati and Kaal Sarp check — in English or Hindi, no sign-in needed.
-    "fk.desc": "",
+    "fk.desc": "ਆਨਲਾਈਨ ਆਪਣੀ ਮੁਫ਼ਤ ਜਨਮ ਕੁੰਡਲੀ ਬਣਾਓ: ਉੱਤਰੀ ਜਾਂ ਦੱਖਣੀ ਭਾਰਤੀ ਸ਼ੈਲੀ ਵਿੱਚ ਲਗਨ ਕੁੰਡਲੀ, ਗ੍ਰਹਿ ਸਥਿਤੀ, ਚੰਦਰ ਨਕਸ਼ਤਰ, ਵਿਮਸ਼ੋਤਰੀ ਦਸ਼ਾ, ਨਵਾਂਸ਼ ਅਤੇ ਹੋਰ ਵਰਗ ਕੁੰਡਲੀਆਂ, ਮੰਗਲੀਕ, ਸਾੜ੍ਹਸਾਤੀ ਅਤੇ ਕਾਲ ਸਰਪ ਦੀ ਜਾਂਚ — ਸਾਈਨ ਇਨ ਤੋਂ ਬਿਨਾਂ।",
     # EN: Free Kundali
-    "fk.crumb": "",
+    "fk.crumb": "ਮੁਫ਼ਤ ਕੁੰਡਲੀ",
     # EN: <h1>Free Janam Kundali online</h1> <p class="hi" lang="hi">मुफ़्त जन्म कुंडली — हिंदी और
     #     अंग्रेज़ी में</p> <p>A <strong>janam kundali</strong> (<span lang="hi">जन्म कुंडली</span>,
     #     birth chart) is a map of the sky at the exact moment and place you were born: which of the
@@ -398,12 +398,12 @@ SEO_TEXT = {
     #     and the 27 nakshatras. Vedic astrology reads everything else — personality, the twelve
     #     areas of life, and above all <em>timing</em> through the dasha periods — from this one
     #     chart. Ours is computed to the minute and is free.</p>
-    "fk.intro": "",
+    "fk.intro": "<h1>ਆਨਲਾਈਨ ਮੁਫ਼ਤ ਜਨਮ ਕੁੰਡਲੀ</h1><p class=\"hi\">ਮੁਫ਼ਤ ਜਨਮ ਕੁੰਡਲੀ — ਲਗਨ, ਗ੍ਰਹਿ, ਦਸ਼ਾ ਅਤੇ ਦੋਸ਼ ਦੀ ਜਾਂਚ</p><p><strong>ਜਨਮ ਕੁੰਡਲੀ</strong> ਤੁਹਾਡੇ ਜਨਮ ਦੇ ਠੀਕ ਪਲ ਅਤੇ ਥਾਂ ਦੇ ਅਸਮਾਨ ਦਾ ਨਕਸ਼ਾ ਹੈ: ਉਸ ਵੇਲੇ ਪੂਰਬੀ ਦਿਸਹੱਦੇ ’ਤੇ ਬਾਰਾਂ ਰਾਸ਼ੀਆਂ ਵਿੱਚੋਂ ਕਿਹੜੀ ਚੜ੍ਹ ਰਹੀ ਸੀ (ਤੁਹਾਡੀ <strong>ਲਗਨ</strong>), ਅਤੇ ਸੂਰਜ, ਚੰਦਰਮਾ, ਮੰਗਲ, ਬੁੱਧ, ਬ੍ਰਿਹਸਪਤੀ, ਸ਼ੁੱਕਰ, ਸ਼ਨੀ, ਰਾਹੂ ਅਤੇ ਕੇਤੂ ਕਿਹੜੀਆਂ ਰਾਸ਼ੀਆਂ ਅਤੇ 27 ਨਕਸ਼ਤਰਾਂ ਵਿੱਚ ਸਨ। ਵੈਦਿਕ ਜੋਤਿਸ਼ ਬਾਕੀ ਸਭ ਕੁਝ — ਸੁਭਾਅ, ਜ਼ਿੰਦਗੀ ਦੇ ਬਾਰਾਂ ਖੇਤਰ, ਅਤੇ ਸਭ ਤੋਂ ਵੱਧ ਦਸ਼ਾਵਾਂ ਰਾਹੀਂ <em>ਸਮਾਂ</em> — ਇਸੇ ਇੱਕ ਕੁੰਡਲੀ ਤੋਂ ਪੜ੍ਹਦਾ ਹੈ। ਸਾਡੀ ਕੁੰਡਲੀ ਮਿੰਟ ਦੀ ਸ਼ੁੱਧਤਾ ਨਾਲ ਗਿਣੀ ਜਾਂਦੀ ਹੈ ਅਤੇ ਮੁਫ਼ਤ ਹੈ।</p>",
     # EN: Make my free kundali now
-    "fk.cta1": "",
+    "fk.cta1": "ਹੁਣੇ ਮੇਰੀ ਮੁਫ਼ਤ ਕੁੰਡਲੀ ਬਣਾਓ",
     # EN: <p>You need your <strong>date</strong>, <strong>time</strong> and <strong>place</strong>
     #     of birth. No sign-in, no card.</p>
-    "fk.need": "",
+    "fk.need": "<p>ਤੁਹਾਨੂੰ ਜਨਮ ਦੀ <strong>ਤਾਰੀਖ਼</strong>, <strong>ਸਮਾਂ</strong> ਅਤੇ <strong>ਥਾਂ</strong> ਚਾਹੀਦੀ ਹੈ। ਸਾਈਨ ਇਨ ਨਹੀਂ, ਕਾਰਡ ਨਹੀਂ।</p>",
     # EN: <h2>What your free kundali includes</h2> <ul> <li><strong>Lagna chart (D1)</strong> in
     #     North Indian or South Indian style — switch with one tap.</li> <li><strong>Planet
     #     positions</strong>: sign, degree, house, dignity and retrograde status of all nine grahas
@@ -422,7 +422,7 @@ SEO_TEXT = {
     #     Swiss Ephemeris. With a free account you can also save charts, download the kundali as a
     #     PDF in English or Hindi, and ask the AI astrologer your first questions free.</p>
     # keep: {vargas}
-    "fk.includes": "",
+    "fk.includes": "<h2>ਤੁਹਾਡੀ ਮੁਫ਼ਤ ਕੁੰਡਲੀ ਵਿੱਚ ਕੀ ਕੁਝ ਹੈ</h2><ul><li><strong>ਲਗਨ ਕੁੰਡਲੀ (D1)</strong> ਉੱਤਰੀ ਜਾਂ ਦੱਖਣੀ ਭਾਰਤੀ ਸ਼ੈਲੀ ਵਿੱਚ — ਇੱਕ ਟੈਪ ਨਾਲ ਬਦਲੋ।</li><li><strong>ਗ੍ਰਹਿ ਸਥਿਤੀ</strong>: ਨੌਂ ਗ੍ਰਹਿਆਂ ਅਤੇ ਲਗਨ ਦੀ ਰਾਸ਼ੀ, ਅੰਸ਼, ਭਾਵ, ਬਲ ਅਤੇ ਵੱਕਰੀ ਹਾਲਤ, ਨਾਲ ਤੁਹਾਡੇ ਚੰਦਰਮਾ ਦਾ ਨਕਸ਼ਤਰ ਤੇ ਚਰਣ।</li><li><strong>ਬਾਰਾਂ ਭਾਵ</strong> ਅਤੇ ਹਰ ਇੱਕ ਵਿੱਚ ਬੈਠੇ ਗ੍ਰਹਿ।</li><li><strong>ਵਿਮਸ਼ੋਤਰੀ ਦਸ਼ਾ</strong>: ਤੁਹਾਡੀ ਮੌਜੂਦਾ ਮਹਾਦਸ਼ਾ ਅਤੇ ਅੰਤਰਦਸ਼ਾ ਮਿਤੀਆਂ ਸਮੇਤ, ਇੱਕ ਚਿੱਤਰ ਸਮਾਂ-ਰੇਖਾ ’ਤੇ।</li><li><strong>ਵਰਗ ਕੁੰਡਲੀਆਂ</strong>: {vargas}।</li><li><strong>ਅਸ਼ਟਕਵਰਗ</strong>: ਸਰਵਾਸ਼ਟਕਵਰਗ ਅਤੇ ਭਿੰਨਾਸ਼ਟਕਵਰਗ ਦੇ ਬਿੰਦੂ, ਭਾਵ ਮੁਤਾਬਕ।</li><li><strong>ਜੈਮਿਨੀ</strong> ਚਰ ਕਾਰਕ (ਆਤਮਕਾਰਕ ਤੋਂ ਦਾਰਾਕਾਰਕ ਤੱਕ) ਅਤੇ ਆਰੂੜ੍ਹ ਪਦ, ਅਤੇ ਲਗਨ, ਚੰਦਰਮਾ ਤੇ ਸੂਰਜ ਤਿੰਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਦਾ <strong>ਸੁਦਰਸ਼ਨ ਚੱਕਰ</strong> ਵਿਸ਼ਲੇਸ਼ਣ।</li><li><strong>ਦੋਸ਼ ਦੀ ਜਾਂਚ</strong>: ਮੰਗਲ ਦੋਸ਼ (ਮੰਗਲੀਕ), ਸਾੜ੍ਹਸਾਤੀ ਅਤੇ ਕਾਲ ਸਰਪ।</li><li>ਤੁਹਾਡੀ ਕੁੰਡਲੀ ਅਤੇ ਮੌਜੂਦਾ ਦਸ਼ਾ ਲਈ <strong>ਰਤਨ ਅਤੇ ਉਪਾਅ</strong> ਦੇ ਸੁਝਾਅ।</li><li>ਤੁਹਾਡੀ ਕੁੰਡਲੀ ਦੇ ਡੈਸ਼ਬੋਰਡ ’ਤੇ ਤੁਹਾਡਾ <strong>ਰੋਜ਼ਾਨਾ ਫਲਾਦੇਸ਼</strong> ਅਤੇ ਅੱਜ ਦਾ ਪੰਚਾਂਗ।</li></ul><p>ਸਭ ਕੁਝ <strong>ਲਾਹਿੜੀ ਅਯਨਾਂਸ਼ ਵਾਲੇ ਨਿਰਯਨ ਰਾਸ਼ੀ ਚੱਕਰ</strong> ਵਿੱਚ, ਪੂਰੀ ਰਾਸ਼ੀ ਵਾਲੇ ਭਾਵਾਂ ਸਮੇਤ, ਸਵਿਸ ਐਫ਼ੇਮੇਰਿਸ ਤੋਂ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ। ਮੁਫ਼ਤ ਖਾਤੇ ਨਾਲ ਤੁਸੀਂ ਕੁੰਡਲੀਆਂ ਸੰਭਾਲ ਸਕਦੇ ਹੋ, ਕੁੰਡਲੀ ਨੂੰ ਅੰਗਰੇਜ਼ੀ ਜਾਂ ਹਿੰਦੀ ਵਿੱਚ PDF ਵਜੋਂ ਡਾਊਨਲੋਡ ਕਰ ਸਕਦੇ ਹੋ, ਅਤੇ ਏਆਈ ਜੋਤਸ਼ੀ ਤੋਂ ਆਪਣੇ ਪਹਿਲੇ ਸਵਾਲ ਮੁਫ਼ਤ ਪੁੱਛ ਸਕਦੇ ਹੋ।</p>",
     # EN: <h2>How to read your kundali</h2> <h3>1. Start with the Lagna</h3> <p>The first house is
     #     the sign rising at birth. In the North Indian chart it is the top centre diamond, and the
     #     number written in each house is the <em>sign</em> (1 = Aries … 12 = Pisces), not the
@@ -443,31 +443,31 @@ SEO_TEXT = {
     #     context</h3> <p>A dosha is a pattern to read, not a verdict. Mangal Dosha has classical
     #     cancellations; Sade Sati is a seven-and-a-half-year transit everyone meets two or three
     #     times. The dosha report names the cancellations it found.</p>
-    "fk.read": "",
+    "fk.read": "<h2>ਆਪਣੀ ਕੁੰਡਲੀ ਕਿਵੇਂ ਪੜ੍ਹੀਏ</h2><h3>1. ਲਗਨ ਤੋਂ ਸ਼ੁਰੂ ਕਰੋ</h3><p>ਪਹਿਲਾ ਭਾਵ ਜਨਮ ਵੇਲੇ ਚੜ੍ਹ ਰਹੀ ਰਾਸ਼ੀ ਹੈ। ਉੱਤਰੀ ਭਾਰਤੀ ਕੁੰਡਲੀ ਵਿੱਚ ਇਹ ਉੱਪਰ ਵਿਚਕਾਰਲਾ ਹੀਰਾ ਹੈ, ਅਤੇ ਹਰ ਭਾਵ ਵਿੱਚ ਲਿਖਿਆ ਅੰਕ <em>ਰਾਸ਼ੀ</em> ਦਾ ਹੁੰਦਾ ਹੈ (1 = ਮੇਖ … 12 = ਮੀਨ), ਭਾਵ ਦਾ ਨਹੀਂ। ਦੱਖਣੀ ਭਾਰਤੀ ਕੁੰਡਲੀ ਵਿੱਚ ਰਾਸ਼ੀਆਂ ਪੱਕੇ ਖਾਨਿਆਂ ਵਿੱਚ ਰਹਿੰਦੀਆਂ ਹਨ ਅਤੇ ਲਗਨ ’ਤੇ ਨਿਸ਼ਾਨ ਲੱਗਿਆ ਹੁੰਦਾ ਹੈ। ਲਗਨ ਅਤੇ ਉਸ ਦਾ ਸੁਆਮੀ ਸਰੀਰ, ਸੁਭਾਅ ਅਤੇ ਜ਼ਿੰਦਗੀ ਦੀ ਸਮੁੱਚੀ ਦਿਸ਼ਾ ਦੱਸਦੇ ਹਨ।</p><h3>2. ਆਪਣੀ ਚੰਦਰ ਰਾਸ਼ੀ ਤੇ ਨਕਸ਼ਤਰ ਵੇਖੋ</h3><p>ਭਾਰਤੀ ਵਰਤੋਂ ਵਿੱਚ ਤੁਹਾਡੀ <strong>ਰਾਸ਼ੀ</strong> ਚੰਦਰਮਾ ਦੀ ਰਾਸ਼ੀ ਹੁੰਦੀ ਹੈ, ਸੂਰਜ ਦੀ ਨਹੀਂ। ਰਾਸ਼ੀਫਲ, ਸਾੜ੍ਹਸਾਤੀ ਅਤੇ ਕੁੰਡਲੀ ਮਿਲਾਨ ਇਸੇ ਰਾਸ਼ੀ ਤੋਂ ਵੇਖੇ ਜਾਂਦੇ ਹਨ, ਅਤੇ ਚੰਦਰਮਾ ਦਾ ਨਕਸ਼ਤਰ ਤੈਅ ਕਰਦਾ ਹੈ ਕਿ ਤੁਹਾਡੀ ਵਿਮਸ਼ੋਤਰੀ ਦਸ਼ਾ ਕਿੱਥੋਂ ਸ਼ੁਰੂ ਹੁੰਦੀ ਹੈ।</p><h3>3. ਗ੍ਰਹਿਆਂ ਨੂੰ ਭਾਵ ਮੁਤਾਬਕ ਪੜ੍ਹੋ</h3><p>ਹਰ ਭਾਵ ਜ਼ਿੰਦਗੀ ਦਾ ਇੱਕ ਖੇਤਰ ਹੈ: ਪਹਿਲਾ ਆਪਾ, ਦੂਜਾ ਧਨ ਅਤੇ ਪਰਿਵਾਰ, ਤੀਜਾ ਹਿੰਮਤ ਅਤੇ ਭੈਣ-ਭਰਾ, ਚੌਥਾ ਘਰ ਅਤੇ ਮਾਂ, ਪੰਜਵਾਂ ਸੰਤਾਨ ਅਤੇ ਬੁੱਧੀ, ਛੇਵਾਂ ਸਿਹਤ ਅਤੇ ਵਿਰੋਧੀ, ਸੱਤਵਾਂ ਵਿਆਹ ਅਤੇ ਸਾਂਝੇਦਾਰੀ, ਅੱਠਵਾਂ ਉਮਰ ਅਤੇ ਅਚਾਨਕ ਬਦਲਾਅ, ਨੌਵਾਂ ਕਿਸਮਤ ਅਤੇ ਧਰਮ, ਦਸਵਾਂ ਕਰੀਅਰ, ਗਿਆਰ੍ਹਵਾਂ ਲਾਭ, ਬਾਰ੍ਹਵਾਂ ਖ਼ਰਚ ਅਤੇ ਮੋਕਸ਼। ਗ੍ਰਹਿ ਉਸ ਭਾਵ ਨੂੰ ਰੰਗਦਾ ਹੈ ਜਿਸ ਵਿੱਚ ਉਹ ਬੈਠਾ ਹੈ ਅਤੇ ਉਨ੍ਹਾਂ ਭਾਵਾਂ ਨੂੰ ਵੀ ਜਿਨ੍ਹਾਂ ਦਾ ਉਹ ਸੁਆਮੀ ਹੈ; ਉਸ ਦਾ ਬਲ (ਉੱਚ, ਆਪਣੀ ਰਾਸ਼ੀ, ਨੀਚ) ਦੱਸਦਾ ਹੈ ਕਿ ਉਹ ਕਿੰਨਾ ਫਲ ਦੇ ਸਕਦਾ ਹੈ।</p><h3>4. ਦੇਖੋ ਕਿ ਕਿਹੜੀ ਦਸ਼ਾ ਚੱਲ ਰਹੀ ਹੈ</h3><p>ਦਸ਼ਾ ਦੱਸਦੀ ਹੈ ਕਿ <em>ਕਦੋਂ</em>। ਮਹਾਦਸ਼ਾ ਦਾ ਸੁਆਮੀ, ਅਤੇ ਉਸ ਦੇ ਅੰਦਰ ਅੰਤਰਦਸ਼ਾ ਦਾ ਸੁਆਮੀ, ਉਹ ਗ੍ਰਹਿ ਹਨ ਜਿਨ੍ਹਾਂ ਦੇ ਭਾਵ ਇਸ ਦੌਰ ਵਿੱਚ ਜਾਗ ਪੈਂਦੇ ਹਨ — ਇਸੇ ਲਈ ਇੱਕੋ ਜਿਹੀਆਂ ਕੁੰਡਲੀਆਂ ਵਾਲੇ ਦੋ ਜਣਿਆਂ ਦੇ ਸਾਲ ਬਹੁਤ ਵੱਖਰੇ ਹੋ ਸਕਦੇ ਹਨ।</p><h3>5. ਦੋਸ਼ਾਂ ਨੂੰ ਪ੍ਰਸੰਗ ਵਿੱਚ ਵੇਖੋ</h3><p>ਦੋਸ਼ ਇੱਕ ਪੈਟਰਨ ਹੈ ਜਿਸ ਨੂੰ ਪੜ੍ਹਨਾ ਹੁੰਦਾ ਹੈ, ਕੋਈ ਫ਼ੈਸਲਾ ਨਹੀਂ। ਮੰਗਲ ਦੋਸ਼ ਦੀਆਂ ਸ਼ਾਸਤਰੀ ਛੋਟਾਂ ਹਨ; ਸਾੜ੍ਹਸਾਤੀ ਸਾਢੇ ਸੱਤ ਸਾਲ ਦਾ ਗੋਚਰ ਹੈ ਜੋ ਹਰ ਕਿਸੇ ਦੇ ਜੀਵਨ ਵਿੱਚ ਦੋ-ਤਿੰਨ ਵਾਰ ਆਉਂਦਾ ਹੈ। ਦੋਸ਼ ਰਿਪੋਰਟ ਉਹ ਛੋਟਾਂ ਦੱਸਦੀ ਹੈ ਜੋ ਉਸ ਨੂੰ ਮਿਲੀਆਂ।</p>",
     # EN: Create my janam kundali — free
-    "fk.cta2": "",
+    "fk.cta2": "ਮੇਰੀ ਜਨਮ ਕੁੰਡਲੀ ਬਣਾਓ — ਮੁਫ਼ਤ",
     # EN: <h2>Frequently asked questions</h2>
-    "fk.faq_h2": "",
+    "fk.faq_h2": "<h2>ਅਕਸਰ ਪੁੱਛੇ ਜਾਂਦੇ ਸਵਾਲ</h2>",
     # EN: Rashi
-    "varga.D1": "",
+    "varga.D1": "ਰਾਸ਼ੀ",
     # EN: Drekkana
-    "varga.D3": "",
+    "varga.D3": "ਦ੍ਰੇਸ਼ਕਾਣ",
     # EN: Saptamsa
-    "varga.D7": "",
+    "varga.D7": "ਸਪਤਾਂਸ਼",
     # EN: Navamsa
-    "varga.D9": "",
+    "varga.D9": "ਨਵਾਂਸ਼",
     # EN: Dashamsa
-    "varga.D10": "",
+    "varga.D10": "ਦਸ਼ਾਂਸ਼",
     # EN: Dwadashamsa
-    "varga.D12": "",
+    "varga.D12": "ਦ੍ਵਾਦਸ਼ਾਂਸ਼",
     # EN: Not recommended
-    "km.band0": "",
+    "km.band0": "ਸਿਫ਼ਾਰਸ਼ ਨਹੀਂ",
     # EN: Acceptable
-    "km.band1": "",
+    "km.band1": "ਚੱਲਣਯੋਗ",
     # EN: Good
-    "km.band2": "",
+    "km.band2": "ਚੰਗਾ",
     # EN: Excellent
-    "km.band3": "",
+    "km.band3": "ਉੱਤਮ",
 }
 
 # app/seo_text.py FAQ["pa"] — the seven free-kundali FAQ pairs (plain text)  [7]
@@ -476,401 +476,401 @@ SEO_FAQ = (
     # EN a: Yes. Casting the chart, the dashas, the divisional charts and the dosha check cost
     #       nothing, and you do not need to sign in to see them. Only the AI astrologer's answers
     #       beyond your free questions, and in-depth paid reports such as the Life Book, cost money.
-    ("", ""),
+    ("ਕੀ ਕੁੰਡਲੀ ਸੱਚਮੁੱਚ ਮੁਫ਼ਤ ਹੈ?", "ਹਾਂ। ਕੁੰਡਲੀ ਬਣਾਉਣ, ਦਸ਼ਾਵਾਂ, ਵਰਗ ਕੁੰਡਲੀਆਂ ਅਤੇ ਦੋਸ਼ ਦੀ ਜਾਂਚ ਵਿੱਚ ਕੋਈ ਖ਼ਰਚ ਨਹੀਂ ਆਉਂਦਾ, ਅਤੇ ਇਨ੍ਹਾਂ ਨੂੰ ਵੇਖਣ ਲਈ ਸਾਈਨ ਇਨ ਕਰਨ ਦੀ ਲੋੜ ਨਹੀਂ। ਸਿਰਫ਼ ਮੁਫ਼ਤ ਸਵਾਲਾਂ ਤੋਂ ਬਾਅਦ ਏਆਈ ਜੋਤਸ਼ੀ ਦੇ ਜਵਾਬਾਂ ਅਤੇ ਲਾਈਫ਼ ਬੁੱਕ ਵਰਗੀਆਂ ਵਿਸਥਾਰ ਵਾਲੀਆਂ ਭੁਗਤਾਨ ਵਾਲੀਆਂ ਰਿਪੋਰਟਾਂ ਲਈ ਪੈਸੇ ਲੱਗਦੇ ਹਨ।"),
     # EN q: What details do I need?
     # EN a: Your date of birth, time of birth and place of birth. The place sets the latitude,
     #       longitude and time zone, which decide the Lagna (ascendant) and the house positions.
-    ("", ""),
+    ("ਮੈਨੂੰ ਕਿਹੜਾ ਵੇਰਵਾ ਚਾਹੀਦਾ ਹੈ?", "ਤੁਹਾਡੀ ਜਨਮ ਤਾਰੀਖ਼, ਜਨਮ ਦਾ ਸਮਾਂ ਅਤੇ ਜਨਮ ਸਥਾਨ। ਥਾਂ ਤੋਂ ਅਕਸ਼ਾਂਸ਼, ਰੇਖਾਂਸ਼ ਅਤੇ ਸਮਾਂ ਖੇਤਰ ਤੈਅ ਹੁੰਦੇ ਹਨ, ਜਿਨ੍ਹਾਂ ਨਾਲ ਲਗਨ ਅਤੇ ਭਾਵਾਂ ਦੀ ਸਥਿਤੀ ਨਿਕਲਦੀ ਹੈ।"),
     # EN q: What if I don't know my exact birth time?
     # EN a: The chart is still cast, at 12:00 noon. The Moon sign and nakshatra are usually still
     #       right (unless the Moon changed sign or nakshatra that day), so Moon-based readings, Sade
     #       Sati and Kundali Milan stay useful — but the Lagna, the houses and Mangal Dosha need a
     #       reliable time. A time from a birth certificate or hospital record is best.
-    ("", ""),
+    ("ਜੇ ਮੈਨੂੰ ਜਨਮ ਦਾ ਸਹੀ ਸਮਾਂ ਨਾ ਪਤਾ ਹੋਵੇ ਤਾਂ?", "ਕੁੰਡਲੀ ਫਿਰ ਵੀ ਬਣ ਜਾਂਦੀ ਹੈ, ਦੁਪਹਿਰ 12:00 ਵਜੇ ਦੇ ਸਮੇਂ ਨਾਲ। ਚੰਦਰ ਰਾਸ਼ੀ ਅਤੇ ਨਕਸ਼ਤਰ ਆਮ ਤੌਰ ’ਤੇ ਫਿਰ ਵੀ ਸਹੀ ਰਹਿੰਦੇ ਹਨ (ਜਦੋਂ ਤੱਕ ਉਸ ਦਿਨ ਚੰਦਰਮਾ ਨੇ ਰਾਸ਼ੀ ਜਾਂ ਨਕਸ਼ਤਰ ਨਾ ਬਦਲਿਆ ਹੋਵੇ), ਇਸ ਲਈ ਚੰਦਰਮਾ ਆਧਾਰਿਤ ਫਲ, ਸਾੜ੍ਹਸਾਤੀ ਅਤੇ ਕੁੰਡਲੀ ਮਿਲਾਨ ਕੰਮ ਦੇ ਰਹਿੰਦੇ ਹਨ — ਪਰ ਲਗਨ, ਭਾਵਾਂ ਅਤੇ ਮੰਗਲ ਦੋਸ਼ ਲਈ ਭਰੋਸੇਯੋਗ ਸਮਾਂ ਚਾਹੀਦਾ ਹੈ। ਜਨਮ ਸਰਟੀਫ਼ਿਕੇਟ ਜਾਂ ਹਸਪਤਾਲ ਦੇ ਰਿਕਾਰਡ ਵਾਲਾ ਸਮਾਂ ਸਭ ਤੋਂ ਵਧੀਆ ਹੈ।"),
     # EN q: Which system do you use — Lahiri, KP, tropical?
     # EN a: Every chart is sidereal (Nirayana) with the Lahiri (Chitrapaksha) ayanamsa, whole-sign
     #       houses and Vimshottari dasha — the convention of most Indian almanacs and astrologers.
     #       Planet positions come from the Swiss Ephemeris.
-    ("", ""),
+    ("ਤੁਸੀਂ ਕਿਹੜੀ ਪ੍ਰਣਾਲੀ ਵਰਤਦੇ ਹੋ — ਲਾਹਿੜੀ, ਕੇਪੀ, ਸਾਇਨ?", "ਹਰ ਕੁੰਡਲੀ ਨਿਰਯਨ ਹੈ, ਲਾਹਿੜੀ (ਚਿਤ੍ਰਪੱਖ) ਅਯਨਾਂਸ਼, ਪੂਰੀ ਰਾਸ਼ੀ ਵਾਲੇ ਭਾਵਾਂ ਅਤੇ ਵਿਮਸ਼ੋਤਰੀ ਦਸ਼ਾ ਨਾਲ — ਜੋ ਜ਼ਿਆਦਾਤਰ ਭਾਰਤੀ ਪੰਚਾਂਗਾਂ ਅਤੇ ਜੋਤਸ਼ੀਆਂ ਦੀ ਰਵਾਇਤ ਹੈ। ਗ੍ਰਹਿਆਂ ਦੀਆਂ ਸਥਿਤੀਆਂ ਸਵਿਸ ਐਫ਼ੇਮੇਰਿਸ ਤੋਂ ਆਉਂਦੀਆਂ ਹਨ।"),
     # EN q: Can I see my kundali in Hindi?
     # EN a: Yes. Switch the app to हिन्दी and the chart, planet and sign names, dashas and readings
     #       all appear in Hindi; the PDF can be downloaded in Hindi too.
-    ("", ""),
+    ("ਕੀ ਮੈਂ ਆਪਣੀ ਕੁੰਡਲੀ ਹਿੰਦੀ ਵਿੱਚ ਵੇਖ ਸਕਦਾ ਹਾਂ?", "ਹਾਂ। ਐਪ ਨੂੰ ਹਿੰਦੀ ਵਿੱਚ ਬਦਲੋ ਅਤੇ ਕੁੰਡਲੀ, ਗ੍ਰਹਿਆਂ ਅਤੇ ਰਾਸ਼ੀਆਂ ਦੇ ਨਾਂ, ਦਸ਼ਾਵਾਂ ਅਤੇ ਫਲ ਸਭ ਹਿੰਦੀ ਵਿੱਚ ਦਿਸਣਗੇ; PDF ਵੀ ਹਿੰਦੀ ਵਿੱਚ ਡਾਊਨਲੋਡ ਹੋ ਸਕਦੀ ਹੈ।"),
     # EN q: North Indian or South Indian chart?
     # EN a: Both. The same chart can be shown as the North Indian diamond chart (houses fixed, signs
     #       numbered) or the South Indian square chart (signs fixed), with one tap.
-    ("", ""),
+    ("ਉੱਤਰੀ ਭਾਰਤੀ ਜਾਂ ਦੱਖਣੀ ਭਾਰਤੀ ਕੁੰਡਲੀ?", "ਦੋਵੇਂ। ਇੱਕੋ ਕੁੰਡਲੀ ਨੂੰ ਇੱਕ ਟੈਪ ਨਾਲ ਉੱਤਰੀ ਭਾਰਤੀ ਹੀਰੇ ਵਾਲੀ ਕੁੰਡਲੀ (ਭਾਵ ਪੱਕੇ, ਰਾਸ਼ੀਆਂ ਦੇ ਅੰਕ) ਜਾਂ ਦੱਖਣੀ ਭਾਰਤੀ ਚੌਰਸ ਕੁੰਡਲੀ (ਰਾਸ਼ੀਆਂ ਪੱਕੀਆਂ) ਵਜੋਂ ਵੇਖਿਆ ਜਾ ਸਕਦਾ ਹੈ।"),
     # EN q: Is this the same as a horoscope?
     # EN a: A janam kundali is the birth chart itself — the fixed map of the sky at your birth. A
     #       daily horoscope or rashifal is a short general forecast for everyone with the same Moon
     #       sign. Your kundali is personal; a rashifal is not.
-    ("", ""),
+    ("ਕੀ ਇਹ ਰਾਸ਼ੀਫਲ ਵਾਂਗ ਹੀ ਹੈ?", "ਜਨਮ ਕੁੰਡਲੀ ਖ਼ੁਦ ਜਨਮ ਦਾ ਨਕਸ਼ਾ ਹੈ — ਤੁਹਾਡੇ ਜਨਮ ਵੇਲੇ ਅਸਮਾਨ ਦਾ ਪੱਕਾ ਨਕਸ਼ਾ। ਰੋਜ਼ਾਨਾ ਰਾਸ਼ੀਫਲ ਇੱਕੋ ਚੰਦਰ ਰਾਸ਼ੀ ਵਾਲੇ ਸਭ ਲੋਕਾਂ ਲਈ ਇੱਕ ਛੋਟਾ ਆਮ ਪੂਰਵ-ਅਨੁਮਾਨ ਹੁੰਦਾ ਹੈ। ਤੁਹਾਡੀ ਕੁੰਡਲੀ ਨਿੱਜੀ ਹੈ; ਰਾਸ਼ੀਫਲ ਨਹੀਂ।"),
 )
 
 # app/i18n.py CHROME["pa"] — chrome shared by every server page: breadcrumb, footer links, disclaimer (HTML: write &amp;)  [10]
 CHROME = {
     # EN: Home
-    "home": "",
+    "home": "ਮੁੱਖ ਪੰਨਾ",
     # EN: Breadcrumb
-    "breadcrumb": "",
+    "breadcrumb": "ਬ੍ਰੈੱਡਕ੍ਰੰਬ",
     # EN: Share on WhatsApp
-    "share": "",
+    "share": "WhatsApp ’ਤੇ ਸਾਂਝਾ ਕਰੋ",
     # EN: Kathas
-    "f_katha": "",
+    "f_katha": "ਕਥਾਵਾਂ",
     # EN: Terms &amp; Conditions
-    "f_terms": "",
+    "f_terms": "ਸ਼ਰਤਾਂ ਅਤੇ ਨਿਯਮ",
     # EN: Privacy Policy
-    "f_privacy": "",
+    "f_privacy": "ਗੋਪਨੀਯਤਾ ਨੀਤੀ",
     # EN: Refund &amp; Cancellation
-    "f_refund": "",
+    "f_refund": "ਰਿਫ਼ੰਡ ਅਤੇ ਰੱਦ ਕਰਨਾ",
     # EN: Contact Us
-    "f_contact": "",
+    "f_contact": "ਸਾਡੇ ਨਾਲ ਸੰਪਰਕ ਕਰੋ",
     # EN: Feedback
-    "f_feedback": "",
+    "f_feedback": "ਸੁਝਾਅ",
     # EN: Astrological readings are provided for guidance and entertainment. They are not medical,
     #     legal or financial advice.
-    "disclaimer": "",
+    "disclaimer": "ਜੋਤਿਸ਼ੀ ਫਲ ਮਾਰਗ-ਦਰਸ਼ਨ ਅਤੇ ਮਨੋਰੰਜਨ ਲਈ ਦਿੱਤੇ ਜਾਂਦੇ ਹਨ। ਇਹ ਡਾਕਟਰੀ, ਕਾਨੂੰਨੀ ਜਾਂ ਵਿੱਤੀ ਸਲਾਹ ਨਹੀਂ ਹਨ।",
 }
 
 # app/stay_strip.py TEXT["pa"] — the 'Stay in touch' strip at the foot of the pages  [8]
 STAY_STRIP = {
     # EN: Stay in touch
-    "head": "",
+    "head": "ਸਾਡੇ ਨਾਲ ਜੁੜੇ ਰਹੋ",
     # EN: Get today's panchang on your phone every morning
-    "push": "",
+    "push": "ਹਰ ਸਵੇਰ ਆਪਣੇ ਫ਼ੋਨ ’ਤੇ ਅੱਜ ਦਾ ਪੰਚਾਂਗ ਪਾਓ",
     # EN: Turning on…
-    "busy": "",
+    "busy": "ਚਾਲੂ ਹੋ ਰਿਹਾ ਹੈ…",
     # EN: Done — you will get it every morning.
-    "on": "",
+    "on": "ਹੋ ਗਿਆ — ਤੁਹਾਨੂੰ ਹਰ ਸਵੇਰ ਮਿਲੇਗਾ।",
     # EN: Could not turn on alerts. Please try again.
-    "err": "",
+    "err": "ਅਲਰਟ ਚਾਲੂ ਨਹੀਂ ਹੋ ਸਕੇ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
     # EN: Notifications are blocked for this site in your browser settings.
-    "denied": "",
+    "denied": "ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਰ ਦੀਆਂ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਇਸ ਸਾਈਟ ਲਈ ਨੋਟੀਫ਼ਿਕੇਸ਼ਨ ਬੰਦ ਹਨ।",
     # EN: Join our WhatsApp channel
-    "channel": "",
+    "channel": "ਸਾਡੇ WhatsApp ਚੈਨਲ ਨਾਲ ਜੁੜੋ",
     # EN: Share this page on WhatsApp
-    "share": "",
+    "share": "ਇਸ ਪੰਨੇ ਨੂੰ WhatsApp ’ਤੇ ਸਾਂਝਾ ਕਰੋ",
 }
 
 # app/seo_city_names.py CITIES["pa"] — the 114 cities as that language's newspapers spell them (key = URL slug)  [114]
 CITY_NAMES = {
     # EN: New Delhi
-    "new-delhi": "",
+    "new-delhi": "ਨਵੀਂ ਦਿੱਲੀ",
     # EN: Mumbai
-    "mumbai": "",
+    "mumbai": "ਮੁੰਬਈ",
     # EN: Kolkata
-    "kolkata": "",
+    "kolkata": "ਕੋਲਕਾਤਾ",
     # EN: Chennai
-    "chennai": "",
+    "chennai": "ਚੇਨਈ",
     # EN: Bengaluru
-    "bengaluru": "",
+    "bengaluru": "ਬੰਗਲੁਰੂ",
     # EN: Hyderabad
-    "hyderabad": "",
+    "hyderabad": "ਹੈਦਰਾਬਾਦ",
     # EN: Ahmedabad
-    "ahmedabad": "",
+    "ahmedabad": "ਅਹਿਮਦਾਬਾਦ",
     # EN: Pune
-    "pune": "",
+    "pune": "ਪੁਣੇ",
     # EN: Jaipur
-    "jaipur": "",
+    "jaipur": "ਜੈਪੁਰ",
     # EN: Lucknow
-    "lucknow": "",
+    "lucknow": "ਲਖਨਊ",
     # EN: Kanpur
-    "kanpur": "",
+    "kanpur": "ਕਾਨਪੁਰ",
     # EN: Nagpur
-    "nagpur": "",
+    "nagpur": "ਨਾਗਪੁਰ",
     # EN: Indore
-    "indore": "",
+    "indore": "ਇੰਦੌਰ",
     # EN: Bhopal
-    "bhopal": "",
+    "bhopal": "ਭੋਪਾਲ",
     # EN: Patna
-    "patna": "",
+    "patna": "ਪਟਨਾ",
     # EN: Varanasi
-    "varanasi": "",
+    "varanasi": "ਵਾਰਾਣਸੀ",
     # EN: Prayagraj
-    "prayagraj": "",
+    "prayagraj": "ਪ੍ਰਯਾਗਰਾਜ",
     # EN: Surat
-    "surat": "",
+    "surat": "ਸੂਰਤ",
     # EN: Vadodara
-    "vadodara": "",
+    "vadodara": "ਵਡੋਦਰਾ",
     # EN: Chandigarh
-    "chandigarh": "",
+    "chandigarh": "ਚੰਡੀਗੜ੍ਹ",
     # EN: Amritsar
-    "amritsar": "",
+    "amritsar": "ਅੰਮ੍ਰਿਤਸਰ",
     # EN: Dehradun
-    "dehradun": "",
+    "dehradun": "ਦੇਹਰਾਦੂਨ",
     # EN: Haridwar
-    "haridwar": "",
+    "haridwar": "ਹਰਿਦੁਆਰ",
     # EN: Noida
-    "noida": "",
+    "noida": "ਨੋਇਡਾ",
     # EN: Gurugram
-    "gurugram": "",
+    "gurugram": "ਗੁਰੂਗ੍ਰਾਮ",
     # EN: Bhubaneswar
-    "bhubaneswar": "",
+    "bhubaneswar": "ਭੁਵਨੇਸ਼ਵਰ",
     # EN: Guwahati
-    "guwahati": "",
+    "guwahati": "ਗੁਹਾਟੀ",
     # EN: Ranchi
-    "ranchi": "",
+    "ranchi": "ਰਾਂਚੀ",
     # EN: Kochi
-    "kochi": "",
+    "kochi": "ਕੋਚੀ",
     # EN: Visakhapatnam
-    "visakhapatnam": "",
+    "visakhapatnam": "ਵਿਸ਼ਾਖਾਪਟਨਮ",
     # EN: Thane
-    "thane": "",
+    "thane": "ਠਾਣੇ",
     # EN: Navi Mumbai
-    "navi-mumbai": "",
+    "navi-mumbai": "ਨਵੀਂ ਮੁੰਬਈ",
     # EN: Nashik
-    "nashik": "",
+    "nashik": "ਨਾਸ਼ਿਕ",
     # EN: Chhatrapati Sambhajinagar
-    "chhatrapati-sambhajinagar": "",
+    "chhatrapati-sambhajinagar": "ਛਤਰਪਤੀ ਸੰਭਾਜੀਨਗਰ",
     # EN: Solapur
-    "solapur": "",
+    "solapur": "ਸ਼ੋਲਾਪੁਰ",
     # EN: Kolhapur
-    "kolhapur": "",
+    "kolhapur": "ਕੋਲਹਾਪੁਰ",
     # EN: Amravati
-    "amravati": "",
+    "amravati": "ਅਮਰਾਵਤੀ",
     # EN: Shirdi
-    "shirdi": "",
+    "shirdi": "ਸ਼ਿਰਡੀ",
     # EN: Rajkot
-    "rajkot": "",
+    "rajkot": "ਰਾਜਕੋਟ",
     # EN: Bhavnagar
-    "bhavnagar": "",
+    "bhavnagar": "ਭਾਵਨਗਰ",
     # EN: Jamnagar
-    "jamnagar": "",
+    "jamnagar": "ਜਾਮਨਗਰ",
     # EN: Gandhinagar
-    "gandhinagar": "",
+    "gandhinagar": "ਗਾਂਧੀਨਗਰ",
     # EN: Dwarka
-    "dwarka": "",
+    "dwarka": "ਦਵਾਰਕਾ",
     # EN: Somnath
-    "somnath": "",
+    "somnath": "ਸੋਮਨਾਥ",
     # EN: Jodhpur
-    "jodhpur": "",
+    "jodhpur": "ਜੋਧਪੁਰ",
     # EN: Udaipur
-    "udaipur": "",
+    "udaipur": "ਉਦੈਪੁਰ",
     # EN: Kota
-    "kota": "",
+    "kota": "ਕੋਟਾ",
     # EN: Ajmer
-    "ajmer": "",
+    "ajmer": "ਅਜਮੇਰ",
     # EN: Bikaner
-    "bikaner": "",
+    "bikaner": "ਬੀਕਾਨੇਰ",
     # EN: Agra
-    "agra": "",
+    "agra": "ਆਗਰਾ",
     # EN: Ghaziabad
-    "ghaziabad": "",
+    "ghaziabad": "ਗਾਜ਼ੀਆਬਾਦ",
     # EN: Meerut
-    "meerut": "",
+    "meerut": "ਮੇਰਠ",
     # EN: Bareilly
-    "bareilly": "",
+    "bareilly": "ਬਰੇਲੀ",
     # EN: Aligarh
-    "aligarh": "",
+    "aligarh": "ਅਲੀਗੜ੍ਹ",
     # EN: Moradabad
-    "moradabad": "",
+    "moradabad": "ਮੁਰਾਦਾਬਾਦ",
     # EN: Gorakhpur
-    "gorakhpur": "",
+    "gorakhpur": "ਗੋਰਖਪੁਰ",
     # EN: Saharanpur
-    "saharanpur": "",
+    "saharanpur": "ਸਹਾਰਨਪੁਰ",
     # EN: Ayodhya
-    "ayodhya": "",
+    "ayodhya": "ਅਯੁੱਧਿਆ",
     # EN: Mathura
-    "mathura": "",
+    "mathura": "ਮਥੁਰਾ",
     # EN: Vrindavan
-    "vrindavan": "",
+    "vrindavan": "ਵ੍ਰਿੰਦਾਵਨ",
     # EN: Jhansi
-    "jhansi": "",
+    "jhansi": "ਝਾਂਸੀ",
     # EN: Faridabad
-    "faridabad": "",
+    "faridabad": "ਫ਼ਰੀਦਾਬਾਦ",
     # EN: Kurukshetra
-    "kurukshetra": "",
+    "kurukshetra": "ਕੁਰੂਕਸ਼ੇਤਰ",
     # EN: Ludhiana
-    "ludhiana": "",
+    "ludhiana": "ਲੁਧਿਆਣਾ",
     # EN: Jalandhar
-    "jalandhar": "",
+    "jalandhar": "ਜਲੰਧਰ",
     # EN: Patiala
-    "patiala": "",
+    "patiala": "ਪਟਿਆਲਾ",
     # EN: Rishikesh
-    "rishikesh": "",
+    "rishikesh": "ਰਿਸ਼ੀਕੇਸ਼",
     # EN: Shimla
-    "shimla": "",
+    "shimla": "ਸ਼ਿਮਲਾ",
     # EN: Jammu
-    "jammu": "",
+    "jammu": "ਜੰਮੂ",
     # EN: Srinagar
-    "srinagar": "",
+    "srinagar": "ਸ੍ਰੀਨਗਰ",
     # EN: Katra
-    "katra": "",
+    "katra": "ਕਟੜਾ",
     # EN: Gwalior
-    "gwalior": "",
+    "gwalior": "ਗਵਾਲੀਅਰ",
     # EN: Jabalpur
-    "jabalpur": "",
+    "jabalpur": "ਜਬਲਪੁਰ",
     # EN: Ujjain
-    "ujjain": "",
+    "ujjain": "ਉੱਜੈਨ",
     # EN: Raipur
-    "raipur": "",
+    "raipur": "ਰਾਇਪੁਰ",
     # EN: Bhilai
-    "bhilai": "",
+    "bhilai": "ਭਿਲਾਈ",
     # EN: Gaya
-    "gaya": "",
+    "gaya": "ਗਯਾ",
     # EN: Bhagalpur
-    "bhagalpur": "",
+    "bhagalpur": "ਭਾਗਲਪੁਰ",
     # EN: Muzaffarpur
-    "muzaffarpur": "",
+    "muzaffarpur": "ਮੁਜ਼ੱਫ਼ਰਪੁਰ",
     # EN: Jamshedpur
-    "jamshedpur": "",
+    "jamshedpur": "ਜਮਸ਼ੇਦਪੁਰ",
     # EN: Dhanbad
-    "dhanbad": "",
+    "dhanbad": "ਧਨਬਾਦ",
     # EN: Deoghar
-    "deoghar": "",
+    "deoghar": "ਦੇਵਘਰ",
     # EN: Howrah
-    "howrah": "",
+    "howrah": "ਹਾਵੜਾ",
     # EN: Asansol
-    "asansol": "",
+    "asansol": "ਆਸਨਸੋਲ",
     # EN: Siliguri
-    "siliguri": "",
+    "siliguri": "ਸਿਲੀਗੁੜੀ",
     # EN: Cuttack
-    "cuttack": "",
+    "cuttack": "ਕਟਕ",
     # EN: Puri
-    "puri": "",
+    "puri": "ਪੁਰੀ",
     # EN: Coimbatore
-    "coimbatore": "",
+    "coimbatore": "ਕੋਇੰਬਟੂਰ",
     # EN: Madurai
-    "madurai": "",
+    "madurai": "ਮਦੁਰਈ",
     # EN: Tiruchirappalli
-    "tiruchirappalli": "",
+    "tiruchirappalli": "ਤਿਰੂਚਿਰਾਪੱਲੀ",
     # EN: Salem
-    "salem": "",
+    "salem": "ਸਲੇਮ",
     # EN: Rameswaram
-    "rameswaram": "",
+    "rameswaram": "ਰਾਮੇਸ਼ਵਰਮ",
     # EN: Thiruvananthapuram
-    "thiruvananthapuram": "",
+    "thiruvananthapuram": "ਤਿਰੂਵਨੰਤਪੁਰਮ",
     # EN: Kozhikode
-    "kozhikode": "",
+    "kozhikode": "ਕੋਜ਼ੀਕੋਡ",
     # EN: Thrissur
-    "thrissur": "",
+    "thrissur": "ਤ੍ਰਿਸ਼ੂਰ",
     # EN: Kollam
-    "kollam": "",
+    "kollam": "ਕੋਲਮ",
     # EN: Kannur
-    "kannur": "",
+    "kannur": "ਕੰਨੂਰ",
     # EN: Malappuram
-    "malappuram": "",
+    "malappuram": "ਮਲੱਪੁਰਮ",
     # EN: Mysuru
-    "mysuru": "",
+    "mysuru": "ਮੈਸੂਰ",
     # EN: Mangaluru
-    "mangaluru": "",
+    "mangaluru": "ਮੰਗਲੁਰੂ",
     # EN: Hubballi
-    "hubballi": "",
+    "hubballi": "ਹੁਬਲੀ",
     # EN: Warangal
-    "warangal": "",
+    "warangal": "ਵਾਰੰਗਲ",
     # EN: Vijayawada
-    "vijayawada": "",
+    "vijayawada": "ਵਿਜੈਵਾੜਾ",
     # EN: Tirupati
-    "tirupati": "",
+    "tirupati": "ਤਿਰੂਪਤੀ",
     # EN: Guntur
-    "guntur": "",
+    "guntur": "ਗੁੰਟੂਰ",
     # EN: Panaji
-    "panaji": "",
+    "panaji": "ਪਣਜੀ",
     # EN: Shillong
-    "shillong": "",
+    "shillong": "ਸ਼ਿਲਾਂਗ",
     # EN: Imphal
-    "imphal": "",
+    "imphal": "ਇੰਫ਼ਾਲ",
     # EN: Agartala
-    "agartala": "",
+    "agartala": "ਅਗਰਤਲਾ",
     # EN: Gangtok
-    "gangtok": "",
+    "gangtok": "ਗੰਗਟੋਕ",
     # EN: Aizawl
-    "aizawl": "",
+    "aizawl": "ਆਈਜ਼ੋਲ",
     # EN: Kohima
-    "kohima": "",
+    "kohima": "ਕੋਹਿਮਾ",
     # EN: Itanagar
-    "itanagar": "",
+    "itanagar": "ਈਟਾਨਗਰ",
     # EN: Puducherry
-    "puducherry": "",
+    "puducherry": "ਪੁਡੂਚੇਰੀ",
 }
 
 # app/seo_city_names.py STATES["pa"] — the states and union territories (key = English state name)  [32]
 STATE_NAMES = {
     # EN: Andhra Pradesh
-    "Andhra Pradesh": "",
+    "Andhra Pradesh": "ਆਂਧਰਾ ਪ੍ਰਦੇਸ਼",
     # EN: Arunachal Pradesh
-    "Arunachal Pradesh": "",
+    "Arunachal Pradesh": "ਅਰੁਣਾਚਲ ਪ੍ਰਦੇਸ਼",
     # EN: Assam
-    "Assam": "",
+    "Assam": "ਅਸਾਮ",
     # EN: Bihar
-    "Bihar": "",
+    "Bihar": "ਬਿਹਾਰ",
     # EN: Chandigarh
-    "Chandigarh": "",
+    "Chandigarh": "ਚੰਡੀਗੜ੍ਹ",
     # EN: Chhattisgarh
-    "Chhattisgarh": "",
+    "Chhattisgarh": "ਛੱਤੀਸਗੜ੍ਹ",
     # EN: Delhi
-    "Delhi": "",
+    "Delhi": "ਦਿੱਲੀ",
     # EN: Goa
-    "Goa": "",
+    "Goa": "ਗੋਆ",
     # EN: Gujarat
-    "Gujarat": "",
+    "Gujarat": "ਗੁਜਰਾਤ",
     # EN: Haryana
-    "Haryana": "",
+    "Haryana": "ਹਰਿਆਣਾ",
     # EN: Himachal Pradesh
-    "Himachal Pradesh": "",
+    "Himachal Pradesh": "ਹਿਮਾਚਲ ਪ੍ਰਦੇਸ਼",
     # EN: Jammu and Kashmir
-    "Jammu and Kashmir": "",
+    "Jammu and Kashmir": "ਜੰਮੂ ਅਤੇ ਕਸ਼ਮੀਰ",
     # EN: Jharkhand
-    "Jharkhand": "",
+    "Jharkhand": "ਝਾਰਖੰਡ",
     # EN: Karnataka
-    "Karnataka": "",
+    "Karnataka": "ਕਰਨਾਟਕ",
     # EN: Kerala
-    "Kerala": "",
+    "Kerala": "ਕੇਰਲ",
     # EN: Madhya Pradesh
-    "Madhya Pradesh": "",
+    "Madhya Pradesh": "ਮੱਧ ਪ੍ਰਦੇਸ਼",
     # EN: Maharashtra
-    "Maharashtra": "",
+    "Maharashtra": "ਮਹਾਰਾਸ਼ਟਰ",
     # EN: Manipur
-    "Manipur": "",
+    "Manipur": "ਮਨੀਪੁਰ",
     # EN: Meghalaya
-    "Meghalaya": "",
+    "Meghalaya": "ਮੇਘਾਲਿਆ",
     # EN: Mizoram
-    "Mizoram": "",
+    "Mizoram": "ਮਿਜ਼ੋਰਮ",
     # EN: Nagaland
-    "Nagaland": "",
+    "Nagaland": "ਨਾਗਾਲੈਂਡ",
     # EN: Odisha
-    "Odisha": "",
+    "Odisha": "ਓਡੀਸ਼ਾ",
     # EN: Puducherry
-    "Puducherry": "",
+    "Puducherry": "ਪੁਡੂਚੇਰੀ",
     # EN: Punjab
-    "Punjab": "",
+    "Punjab": "ਪੰਜਾਬ",
     # EN: Rajasthan
-    "Rajasthan": "",
+    "Rajasthan": "ਰਾਜਸਥਾਨ",
     # EN: Sikkim
-    "Sikkim": "",
+    "Sikkim": "ਸਿੱਕਮ",
     # EN: Tamil Nadu
-    "Tamil Nadu": "",
+    "Tamil Nadu": "ਤਾਮਿਲ ਨਾਡੂ",
     # EN: Telangana
-    "Telangana": "",
+    "Telangana": "ਤੇਲੰਗਾਨਾ",
     # EN: Tripura
-    "Tripura": "",
+    "Tripura": "ਤ੍ਰਿਪੁਰਾ",
     # EN: Uttar Pradesh
-    "Uttar Pradesh": "",
+    "Uttar Pradesh": "ਉੱਤਰ ਪ੍ਰਦੇਸ਼",
     # EN: Uttarakhand
-    "Uttarakhand": "",
+    "Uttarakhand": "ਉੱਤਰਾਖੰਡ",
     # EN: West Bengal
-    "West Bengal": "",
+    "West Bengal": "ਪੱਛਮੀ ਬੰਗਾਲ",
 }
 
 # app/astro/choghadiya.py CHOGHADIYA_INFO["pa"] — one-line description of each of the seven choghadiya slots  [7]
 CHOGHADIYA_DESC = {
     # EN: Best time for all ceremonies, investments, agreements, and starting important endeavors.
-    "Amrit": "",
+    "Amrit": "ਸਾਰੇ ਸੰਸਕਾਰਾਂ, ਨਿਵੇਸ਼ਾਂ, ਸਮਝੌਤਿਆਂ ਅਤੇ ਅਹਿਮ ਕੰਮ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਸਭ ਤੋਂ ਵਧੀਆ ਸਮਾਂ।",
     # EN: Highly auspicious for ceremonies, religious rituals, education, and purchasing property.
-    "Shubh": "",
+    "Shubh": "ਸੰਸਕਾਰਾਂ, ਧਾਰਮਿਕ ਕਰਮਾਂ, ਪੜ੍ਹਾਈ ਅਤੇ ਜਾਇਦਾਦ ਖ਼ਰੀਦਣ ਲਈ ਬਹੁਤ ਸ਼ੁਭ।",
     # EN: Favorable for business, trade, financial transactions, launching products, and interviews.
-    "Labh": "",
+    "Labh": "ਕਾਰੋਬਾਰ, ਵਪਾਰ, ਲੈਣ-ਦੇਣ, ਨਵੀਂ ਚੀਜ਼ ਸ਼ੁਰੂ ਕਰਨ ਅਤੇ ਇੰਟਰਵਿਊ ਲਈ ਅਨੁਕੂਲ।",
     # EN: Neutral. Excellent for journeys, travel, vehicle purchases, and shifting places.
-    "Char": "",
+    "Char": "ਮੱਧਮ। ਯਾਤਰਾ, ਸਫ਼ਰ, ਗੱਡੀ ਖ਼ਰੀਦਣ ਅਤੇ ਟਿਕਾਣਾ ਬਦਲਣ ਲਈ ਬਹੁਤ ਵਧੀਆ।",
     # EN: Inauspicious. Avoid medical procedures or conflict. Only suitable for competitive sports
     #     or defeating rivals.
-    "Rog": "",
+    "Rog": "ਅਸ਼ੁਭ। ਡਾਕਟਰੀ ਇਲਾਜ ਜਾਂ ਝਗੜੇ ਤੋਂ ਬਚੋ। ਸਿਰਫ਼ ਮੁਕਾਬਲੇ ਵਾਲੀਆਂ ਖੇਡਾਂ ਜਾਂ ਵਿਰੋਧੀਆਂ ਨੂੰ ਹਰਾਉਣ ਲਈ ਠੀਕ।",
     # EN: Inauspicious. Ruled by Saturn; causes delays and setbacks. Avoid new ventures or signing
     #     documents.
-    "Kaal": "",
+    "Kaal": "ਅਸ਼ੁਭ। ਸ਼ਨੀ ਦੇ ਅਧੀਨ; ਦੇਰੀ ਅਤੇ ਰੁਕਾਵਟਾਂ ਪਾਉਂਦਾ ਹੈ। ਨਵੇਂ ਕੰਮ ਜਾਂ ਦਸਤਾਵੇਜ਼ਾਂ ’ਤੇ ਦਸਤਖ਼ਤ ਤੋਂ ਬਚੋ।",
     # EN: Inauspicious. Causes restlessness and anxiety. Favorable only for government filings or
     #     official duties.
-    "Udveg": "",
+    "Udveg": "ਅਸ਼ੁਭ। ਬੇਚੈਨੀ ਅਤੇ ਚਿੰਤਾ ਪੈਦਾ ਕਰਦਾ ਹੈ। ਸਿਰਫ਼ ਸਰਕਾਰੀ ਕਾਗਜ਼ਾਂ ਜਾਂ ਦਫ਼ਤਰੀ ਡਿਊਟੀਆਂ ਲਈ ਅਨੁਕੂਲ।",
 }
 
 # ----------------------------------------------------------------------------
@@ -881,110 +881,110 @@ CHOGHADIYA_DESC = {
 RASHIFAL_TEXT = {
     # EN: {house} house
     # keep: {house}
-    "house_short": "",
+    "house_short": "{house} ਭਾਵ",
     # EN: (retrograde)
-    "rx": "",
+    "rx": " (ਵੱਕਰੀ)",
     # EN: Moon
-    "planet.Moon": "",
+    "planet.Moon": "ਚੰਦਰਮਾ",
     # EN: Saturn
-    "planet.Saturn": "",
+    "planet.Saturn": "ਸ਼ਨੀ",
     # EN: Jupiter
-    "planet.Jupiter": "",
+    "planet.Jupiter": "ਬ੍ਰਿਹਸਪਤੀ",
     # EN: Rahu
-    "planet.Rahu": "",
+    "planet.Rahu": "ਰਾਹੂ",
     # EN: Ketu
-    "planet.Ketu": "",
+    "planet.Ketu": "ਕੇਤੂ",
     # EN: {english} ({name})
     # keep: {local}
-    "sign_label": "",
+    "sign_label": "{local}",
     # EN: {name} · {english}
     # keep: {local}
-    "sign_link": "",
+    "sign_link": "{local}",
     # EN: {name}
     # keep: {local}
-    "sign_crumb": "",
+    "sign_crumb": "{local}",
     # EN: {name}
     # keep: {local}
-    "sade_name": "",
+    "sade_name": "{local}",
     # EN: Rashifal
-    "crumb_root": "",
+    "crumb_root": "ਰਾਸ਼ੀਫਲ",
     # EN: hi
     "sub_lang": 'pa',
     # EN: {name} Rashifal Today, {date_short} — {english} Daily Horoscope | {brand}
     # keep: {brand} {local}
     # may also use: {date_short} {date}
-    "s.title": "",
+    "s.title": "{local} ਰਾਸ਼ੀਫਲ ਅੱਜ, {date_short} — ਅੱਜ ਦਾ ਰੋਜ਼ਾਨਾ ਫਲਾਦੇਸ਼ | {brand}",
     # EN: {name} ({english} Moon sign) rashifal for {weekday}, {date}: the Moon transits your
     #     {house} house — {tone_lower}. Plus Saturn, Jupiter and Rahu–Ketu transits, Sade Sati
     #     status and today's tithi, computed from the sidereal sky.
     # keep: {date} {house} {local} {tone} {weekday}
-    "s.desc": "",
+    "s.desc": "{local} ਰਾਸ਼ੀ ਦਾ {weekday}, {date} ਦਾ ਰਾਸ਼ੀਫਲ: ਚੰਦਰਮਾ ਤੁਹਾਡੀ ਰਾਸ਼ੀ ਤੋਂ {house} ਭਾਵ ਵਿੱਚ ਹੈ — {tone}। ਨਾਲ ਸ਼ਨੀ, ਬ੍ਰਿਹਸਪਤੀ ਅਤੇ ਰਾਹੂ-ਕੇਤੂ ਦਾ ਗੋਚਰ, ਸਾੜ੍ਹਸਾਤੀ ਦੀ ਸਥਿਤੀ ਅਤੇ ਅੱਜ ਦੀ ਤਿਥੀ, ਨਿਰਯਨ ਗਣਨਾ ਨਾਲ।",
     # EN: {name} Rashifal Today — {english} Daily Horoscope
     # keep: {local}
-    "s.h1": "",
+    "s.h1": "{local} ਰਾਸ਼ੀ ਦਾ ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ",
     # EN: आज का {name_hi} राशिफल
     # may also use: {local}
-    "s.sub": "",
+    "s.sub": "{local} ਰਾਸ਼ੀ · ਰੋਜ਼ਾਨਾ ਰਾਸ਼ੀਫਲ",
     # EN: the Moon is in your {house} house from {name}.
     # keep: {house}
-    "s.summary": "",
+    "s.summary": "ਚੰਦਰਮਾ ਤੁਹਾਡੀ ਰਾਸ਼ੀ ਤੋਂ {house} ਭਾਵ ਵਿੱਚ ਹੈ।",
     # EN: About {name} rashi — traits, nakshatras and name letters
     # keep: {local}
-    "s.about_rashi": "",
+    "s.about_rashi": "{local} ਰਾਸ਼ੀ ਬਾਰੇ — ਸੁਭਾਅ, ਨਕਸ਼ਤਰ ਅਤੇ ਨਾਂ ਦੇ ਅੱਖਰ",
     # EN: Today's Moon transit (Chandra gochar)
-    "moon.head": "",
+    "moon.head": "ਅੱਜ ਦਾ ਚੰਦਰਮਾ ਗੋਚਰ (ਚੰਦਰ ਗੋਚਰ)",
     # EN: The Moon is in {sign} all day — your {house} house.
     # keep: {house} {sign}
-    "moon.allday": "",
+    "moon.allday": "ਚੰਦਰਮਾ ਸਾਰਾ ਦਿਨ {sign} ਵਿੱਚ ਹੈ — ਤੁਹਾਡਾ {house} ਭਾਵ।",
     # EN: <strong>Until {time} IST:</strong> the Moon is in {sign} — your {house} house.
     # keep: {house} {sign} {time}
-    "moon.until": "",
+    "moon.until": "<strong>{time} IST ਤੱਕ:</strong> ਚੰਦਰਮਾ {sign} ਵਿੱਚ ਹੈ — ਤੁਹਾਡਾ {house} ਭਾਵ।",
     # EN: <strong>From {time} IST:</strong> the Moon enters {sign} — your {house} house.
     # keep: {house} {sign} {time}
-    "moon.from": "",
+    "moon.from": "<strong>{time} IST ਤੋਂ:</strong> ਚੰਦਰਮਾ {sign} ਵਿੱਚ ਆਉਂਦਾ ਹੈ — ਤੁਹਾਡਾ {house} ਭਾਵ।",
     # EN: <p>The Moon changes sign during the day, so the day reads in two parts.</p>
-    "moon.two": "",
+    "moon.two": "<p>ਚੰਦਰਮਾ ਦਿਨ ਵਿੱਚ ਰਾਸ਼ੀ ਬਦਲਦਾ ਹੈ, ਇਸ ਲਈ ਦਿਨ ਦੋ ਹਿੱਸਿਆਂ ਵਿੱਚ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।</p>",
     # EN: The longer backdrop: slow transits
-    "back.head": "",
+    "back.head": "ਲੰਮੀ ਪਿੱਠਭੂਮੀ: ਹੌਲੀ ਚੱਲਣ ਵਾਲੇ ਗੋਚਰ",
     # EN: <p>These planets stay in one sign for months or years, so they set the background against
     #     which each day plays out.</p>
-    "back.intro": "",
+    "back.intro": "<p>ਇਹ ਗ੍ਰਹਿ ਮਹੀਨਿਆਂ ਜਾਂ ਸਾਲਾਂ ਤੱਕ ਇੱਕੋ ਰਾਸ਼ੀ ਵਿੱਚ ਰਹਿੰਦੇ ਹਨ, ਇਸ ਲਈ ਇਹ ਉਹ ਪਿੱਠਭੂਮੀ ਤੈਅ ਕਰਦੇ ਹਨ ਜਿਸ ਵਿੱਚ ਹਰ ਦਿਨ ਬੀਤਦਾ ਹੈ।</p>",
     # EN: {sign}{rx} · {house} house
     # keep: {house} {rx} {sign}
-    "back.where": "",
+    "back.where": "{sign}{rx} · {house} ਭਾਵ",
     # EN: first (rising)
-    "phase.1": "",
+    "phase.1": "ਪਹਿਲਾ (ਚੜ੍ਹਦਾ)",
     # EN: second (peak)
-    "phase.2": "",
+    "phase.2": "ਦੂਜਾ (ਸਿਖ਼ਰ)",
     # EN: third (setting)
-    "phase.3": "",
+    "phase.3": "ਤੀਜਾ (ਢਲਦਾ)",
     # EN: <strong>Sade Sati is running</strong> — the {phase} phase. It is a slow, disciplining
     #     period rather than something to fear; steady routine, service and patience make it
     #     lighter.
     # keep: {phase}
-    "sade.running": "",
+    "sade.running": "<strong>ਸਾੜ੍ਹਸਾਤੀ ਚੱਲ ਰਹੀ ਹੈ</strong> — {phase} ਪੜਾਅ। ਇਹ ਡਰਨ ਵਾਲੀ ਗੱਲ ਨਹੀਂ, ਸਗੋਂ ਹੌਲੀ ਅਤੇ ਅਨੁਸ਼ਾਸਨ ਸਿਖਾਉਣ ਵਾਲਾ ਸਮਾਂ ਹੈ; ਪੱਕਾ ਰੋਜ਼ਮਰ੍ਹਾ, ਸੇਵਾ ਅਤੇ ਸਬਰ ਇਸ ਨੂੰ ਹਲਕਾ ਕਰ ਦਿੰਦੇ ਹਨ।",
     # EN: <strong>No Sade Sati</strong>, but Saturn's Dhaiya is running (see above).
-    "sade.dhaiya": "",
+    "sade.dhaiya": "<strong>ਸਾੜ੍ਹਸਾਤੀ ਨਹੀਂ ਹੈ</strong>, ਪਰ ਸ਼ਨੀ ਦੀ ਢੱਈਆ ਚੱਲ ਰਹੀ ਹੈ (ਉੱਪਰ ਵੇਖੋ)।",
     # EN: <strong>No Sade Sati</strong> — Saturn is not in the 12th, 1st or 2nd from your sign.
-    "sade.none": "",
+    "sade.none": "<strong>ਸਾੜ੍ਹਸਾਤੀ ਨਹੀਂ ਹੈ</strong> — ਸ਼ਨੀ ਤੁਹਾਡੀ ਰਾਸ਼ੀ ਤੋਂ ਬਾਰ੍ਹਵੇਂ, ਪਹਿਲੇ ਜਾਂ ਦੂਜੇ ਭਾਵ ਵਿੱਚ ਨਹੀਂ ਹੈ।",
     # EN: <h2>Today's Panchang</h2><p>At sunrise in New Delhi it is <strong>{paksha}
     #     {tithi}</strong> tithi with the Moon in <strong>{nakshatra}</strong> nakshatra. Rahu Kaal,
     #     sunrise and the full almanac are on <a href="/panchang">today's Panchang</a>.</p>
     # keep: {nakshatra} {tithi}
     # may also use: {paksha_full} {paksha}
-    "panchang": "",
+    "panchang": "<h2>ਅੱਜ ਦਾ ਪੰਚਾਂਗ</h2><p>ਨਵੀਂ ਦਿੱਲੀ ਵਿੱਚ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ <strong>{paksha} {tithi}</strong> ਤਿਥੀ ਹੈ ਅਤੇ ਚੰਦਰਮਾ <strong>{nakshatra}</strong> ਨਕਸ਼ਤਰ ਵਿੱਚ ਹੈ। ਰਾਹੂ ਕਾਲ, ਸੂਰਜ ਚੜ੍ਹਨ ਦਾ ਸਮਾਂ ਅਤੇ ਪੂਰਾ ਪੰਚਾਂਗ <a href=\"/panchang\">ਅੱਜ ਦੇ ਪੰਚਾਂਗ</a> ’ਤੇ ਹੈ।</p>",
     # EN: <p class="note">This rashifal is read from your Moon sign alone — the same for everyone
     #     born with the Moon in that sign. A personal reading uses your full birth chart: the
     #     ascendant, your running dasha and the ashtakavarga strength of each transit. Not sure of
     #     your Moon sign (rashi)? It is the first thing your free kundali shows — it is usually not
     #     your Western sun sign.</p>
-    "personal": "",
+    "personal": "<p class=\"note\">ਇਹ ਰਾਸ਼ੀਫਲ ਸਿਰਫ਼ ਤੁਹਾਡੀ ਚੰਦਰ ਰਾਸ਼ੀ ਤੋਂ ਪੜ੍ਹਿਆ ਗਿਆ ਹੈ — ਉਸ ਰਾਸ਼ੀ ਵਿੱਚ ਚੰਦਰਮਾ ਨਾਲ ਜਨਮੇ ਹਰ ਕਿਸੇ ਲਈ ਇੱਕੋ ਜਿਹਾ। ਨਿੱਜੀ ਫਲਾਦੇਸ਼ ਤੁਹਾਡੀ ਪੂਰੀ ਜਨਮ ਕੁੰਡਲੀ ਵਰਤਦਾ ਹੈ: ਲਗਨ, ਤੁਹਾਡੀ ਚੱਲ ਰਹੀ ਦਸ਼ਾ ਅਤੇ ਹਰ ਗੋਚਰ ਦਾ ਅਸ਼ਟਕਵਰਗ ਬਲ। ਆਪਣੀ ਚੰਦਰ ਰਾਸ਼ੀ ਦਾ ਪੱਕਾ ਨਹੀਂ ਪਤਾ? ਇਹ ਤੁਹਾਡੀ ਮੁਫ਼ਤ ਕੁੰਡਲੀ ਦੀ ਪਹਿਲੀ ਚੀਜ਼ ਹੈ — ਇਹ ਆਮ ਤੌਰ ’ਤੇ ਤੁਹਾਡੀ ਪੱਛਮੀ ਸੂਰਜ ਰਾਸ਼ੀ ਨਹੀਂ ਹੁੰਦੀ।</p>",
     # EN: Get your free kundali — then ask a question about your own chart
-    "cta": "",
+    "cta": "ਆਪਣੀ ਮੁਫ਼ਤ ਕੁੰਡਲੀ ਲਵੋ — ਫਿਰ ਆਪਣੀ ਕੁੰਡਲੀ ਬਾਰੇ ਸਵਾਲ ਪੁੱਛੋ",
     # EN: Today's Rashifal for every sign
-    "signs.head": "",
+    "signs.head": "ਹਰ ਰਾਸ਼ੀ ਲਈ ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ",
     # EN: More free tools
-    "more.head": "",
+    "more.head": "ਹੋਰ ਮੁਫ਼ਤ ਟੂਲ",
     # EN: <h2>How this is calculated</h2><p>Planet positions are computed for today (IST) with the
     #     Swiss Ephemeris in the sidereal zodiac (Lahiri ayanamsa) — the same positions our kundali
     #     and panchang use. Houses are counted from your Moon sign, as in classical gochar. Which
@@ -992,100 +992,100 @@ RASHIFAL_TEXT = {
     #     Mantreswara's Phaladeepika (ch. 26): the Moon is favourable in the 1st, 3rd, 6th, 7th,
     #     10th and 11th; Saturn, Rahu and Ketu in the 3rd, 6th and 11th; Jupiter in the 2nd, 5th,
     #     7th, 9th and 11th.</p>
-    "method": "",
+    "method": "<h2>ਇਹ ਕਿਵੇਂ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ</h2><p>ਗ੍ਰਹਿਆਂ ਦੀਆਂ ਸਥਿਤੀਆਂ ਅੱਜ (IST) ਲਈ ਸਵਿਸ ਐਫ਼ੇਮੇਰਿਸ ਨਾਲ ਨਿਰਯਨ ਰਾਸ਼ੀ ਚੱਕਰ (ਲਾਹਿੜੀ ਅਯਨਾਂਸ਼) ਵਿੱਚ ਗਿਣੀਆਂ ਜਾਂਦੀਆਂ ਹਨ — ਉਹੀ ਸਥਿਤੀਆਂ ਜੋ ਸਾਡੀ ਕੁੰਡਲੀ ਅਤੇ ਪੰਚਾਂਗ ਵਰਤਦੇ ਹਨ। ਭਾਵ ਸ਼ਾਸਤਰੀ ਗੋਚਰ ਵਾਂਗ ਤੁਹਾਡੀ ਚੰਦਰ ਰਾਸ਼ੀ ਤੋਂ ਗਿਣੇ ਜਾਂਦੇ ਹਨ। ਕਿਹੜੇ ਭਾਵ ਸ਼ੁਭ ਹਨ, ਇਹ ਵਰਾਹਮਿਹਿਰ ਦੀ ਬ੍ਰਿਹਤ ਸੰਹਿਤਾ (ਅਧਿਆਇ 104) ਅਤੇ ਮੰਤ੍ਰੇਸ਼ਵਰ ਦੀ ਫਲਦੀਪਿਕਾ (ਅਧਿਆਇ 26) ਦੀ ਵਿਧੀ ਮੁਤਾਬਕ ਹੈ: ਚੰਦਰਮਾ ਪਹਿਲੇ, ਤੀਜੇ, ਛੇਵੇਂ, ਸੱਤਵੇਂ, ਦਸਵੇਂ ਅਤੇ ਗਿਆਰ੍ਹਵੇਂ ਵਿੱਚ ਸ਼ੁਭ ਹੈ; ਸ਼ਨੀ, ਰਾਹੂ ਅਤੇ ਕੇਤੂ ਤੀਜੇ, ਛੇਵੇਂ ਅਤੇ ਗਿਆਰ੍ਹਵੇਂ ਵਿੱਚ; ਬ੍ਰਿਹਸਪਤੀ ਦੂਜੇ, ਪੰਜਵੇਂ, ਸੱਤਵੇਂ, ਨੌਵੇਂ ਅਤੇ ਗਿਆਰ੍ਹਵੇਂ ਵਿੱਚ।</p>",
     # EN: Aaj Ka Rashifal, {date_short} — Today's Horoscope for All 12 Signs | {brand}
     # keep: {brand}
     # may also use: {date_short} {date}
-    "i.title": "",
+    "i.title": "ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ, {date_short} — ਸਾਰੀਆਂ 12 ਰਾਸ਼ੀਆਂ ਦਾ ਅੱਜ ਦਾ ਫਲਾਦੇਸ਼ | {brand}",
     # EN: Today's rashifal for {weekday}, {date}: daily horoscope for all 12 Moon signs from Mesh to
     #     Meen — Moon transit, Saturn, Jupiter and Rahu, and Sade Sati, computed from the sidereal
     #     sky.
     # keep: {date} {weekday}
-    "i.desc": "",
+    "i.desc": "{weekday}, {date} ਦਾ ਰਾਸ਼ੀਫਲ: ਮੇਖ ਤੋਂ ਮੀਨ ਤੱਕ ਸਾਰੀਆਂ 12 ਚੰਦਰ ਰਾਸ਼ੀਆਂ ਦਾ ਰੋਜ਼ਾਨਾ ਫਲਾਦੇਸ਼ — ਚੰਦਰਮਾ ਗੋਚਰ, ਸ਼ਨੀ, ਬ੍ਰਿਹਸਪਤੀ ਅਤੇ ਰਾਹੂ, ਅਤੇ ਸਾੜ੍ਹਸਾਤੀ, ਨਿਰਯਨ ਗਣਨਾ ਨਾਲ।",
     # EN: Today's Rashifal — Daily Horoscope
-    "i.h1": "",
+    "i.h1": "ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ — ਰੋਜ਼ਾਨਾ ਫਲਾਦੇਸ਼",
     # EN: आज का राशिफल — सभी 12 राशियाँ
-    "i.sub": "",
+    "i.sub": "ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ — ਸਾਰੀਆਂ 12 ਰਾਸ਼ੀਆਂ",
     # EN: <p>Rashifal is read from your <strong>Moon sign</strong> (rashi). {moon_text} Saturn is in
     #     {sat_sign}, so Sade Sati is running for {sade_names}.</p>
     # keep: {moon_text} {sade_names} {sat_sign}
-    "i.intro": "",
+    "i.intro": "<p>ਰਾਸ਼ੀਫਲ ਤੁਹਾਡੀ <strong>ਚੰਦਰ ਰਾਸ਼ੀ</strong> ਤੋਂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ। {moon_text} ਸ਼ਨੀ {sat_sign} ਵਿੱਚ ਹੈ, ਇਸ ਲਈ {sade_names} ਲਈ ਸਾੜ੍ਹਸਾਤੀ ਚੱਲ ਰਹੀ ਹੈ।</p>",
     # EN: The Moon is in {now} until {time} IST, then in {next}. The table shows the position for
     #     most of the day.
     # keep: {next} {now} {time}
-    "i.moon_two": "",
+    "i.moon_two": "ਚੰਦਰਮਾ {time} IST ਤੱਕ {now} ਵਿੱਚ ਹੈ, ਫਿਰ {next} ਵਿੱਚ। ਸਾਰਣੀ ਵਿੱਚ ਦਿਨ ਦੇ ਜ਼ਿਆਦਾਤਰ ਹਿੱਸੇ ਦੀ ਸਥਿਤੀ ਦਿੱਤੀ ਗਈ ਹੈ।",
     # EN: The Moon is in {now} all day.
     # keep: {now}
-    "i.moon_one": "",
+    "i.moon_one": "ਚੰਦਰਮਾ ਸਾਰਾ ਦਿਨ {now} ਵਿੱਚ ਹੈ।",
     # EN: {name} <small>{english}</small>
     # keep: {local}
-    "i.name": "",
+    "i.name": "{local}",
     # EN: <small>Sade Sati</small>
-    "i.sade": "",
+    "i.sade": "<small>ਸਾੜ੍ਹਸਾਤੀ</small>",
     # EN: <tr><th>Sign</th><th>Moon in your</th><th>Today</th></tr>
-    "i.head_row": "",
+    "i.head_row": "<tr><th>ਰਾਸ਼ੀ</th><th>ਤੁਹਾਡੀ ਰਾਸ਼ੀ ਤੋਂ ਚੰਦਰਮਾ</th><th>ਅੱਜ</th></tr>",
     # EN: Sign not found
-    "nf.title": "",
+    "nf.title": "ਰਾਸ਼ੀ ਨਹੀਂ ਮਿਲੀ",
     # EN: <h1>Sign not found</h1><p>There is no rashi called “{slug}”. Pick your Moon sign
     #     below.</p>
     # keep: {slug}
-    "nf.body": "",
+    "nf.body": "<h1>ਰਾਸ਼ੀ ਨਹੀਂ ਮਿਲੀ</h1><p>“{slug}” ਨਾਂ ਦੀ ਕੋਈ ਰਾਸ਼ੀ ਨਹੀਂ ਹੈ। ਹੇਠਾਂ ਤੋਂ ਆਪਣੀ ਚੰਦਰ ਰਾਸ਼ੀ ਚੁਣੋ।</p>",
     # EN: 1st
-    "house.1": "",
+    "house.1": "ਪਹਿਲੇ",
     # EN: 2nd
-    "house.2": "",
+    "house.2": "ਦੂਜੇ",
     # EN: 3rd
-    "house.3": "",
+    "house.3": "ਤੀਜੇ",
     # EN: 4th
-    "house.4": "",
+    "house.4": "ਚੌਥੇ",
     # EN: 5th
-    "house.5": "",
+    "house.5": "ਪੰਜਵੇਂ",
     # EN: 6th
-    "house.6": "",
+    "house.6": "ਛੇਵੇਂ",
     # EN: 7th
-    "house.7": "",
+    "house.7": "ਸੱਤਵੇਂ",
     # EN: 8th
-    "house.8": "",
+    "house.8": "ਅੱਠਵੇਂ",
     # EN: 9th
-    "house.9": "",
+    "house.9": "ਨੌਵੇਂ",
     # EN: 10th
-    "house.10": "",
+    "house.10": "ਦਸਵੇਂ",
     # EN: 11th
-    "house.11": "",
+    "house.11": "ਗਿਆਰ੍ਹਵੇਂ",
     # EN: 12th
-    "house.12": "",
+    "house.12": "ਬਾਰ੍ਹਵੇਂ",
 }
 
 # app/rashifal_text.py MORE_LINKS["pa"] — 'More free tools' links: keep every href, translate the text; the first href is '{twin:en}' (this page in English)  [6]
 RASHIFAL_MORE_LINKS = (
     # EN href: {twin:en}
     # EN text: Read in English
-    ("{twin:en}", ""),
+    ("{twin:en}", "ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਪੜ੍ਹੋ"),
     # EN href: /panchang
     # EN text: Today's Panchang
-    ("/panchang", ""),
+    ("/panchang", "ਅੱਜ ਦਾ ਪੰਚਾਂਗ"),
     # EN href: /rahu-kaal
     # EN text: Rahu Kaal today
-    ("/rahu-kaal", ""),
+    ("/rahu-kaal", "ਅੱਜ ਦਾ ਰਾਹੂ ਕਾਲ"),
     # EN href: /choghadiya
     # EN text: Choghadiya today
-    ("/choghadiya", ""),
+    ("/choghadiya", "ਅੱਜ ਦਾ ਚੌਘੜੀਆ"),
     # EN href: /kundali-milan
     # EN text: Kundali Milan
-    ("/kundali-milan", ""),
+    ("/kundali-milan", "ਕੁੰਡਲੀ ਮਿਲਾਨ"),
     # EN href: /vrat-tyohar
     # EN text: Today's vrat & festivals
-    ("/vrat-tyohar", ""),
+    ("/vrat-tyohar", "ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ"),
 )
 
 # app/rashifal_text.py TONE_LABEL["pa"] — the three day tones (keys good / mixed / easy)  [3]
 RASHIFAL_TONE_LABEL = {
     # EN: Favourable day
-    "good": "",
+    "good": "ਸ਼ੁਭ ਦਿਨ",
     # EN: Mixed day
-    "mixed": "",
+    "mixed": "ਮਿਲਿਆ-ਜੁਲਿਆ ਦਿਨ",
     # EN: Take it easy
-    "easy": "",
+    "easy": "ਸਹਿਜ ਨਾਲ ਚੱਲੋ",
 }
 
 # app/rashifal_text.py MOON_HOUSE["pa"] — Moon transit through houses 1-12 (key = house number)  [12]
@@ -1093,162 +1093,162 @@ RASHIFAL_MOON_HOUSE = {
     # EN: The Moon moves through your own sign today (Janma Chandra). Classical texts read this as a
     #     day of comfort and good spirits — good food, warm company and a clear sense of yourself. A
     #     good day to look after your own needs and begin small, personal things.
-    1: "",
+    1: "ਚੰਦਰਮਾ ਅੱਜ ਤੁਹਾਡੀ ਆਪਣੀ ਰਾਸ਼ੀ ਵਿੱਚੋਂ ਲੰਘ ਰਿਹਾ ਹੈ (ਜਨਮ ਚੰਦਰ)। ਸ਼ਾਸਤਰ ਇਸ ਨੂੰ ਸੁੱਖ-ਆਰਾਮ ਅਤੇ ਚੰਗੇ ਮੂਡ ਦਾ ਦਿਨ ਮੰਨਦੇ ਹਨ — ਚੰਗਾ ਖਾਣਾ, ਮਿੱਠਾ ਸਾਥ ਅਤੇ ਆਪਣੇ ਆਪ ਬਾਰੇ ਸਾਫ਼ ਸਮਝ। ਆਪਣੀਆਂ ਲੋੜਾਂ ਦਾ ਖ਼ਿਆਲ ਰੱਖਣ ਅਤੇ ਛੋਟੇ ਨਿੱਜੀ ਕੰਮ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਚੰਗਾ ਦਿਨ ਹੈ।",
     # EN: The Moon is in your 2nd house today. Tradition asks for care with money and words —
     #     expenses can creep up and small misunderstandings arise easily. Keep spending planned and
     #     speak gently at home; routine work goes fine.
-    2: "",
+    2: "ਚੰਦਰਮਾ ਅੱਜ ਤੁਹਾਡੇ ਦੂਜੇ ਭਾਵ ਵਿੱਚ ਹੈ। ਪਰੰਪਰਾ ਪੈਸੇ ਅਤੇ ਬੋਲ-ਚਾਲ ਵਿੱਚ ਸਾਵਧਾਨੀ ਮੰਗਦੀ ਹੈ — ਖ਼ਰਚ ਚੁੱਪਚਾਪ ਵਧ ਸਕਦੇ ਹਨ ਅਤੇ ਛੋਟੀਆਂ ਗ਼ਲਤਫ਼ਹਿਮੀਆਂ ਛੇਤੀ ਪੈਦਾ ਹੋ ਜਾਂਦੀਆਂ ਹਨ। ਖ਼ਰਚ ਯੋਜਨਾ ਨਾਲ ਕਰੋ ਅਤੇ ਘਰ ਵਿੱਚ ਨਰਮੀ ਨਾਲ ਬੋਲੋ; ਰੋਜ਼ ਦੇ ਕੰਮ ਠੀਕ ਚੱਲਣਗੇ।",
     # EN: The Moon in your 3rd house is a favourable transit. Courage and initiative are high,
     #     effort brings results, and contact with siblings, friends and neighbours goes well. A good
     #     day for short trips, calls and pushing a pending task over the line.
-    3: "",
+    3: "ਚੰਦਰਮਾ ਦਾ ਤੀਜੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਸ਼ੁਭ ਗੋਚਰ ਹੈ। ਹਿੰਮਤ ਅਤੇ ਪਹਿਲ-ਕਦਮੀ ਉੱਚੀ ਹੈ, ਮਿਹਨਤ ਦਾ ਫਲ ਮਿਲਦਾ ਹੈ, ਅਤੇ ਭੈਣ-ਭਰਾਵਾਂ, ਦੋਸਤਾਂ ਤੇ ਗੁਆਂਢੀਆਂ ਨਾਲ ਮੇਲ-ਜੋਲ ਚੰਗਾ ਰਹਿੰਦਾ ਹੈ। ਛੋਟੇ ਸਫ਼ਰਾਂ, ਫ਼ੋਨ ਕਾਲਾਂ ਅਤੇ ਕਿਸੇ ਲਟਕੇ ਹੋਏ ਕੰਮ ਨੂੰ ਨਿਬੇੜਨ ਲਈ ਚੰਗਾ ਦਿਨ ਹੈ।",
     # EN: The Moon in your 4th house can leave the mind a little unsettled — home matters or travel
     #     may feel tiring. Keep the day simple, avoid arguments at home and give yourself some quiet
     #     time; the mood lifts as the Moon moves on.
-    4: "",
+    4: "ਚੰਦਰਮਾ ਦਾ ਚੌਥੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਮਨ ਨੂੰ ਥੋੜ੍ਹਾ ਬੇਚੈਨ ਰੱਖ ਸਕਦਾ ਹੈ — ਘਰ ਦੇ ਮਾਮਲੇ ਜਾਂ ਸਫ਼ਰ ਥਕਾਊ ਲੱਗ ਸਕਦੇ ਹਨ। ਦਿਨ ਨੂੰ ਸਾਦਾ ਰੱਖੋ, ਘਰ ਵਿੱਚ ਬਹਿਸ ਤੋਂ ਬਚੋ ਅਤੇ ਆਪਣੇ ਲਈ ਥੋੜ੍ਹਾ ਸ਼ਾਂਤ ਸਮਾਂ ਕੱਢੋ; ਚੰਦਰਮਾ ਦੇ ਅੱਗੇ ਵਧਣ ਨਾਲ ਮੂਡ ਸੁਧਰ ਜਾਵੇਗਾ।",
     # EN: The Moon in your 5th house is a mixed transit. Plans may meet small hurdles and the mind
     #     can swing between ideas. Avoid speculative decisions; study, creative work and time with
     #     children are better uses of the day.
-    5: "",
+    5: "ਚੰਦਰਮਾ ਦਾ ਪੰਜਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਮਿਲਿਆ-ਜੁਲਿਆ ਗੋਚਰ ਹੈ। ਯੋਜਨਾਵਾਂ ਵਿੱਚ ਛੋਟੀਆਂ ਰੁਕਾਵਟਾਂ ਆ ਸਕਦੀਆਂ ਹਨ ਅਤੇ ਮਨ ਵਿਚਾਰਾਂ ਵਿੱਚ ਡੋਲ ਸਕਦਾ ਹੈ। ਜੋਖਮ ਵਾਲੇ ਫ਼ੈਸਲਿਆਂ ਤੋਂ ਬਚੋ; ਪੜ੍ਹਾਈ, ਰਚਨਾਤਮਕ ਕੰਮ ਅਤੇ ਬੱਚਿਆਂ ਨਾਲ ਸਮਾਂ ਦਿਨ ਦੀ ਚੰਗੀ ਵਰਤੋਂ ਹੈ।",
     # EN: The Moon in your 6th house is one of its best transits. Classical texts promise success
     #     over rivals and obstacles, and the energy to clear a backlog. A good day for competitive
     #     work, settling pending issues and steady routines.
-    6: "",
+    6: "ਚੰਦਰਮਾ ਦਾ ਛੇਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਉਸ ਦੇ ਸਭ ਤੋਂ ਵਧੀਆ ਗੋਚਰਾਂ ਵਿੱਚੋਂ ਇੱਕ ਹੈ। ਸ਼ਾਸਤਰ ਵਿਰੋਧੀਆਂ ਅਤੇ ਰੁਕਾਵਟਾਂ ਉੱਤੇ ਜਿੱਤ ਅਤੇ ਜਮ੍ਹਾ ਹੋਏ ਕੰਮ ਨਿਬੇੜਨ ਦੀ ਤਾਕਤ ਦਾ ਵਾਅਦਾ ਕਰਦੇ ਹਨ। ਮੁਕਾਬਲੇ ਵਾਲੇ ਕੰਮ, ਲਟਕੇ ਮਸਲੇ ਸੁਲਝਾਉਣ ਅਤੇ ਪੱਕੇ ਰੁਟੀਨ ਲਈ ਚੰਗਾ ਦਿਨ ਹੈ।",
     # EN: The Moon in your 7th house favours partnership and company. Time with your spouse or
     #     partner, meetings and agreements tend to go smoothly, with comfort and good food. A good
     #     day to reach out and work together.
-    7: "",
+    7: "ਚੰਦਰਮਾ ਦਾ ਸੱਤਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਸਾਂਝੇਦਾਰੀ ਅਤੇ ਸਾਥ ਦੇ ਪੱਖ ਵਿੱਚ ਹੈ। ਜੀਵਨ ਸਾਥੀ ਜਾਂ ਸਾਂਝੇਦਾਰ ਨਾਲ ਸਮਾਂ, ਮੀਟਿੰਗਾਂ ਅਤੇ ਸਮਝੌਤੇ ਆਮ ਤੌਰ ’ਤੇ ਸੁਚਾਰੂ ਰਹਿੰਦੇ ਹਨ, ਸੁੱਖ-ਆਰਾਮ ਅਤੇ ਚੰਗੇ ਖਾਣੇ ਸਮੇਤ। ਹੱਥ ਵਧਾਉਣ ਅਤੇ ਮਿਲ ਕੇ ਕੰਮ ਕਰਨ ਲਈ ਚੰਗਾ ਦਿਨ ਹੈ।",
     # EN: The Moon is in your 8th house — the period known as Chandrashtama. Tradition advises
     #     against starting important new things today; unexpected delays are more likely and the
     #     mind can feel anxious. Keep a margin in your schedule, stick to familiar work and be
     #     gentle with yourself — it passes within two to three days.
-    8: "",
+    8: "ਚੰਦਰਮਾ ਤੁਹਾਡੇ ਅੱਠਵੇਂ ਭਾਵ ਵਿੱਚ ਹੈ — ਜਿਸ ਸਮੇਂ ਨੂੰ ਚੰਦਰਾਸ਼ਟਮ ਕਿਹਾ ਜਾਂਦਾ ਹੈ। ਪਰੰਪਰਾ ਅੱਜ ਕੋਈ ਅਹਿਮ ਨਵੀਂ ਸ਼ੁਰੂਆਤ ਨਾ ਕਰਨ ਦੀ ਸਲਾਹ ਦਿੰਦੀ ਹੈ; ਅਚਾਨਕ ਦੇਰੀਆਂ ਦੀ ਸੰਭਾਵਨਾ ਵੱਧ ਹੈ ਅਤੇ ਮਨ ਚਿੰਤਤ ਹੋ ਸਕਦਾ ਹੈ। ਆਪਣੇ ਪ੍ਰੋਗਰਾਮ ਵਿੱਚ ਗੁੰਜਾਇਸ਼ ਰੱਖੋ, ਜਾਣੇ-ਪਛਾਣੇ ਕੰਮ ਕਰੋ ਅਤੇ ਆਪਣੇ ਨਾਲ ਨਰਮੀ ਨਾਲ ਪੇਸ਼ ਆਓ — ਇਹ ਦੋ-ਤਿੰਨ ਦਿਨਾਂ ਵਿੱਚ ਲੰਘ ਜਾਂਦਾ ਹੈ।",
     # EN: The Moon in your 9th house is a mixed transit. Plans may need extra effort and you may
     #     feel tired or distracted. Prayer, reading and time with elders or teachers suit the day
     #     better than big new ventures.
-    9: "",
+    9: "ਚੰਦਰਮਾ ਦਾ ਨੌਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਮਿਲਿਆ-ਜੁਲਿਆ ਗੋਚਰ ਹੈ। ਯੋਜਨਾਵਾਂ ਲਈ ਵਾਧੂ ਮਿਹਨਤ ਕਰਨੀ ਪੈ ਸਕਦੀ ਹੈ ਅਤੇ ਥਕਾਵਟ ਜਾਂ ਧਿਆਨ ਭਟਕਣ ਦਾ ਅਹਿਸਾਸ ਹੋ ਸਕਦਾ ਹੈ। ਵੱਡੇ ਨਵੇਂ ਕੰਮਾਂ ਨਾਲੋਂ ਪੂਜਾ-ਪਾਠ, ਪੜ੍ਹਨਾ ਅਤੇ ਬਜ਼ੁਰਗਾਂ ਜਾਂ ਗੁਰੂਆਂ ਨਾਲ ਸਮਾਂ ਦਿਨ ਨੂੰ ਜ਼ਿਆਦਾ ਰਾਸ ਆਉਂਦਾ ਹੈ।",
     # EN: The Moon in your 10th house supports work and reputation. Tasks get done, seniors are
     #     receptive and effort is noticed. A good day to present your work, take a professional step
     #     or finish something visible.
-    10: "",
+    10: "ਚੰਦਰਮਾ ਦਾ ਦਸਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਕੰਮ ਅਤੇ ਸਾਖ ਦਾ ਸਾਥ ਦਿੰਦਾ ਹੈ। ਕੰਮ ਨਿਬੜਦੇ ਹਨ, ਵੱਡੇ ਅਫ਼ਸਰ ਗੱਲ ਸੁਣਦੇ ਹਨ ਅਤੇ ਮਿਹਨਤ ਨੂੰ ਨੋਟਿਸ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਆਪਣਾ ਕੰਮ ਪੇਸ਼ ਕਰਨ, ਪੇਸ਼ੇਵਰ ਕਦਮ ਚੁੱਕਣ ਜਾਂ ਕੋਈ ਨਜ਼ਰ ਆਉਣ ਵਾਲਾ ਕੰਮ ਪੂਰਾ ਕਰਨ ਲਈ ਚੰਗਾ ਦਿਨ ਹੈ।",
     # EN: The Moon in your 11th house — the house of gains — is a very favourable transit. Expect
     #     support from friends, good news and the fruit of earlier effort. A good day for
     #     networking, making requests and celebrating with others.
-    11: "",
+    11: "ਚੰਦਰਮਾ ਦਾ ਗਿਆਰ੍ਹਵੇਂ ਭਾਵ — ਲਾਭ ਦੇ ਭਾਵ — ਵਿੱਚ ਹੋਣਾ ਬਹੁਤ ਸ਼ੁਭ ਗੋਚਰ ਹੈ। ਦੋਸਤਾਂ ਦਾ ਸਾਥ, ਚੰਗੀ ਖ਼ਬਰ ਅਤੇ ਪਹਿਲਾਂ ਕੀਤੀ ਮਿਹਨਤ ਦਾ ਫਲ ਮਿਲਣ ਦੀ ਆਸ ਰੱਖੋ। ਜਾਣ-ਪਛਾਣ ਵਧਾਉਣ, ਬੇਨਤੀਆਂ ਕਰਨ ਅਤੇ ਦੂਜਿਆਂ ਨਾਲ ਖ਼ੁਸ਼ੀ ਮਨਾਉਣ ਲਈ ਚੰਗਾ ਦਿਨ ਹੈ।",
     # EN: The Moon in your 12th house can bring extra expenses and a tired, inward mood. Avoid
     #     overspending and late nights; the day suits rest, prayer, charity and finishing old work
     #     rather than starting new.
-    12: "",
+    12: "ਚੰਦਰਮਾ ਦਾ ਬਾਰ੍ਹਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਵਾਧੂ ਖ਼ਰਚ ਅਤੇ ਥਕਾਵਟ ਭਰਿਆ, ਅੰਦਰ ਵੱਲ ਮੁੜਿਆ ਮੂਡ ਲਿਆ ਸਕਦਾ ਹੈ। ਫ਼ਜ਼ੂਲਖ਼ਰਚੀ ਅਤੇ ਦੇਰ ਰਾਤ ਜਾਗਣ ਤੋਂ ਬਚੋ; ਦਿਨ ਆਰਾਮ, ਪੂਜਾ-ਪਾਠ, ਦਾਨ ਅਤੇ ਪੁਰਾਣੇ ਕੰਮ ਨਿਬੇੜਨ ਲਈ ਠੀਕ ਹੈ, ਨਵਾਂ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਨਹੀਂ।",
 }
 
 # app/rashifal_text.py SATURN_HOUSE["pa"] — Saturn transit through houses 1-12  [12]
 RASHIFAL_SATURN_HOUSE = {
     # EN: Saturn is passing over your Moon sign — the peak phase of Sade Sati. It rewards patience,
     #     routine and honest effort; take on a little less and finish what you start.
-    1: "",
+    1: "ਸ਼ਨੀ ਤੁਹਾਡੀ ਚੰਦਰ ਰਾਸ਼ੀ ਉੱਤੋਂ ਲੰਘ ਰਿਹਾ ਹੈ — ਸਾੜ੍ਹਸਾਤੀ ਦਾ ਸਿਖ਼ਰ ਪੜਾਅ। ਇਹ ਸਬਰ, ਰੁਟੀਨ ਅਤੇ ਇਮਾਨਦਾਰ ਮਿਹਨਤ ਦਾ ਫਲ ਦਿੰਦਾ ਹੈ; ਥੋੜ੍ਹਾ ਘੱਟ ਕੰਮ ਲਵੋ ਅਤੇ ਜੋ ਸ਼ੁਰੂ ਕਰੋ ਉਹ ਪੂਰਾ ਕਰੋ।",
     # EN: Saturn is in your 2nd — the last phase of Sade Sati. Be measured with spending and with
     #     words at home; the pressure is easing.
-    2: "",
+    2: "ਸ਼ਨੀ ਤੁਹਾਡੇ ਦੂਜੇ ਭਾਵ ਵਿੱਚ ਹੈ — ਸਾੜ੍ਹਸਾਤੀ ਦਾ ਆਖ਼ਰੀ ਪੜਾਅ। ਖ਼ਰਚ ਅਤੇ ਘਰ ਦੀ ਬੋਲ-ਚਾਲ ਵਿੱਚ ਸੰਜਮ ਰੱਖੋ; ਦਬਾਅ ਘਟ ਰਿਹਾ ਹੈ।",
     # EN: Saturn in your 3rd is one of its best positions — steady effort pays, courage grows and
     #     long-running work gains traction.
-    3: "",
+    3: "ਸ਼ਨੀ ਦਾ ਤੀਜੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਉਸ ਦੀਆਂ ਸਭ ਤੋਂ ਵਧੀਆ ਸਥਿਤੀਆਂ ਵਿੱਚੋਂ ਇੱਕ ਹੈ — ਲਗਾਤਾਰ ਮਿਹਨਤ ਫਲ ਦਿੰਦੀ ਹੈ, ਹਿੰਮਤ ਵਧਦੀ ਹੈ ਅਤੇ ਲੰਮੇ ਸਮੇਂ ਤੋਂ ਚੱਲ ਰਹੇ ਕੰਮ ਰਫ਼ਤਾਰ ਫੜਦੇ ਹਨ।",
     # EN: Saturn in your 4th (Dhaiya, Kantaka Shani) can make home life and peace of mind feel
     #     heavier; keep routines simple and handle family matters calmly.
-    4: "",
+    4: "ਸ਼ਨੀ ਦਾ ਚੌਥੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ (ਢੱਈਆ, ਕੰਟਕ ਸ਼ਨੀ) ਘਰੇਲੂ ਜੀਵਨ ਅਤੇ ਮਨ ਦੀ ਸ਼ਾਂਤੀ ਨੂੰ ਭਾਰੀ ਬਣਾ ਸਕਦਾ ਹੈ; ਰੁਟੀਨ ਸਾਦਾ ਰੱਖੋ ਅਤੇ ਪਰਿਵਾਰਕ ਮਾਮਲੇ ਸ਼ਾਂਤੀ ਨਾਲ ਨਿਬੇੜੋ।",
     # EN: Saturn in your 5th asks for patience with plans, studies and children's matters — slow and
     #     careful beats quick.
-    5: "",
+    5: "ਸ਼ਨੀ ਦਾ ਪੰਜਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਯੋਜਨਾਵਾਂ, ਪੜ੍ਹਾਈ ਅਤੇ ਬੱਚਿਆਂ ਦੇ ਮਾਮਲਿਆਂ ਵਿੱਚ ਸਬਰ ਮੰਗਦਾ ਹੈ — ਜਲਦਬਾਜ਼ੀ ਨਾਲੋਂ ਹੌਲੀ ਅਤੇ ਸੋਚ-ਸਮਝ ਕੇ ਚੱਲਣਾ ਚੰਗਾ ਹੈ।",
     # EN: Saturn in your 6th works in your favour — discipline wins over rivals and backlog, and
     #     hard work gets noticed.
-    6: "",
+    6: "ਸ਼ਨੀ ਦਾ ਛੇਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਤੁਹਾਡੇ ਹੱਕ ਵਿੱਚ ਕੰਮ ਕਰਦਾ ਹੈ — ਅਨੁਸ਼ਾਸਨ ਵਿਰੋਧੀਆਂ ਅਤੇ ਜਮ੍ਹਾ ਕੰਮ ਉੱਤੇ ਜਿੱਤ ਦਿਵਾਉਂਦਾ ਹੈ, ਅਤੇ ਸਖ਼ਤ ਮਿਹਨਤ ਨੂੰ ਪਛਾਣ ਮਿਲਦੀ ਹੈ।",
     # EN: Saturn in your 7th puts partnerships in a slow, serious light — clear agreements and
     #     patience help.
-    7: "",
+    7: "ਸ਼ਨੀ ਦਾ ਸੱਤਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਸਾਂਝੇਦਾਰੀਆਂ ਨੂੰ ਹੌਲੀ ਅਤੇ ਗੰਭੀਰ ਰੰਗ ਵਿੱਚ ਦਿਖਾਉਂਦਾ ਹੈ — ਸਾਫ਼ ਸਮਝੌਤੇ ਅਤੇ ਸਬਰ ਮਦਦ ਕਰਦੇ ਹਨ।",
     # EN: Saturn in your 8th (Dhaiya, Ashtama Shani) is a time to avoid shortcuts and keep a margin
     #     for delays.
-    8: "",
+    8: "ਸ਼ਨੀ ਦਾ ਅੱਠਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ (ਢੱਈਆ, ਅਸ਼ਟਮ ਸ਼ਨੀ) ਸ਼ਾਰਟਕੱਟਾਂ ਤੋਂ ਬਚਣ ਅਤੇ ਦੇਰੀ ਲਈ ਗੁੰਜਾਇਸ਼ ਰੱਖਣ ਦਾ ਸਮਾਂ ਹੈ।",
     # EN: Saturn in your 9th can slow luck and long journeys; respect for elders and steady duty
     #     keep things on track.
-    9: "",
+    9: "ਸ਼ਨੀ ਦਾ ਨੌਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਕਿਸਮਤ ਅਤੇ ਲੰਮੇ ਸਫ਼ਰਾਂ ਨੂੰ ਹੌਲੀ ਕਰ ਸਕਦਾ ਹੈ; ਬਜ਼ੁਰਗਾਂ ਦਾ ਆਦਰ ਅਤੇ ਪੱਕੀ ਜ਼ਿੰਮੇਵਾਰੀ ਗੱਲ ਨੂੰ ਲੀਹ ’ਤੇ ਰੱਖਦੇ ਹਨ।",
     # EN: Saturn in your 10th brings responsibility at work — a heavier load, but sincere effort
     #     builds a lasting reputation.
-    10: "",
+    10: "ਸ਼ਨੀ ਦਾ ਦਸਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਕੰਮ ’ਤੇ ਜ਼ਿੰਮੇਵਾਰੀ ਲਿਆਉਂਦਾ ਹੈ — ਬੋਝ ਭਾਰੀ ਹੈ, ਪਰ ਸੱਚੀ ਮਿਹਨਤ ਪੱਕੀ ਸਾਖ ਬਣਾਉਂਦੀ ਹੈ।",
     # EN: Saturn in your 11th is favourable — gains come slowly but surely, and long effort starts
     #     to pay off.
-    11: "",
+    11: "ਸ਼ਨੀ ਦਾ ਗਿਆਰ੍ਹਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਸ਼ੁਭ ਹੈ — ਲਾਭ ਹੌਲੀ ਪਰ ਪੱਕੇ ਤੌਰ ’ਤੇ ਆਉਂਦਾ ਹੈ, ਅਤੇ ਲੰਮੀ ਮਿਹਨਤ ਦਾ ਫਲ ਮਿਲਣ ਲੱਗਦਾ ਹੈ।",
     # EN: Saturn is in your 12th — the opening phase of Sade Sati. Watch expenses and rest well; a
     #     good time for quiet, inward work.
-    12: "",
+    12: "ਸ਼ਨੀ ਤੁਹਾਡੇ ਬਾਰ੍ਹਵੇਂ ਭਾਵ ਵਿੱਚ ਹੈ — ਸਾੜ੍ਹਸਾਤੀ ਦਾ ਸ਼ੁਰੂਆਤੀ ਪੜਾਅ। ਖ਼ਰਚਿਆਂ ਦਾ ਧਿਆਨ ਰੱਖੋ ਅਤੇ ਚੰਗਾ ਆਰਾਮ ਕਰੋ; ਸ਼ਾਂਤ, ਅੰਦਰੂਨੀ ਕੰਮ ਲਈ ਚੰਗਾ ਸਮਾਂ ਹੈ।",
 }
 
 # app/rashifal_text.py JUPITER_HOUSE["pa"] — Jupiter transit through houses 1-12  [12]
 RASHIFAL_JUPITER_HOUSE = {
     # EN: Jupiter over your Moon sign is classically a restless position; keep plans grounded and
     #     avoid over-committing.
-    1: "",
+    1: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਚੰਦਰ ਰਾਸ਼ੀ ਉੱਤੇ ਹੋਣਾ ਸ਼ਾਸਤਰਾਂ ਅਨੁਸਾਰ ਬੇਚੈਨ ਸਥਿਤੀ ਹੈ; ਯੋਜਨਾਵਾਂ ਜ਼ਮੀਨ ’ਤੇ ਰੱਖੋ ਅਤੇ ਲੋੜ ਤੋਂ ਵੱਧ ਵਾਅਦੇ ਨਾ ਕਰੋ।",
     # EN: Jupiter in your 2nd supports family harmony, savings and kind speech.
-    2: "",
+    2: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਦੂਜੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਪਰਿਵਾਰਕ ਮੇਲ-ਜੋਲ, ਬੱਚਤ ਅਤੇ ਮਿੱਠੀ ਬੋਲੀ ਦਾ ਸਾਥ ਦਿੰਦਾ ਹੈ।",
     # EN: Jupiter in your 3rd asks a little more effort for the same result — keep at it.
-    3: "",
+    3: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਤੀਜੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਉਸੇ ਨਤੀਜੇ ਲਈ ਥੋੜ੍ਹੀ ਵੱਧ ਮਿਹਨਤ ਮੰਗਦਾ ਹੈ — ਲੱਗੇ ਰਹੋ।",
     # EN: Jupiter in your 4th can unsettle home matters; patience with relatives helps.
-    4: "",
+    4: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਚੌਥੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਘਰ ਦੇ ਮਾਮਲਿਆਂ ਨੂੰ ਡਾਵਾਂਡੋਲ ਕਰ ਸਕਦਾ ਹੈ; ਰਿਸ਼ਤੇਦਾਰਾਂ ਨਾਲ ਸਬਰ ਮਦਦ ਕਰਦਾ ਹੈ।",
     # EN: Jupiter in your 5th favours learning, children's matters, creativity and good counsel.
-    5: "",
+    5: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਪੰਜਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਪੜ੍ਹਾਈ, ਬੱਚਿਆਂ ਦੇ ਮਾਮਲਿਆਂ, ਰਚਨਾਤਮਕਤਾ ਅਤੇ ਚੰਗੀ ਸਲਾਹ ਦੇ ਪੱਖ ਵਿੱਚ ਹੈ।",
     # EN: Jupiter in your 6th: steer clear of small disputes and overwork.
-    6: "",
+    6: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਛੇਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ: ਛੋਟੇ ਝਗੜਿਆਂ ਅਤੇ ਹੱਦੋਂ ਵੱਧ ਕੰਮ ਤੋਂ ਬਚੋ।",
     # EN: Jupiter in your 7th blesses partnerships, marriage talks and travel.
-    7: "",
+    7: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਸੱਤਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਸਾਂਝੇਦਾਰੀਆਂ, ਵਿਆਹ ਦੀਆਂ ਗੱਲਾਂ ਅਤੇ ਸਫ਼ਰ ਲਈ ਸ਼ੁਭ ਹੈ।",
     # EN: Jupiter in your 8th suggests care with big decisions — go slow.
-    8: "",
+    8: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਅੱਠਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਵੱਡੇ ਫ਼ੈਸਲਿਆਂ ਵਿੱਚ ਸਾਵਧਾਨੀ ਦਾ ਸੰਕੇਤ ਦਿੰਦਾ ਹੈ — ਹੌਲੀ ਚੱਲੋ।",
     # EN: Jupiter in your 9th is one of its best positions — fortune, dharma and guidance from
     #     teachers.
-    9: "",
+    9: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਨੌਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਉਸ ਦੀਆਂ ਸਭ ਤੋਂ ਵਧੀਆ ਸਥਿਤੀਆਂ ਵਿੱਚੋਂ ਇੱਕ ਹੈ — ਕਿਸਮਤ, ਧਰਮ ਅਤੇ ਗੁਰੂਆਂ ਤੋਂ ਸੇਧ।",
     # EN: Jupiter in your 10th may bring changes at work; stay adaptable.
-    10: "",
+    10: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਦਸਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਕੰਮ ’ਤੇ ਬਦਲਾਅ ਲਿਆ ਸਕਦਾ ਹੈ; ਲਚਕੀਲੇ ਰਹੋ।",
     # EN: Jupiter in your 11th brings gains, fulfilled wishes and helpful friends.
-    11: "",
+    11: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਗਿਆਰ੍ਹਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਲਾਭ, ਮਨ ਦੀਆਂ ਮੁਰਾਦਾਂ ਦੀ ਪੂਰਤੀ ਅਤੇ ਮਦਦਗਾਰ ਦੋਸਤ ਲਿਆਉਂਦਾ ਹੈ।",
     # EN: Jupiter in your 12th brings expenses, often on good causes; charity and spiritual practice
     #     are well placed.
-    12: "",
+    12: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਬਾਰ੍ਹਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਖ਼ਰਚ ਲਿਆਉਂਦਾ ਹੈ, ਅਕਸਰ ਚੰਗੇ ਕੰਮਾਂ ’ਤੇ; ਦਾਨ ਅਤੇ ਅਧਿਆਤਮਿਕ ਸਾਧਨਾ ਲਈ ਇਹ ਸਮਾਂ ਠੀਕ ਹੈ।",
 }
 
 # app/rashifal_text.py RAHU_HOUSE["pa"] — Rahu transit through houses 1-12  [12]
 RASHIFAL_RAHU_HOUSE = {
     # EN: Rahu over your Moon sign can stir restlessness and unusual wants; stay grounded.
-    1: "",
+    1: "ਰਾਹੂ ਦਾ ਚੰਦਰ ਰਾਸ਼ੀ ਉੱਤੇ ਹੋਣਾ ਬੇਚੈਨੀ ਅਤੇ ਅਜੀਬ ਇੱਛਾਵਾਂ ਜਗਾ ਸਕਦਾ ਹੈ; ਜ਼ਮੀਨ ਨਾਲ ਜੁੜੇ ਰਹੋ।",
     # EN: Rahu in your 2nd: take care with speech and money talk within the family.
-    2: "",
+    2: "ਰਾਹੂ ਦੂਜੇ ਭਾਵ ਵਿੱਚ: ਪਰਿਵਾਰ ਵਿੱਚ ਬੋਲਣ ਅਤੇ ਪੈਸੇ ਦੀ ਗੱਲ-ਬਾਤ ਵਿੱਚ ਖ਼ਿਆਲ ਰੱਖੋ।",
     # EN: Rahu in your 3rd is favourable — bold initiatives and communication succeed.
-    3: "",
+    3: "ਰਾਹੂ ਦਾ ਤੀਜੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਸ਼ੁਭ ਹੈ — ਦਲੇਰ ਪਹਿਲਕਦਮੀਆਂ ਅਤੇ ਗੱਲ-ਬਾਤ ਵਿੱਚ ਸਫਲਤਾ ਮਿਲਦੀ ਹੈ।",
     # EN: Rahu in your 4th can unsettle domestic peace; avoid hasty property moves.
-    4: "",
+    4: "ਰਾਹੂ ਦਾ ਚੌਥੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਘਰ ਦੀ ਸ਼ਾਂਤੀ ਨੂੰ ਡਾਵਾਂਡੋਲ ਕਰ ਸਕਦਾ ਹੈ; ਜਾਇਦਾਦ ਦੇ ਮਾਮਲਿਆਂ ਵਿੱਚ ਕਾਹਲੀ ਨਾ ਕਰੋ।",
     # EN: Rahu in your 5th: double-check risky ideas and keep a clear head.
-    5: "",
+    5: "ਰਾਹੂ ਪੰਜਵੇਂ ਭਾਵ ਵਿੱਚ: ਜੋਖਮ ਭਰੇ ਵਿਚਾਰਾਂ ਨੂੰ ਦੋ ਵਾਰ ਪਰਖੋ ਅਤੇ ਦਿਮਾਗ਼ ਠੰਢਾ ਰੱਖੋ।",
     # EN: Rahu in your 6th helps you get past competition and obstacles.
-    6: "",
+    6: "ਰਾਹੂ ਦਾ ਛੇਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਮੁਕਾਬਲੇ ਅਤੇ ਰੁਕਾਵਟਾਂ ਨੂੰ ਪਾਰ ਕਰਨ ਵਿੱਚ ਮਦਦ ਕਰਦਾ ਹੈ।",
     # EN: Rahu in your 7th: keep partnerships transparent.
-    7: "",
+    7: "ਰਾਹੂ ਸੱਤਵੇਂ ਭਾਵ ਵਿੱਚ: ਸਾਂਝੇਦਾਰੀਆਂ ਵਿੱਚ ਪਾਰਦਰਸ਼ਤਾ ਰੱਖੋ।",
     # EN: Rahu in your 8th: avoid risky shortcuts and stay calm when the unexpected comes.
-    8: "",
+    8: "ਰਾਹੂ ਅੱਠਵੇਂ ਭਾਵ ਵਿੱਚ: ਜੋਖਮ ਭਰੇ ਸ਼ਾਰਟਕੱਟਾਂ ਤੋਂ ਬਚੋ ਅਤੇ ਅਚਾਨਕ ਕੁਝ ਹੋ ਜਾਣ ’ਤੇ ਸ਼ਾਂਤ ਰਹੋ।",
     # EN: Rahu in your 9th can raise doubts about beliefs or mentors; seek advice you trust.
-    9: "",
+    9: "ਰਾਹੂ ਦਾ ਨੌਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਵਿਸ਼ਵਾਸਾਂ ਜਾਂ ਮਾਰਗ-ਦਰਸ਼ਕਾਂ ਬਾਰੇ ਸ਼ੰਕੇ ਪੈਦਾ ਕਰ ਸਕਦਾ ਹੈ; ਭਰੋਸੇਯੋਗ ਸਲਾਹ ਲਵੋ।",
     # EN: Rahu in your 10th brings ambition and sudden openings at work; move with integrity.
-    10: "",
+    10: "ਰਾਹੂ ਦਾ ਦਸਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਲਾਲਸਾ ਅਤੇ ਕੰਮ ’ਤੇ ਅਚਾਨਕ ਮੌਕੇ ਲਿਆਉਂਦਾ ਹੈ; ਇਮਾਨਦਾਰੀ ਨਾਲ ਅੱਗੇ ਵਧੋ।",
     # EN: Rahu in your 11th — gains through networks and new contacts.
-    11: "",
+    11: "ਰਾਹੂ ਗਿਆਰ੍ਹਵੇਂ ਭਾਵ ਵਿੱਚ — ਜਾਣ-ਪਛਾਣ ਅਤੇ ਨਵੇਂ ਸੰਪਰਕਾਂ ਰਾਹੀਂ ਲਾਭ।",
     # EN: Rahu in your 12th: watch hidden expenses and get proper rest.
-    12: "",
+    12: "ਰਾਹੂ ਬਾਰ੍ਹਵੇਂ ਭਾਵ ਵਿੱਚ: ਲੁਕਵੇਂ ਖ਼ਰਚਿਆਂ ਦਾ ਧਿਆਨ ਰੱਖੋ ਅਤੇ ਪੂਰਾ ਆਰਾਮ ਕਰੋ।",
 }
 
 # app/rashifal_text.py KETU_LINE["pa"] — Ketu line, True = favourable house, False = quiet house; {n} is the house  [2]
 RASHIFAL_KETU_LINE = {
     # EN: Ketu in your {n} house works quietly in your favour — obstacles clear with less fuss.
     # keep: {n}
-    True: "",
+    True: "ਤੁਹਾਡੇ {n} ਭਾਵ ਵਿੱਚ ਕੇਤੂ ਚੁੱਪਚਾਪ ਤੁਹਾਡੇ ਹੱਕ ਵਿੱਚ ਕੰਮ ਕਰਦਾ ਹੈ — ਰੁਕਾਵਟਾਂ ਬਿਨਾਂ ਸ਼ੋਰ-ਸ਼ਰਾਬੇ ਦੇ ਦੂਰ ਹੋ ਜਾਂਦੀਆਂ ਹਨ।",
     # EN: Ketu in your {n} house is a quieter, inward influence — good for reflection and spiritual
     #     practice, less so for impulsive moves.
     # keep: {n}
-    False: "",
+    False: "ਤੁਹਾਡੇ {n} ਭਾਵ ਵਿੱਚ ਕੇਤੂ ਇੱਕ ਸ਼ਾਂਤ, ਅੰਦਰ ਵੱਲ ਮੋੜਨ ਵਾਲਾ ਪ੍ਰਭਾਵ ਹੈ — ਸੋਚ-ਵਿਚਾਰ ਅਤੇ ਅਧਿਆਤਮਿਕ ਸਾਧਨਾ ਲਈ ਚੰਗਾ, ਕਾਹਲੀ ਵਿੱਚ ਚੁੱਕੇ ਕਦਮਾਂ ਲਈ ਘੱਟ।",
 }
 
 # app/rashifal_text.py CLOCK_LANG["pa"] — leave '' (the language's own clock words); 'en' prints 6:29 AM as Hindi pages do
@@ -1262,193 +1262,193 @@ RASHIFAL_CLOCK_LANG = ""
 # app/vrat_text.py TEXT["pa"] — page text of /vrat-tyohar, /ekadashi-<year>, /tyohar/<slug>-<year>  [64]
 VRAT_TEXT = {
     # EN: Vrat & festivals
-    "crumb": "",
+    "crumb": "ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: {date}, {weekday}
     # keep: {date} {weekday}
-    "day_label": "",
+    "day_label": "{date}, {weekday}",
     # EN: {label}: {prefix}{value}
     # keep: {label} {prefix} {value}
-    "timing": "",
+    "timing": "{label}: {prefix}{value}",
     # EN: {paksha} {name}: {start} to {end}
     # keep: {end} {name} {paksha} {start}
-    "tithi.text": "",
+    "tithi.text": "{paksha} {name}: {start} ਤੋਂ {end} ਤੱਕ",
     # EN: {paksha}
     # keep: {paksha}
-    "tithi.paksha": "",
+    "tithi.paksha": "{paksha}",
     # EN: <tr><th>Date</th><th>Vrat / festival</th><th>Timing ({city})</th></tr>
     # keep: {city}
-    "table.th": "",
+    "table.th": "<tr><th>ਤਾਰੀਖ਼</th><th>ਵਰਤ / ਤਿਉਹਾਰ</th><th>ਸਮਾਂ ({city})</th></tr>",
     # EN: <div class="box"><p><strong>Timings vary by city.</strong> Every time here is for {city}'s
     #     sunrise, sunset and moonrise; in another city they shift by a few minutes and occasionally
     #     the date does too. Dates follow Drik Panchang's Smarta (default) reckoning. Check the
     #     Panchang for your own city.</p></div>
     # keep: {city}
-    "city_note": "",
+    "city_note": "<div class=\"box\"><p><strong>ਸਮੇਂ ਸ਼ਹਿਰ ਮੁਤਾਬਕ ਬਦਲਦੇ ਹਨ।</strong> ਇੱਥੇ ਦਿੱਤਾ ਹਰ ਸਮਾਂ {city} ਦੇ ਸੂਰਜ ਚੜ੍ਹਨ, ਸੂਰਜ ਛਿਪਣ ਅਤੇ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਦੇ ਹਿਸਾਬ ਨਾਲ ਹੈ; ਕਿਸੇ ਹੋਰ ਸ਼ਹਿਰ ਵਿੱਚ ਇਹ ਕੁਝ ਮਿੰਟ ਖਿਸਕ ਜਾਂਦੇ ਹਨ ਅਤੇ ਕਦੇ-ਕਦੇ ਤਾਰੀਖ਼ ਵੀ ਬਦਲ ਜਾਂਦੀ ਹੈ। ਤਾਰੀਖ਼ਾਂ ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਦੀ ਸਮਾਰਤ (ਮੂਲ) ਗਣਨਾ ਅਨੁਸਾਰ ਹਨ। ਆਪਣੇ ਸ਼ਹਿਰ ਦਾ ਪੰਚਾਂਗ ਜ਼ਰੂਰ ਵੇਖੋ।</p></div>",
     # EN: <p class="note"><small>For most observances the date is the same across India, but puja
     #     muhurat, parana and moonrise times differ from city to city - every time here is for
     #     <strong>{city}</strong>. Regional traditions may vary.</small></p>
     # keep: {city}
-    "top_note": "",
+    "top_note": "<p class=\"note\"><small>ਬਹੁਤੇ ਵਰਤ-ਤਿਉਹਾਰਾਂ ਦੀ ਤਾਰੀਖ਼ ਸਾਰੇ ਭਾਰਤ ਵਿੱਚ ਇੱਕੋ ਹੁੰਦੀ ਹੈ, ਪਰ ਪੂਜਾ ਮਹੂਰਤ, ਪਾਰਣਾ ਅਤੇ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਦੇ ਸਮੇਂ ਸ਼ਹਿਰ ਮੁਤਾਬਕ ਵੱਖਰੇ ਹੁੰਦੇ ਹਨ - ਇੱਥੇ ਹਰ ਸਮਾਂ <strong>{city}</strong> ਲਈ ਹੈ। ਇਲਾਕਾਈ ਰਵਾਇਤਾਂ ਵੱਖਰੀਆਂ ਹੋ ਸਕਦੀਆਂ ਹਨ।</small></p>",
     # EN: Vrat & festivals in your city
-    "cities.heading": "",
+    "cities.heading": "ਤੁਹਾਡੇ ਸ਼ਹਿਰ ਵਿੱਚ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: Today's Panchang in {city}
     # keep: {city}
-    "tools.panchang": "",
+    "tools.panchang": "{city} ਵਿੱਚ ਅੱਜ ਦਾ ਪੰਚਾਂਗ",
     # EN: Rahu Kaal in {city}
     # keep: {city}
     # may also use: {t_rahu_kaal}
-    "tools.rahu": "",
+    "tools.rahu": "{city} ਵਿੱਚ ਰਾਹੂ ਕਾਲ",
     # EN: More for {city}
     # keep: {city}
-    "tools.heading": "",
+    "tools.heading": "{city} ਲਈ ਹੋਰ",
     # EN: See the Panchang for your city — free
-    "cta": "",
+    "cta": "ਆਪਣੇ ਸ਼ਹਿਰ ਦਾ ਪੰਚਾਂਗ ਵੇਖੋ — ਮੁਫ਼ਤ",
     # EN: Today's vrat & festivals
-    "more.today": "",
+    "more.today": "ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: Festival calendar {year}
     # keep: {year}
-    "more.year": "",
+    "more.year": "ਤਿਉਹਾਰ ਕੈਲੰਡਰ {year}",
     # EN: Ekadashi {year}
     # keep: {year}
-    "more.ekadashi": "",
+    "more.ekadashi": "ਇਕਾਦਸ਼ੀ {year}",
     # EN: Today's Panchang
-    "more.panchang": "",
+    "more.panchang": "ਅੱਜ ਦਾ ਪੰਚਾਂਗ",
     # EN: Today's Rashifal
-    "more.rashifal": "",
+    "more.rashifal": "ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ",
     # EN: More
-    "more.heading": "",
+    "more.heading": "ਹੋਰ",
     # EN: Major festivals {year}
     # keep: {year}
-    "majors.heading": "",
+    "majors.heading": "ਮੁੱਖ ਤਿਉਹਾਰ {year}",
     # EN: Rule
-    "today.rule": "",
+    "today.rule": "ਨਿਯਮ",
     # EN: No major vrat or festival today.
-    "today.none": "",
+    "today.none": "ਅੱਜ ਕੋਈ ਵੱਡਾ ਵਰਤ ਜਾਂ ਤਿਉਹਾਰ ਨਹੀਂ ਹੈ।",
     # EN: Next: <strong>{name}</strong> on {day}.
     # keep: {day} {name}
-    "today.next": "",
+    "today.next": " ਅਗਲਾ: <strong>{name}</strong>, {day} ਨੂੰ।",
     # EN: Vrat &amp; Festivals today
-    "block.heading": "",
+    "block.heading": "ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: Page not found
-    "nf.h1": "",
+    "nf.h1": "ਪੰਨਾ ਨਹੀਂ ਮਿਲਿਆ",
     # EN: Aaj Ke Vrat aur Tyohar: Today's Vrat & Festivals ({date})
     # keep: {date}
-    "hub.title_default": "",
+    "hub.title_default": "ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ ({date}) — ਪੂਜਾ ਮਹੂਰਤ ਸਮੇਤ",
     # EN: Today's Vrat & Festivals in {city} ({date}) - Aaj Ke Vrat
     # keep: {city} {date}
-    "hub.title_city": "",
+    "hub.title_city": "{city} ਵਿੱਚ ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ ({date})",
     # EN: Today's vrat & festivals
-    "hub.h1_default": "",
+    "hub.h1_default": "ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: Today's vrat & festivals in {city}
     # keep: {city}
-    "hub.h1_city": "",
+    "hub.h1_city": "{city} ਵਿੱਚ ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: Today, {date}: {names}.
     # keep: {date} {names}
-    "hub.desc_today": "",
+    "hub.desc_today": "ਅੱਜ, {date}: {names}। ",
     # EN: {date}: no major vrat today.
     # keep: {date}
-    "hub.desc_none": "",
+    "hub.desc_none": "{date}: ਅੱਜ ਕੋਈ ਵੱਡਾ ਵਰਤ ਨਹੀਂ ਹੈ। ",
     # EN: Upcoming fasts and festivals for 30 days with Ekadashi parana, Pradosh and Sankashti
     #     moonrise times - {city}.
     # keep: {city}
-    "hub.desc_rest": "",
+    "hub.desc_rest": "ਅਗਲੇ 30 ਦਿਨਾਂ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ, ਇਕਾਦਸ਼ੀ ਪਾਰਣਾ, ਪ੍ਰਦੋਸ਼ ਅਤੇ ਸੰਕਸ਼ਟੀ ਦੇ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਦੇ ਸਮਿਆਂ ਸਮੇਤ - {city}।",
     # EN: <p class="hi" lang="hi">आज के व्रत और त्योहार</p>
-    "hub.sub": "",
+    "hub.sub": "<p class=\"hi\">ਅੱਜ ਕਿਹੜਾ ਵਰਤ, ਕਿਹੜਾ ਤਿਉਹਾਰ</p>",
     # EN: Next 30 days
-    "hub.upcoming": "",
+    "hub.upcoming": "ਅਗਲੇ 30 ਦਿਨ",
     # EN: Hindu Festival & Vrat Calendar {year} (New Delhi): Dates and Muhurat
     # keep: {year}
-    "year.title": "",
+    "year.title": "ਹਿੰਦੂ ਤਿਉਹਾਰ ਅਤੇ ਵਰਤ ਕੈਲੰਡਰ {year} (ਨਵੀਂ ਦਿੱਲੀ): ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਮਹੂਰਤ",
     # EN: Vrat & festival calendar {year}
     # keep: {year}
-    "year.h1": "",
+    "year.h1": "ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ ਕੈਲੰਡਰ {year}",
     # EN: Every Hindu vrat and festival of {year}, month by month - Ekadashi, Pradosh, Sankashti,
     #     Purnima, Amavasya, Shivratri and festivals like Diwali, Navratri and Raksha Bandhan, with
     #     puja muhurat for New Delhi.
     # keep: {year}
-    "year.desc": "",
+    "year.desc": "{year} ਦੇ ਸਾਰੇ ਹਿੰਦੂ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ, ਮਹੀਨੇ ਦਰ ਮਹੀਨੇ - ਇਕਾਦਸ਼ੀ, ਪ੍ਰਦੋਸ਼, ਸੰਕਸ਼ਟੀ, ਪੂਰਨਮਾਸ਼ੀ, ਮੱਸਿਆ, ਸ਼ਿਵਰਾਤਰੀ ਅਤੇ ਦੀਵਾਲੀ, ਨਰਾਤੇ ਤੇ ਰੱਖੜੀ ਵਰਗੇ ਤਿਉਹਾਰ, ਨਵੀਂ ਦਿੱਲੀ ਲਈ ਪੂਜਾ ਮਹੂਰਤ ਸਮੇਤ।",
     # EN: <p><strong>{count}</strong> fasts and festivals in {year} for New Delhi, computed from the
     #     panchang. Tap a major festival for its puja muhurat and what it is about.</p>
     # keep: {count} {year}
-    "year.intro": "",
+    "year.intro": "<p>ਨਵੀਂ ਦਿੱਲੀ ਲਈ {year} ਵਿੱਚ <strong>{count}</strong> ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ, ਪੰਚਾਂਗ ਤੋਂ ਗਿਣੇ ਹੋਏ। ਕਿਸੇ ਵੱਡੇ ਤਿਉਹਾਰ ’ਤੇ ਟੈਪ ਕਰੋ ਅਤੇ ਉਸ ਦਾ ਪੂਜਾ ਮਹੂਰਤ ਤੇ ਮਹੱਤਵ ਵੇਖੋ।</p>",
     # EN: {month} {year}
     # keep: {month} {year}
-    "year.month": "",
+    "year.month": "{month} {year}",
     # EN: Major Hindu festivals {year}
     # keep: {year}
-    "year.itemlist": "",
+    "year.itemlist": "ਮੁੱਖ ਹਿੰਦੂ ਤਿਉਹਾਰ {year}",
     # EN: Ekadashi {year}: All Ekadashi Vrat Dates and Parana Time (New Delhi)
     # keep: {year}
-    "ek.title": "",
+    "ek.title": "ਇਕਾਦਸ਼ੀ {year}: ਸਾਰੀਆਂ ਇਕਾਦਸ਼ੀ ਵਰਤ ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਪਾਰਣਾ ਸਮਾਂ (ਨਵੀਂ ਦਿੱਲੀ)",
     # EN: Ekadashi {year}: dates and parana time
     # keep: {year}
-    "ek.h1": "",
+    "ek.h1": "ਇਕਾਦਸ਼ੀ {year}: ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਪਾਰਣਾ ਸਮਾਂ",
     # EN: All {count} Ekadashis of {year} - fasting date, Ekadashi tithi times and the parana (fast-
     #     breaking) window next day, for New Delhi.
     # keep: {count} {year}
-    "ek.desc": "",
+    "ek.desc": "{year} ਦੀਆਂ ਸਾਰੀਆਂ {count} ਇਕਾਦਸ਼ੀਆਂ - ਵਰਤ ਦੀ ਤਾਰੀਖ਼, ਇਕਾਦਸ਼ੀ ਤਿਥੀ ਦੇ ਸਮੇਂ ਅਤੇ ਅਗਲੇ ਦਿਨ ਪਾਰਣਾ (ਵਰਤ ਖੋਲ੍ਹਣ) ਦੀ ਵਿੰਡੋ, ਨਵੀਂ ਦਿੱਲੀ ਲਈ।",
     # EN: <tr><th>Ekadashi</th><th>Fast</th><th>Parana</th></tr>
-    "ek.th": "",
+    "ek.th": "<tr><th>ਇਕਾਦਸ਼ੀ</th><th>ਵਰਤ</th><th>ਪਾਰਣਾ</th></tr>",
     # EN: <p><strong>Rule (Smarta):</strong> fast on the day Ekadashi prevails at sunrise; if it
     #     prevails at two sunrises, the second day, and if at none, the day it falls in. Parana is
     #     the next day after sunrise, once Hari Vasara (the first quarter of Dwadashi) is over,
     #     within Pratahkala and before Dwadashi ends; if Hari Vasara runs past Pratahkala, parana
     #     moves to Aparahna (Madhyahna is avoided).</p>
-    "ek.rule": "",
+    "ek.rule": "<p><strong>ਨਿਯਮ (ਸਮਾਰਤ):</strong> ਵਰਤ ਉਸ ਦਿਨ ਰੱਖੋ ਜਿਸ ਦਿਨ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਇਕਾਦਸ਼ੀ ਹੋਵੇ; ਜੇ ਦੋ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਹੋਵੇ ਤਾਂ ਦੂਜੇ ਦਿਨ, ਅਤੇ ਜੇ ਕਿਸੇ ਵੇਲੇ ਨਾ ਹੋਵੇ ਤਾਂ ਜਿਸ ਦਿਨ ਇਹ ਪੈਂਦੀ ਹੈ। ਪਾਰਣਾ ਅਗਲੇ ਦਿਨ ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਬਾਅਦ, ਹਰਿ ਵਾਸਰ (ਦੁਆਦਸ਼ੀ ਦਾ ਪਹਿਲਾ ਚੌਥਾ ਹਿੱਸਾ) ਲੰਘਣ ਮਗਰੋਂ, ਪ੍ਰਾਤਃ ਕਾਲ ਦੇ ਅੰਦਰ ਅਤੇ ਦੁਆਦਸ਼ੀ ਖ਼ਤਮ ਹੋਣ ਤੋਂ ਪਹਿਲਾਂ ਹੁੰਦਾ ਹੈ; ਜੇ ਹਰਿ ਵਾਸਰ ਪ੍ਰਾਤਃ ਕਾਲ ਤੋਂ ਅੱਗੇ ਚੱਲੇ ਤਾਂ ਪਾਰਣਾ ਅਪਰਾਹਨ ਵਿੱਚ ਚਲਾ ਜਾਂਦਾ ਹੈ (ਮੱਧਾਹਨ ਤੋਂ ਬਚਿਆ ਜਾਂਦਾ ਹੈ)।</p>",
     # EN: <p class="hi" lang="hi">एकादशी {year}</p>
     # keep: {year}
-    "ek.sub": "",
+    "ek.sub": "<p class=\"hi\">ਇਕਾਦਸ਼ੀ {year}</p>",
     # EN: Ekadashi {year}
     # keep: {year}
-    "ek.crumb": "",
+    "ek.crumb": "ਇਕਾਦਸ਼ੀ {year}",
     # EN: {name} {year}: Date and Puja Muhurat - {short}
     # keep: {name} {short} {year}
-    "fest.title": "",
+    "fest.title": "{name} {year}: ਤਾਰੀਖ਼ ਅਤੇ ਪੂਜਾ ਮਹੂਰਤ - {short}",
     # EN: {name} {year}: date and muhurat
     # keep: {name} {year}
-    "fest.h1": "",
+    "fest.h1": "{name} {year}: ਤਾਰੀਖ਼ ਅਤੇ ਮਹੂਰਤ",
     # EN: {text}.
     # keep: {text}
-    "fest.main": "",
+    "fest.main": "{text}। ",
     # EN: {name} {year} is on {weekday}, {date}. {main}Puja timings for New Delhi.
     # keep: {date} {main} {name} {weekday} {year}
-    "fest.desc": "",
+    "fest.desc": "{name} {year} {weekday}, {date} ਨੂੰ ਹੈ। {main}ਨਵੀਂ ਦਿੱਲੀ ਲਈ ਪੂਜਾ ਦੇ ਸਮੇਂ।",
     # EN: {name} {year} is on <strong>{when}</strong>.
     # keep: {name} {when} {year}
-    "fest.when": "",
+    "fest.when": "{name} {year} <strong>{when}</strong> ਨੂੰ ਹੈ।",
     # EN: <p class="hi" lang="hi">{name_hi} {year}</p>
     # keep: {year}
-    "fest.sub": "",
+    "fest.sub": "<p class=\"hi\">ਤਿਥੀ, ਸ਼ੁਭ ਮਹੂਰਤ ਅਤੇ ਪੂਜਾ ਦਾ ਸਮਾਂ · {year}</p>",
     # EN: What it is and how it is observed
-    "fest.about_h2": "",
+    "fest.about_h2": "ਇਹ ਕੀ ਹੈ ਅਤੇ ਕਿਵੇਂ ਮਨਾਇਆ ਜਾਂਦਾ ਹੈ",
     # EN: How the date is fixed
-    "fest.rule_h2": "",
+    "fest.rule_h2": "ਤਾਰੀਖ਼ ਕਿਵੇਂ ਤੈਅ ਹੁੰਦੀ ਹੈ",
     # EN: Frequently asked questions
-    "fest.faq_h2": "",
+    "fest.faq_h2": "ਅਕਸਰ ਪੁੱਛੇ ਜਾਂਦੇ ਸਵਾਲ",
     # EN: India
-    "event.place": "",
+    "event.place": "ਭਾਰਤ",
     # EN: When is {name} {year}?
     # keep: {name} {year}
-    "faq.when_q": "",
+    "faq.when_q": "{name} {year} ਕਦੋਂ ਹੈ?",
     # EN: {name} {year} is on {weekday}, {date}.
     # keep: {date} {name} {weekday} {year}
-    "faq.when_a": "",
+    "faq.when_a": "{name} {year} {weekday}, {date} ਨੂੰ ਹੈ।",
     # EN: What is the {name} {year} puja muhurat?
     # keep: {name} {year}
-    "faq.muhurat_q": "",
+    "faq.muhurat_q": "{name} {year} ਦਾ ਪੂਜਾ ਮਹੂਰਤ ਕੀ ਹੈ?",
     # EN: What are the {name} {year} timings?
     # keep: {name} {year}
-    "faq.timings_q": "",
+    "faq.timings_q": "{name} {year} ਦੇ ਸਮੇਂ ਕੀ ਹਨ?",
     # EN: For New Delhi - {timings}. Timings vary by city by a few minutes; check the Panchang for
     #     your city.
     # keep: {timings}
-    "faq.timings_a": "",
+    "faq.timings_a": "ਨਵੀਂ ਦਿੱਲੀ ਲਈ - {timings}। ਸਮੇਂ ਸ਼ਹਿਰ ਮੁਤਾਬਕ ਕੁਝ ਮਿੰਟ ਵੱਖਰੇ ਹੁੰਦੇ ਹਨ; ਆਪਣੇ ਸ਼ਹਿਰ ਦਾ ਪੰਚਾਂਗ ਵੇਖੋ।",
     # EN: Why is {name} {year} observed on {short}?
     # keep: {name} {short} {year}
-    "faq.why_q": "",
+    "faq.why_q": "{name} {year} {short} ਨੂੰ ਕਿਉਂ ਮਨਾਇਆ ਜਾਂਦਾ ਹੈ?",
     # EN: The date follows the rule: {rule}. In {year} that is {when} (New Delhi).
     # keep: {rule} {when} {year}
-    "faq.why_a": "",
+    "faq.why_a": "ਤਾਰੀਖ਼ ਦਾ ਨਿਯਮ ਇਹ ਹੈ: {rule}। {year} ਵਿੱਚ ਇਹ {when} ਨੂੰ ਪੈਂਦੀ ਹੈ (ਨਵੀਂ ਦਿੱਲੀ)।",
 }
 
 # app/vrat_text.py ABOUT["pa"] — what each of the 47 festivals / vrats is (key = festival slug)  [47]
@@ -1456,194 +1456,194 @@ VRAT_ABOUT = {
     # EN: Makar Sankranti marks the Sun's entry into Makara (Capricorn) and the start of its
     #     northward journey (Uttarayana). It is a harvest festival: people bathe in holy rivers,
     #     give til (sesame), jaggery, khichdi and blankets in charity, and fly kites.
-    "makar-sankranti": "",
+    "makar-sankranti": "ਮਕਰ ਸੰਕ੍ਰਾਂਤੀ ਸੂਰਜ ਦੇ ਮਕਰ ਰਾਸ਼ੀ ਵਿੱਚ ਪ੍ਰਵੇਸ਼ ਅਤੇ ਉੱਤਰ ਵੱਲ ਯਾਤਰਾ (ਉੱਤਰਾਯਣ) ਦੀ ਸ਼ੁਰੂਆਤ ਦਾ ਦਿਨ ਹੈ। ਇਹ ਫ਼ਸਲ ਦਾ ਤਿਉਹਾਰ ਹੈ: ਲੋਕ ਪਵਿੱਤਰ ਦਰਿਆਵਾਂ ਵਿੱਚ ਇਸ਼ਨਾਨ ਕਰਦੇ ਹਨ, ਤਿਲ, ਗੁੜ, ਖਿਚੜੀ ਅਤੇ ਕੰਬਲ ਦਾਨ ਕਰਦੇ ਹਨ, ਅਤੇ ਪਤੰਗ ਉਡਾਉਂਦੇ ਹਨ।",
     # EN: Maha Shivratri, the great night of Shiva, falls on the Krishna Chaturdashi of Magha.
     #     Devotees fast, offer water, milk and bel leaves on the Shivling, chant Om Namah Shivaya
     #     and keep vigil through the four prahars of the night; the Nishita kaal puja around
     #     midnight is the most important.
-    "maha-shivratri": "",
+    "maha-shivratri": "ਮਹਾਂ ਸ਼ਿਵਰਾਤਰੀ, ਸ਼ਿਵ ਦੀ ਮਹਾਨ ਰਾਤ, ਮਾਘ ਦੀ ਕ੍ਰਿਸ਼ਨ ਚੌਦਸ ਨੂੰ ਆਉਂਦੀ ਹੈ। ਸ਼ਰਧਾਲੂ ਵਰਤ ਰੱਖਦੇ ਹਨ, ਸ਼ਿਵਲਿੰਗ ’ਤੇ ਜਲ, ਦੁੱਧ ਅਤੇ ਬੇਲ ਪੱਤਰ ਚੜ੍ਹਾਉਂਦੇ ਹਨ, “ਓਮ ਨਮਃ ਸ਼ਿਵਾਯ” ਦਾ ਜਾਪ ਕਰਦੇ ਹਨ ਅਤੇ ਰਾਤ ਦੇ ਚਾਰ ਪਹਿਰ ਜਾਗਦੇ ਹਨ; ਅੱਧੀ ਰਾਤ ਦੇ ਨੇੜੇ ਨਿਸ਼ੀਥ ਕਾਲ ਦੀ ਪੂਜਾ ਸਭ ਤੋਂ ਅਹਿਮ ਹੈ।",
     # EN: Holika Dahan, on the eve of Holi, celebrates Prahlad's devotion and the victory of good
     #     over evil. A bonfire is lit after sunset, avoiding Bhadra, and families circle it offering
     #     grain, coconut and prayers.
-    "holika-dahan": "",
+    "holika-dahan": "ਹੋਲਿਕਾ ਦਹਨ, ਹੋਲੀ ਦੀ ਪੂਰਵ ਸੰਧਿਆ ’ਤੇ, ਪ੍ਰਹਿਲਾਦ ਦੀ ਭਗਤੀ ਅਤੇ ਬਦੀ ’ਤੇ ਨੇਕੀ ਦੀ ਜਿੱਤ ਦਾ ਪ੍ਰਤੀਕ ਹੈ। ਸੂਰਜ ਛਿਪਣ ਤੋਂ ਬਾਅਦ, ਭਦਰਾ ਤੋਂ ਬਚ ਕੇ, ਅਲਾਵ ਬਾਲਿਆ ਜਾਂਦਾ ਹੈ ਅਤੇ ਪਰਿਵਾਰ ਇਸ ਦੁਆਲੇ ਪਰਿਕਰਮਾ ਕਰਦੇ ਹੋਏ ਅਨਾਜ, ਨਾਰੀਅਲ ਅਤੇ ਅਰਦਾਸਾਂ ਭੇਟ ਕਰਦੇ ਹਨ।",
     # EN: Holi, the festival of colours, is celebrated the morning after Holika Dahan with colours,
     #     music, sweets like gujiya and visits to family and friends.
-    "holi": "",
+    "holi": "ਹੋਲੀ, ਰੰਗਾਂ ਦਾ ਤਿਉਹਾਰ, ਹੋਲਿਕਾ ਦਹਨ ਦੀ ਅਗਲੀ ਸਵੇਰ ਰੰਗਾਂ, ਸੰਗੀਤ, ਗੁਜੀਆ ਵਰਗੀਆਂ ਮਠਿਆਈਆਂ ਅਤੇ ਪਰਿਵਾਰ ਤੇ ਦੋਸਤਾਂ ਨੂੰ ਮਿਲਣ ਨਾਲ ਮਨਾਇਆ ਜਾਂਦਾ ਹੈ।",
     # EN: Ram Navami celebrates the birth of Lord Rama on Chaitra Shukla Navami, at midday. Devotees
     #     fast, read the Ramcharitmanas, and offer puja in the Madhyahna muhurat, the time of his
     #     birth.
-    "ram-navami": "",
+    "ram-navami": "ਰਾਮ ਨੌਮੀ ਚੇਤ ਸ਼ੁਕਲ ਨੌਮੀ ਨੂੰ ਦੁਪਹਿਰ ਵੇਲੇ ਭਗਵਾਨ ਰਾਮ ਦੇ ਜਨਮ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਸ਼ਰਧਾਲੂ ਵਰਤ ਰੱਖਦੇ ਹਨ, ਰਾਮਚਰਿਤਮਾਨਸ ਦਾ ਪਾਠ ਕਰਦੇ ਹਨ ਅਤੇ ਉਨ੍ਹਾਂ ਦੇ ਜਨਮ ਦੇ ਸਮੇਂ, ਮੱਧਾਹਨ ਮਹੂਰਤ ਵਿੱਚ, ਪੂਜਾ ਕਰਦੇ ਹਨ।",
     # EN: Hanuman Jayanti (Chaitra Purnima in North India) celebrates the birth of Lord Hanuman.
     #     Devotees visit Hanuman temples, recite the Hanuman Chalisa and Sundarkand, and offer
     #     sindoor and laddoos.
-    "hanuman-jayanti": "",
+    "hanuman-jayanti": "ਹਨੂੰਮਾਨ ਜਯੰਤੀ (ਉੱਤਰੀ ਭਾਰਤ ਵਿੱਚ ਚੇਤ ਪੂਰਨਮਾਸ਼ੀ) ਭਗਵਾਨ ਹਨੂੰਮਾਨ ਦੇ ਜਨਮ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਸ਼ਰਧਾਲੂ ਹਨੂੰਮਾਨ ਮੰਦਰਾਂ ਵਿੱਚ ਜਾਂਦੇ ਹਨ, ਹਨੂੰਮਾਨ ਚਾਲੀਸਾ ਅਤੇ ਸੁੰਦਰਕਾਂਡ ਦਾ ਪਾਠ ਕਰਦੇ ਹਨ, ਅਤੇ ਸੰਧੂਰ ਤੇ ਲੱਡੂ ਚੜ੍ਹਾਉਂਦੇ ਹਨ।",
     # EN: Akshaya Tritiya, Vaishakha Shukla Tritiya, is held to make every good deed 'akshaya' -
     #     undiminishing. People worship Vishnu and Lakshmi, give in charity, and begin new ventures
     #     or buy gold.
-    "akshaya-tritiya": "",
+    "akshaya-tritiya": "ਅਕਸ਼ੈ ਤ੍ਰਿਤੀਆ, ਵਿਸਾਖ ਸ਼ੁਕਲ ਤੀਜ, ਬਾਰੇ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ ਕਿ ਇਹ ਹਰ ਚੰਗੇ ਕੰਮ ਨੂੰ ‘ਅਕਸ਼ੈ’ — ਕਦੇ ਨਾ ਘਟਣ ਵਾਲਾ — ਬਣਾ ਦਿੰਦੀ ਹੈ। ਲੋਕ ਵਿਸ਼ਨੂੰ ਅਤੇ ਲਕਸ਼ਮੀ ਦੀ ਪੂਜਾ ਕਰਦੇ ਹਨ, ਦਾਨ ਦਿੰਦੇ ਹਨ, ਅਤੇ ਨਵੇਂ ਕੰਮ ਸ਼ੁਰੂ ਕਰਦੇ ਜਾਂ ਸੋਨਾ ਖ਼ਰੀਦਦੇ ਹਨ।",
     # EN: Raksha Bandhan, on Shravana Purnima, celebrates the bond between brothers and sisters.
     #     Sisters tie a rakhi on their brother's wrist and pray for his well-being; the rakhi is
     #     tied in a time free of Bhadra.
-    "raksha-bandhan": "",
+    "raksha-bandhan": "ਰੱਖੜੀ (ਰਕਸ਼ਾ ਬੰਧਨ), ਸਾਵਣ ਦੀ ਪੂਰਨਮਾਸ਼ੀ ਨੂੰ, ਭਰਾ-ਭੈਣ ਦੇ ਰਿਸ਼ਤੇ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਭੈਣਾਂ ਆਪਣੇ ਭਰਾ ਦੀ ਗੁੱਟ ’ਤੇ ਰੱਖੜੀ ਬੰਨ੍ਹਦੀਆਂ ਹਨ ਅਤੇ ਉਸ ਦੀ ਸੁੱਖ-ਸਾਂਦ ਦੀ ਅਰਦਾਸ ਕਰਦੀਆਂ ਹਨ; ਰੱਖੜੀ ਭਦਰਾ ਤੋਂ ਮੁਕਤ ਸਮੇਂ ਵਿੱਚ ਬੰਨ੍ਹੀ ਜਾਂਦੀ ਹੈ।",
     # EN: Krishna Janmashtami celebrates the birth of Lord Krishna at midnight on Krishna Ashtami of
     #     Bhadrapada (purnimanta). Devotees fast through the day and break it after the Nishita
     #     (midnight) puja, when the infant Krishna is bathed and placed in a cradle.
-    "janmashtami": "",
+    "janmashtami": "ਕ੍ਰਿਸ਼ਨ ਜਨਮ ਅਸ਼ਟਮੀ ਭਾਦੋਂ ਦੀ ਕ੍ਰਿਸ਼ਨ ਅਸ਼ਟਮੀ (ਪੂਰਨਿਮਾਂਤ) ਦੀ ਅੱਧੀ ਰਾਤ ਨੂੰ ਭਗਵਾਨ ਕ੍ਰਿਸ਼ਨ ਦੇ ਜਨਮ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਸ਼ਰਧਾਲੂ ਸਾਰਾ ਦਿਨ ਵਰਤ ਰੱਖਦੇ ਹਨ ਅਤੇ ਨਿਸ਼ੀਥ (ਅੱਧੀ ਰਾਤ) ਦੀ ਪੂਜਾ ਤੋਂ ਬਾਅਦ ਵਰਤ ਖੋਲ੍ਹਦੇ ਹਨ, ਜਦੋਂ ਬਾਲ ਕ੍ਰਿਸ਼ਨ ਨੂੰ ਇਸ਼ਨਾਨ ਕਰਾ ਕੇ ਪੰਘੂੜੇ ਵਿੱਚ ਪਾਇਆ ਜਾਂਦਾ ਹੈ।",
     # EN: Ganesh Chaturthi, Bhadrapada Shukla Chaturthi, welcomes Lord Ganesha home. The idol is
     #     installed and worshipped in the Madhyahna (midday) muhurat, the time of his birth, with
     #     modak, durva grass and red flowers; looking at the Moon on this day is avoided.
-    "ganesh-chaturthi": "",
+    "ganesh-chaturthi": "ਗਣੇਸ਼ ਚਤੁਰਥੀ, ਭਾਦੋਂ ਸ਼ੁਕਲ ਚੌਥ, ਭਗਵਾਨ ਗਣੇਸ਼ ਦਾ ਘਰ ਵਿੱਚ ਸਵਾਗਤ ਹੈ। ਮੂਰਤੀ ਸਥਾਪਿਤ ਕਰਕੇ ਉਨ੍ਹਾਂ ਦੇ ਜਨਮ ਦੇ ਸਮੇਂ, ਮੱਧਾਹਨ (ਦੁਪਹਿਰ) ਮਹੂਰਤ ਵਿੱਚ, ਮੋਦਕ, ਦੂਬ ਘਾਹ ਅਤੇ ਲਾਲ ਫੁੱਲਾਂ ਨਾਲ ਪੂਜਾ ਕੀਤੀ ਜਾਂਦੀ ਹੈ; ਇਸ ਦਿਨ ਚੰਦਰਮਾ ਨੂੰ ਵੇਖਣ ਤੋਂ ਬਚਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: Chaitra Navratri, the nine nights of Goddess Durga in spring, begins on Chaitra Shukla
     #     Pratipada - also the Hindu New Year (Vikram Samvat). Ghatasthapana (installing the kalash)
     #     opens the nine days of worship.
-    "chaitra-navratri": "",
+    "chaitra-navratri": "ਚੇਤ ਦੇ ਨਰਾਤੇ, ਬਸੰਤ ਰੁੱਤ ਵਿੱਚ ਦੇਵੀ ਦੁਰਗਾ ਦੀਆਂ ਨੌਂ ਰਾਤਾਂ, ਚੇਤ ਸ਼ੁਕਲ ਏਕਮ ਨੂੰ ਸ਼ੁਰੂ ਹੁੰਦੇ ਹਨ — ਇਹੀ ਹਿੰਦੂ ਨਵਾਂ ਸਾਲ (ਵਿਕਰਮ ਸੰਵਤ) ਵੀ ਹੈ। ਘਟ ਸਥਾਪਨਾ (ਕਲਸ਼ ਦੀ ਸਥਾਪਨਾ) ਨਾਲ ਨੌਂ ਦਿਨਾਂ ਦੀ ਪੂਜਾ ਸ਼ੁਰੂ ਹੁੰਦੀ ਹੈ।",
     # EN: Sharad Navratri, the nine nights of Goddess Durga in autumn, begins on Ashwin Shukla
     #     Pratipada with Ghatasthapana - installing the kalash and sowing barley - in the morning.
     #     Each day honours one of the nine forms of the Goddess.
-    "navratri": "",
+    "navratri": "ਸ਼ਾਰਦੀਆ ਨਰਾਤੇ, ਪਤਝੜ ਵਿੱਚ ਦੇਵੀ ਦੁਰਗਾ ਦੀਆਂ ਨੌਂ ਰਾਤਾਂ, ਅੱਸੂ ਸ਼ੁਕਲ ਏਕਮ ਨੂੰ ਸਵੇਰ ਵੇਲੇ ਘਟ ਸਥਾਪਨਾ — ਕਲਸ਼ ਦੀ ਸਥਾਪਨਾ ਅਤੇ ਜੌਂ ਬੀਜਣ — ਨਾਲ ਸ਼ੁਰੂ ਹੁੰਦੇ ਹਨ। ਹਰ ਦਿਨ ਦੇਵੀ ਦੇ ਨੌਂ ਰੂਪਾਂ ਵਿੱਚੋਂ ਇੱਕ ਨੂੰ ਸਮਰਪਿਤ ਹੁੰਦਾ ਹੈ।",
     # EN: Dussehra (Vijayadashami) marks Lord Rama's victory over Ravana and Goddess Durga's over
     #     Mahishasura. Shami puja, Aparajita puja and the burning of Ravana effigies are held in the
     #     afternoon; the Vijay muhurat is considered good for starting anything new.
-    "dussehra": "",
+    "dussehra": "ਦੁਸਹਿਰਾ (ਵਿਜੈ ਦਸ਼ਮੀ) ਭਗਵਾਨ ਰਾਮ ਦੀ ਰਾਵਣ ਉੱਤੇ ਅਤੇ ਦੇਵੀ ਦੁਰਗਾ ਦੀ ਮਹਿਖਾਸੁਰ ਉੱਤੇ ਜਿੱਤ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਸ਼ਮੀ ਪੂਜਾ, ਅਪਰਾਜਿਤਾ ਪੂਜਾ ਅਤੇ ਰਾਵਣ ਦੇ ਪੁਤਲੇ ਸਾੜਨ ਦੀ ਰਸਮ ਦੁਪਹਿਰ ਤੋਂ ਬਾਅਦ ਹੁੰਦੀ ਹੈ; ਵਿਜੈ ਮਹੂਰਤ ਕੋਈ ਵੀ ਨਵਾਂ ਕੰਮ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਚੰਗਾ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: On Karwa Chauth married women keep a fast from sunrise to moonrise for their husbands'
     #     long life. The evening puja of Karwa Mata is followed by offering water (arghya) to the
     #     Moon, after which the fast is broken.
-    "karwa-chauth": "",
+    "karwa-chauth": "ਕਰਵਾ ਚੌਥ ’ਤੇ ਵਿਆਹੀਆਂ ਔਰਤਾਂ ਆਪਣੇ ਪਤੀ ਦੀ ਲੰਮੀ ਉਮਰ ਲਈ ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਤੱਕ ਵਰਤ ਰੱਖਦੀਆਂ ਹਨ। ਸ਼ਾਮ ਨੂੰ ਕਰਵਾ ਮਾਤਾ ਦੀ ਪੂਜਾ ਤੋਂ ਬਾਅਦ ਚੰਦਰਮਾ ਨੂੰ ਅਰਘ (ਜਲ) ਦਿੱਤਾ ਜਾਂਦਾ ਹੈ, ਫਿਰ ਵਰਤ ਖੋਲ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: On Ahoi Ashtami, eight days before Diwali, mothers keep a fast for the well-being of their
     #     children and worship Ahoi Mata in the evening; the fast is traditionally broken after
     #     sighting the stars (or, in some families, the Moon).
-    "ahoi-ashtami": "",
+    "ahoi-ashtami": "ਦੀਵਾਲੀ ਤੋਂ ਅੱਠ ਦਿਨ ਪਹਿਲਾਂ ਅਹੋਈ ਅਸ਼ਟਮੀ ’ਤੇ ਮਾਵਾਂ ਆਪਣੇ ਬੱਚਿਆਂ ਦੀ ਭਲਾਈ ਲਈ ਵਰਤ ਰੱਖਦੀਆਂ ਹਨ ਅਤੇ ਸ਼ਾਮ ਨੂੰ ਅਹੋਈ ਮਾਤਾ ਦੀ ਪੂਜਾ ਕਰਦੀਆਂ ਹਨ; ਵਰਤ ਰਵਾਇਤ ਅਨੁਸਾਰ ਤਾਰੇ ਵੇਖ ਕੇ (ਜਾਂ ਕੁਝ ਪਰਿਵਾਰਾਂ ਵਿੱਚ ਚੰਦਰਮਾ ਵੇਖ ਕੇ) ਖੋਲ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: Dhanteras, the first day of Diwali, honours Dhanvantari and Goddess Lakshmi. People buy
     #     new utensils, gold or silver and light the Yama deepak at dusk; the puja is done in
     #     Pradosh kaal, ideally in the fixed (sthir) Vrishabha lagna.
-    "dhanteras": "",
+    "dhanteras": "ਧਨਤੇਰਸ, ਦੀਵਾਲੀ ਦਾ ਪਹਿਲਾ ਦਿਨ, ਧਨਵੰਤਰੀ ਅਤੇ ਦੇਵੀ ਲਕਸ਼ਮੀ ਨੂੰ ਸਮਰਪਿਤ ਹੈ। ਲੋਕ ਨਵੇਂ ਭਾਂਡੇ, ਸੋਨਾ ਜਾਂ ਚਾਂਦੀ ਖ਼ਰੀਦਦੇ ਹਨ ਅਤੇ ਸ਼ਾਮ ਢਲੇ ਯਮ ਦਾ ਦੀਵਾ ਬਾਲਦੇ ਹਨ; ਪੂਜਾ ਪ੍ਰਦੋਸ਼ ਕਾਲ ਵਿੱਚ, ਆਦਰਸ਼ ਤੌਰ ’ਤੇ ਸਥਿਰ ਬ੍ਰਿਖ ਲਗਨ ਵਿੱਚ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।",
     # EN: Diwali, on Kartika Amavasya, is the festival of lights. Lakshmi and Ganesha are worshipped
     #     in the evening - in Pradosh kaal, preferably in the fixed (sthir) Vrishabha lagna so that
     #     prosperity stays - and homes are lit with diyas.
-    "diwali": "",
+    "diwali": "ਦੀਵਾਲੀ, ਕੱਤਕ ਦੀ ਮੱਸਿਆ ਨੂੰ, ਰੌਸ਼ਨੀਆਂ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਸ਼ਾਮ ਨੂੰ ਲਕਸ਼ਮੀ ਅਤੇ ਗਣੇਸ਼ ਦੀ ਪੂਜਾ ਕੀਤੀ ਜਾਂਦੀ ਹੈ — ਪ੍ਰਦੋਸ਼ ਕਾਲ ਵਿੱਚ, ਹੋ ਸਕੇ ਤਾਂ ਸਥਿਰ ਬ੍ਰਿਖ ਲਗਨ ਵਿੱਚ, ਤਾਂ ਜੋ ਖ਼ੁਸ਼ਹਾਲੀ ਟਿਕੀ ਰਹੇ — ਅਤੇ ਘਰਾਂ ਨੂੰ ਦੀਵਿਆਂ ਨਾਲ ਰੌਸ਼ਨ ਕੀਤਾ ਜਾਂਦਾ ਹੈ।",
     # EN: Govardhan Puja (Annakut), the day after Diwali, remembers Krishna lifting Govardhan hill.
     #     A Govardhan of cow-dung or food is worshipped and an annakut of many dishes is offered,
     #     usually in the morning (Pratahkala).
-    "govardhan-puja": "",
+    "govardhan-puja": "ਗੋਵਰਧਨ ਪੂਜਾ (ਅੰਨਕੂਟ), ਦੀਵਾਲੀ ਤੋਂ ਅਗਲੇ ਦਿਨ, ਕ੍ਰਿਸ਼ਨ ਵੱਲੋਂ ਗੋਵਰਧਨ ਪਰਬਤ ਚੁੱਕਣ ਦੀ ਯਾਦ ਹੈ। ਗੋਹੇ ਜਾਂ ਭੋਜਨ ਦਾ ਗੋਵਰਧਨ ਬਣਾ ਕੇ ਪੂਜਿਆ ਜਾਂਦਾ ਹੈ ਅਤੇ ਕਈ ਪਕਵਾਨਾਂ ਦਾ ਅੰਨਕੂਟ ਚੜ੍ਹਾਇਆ ਜਾਂਦਾ ਹੈ, ਆਮ ਤੌਰ ’ਤੇ ਸਵੇਰ ਵੇਲੇ (ਪ੍ਰਾਤਃ ਕਾਲ)।",
     # EN: Bhai Dooj, Kartika Shukla Dwitiya, celebrates brothers and sisters: sisters apply a tilak,
     #     perform aarti and pray for their brother's long life, ideally in the Aparahna (afternoon)
     #     time.
-    "bhai-dooj": "",
+    "bhai-dooj": "ਭਾਈ ਦੂਜ, ਕੱਤਕ ਸ਼ੁਕਲ ਦੂਜ, ਭੈਣਾਂ-ਭਰਾਵਾਂ ਦਾ ਤਿਉਹਾਰ ਹੈ: ਭੈਣਾਂ ਤਿਲਕ ਲਾਉਂਦੀਆਂ ਹਨ, ਆਰਤੀ ਕਰਦੀਆਂ ਹਨ ਅਤੇ ਭਰਾ ਦੀ ਲੰਮੀ ਉਮਰ ਦੀ ਅਰਦਾਸ ਕਰਦੀਆਂ ਹਨ, ਆਦਰਸ਼ ਤੌਰ ’ਤੇ ਅਪਰਾਹਨ (ਦੁਪਹਿਰ ਤੋਂ ਬਾਅਦ) ਦੇ ਸਮੇਂ।",
     # EN: Chhath Puja worships the Sun God and Chhathi Maiya over four days. On the main day
     #     (Kartika Shukla Shashthi) devotees stand in water and offer arghya to the setting Sun, and
     #     to the rising Sun the next morning, ending a fast kept without water.
-    "chhath-puja": "",
+    "chhath-puja": "ਛਠ ਪੂਜਾ ਚਾਰ ਦਿਨ ਸੂਰਜ ਦੇਵਤਾ ਅਤੇ ਛਠੀ ਮਈਆ ਦੀ ਪੂਜਾ ਹੈ। ਮੁੱਖ ਦਿਨ (ਕੱਤਕ ਸ਼ੁਕਲ ਛੇਵੀਂ) ਸ਼ਰਧਾਲੂ ਪਾਣੀ ਵਿੱਚ ਖੜ੍ਹੇ ਹੋ ਕੇ ਡੁੱਬਦੇ ਸੂਰਜ ਨੂੰ ਅਤੇ ਅਗਲੀ ਸਵੇਰ ਚੜ੍ਹਦੇ ਸੂਰਜ ਨੂੰ ਅਰਘ ਦਿੰਦੇ ਹਨ, ਅਤੇ ਬਿਨਾਂ ਪਾਣੀ ਦੇ ਰੱਖਿਆ ਵਰਤ ਸਮਾਪਤ ਕਰਦੇ ਹਨ।",
     # EN: Vasant Panchami, Magha Shukla Panchami, welcomes spring and honours Goddess Saraswati.
     #     Students and artists worship books and instruments, people wear yellow, and children often
     #     begin learning to write (vidyarambh).
-    "vasant-panchami": "",
+    "vasant-panchami": "ਬਸੰਤ ਪੰਚਮੀ, ਮਾਘ ਸ਼ੁਕਲ ਪੰਚਮੀ, ਬਸੰਤ ਦਾ ਸਵਾਗਤ ਕਰਦੀ ਹੈ ਅਤੇ ਦੇਵੀ ਸਰਸਵਤੀ ਨੂੰ ਸਮਰਪਿਤ ਹੈ। ਵਿਦਿਆਰਥੀ ਅਤੇ ਕਲਾਕਾਰ ਕਿਤਾਬਾਂ ਅਤੇ ਸਾਜ਼ਾਂ ਦੀ ਪੂਜਾ ਕਰਦੇ ਹਨ, ਲੋਕ ਪੀਲੇ ਕੱਪੜੇ ਪਾਉਂਦੇ ਹਨ, ਅਤੇ ਬੱਚੇ ਅਕਸਰ ਇਸ ਦਿਨ ਲਿਖਣਾ ਸਿੱਖਣਾ ਸ਼ੁਰੂ ਕਰਦੇ ਹਨ (ਵਿਦਿਆਰੰਭ)।",
     # EN: Guru Purnima, Ashadha Purnima, honours one's teachers and Maharishi Ved Vyasa, born on
     #     this day. Disciples offer gratitude, flowers and gifts to their guru.
-    "guru-purnima": "",
+    "guru-purnima": "ਗੁਰੂ ਪੂਰਨਿਮਾ, ਹਾੜ ਦੀ ਪੂਰਨਮਾਸ਼ੀ, ਆਪਣੇ ਗੁਰੂਆਂ ਅਤੇ ਇਸ ਦਿਨ ਜਨਮੇ ਮਹਾਰਿਸ਼ੀ ਵੇਦ ਵਿਆਸ ਦਾ ਸਤਿਕਾਰ ਕਰਨ ਦਾ ਦਿਨ ਹੈ। ਚੇਲੇ ਆਪਣੇ ਗੁਰੂ ਨੂੰ ਧੰਨਵਾਦ, ਫੁੱਲ ਅਤੇ ਤੋਹਫ਼ੇ ਭੇਟ ਕਰਦੇ ਹਨ।",
     # EN: Sharad Purnima, Ashwin Purnima, is the night the Moon is held to be brightest and full of
     #     nectar. Kheer is kept in the moonlight overnight and eaten as prasad; Lakshmi is
     #     worshipped (Kojagari).
-    "sharad-purnima": "",
+    "sharad-purnima": "ਸ਼ਰਦ ਪੂਰਨਿਮਾ, ਅੱਸੂ ਦੀ ਪੂਰਨਮਾਸ਼ੀ, ਉਹ ਰਾਤ ਹੈ ਜਦੋਂ ਚੰਦਰਮਾ ਸਭ ਤੋਂ ਚਮਕਦਾਰ ਅਤੇ ਅੰਮ੍ਰਿਤ ਨਾਲ ਭਰਪੂਰ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ। ਖੀਰ ਸਾਰੀ ਰਾਤ ਚਾਨਣੀ ਵਿੱਚ ਰੱਖੀ ਜਾਂਦੀ ਹੈ ਅਤੇ ਪ੍ਰਸ਼ਾਦ ਵਜੋਂ ਖਾਧੀ ਜਾਂਦੀ ਹੈ; ਲਕਸ਼ਮੀ ਦੀ ਪੂਜਾ ਕੀਤੀ ਜਾਂਦੀ ਹੈ (ਕੋਜਾਗਰੀ)।",
     # EN: Devuthani (Prabodhini) Ekadashi, Kartika Shukla Ekadashi, is when Lord Vishnu is held to
     #     wake from his four-month sleep, ending Chaturmas. Tulsi vivah begins and the wedding
     #     season opens. Devotees fast and break the fast (parana) the next day.
-    "devuthani-ekadashi": "",
+    "devuthani-ekadashi": "ਦੇਵਉਠਨੀ (ਪ੍ਰਬੋਧਿਨੀ) ਇਕਾਦਸ਼ੀ, ਕੱਤਕ ਸ਼ੁਕਲ ਇਕਾਦਸ਼ੀ, ਉਹ ਦਿਨ ਹੈ ਜਦੋਂ ਭਗਵਾਨ ਵਿਸ਼ਨੂੰ ਚਾਰ ਮਹੀਨਿਆਂ ਦੀ ਨੀਂਦ ਤੋਂ ਜਾਗਦੇ ਮੰਨੇ ਜਾਂਦੇ ਹਨ ਅਤੇ ਚਾਤੁਰਮਾਸ ਖ਼ਤਮ ਹੁੰਦਾ ਹੈ। ਤੁਲਸੀ ਵਿਆਹ ਸ਼ੁਰੂ ਹੁੰਦੇ ਹਨ ਅਤੇ ਵਿਆਹਾਂ ਦਾ ਮੌਸਮ ਖੁੱਲ੍ਹਦਾ ਹੈ। ਸ਼ਰਧਾਲੂ ਵਰਤ ਰੱਖਦੇ ਹਨ ਅਤੇ ਅਗਲੇ ਦਿਨ ਪਾਰਣਾ ਕਰਦੇ ਹਨ।",
     # EN: Jivitputrika (Jitiya, Jiutiya) is kept by mothers in Bihar, Jharkhand, eastern Uttar
     #     Pradesh and Nepal for the long life and well-being of their children, on Ashwin Krishna
     #     Ashtami (purnimanta). It begins with nahay-khay the day before; the fast itself is
     #     nirjala, without water, through the day and night, with worship of Jimutavahana and the
     #     Jitiya katha. Parana, breaking the fast, is the next morning.
-    "jivitputrika": "",
+    "jivitputrika": "ਜੀਵਿਤਪੁੱਤ੍ਰਿਕਾ (ਜਿਤੀਆ, ਜਿਉਤੀਆ) ਬਿਹਾਰ, ਝਾਰਖੰਡ, ਪੂਰਬੀ ਉੱਤਰ ਪ੍ਰਦੇਸ਼ ਅਤੇ ਨੇਪਾਲ ਦੀਆਂ ਮਾਵਾਂ ਆਪਣੇ ਬੱਚਿਆਂ ਦੀ ਲੰਮੀ ਉਮਰ ਅਤੇ ਭਲਾਈ ਲਈ ਅੱਸੂ ਕ੍ਰਿਸ਼ਨ ਅਸ਼ਟਮੀ (ਪੂਰਨਿਮਾਂਤ) ਨੂੰ ਰੱਖਦੀਆਂ ਹਨ। ਇਹ ਇੱਕ ਦਿਨ ਪਹਿਲਾਂ ਨਹਾਏ-ਖਾਏ ਨਾਲ ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ; ਵਰਤ ਆਪ ਨਿਰਜਲ ਹੈ, ਬਿਨਾਂ ਪਾਣੀ ਦੇ ਦਿਨ ਅਤੇ ਰਾਤ, ਜਿਸ ਵਿੱਚ ਜੀਮੂਤਵਾਹਨ ਦੀ ਪੂਜਾ ਅਤੇ ਜਿਤੀਆ ਕਥਾ ਹੁੰਦੀ ਹੈ। ਪਾਰਣਾ, ਵਰਤ ਖੋਲ੍ਹਣਾ, ਅਗਲੀ ਸਵੇਰ ਹੁੰਦਾ ਹੈ।",
     # EN: Lohri, the evening before Makar Sankranti, is the winter harvest festival of Punjab and
     #     North India. A bonfire is lit at dusk and people offer til, gur, rewari, peanuts and
     #     popcorn to it, sing and dance; it is especially celebrated for a new bride or a newborn.
-    "lohri": "",
+    "lohri": "ਲੋਹੜੀ, ਮਕਰ ਸੰਕ੍ਰਾਂਤੀ (ਮਾਘੀ) ਤੋਂ ਇੱਕ ਸ਼ਾਮ ਪਹਿਲਾਂ, ਪੰਜਾਬ ਅਤੇ ਉੱਤਰੀ ਭਾਰਤ ਦਾ ਸਰਦੀਆਂ ਦੀ ਫ਼ਸਲ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਸ਼ਾਮ ਢਲੇ ਧੂਣੀ ਬਾਲੀ ਜਾਂਦੀ ਹੈ ਅਤੇ ਲੋਕ ਉਸ ਵਿੱਚ ਤਿਲ, ਗੁੜ, ਰਿਉੜੀਆਂ, ਮੂੰਗਫਲੀ ਅਤੇ ਫੁੱਲੇ ਪਾਉਂਦੇ ਹਨ, ਗਾਉਂਦੇ ਤੇ ਨੱਚਦੇ ਹਨ; ਇਹ ਖ਼ਾਸ ਕਰਕੇ ਨਵੀਂ ਵਿਆਹੀ ਨੂੰਹ ਜਾਂ ਨਵਜੰਮੇ ਬੱਚੇ ਲਈ ਮਨਾਈ ਜਾਂਦੀ ਹੈ।",
     # EN: Sakat Chauth (Tilkut Chauth), the Sankashti Chaturthi of Magha (purnimanta), is kept by
     #     mothers for their children. Ganesha and Sakat Mata are worshipped with til and jaggery,
     #     and the fast is broken after offering arghya to the rising Moon.
-    "sakat-chauth": "",
+    "sakat-chauth": "ਸਕਟ ਚੌਥ (ਤਿਲਕੁਟ ਚੌਥ), ਮਾਘ (ਪੂਰਨਿਮਾਂਤ) ਦੀ ਸੰਕਸ਼ਟੀ ਚੌਥ, ਮਾਵਾਂ ਆਪਣੇ ਬੱਚਿਆਂ ਲਈ ਰੱਖਦੀਆਂ ਹਨ। ਗਣੇਸ਼ ਅਤੇ ਸਕਟ ਮਾਤਾ ਦੀ ਤਿਲ ਅਤੇ ਗੁੜ ਨਾਲ ਪੂਜਾ ਕੀਤੀ ਜਾਂਦੀ ਹੈ, ਅਤੇ ਚੜ੍ਹਦੇ ਚੰਦਰਮਾ ਨੂੰ ਅਰਘ ਦੇ ਕੇ ਵਰਤ ਖੋਲ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: Mauni Amavasya, the Amavasya of Magha (purnimanta), is the great bathing day of the Magh
     #     Mela at Prayagraj. Devotees bathe in the Ganga or a holy river, keep silence (mauna) and
     #     give in charity.
-    "mauni-amavasya": "",
+    "mauni-amavasya": "ਮੌਨੀ ਮੱਸਿਆ, ਮਾਘ (ਪੂਰਨਿਮਾਂਤ) ਦੀ ਮੱਸਿਆ, ਪ੍ਰਯਾਗਰਾਜ ਦੇ ਮਾਘ ਮੇਲੇ ਦਾ ਮੁੱਖ ਇਸ਼ਨਾਨ ਦਿਵਸ ਹੈ। ਸ਼ਰਧਾਲੂ ਗੰਗਾ ਜਾਂ ਕਿਸੇ ਪਵਿੱਤਰ ਦਰਿਆ ਵਿੱਚ ਇਸ਼ਨਾਨ ਕਰਦੇ ਹਨ, ਮੌਨ ਰੱਖਦੇ ਹਨ ਅਤੇ ਦਾਨ ਦਿੰਦੇ ਹਨ।",
     # EN: Sheetala Ashtami (Basoda), Chaitra Krishna Ashtami (purnimanta), honours Sheetala Mata,
     #     the goddess who protects from fevers and pox. Food is cooked the day before and the stale
     #     (basi) food is offered and eaten; no fire is lit for cooking that day.
-    "sheetala-ashtami": "",
+    "sheetala-ashtami": "ਸ਼ੀਤਲਾ ਅਸ਼ਟਮੀ (ਬਸੋੜਾ), ਚੇਤ ਕ੍ਰਿਸ਼ਨ ਅਸ਼ਟਮੀ (ਪੂਰਨਿਮਾਂਤ), ਸ਼ੀਤਲਾ ਮਾਤਾ ਨੂੰ ਸਮਰਪਿਤ ਹੈ, ਜੋ ਬੁਖ਼ਾਰ ਅਤੇ ਚੇਚਕ ਤੋਂ ਬਚਾਉਣ ਵਾਲੀ ਦੇਵੀ ਮੰਨੀ ਜਾਂਦੀ ਹੈ। ਭੋਜਨ ਇੱਕ ਦਿਨ ਪਹਿਲਾਂ ਪਕਾਇਆ ਜਾਂਦਾ ਹੈ ਅਤੇ ਬਾਸੀ ਭੋਜਨ ਚੜ੍ਹਾ ਕੇ ਖਾਧਾ ਜਾਂਦਾ ਹੈ; ਉਸ ਦਿਨ ਰਸੋਈ ਵਿੱਚ ਅੱਗ ਨਹੀਂ ਬਾਲੀ ਜਾਂਦੀ।",
     # EN: Gudi Padwa (Maharashtra) and Ugadi (Karnataka, Andhra Pradesh, Telangana) mark the lunar
     #     New Year on Chaitra Shukla Pratipada. A gudi - a decorated pole with a cloth and kalash -
     #     is raised at the door, and neem with jaggery is eaten for a year of both sweet and bitter.
-    "gudi-padwa": "",
+    "gudi-padwa": "ਗੁੜੀ ਪੜਵਾ (ਮਹਾਰਾਸ਼ਟਰ) ਅਤੇ ਉਗਾਦੀ (ਕਰਨਾਟਕ, ਆਂਧਰਾ ਪ੍ਰਦੇਸ਼, ਤੇਲੰਗਾਨਾ) ਚੇਤ ਸ਼ੁਕਲ ਏਕਮ ਨੂੰ ਚੰਦਰ ਨਵੇਂ ਸਾਲ ਦੀ ਸ਼ੁਰੂਆਤ ਹਨ। ਦਰਵਾਜ਼ੇ ’ਤੇ ਗੁੜੀ — ਕੱਪੜੇ ਅਤੇ ਕਲਸ਼ ਵਾਲਾ ਸਜਾਇਆ ਡੰਡਾ — ਖੜ੍ਹਾ ਕੀਤਾ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਮਿੱਠੇ-ਕੌੜੇ ਦੋਵੇਂ ਤਰ੍ਹਾਂ ਦੇ ਸਾਲ ਲਈ ਨਿੰਮ ਦੇ ਪੱਤੇ ਗੁੜ ਨਾਲ ਖਾਧੇ ਜਾਂਦੇ ਹਨ।",
     # EN: Gangaur, Chaitra Shukla Tritiya, is Rajasthan's festival of Gauri (Parvati) and Shiva.
     #     Women worship Gauri for marital happiness - married women for their husbands, girls for a
     #     good match - ending eighteen days of puja that begin the day after Holi.
-    "gangaur": "",
+    "gangaur": "ਗਣਗੌਰ, ਚੇਤ ਸ਼ੁਕਲ ਤੀਜ, ਗੌਰੀ (ਪਾਰਵਤੀ) ਅਤੇ ਸ਼ਿਵ ਦਾ ਰਾਜਸਥਾਨ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਔਰਤਾਂ ਵਿਆਹੁਤਾ ਸੁੱਖ ਲਈ ਗੌਰੀ ਦੀ ਪੂਜਾ ਕਰਦੀਆਂ ਹਨ — ਵਿਆਹੀਆਂ ਪਤੀ ਲਈ, ਕੁੜੀਆਂ ਚੰਗੇ ਵਰ ਲਈ — ਅਤੇ ਹੋਲੀ ਤੋਂ ਅਗਲੇ ਦਿਨ ਸ਼ੁਰੂ ਹੋਈ ਅਠਾਰਾਂ ਦਿਨਾਂ ਦੀ ਪੂਜਾ ਇਸ ਦਿਨ ਸਮਾਪਤ ਹੁੰਦੀ ਹੈ।",
     # EN: Vat Savitri Vrat, on Jyeshtha Amavasya in North India (purnimanta), remembers Savitri, who
     #     won back her husband Satyavan's life from Yama. Married women fast, worship the banyan
     #     (vat) tree, tie raw thread around it while circling it, and hear the Savitri katha.
-    "vat-savitri": "",
+    "vat-savitri": "ਵਟ ਸਾਵਿਤਰੀ ਵਰਤ, ਉੱਤਰੀ ਭਾਰਤ ਵਿੱਚ ਜੇਠ ਦੀ ਮੱਸਿਆ (ਪੂਰਨਿਮਾਂਤ) ਨੂੰ, ਸਾਵਿਤਰੀ ਦੀ ਯਾਦ ਹੈ ਜਿਸ ਨੇ ਯਮ ਤੋਂ ਆਪਣੇ ਪਤੀ ਸਤਿਆਵਾਨ ਦੇ ਪ੍ਰਾਣ ਵਾਪਸ ਜਿੱਤੇ। ਵਿਆਹੀਆਂ ਔਰਤਾਂ ਵਰਤ ਰੱਖਦੀਆਂ ਹਨ, ਬੋਹੜ (ਵਟ) ਦੇ ਰੁੱਖ ਦੀ ਪੂਜਾ ਕਰਦੀਆਂ ਹਨ, ਉਸ ਦੇ ਦੁਆਲੇ ਪਰਿਕਰਮਾ ਕਰਦਿਆਂ ਕੱਚਾ ਧਾਗਾ ਬੰਨ੍ਹਦੀਆਂ ਹਨ ਅਤੇ ਸਾਵਿਤਰੀ ਕਥਾ ਸੁਣਦੀਆਂ ਹਨ।",
     # EN: Vat Purnima is the same Vat Savitri vrat as kept on Jyeshtha Purnima in Maharashtra,
     #     Gujarat and the south (amanta calendar), fifteen days after the North Indian date. Married
     #     women fast and worship the banyan tree for their husbands' long life.
-    "vat-purnima": "",
+    "vat-purnima": "ਵਟ ਪੂਰਨਿਮਾ ਉਹੀ ਵਟ ਸਾਵਿਤਰੀ ਵਰਤ ਹੈ ਜੋ ਮਹਾਰਾਸ਼ਟਰ, ਗੁਜਰਾਤ ਅਤੇ ਦੱਖਣ (ਅਮਾਂਤ ਕੈਲੰਡਰ) ਵਿੱਚ ਜੇਠ ਦੀ ਪੂਰਨਮਾਸ਼ੀ ਨੂੰ ਰੱਖਿਆ ਜਾਂਦਾ ਹੈ, ਉੱਤਰੀ ਭਾਰਤ ਦੀ ਤਾਰੀਖ਼ ਤੋਂ ਪੰਦਰਾਂ ਦਿਨ ਬਾਅਦ। ਵਿਆਹੀਆਂ ਔਰਤਾਂ ਪਤੀ ਦੀ ਲੰਮੀ ਉਮਰ ਲਈ ਵਰਤ ਰੱਖਦੀਆਂ ਅਤੇ ਬੋਹੜ ਦੀ ਪੂਜਾ ਕਰਦੀਆਂ ਹਨ।",
     # EN: Ganga Dussehra, Jyeshtha Shukla Dashami, celebrates the descent of the Ganga to earth
     #     through Bhagiratha's penance. Devotees bathe in the Ganga, offer lamps and give in
     #     charity; the bath is held to wash away ten kinds of sin.
-    "ganga-dussehra": "",
+    "ganga-dussehra": "ਗੰਗਾ ਦੁਸਹਿਰਾ, ਜੇਠ ਸ਼ੁਕਲ ਦਸਮੀ, ਭਗੀਰਥ ਦੀ ਤਪੱਸਿਆ ਨਾਲ ਗੰਗਾ ਦੇ ਧਰਤੀ ’ਤੇ ਉਤਰਨ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਸ਼ਰਧਾਲੂ ਗੰਗਾ ਵਿੱਚ ਇਸ਼ਨਾਨ ਕਰਦੇ ਹਨ, ਦੀਵੇ ਚੜ੍ਹਾਉਂਦੇ ਹਨ ਅਤੇ ਦਾਨ ਦਿੰਦੇ ਹਨ; ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ ਕਿ ਇਹ ਇਸ਼ਨਾਨ ਦਸ ਕਿਸਮ ਦੇ ਪਾਪ ਧੋ ਦਿੰਦਾ ਹੈ।",
     # EN: Hariyali Teej, Shravana Shukla Tritiya, celebrates the reunion of Shiva and Parvati in the
     #     monsoon. Women wear green, apply mehndi, swing on decorated jhoolas, sing Sawan songs and
     #     many keep a fast for their husbands.
-    "hariyali-teej": "",
+    "hariyali-teej": "ਹਰਿਆਲੀ ਤੀਜ, ਸਾਵਣ ਸ਼ੁਕਲ ਤੀਜ, ਬਰਸਾਤ ਵਿੱਚ ਸ਼ਿਵ ਅਤੇ ਪਾਰਵਤੀ ਦੇ ਮਿਲਾਪ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਔਰਤਾਂ ਹਰੇ ਕੱਪੜੇ ਪਾਉਂਦੀਆਂ ਹਨ, ਮਹਿੰਦੀ ਲਾਉਂਦੀਆਂ ਹਨ, ਸਜੇ ਹੋਏ ਝੂਲਿਆਂ ’ਤੇ ਪੀਂਘਾਂ ਝੂਟਦੀਆਂ ਹਨ, ਸਾਵਣ ਦੇ ਗੀਤ ਗਾਉਂਦੀਆਂ ਹਨ ਅਤੇ ਬਹੁਤ ਸਾਰੀਆਂ ਪਤੀ ਲਈ ਵਰਤ ਰੱਖਦੀਆਂ ਹਨ।",
     # EN: Nag Panchami, Shravana Shukla Panchami, is the day serpent deities (nagas) are worshipped.
     #     Images of snakes are drawn or installed and offered milk, flowers and sweets, with prayers
     #     for the family's protection. (In Gujarat, Nag Pancham falls later, in Bhadrapada.)
-    "nag-panchami": "",
+    "nag-panchami": "ਨਾਗ ਪੰਚਮੀ, ਸਾਵਣ ਸ਼ੁਕਲ ਪੰਚਮੀ, ਸੱਪ ਦੇਵਤਿਆਂ (ਨਾਗਾਂ) ਦੀ ਪੂਜਾ ਦਾ ਦਿਨ ਹੈ। ਸੱਪਾਂ ਦੀਆਂ ਮੂਰਤਾਂ ਬਣਾਈਆਂ ਜਾਂ ਸਥਾਪਿਤ ਕੀਤੀਆਂ ਜਾਂਦੀਆਂ ਹਨ ਅਤੇ ਉਨ੍ਹਾਂ ਨੂੰ ਦੁੱਧ, ਫੁੱਲ ਅਤੇ ਮਠਿਆਈ ਚੜ੍ਹਾ ਕੇ ਪਰਿਵਾਰ ਦੀ ਰੱਖਿਆ ਦੀ ਅਰਦਾਸ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। (ਗੁਜਰਾਤ ਵਿੱਚ ਨਾਗ ਪੰਚਮ ਬਾਅਦ ਵਿੱਚ, ਭਾਦੋਂ ਵਿੱਚ ਆਉਂਦੀ ਹੈ।)",
     # EN: Kajari (Kajli, Badi) Teej, Bhadrapada Krishna Tritiya (purnimanta), is kept by married
     #     women of Uttar Pradesh, Bihar, Rajasthan and Madhya Pradesh. They fast, worship the neem
     #     tree (Neemadi Mata) and break the fast after offering arghya to the Moon; kajari folk
     #     songs are sung.
-    "kajari-teej": "",
+    "kajari-teej": "ਕਜਰੀ (ਕਜਲੀ, ਬੜੀ) ਤੀਜ, ਭਾਦੋਂ ਕ੍ਰਿਸ਼ਨ ਤੀਜ (ਪੂਰਨਿਮਾਂਤ), ਉੱਤਰ ਪ੍ਰਦੇਸ਼, ਬਿਹਾਰ, ਰਾਜਸਥਾਨ ਅਤੇ ਮੱਧ ਪ੍ਰਦੇਸ਼ ਦੀਆਂ ਵਿਆਹੀਆਂ ਔਰਤਾਂ ਰੱਖਦੀਆਂ ਹਨ। ਉਹ ਵਰਤ ਰੱਖਦੀਆਂ ਹਨ, ਨਿੰਮ ਦੇ ਰੁੱਖ (ਨੀਮੜੀ ਮਾਤਾ) ਦੀ ਪੂਜਾ ਕਰਦੀਆਂ ਹਨ ਅਤੇ ਚੰਦਰਮਾ ਨੂੰ ਅਰਘ ਦੇ ਕੇ ਵਰਤ ਖੋਲ੍ਹਦੀਆਂ ਹਨ; ਕਜਰੀ ਲੋਕ ਗੀਤ ਗਾਏ ਜਾਂਦੇ ਹਨ।",
     # EN: Hal Shashthi (Lalahi Chhath, Har Chhath), Bhadrapada Krishna Shashthi (purnimanta), is
     #     Lord Balarama's birthday, whose weapon is the plough (hal). Mothers fast for their
     #     children and eat nothing grown with a plough - often pasahi rice and buffalo milk.
-    "hal-shashthi": "",
+    "hal-shashthi": "ਹਲ ਸ਼ਸ਼ਠੀ (ਲਲਹੀ ਛਠ, ਹਰ ਛਠ), ਭਾਦੋਂ ਕ੍ਰਿਸ਼ਨ ਛੇਵੀਂ (ਪੂਰਨਿਮਾਂਤ), ਭਗਵਾਨ ਬਲਰਾਮ ਦਾ ਜਨਮ ਦਿਨ ਹੈ, ਜਿਨ੍ਹਾਂ ਦਾ ਹਥਿਆਰ ਹਲ ਹੈ। ਮਾਵਾਂ ਬੱਚਿਆਂ ਲਈ ਵਰਤ ਰੱਖਦੀਆਂ ਹਨ ਅਤੇ ਹਲ ਨਾਲ ਉਗਾਈ ਕੋਈ ਚੀਜ਼ ਨਹੀਂ ਖਾਂਦੀਆਂ — ਅਕਸਰ ਪਸਹੀ ਚੌਲ ਅਤੇ ਮੱਝ ਦਾ ਦੁੱਧ।",
     # EN: Hartalika Teej, Bhadrapada Shukla Tritiya, honours Parvati's penance to win Shiva. Women
     #     keep a nirjala fast, make clay images of Shiva and Parvati, worship them (morning puja in
     #     Pratahkala is preferred), keep vigil at night and break the fast next morning.
-    "hartalika-teej": "",
+    "hartalika-teej": "ਹਰਤਾਲਿਕਾ ਤੀਜ, ਭਾਦੋਂ ਸ਼ੁਕਲ ਤੀਜ, ਸ਼ਿਵ ਨੂੰ ਪਾਉਣ ਲਈ ਪਾਰਵਤੀ ਦੀ ਤਪੱਸਿਆ ਦਾ ਸਤਿਕਾਰ ਹੈ। ਔਰਤਾਂ ਨਿਰਜਲ ਵਰਤ ਰੱਖਦੀਆਂ ਹਨ, ਮਿੱਟੀ ਦੀਆਂ ਸ਼ਿਵ-ਪਾਰਵਤੀ ਦੀਆਂ ਮੂਰਤਾਂ ਬਣਾ ਕੇ ਪੂਜਦੀਆਂ ਹਨ (ਪ੍ਰਾਤਃ ਕਾਲ ਵਿੱਚ ਸਵੇਰ ਦੀ ਪੂਜਾ ਨੂੰ ਤਰਜੀਹ), ਰਾਤ ਨੂੰ ਜਾਗਰਣ ਕਰਦੀਆਂ ਹਨ ਅਤੇ ਅਗਲੀ ਸਵੇਰ ਵਰਤ ਖੋਲ੍ਹਦੀਆਂ ਹਨ।",
     # EN: Rishi Panchami, Bhadrapada Shukla Panchami, honours the Saptarishis, the seven sages.
     #     Women in particular bathe, fast and worship the sages at midday (Madhyahna), seeking
     #     purification from faults committed unknowingly.
-    "rishi-panchami": "",
+    "rishi-panchami": "ਰਿਸ਼ੀ ਪੰਚਮੀ, ਭਾਦੋਂ ਸ਼ੁਕਲ ਪੰਚਮੀ, ਸਪਤ ਰਿਸ਼ੀਆਂ, ਸੱਤ ਮਹਾਂਰਿਸ਼ੀਆਂ, ਦਾ ਸਤਿਕਾਰ ਹੈ। ਖ਼ਾਸ ਕਰਕੇ ਔਰਤਾਂ ਇਸ਼ਨਾਨ ਕਰਦੀਆਂ, ਵਰਤ ਰੱਖਦੀਆਂ ਅਤੇ ਦੁਪਹਿਰ (ਮੱਧਾਹਨ) ਨੂੰ ਰਿਸ਼ੀਆਂ ਦੀ ਪੂਜਾ ਕਰਦੀਆਂ ਹਨ, ਅਣਜਾਣੇ ਵਿੱਚ ਹੋਈਆਂ ਭੁੱਲਾਂ ਤੋਂ ਸ਼ੁੱਧੀ ਮੰਗਦਿਆਂ।",
     # EN: Anant Chaturdashi, Bhadrapada Shukla Chaturdashi, is the worship of Lord Vishnu as Anant.
     #     A sacred thread with fourteen knots (the anant sutra) is tied on the arm after puja; it is
     #     also the day Ganesh idols are immersed (Ganesh Visarjan).
-    "anant-chaturdashi": "",
+    "anant-chaturdashi": "ਅਨੰਤ ਚੌਦਸ, ਭਾਦੋਂ ਸ਼ੁਕਲ ਚੌਦਸ, ਭਗਵਾਨ ਵਿਸ਼ਨੂੰ ਦੀ ਅਨੰਤ ਰੂਪ ਵਿੱਚ ਪੂਜਾ ਹੈ। ਪੂਜਾ ਤੋਂ ਬਾਅਦ ਬਾਂਹ ’ਤੇ ਚੌਦਾਂ ਗੰਢਾਂ ਵਾਲਾ ਪਵਿੱਤਰ ਧਾਗਾ (ਅਨੰਤ ਸੂਤਰ) ਬੰਨ੍ਹਿਆ ਜਾਂਦਾ ਹੈ; ਇਹ ਉਹ ਦਿਨ ਵੀ ਹੈ ਜਦੋਂ ਗਣੇਸ਼ ਦੀਆਂ ਮੂਰਤੀਆਂ ਦਾ ਵਿਸਰਜਨ ਹੁੰਦਾ ਹੈ (ਗਣੇਸ਼ ਵਿਸਰਜਨ)।",
     # EN: Pitru Paksha, the fortnight of the ancestors, runs from Pratipada to Amavasya of the dark
     #     half of Ashwin (purnimanta). On the tithi of an ancestor's passing, families offer tarpan
     #     and shraddha - pinda, food for Brahmins, cows, crows and dogs - in the Kutup, Rohina or
     #     Aparahna time.
-    "pitru-paksha": "",
+    "pitru-paksha": "ਪਿਤਰ ਪੱਖ, ਪੁਰਖਿਆਂ ਦਾ ਪੰਦਰਵਾੜਾ, ਅੱਸੂ (ਪੂਰਨਿਮਾਂਤ) ਦੇ ਕ੍ਰਿਸ਼ਨ ਪੱਖ ਦੀ ਏਕਮ ਤੋਂ ਮੱਸਿਆ ਤੱਕ ਚੱਲਦਾ ਹੈ। ਕਿਸੇ ਪੁਰਖੇ ਦੇ ਗੁਜ਼ਰਨ ਦੀ ਤਿਥੀ ’ਤੇ ਪਰਿਵਾਰ ਕੁਤੁਪ, ਰੋਹਿਣ ਜਾਂ ਅਪਰਾਹਨ ਦੇ ਸਮੇਂ ਤਰਪਣ ਅਤੇ ਸ਼ਰਾਧ — ਪਿੰਡ, ਬ੍ਰਾਹਮਣਾਂ, ਗਾਵਾਂ, ਕਾਵਾਂ ਅਤੇ ਕੁੱਤਿਆਂ ਲਈ ਭੋਜਨ — ਕਰਦੇ ਹਨ।",
     # EN: Sarva Pitru Amavasya (Mahalaya Amavasya) closes Pitru Paksha. Shraddha on this day reaches
     #     all ancestors, including those whose tithi is not known; it is done in the Kutup, Rohina
     #     or Aparahna time.
-    "sarva-pitru-amavasya": "",
+    "sarva-pitru-amavasya": "ਸਰਵ ਪਿਤਰ ਮੱਸਿਆ (ਮਹਾਲਿਆ ਮੱਸਿਆ) ਪਿਤਰ ਪੱਖ ਦਾ ਅੰਤ ਕਰਦੀ ਹੈ। ਇਸ ਦਿਨ ਦਾ ਸ਼ਰਾਧ ਸਾਰੇ ਪੁਰਖਿਆਂ ਤੱਕ ਪਹੁੰਚਦਾ ਹੈ, ਉਨ੍ਹਾਂ ਤੱਕ ਵੀ ਜਿਨ੍ਹਾਂ ਦੀ ਤਿਥੀ ਪਤਾ ਨਹੀਂ; ਇਹ ਕੁਤੁਪ, ਰੋਹਿਣ ਜਾਂ ਅਪਰਾਹਨ ਦੇ ਸਮੇਂ ਕੀਤਾ ਜਾਂਦਾ ਹੈ।",
     # EN: Narak Chaturdashi (Roop Chaudas), Kartika Krishna Chaturdashi (purnimanta), remembers
     #     Krishna's victory over Narakasura. Before sunrise, while the Moon is up, people take an
     #     oil bath with ubtan (Abhyang snan), and a lamp for Yama is lit in the evening.
-    "narak-chaturdashi": "",
+    "narak-chaturdashi": "ਨਰਕ ਚੌਦਸ (ਰੂਪ ਚੌਦਸ), ਕੱਤਕ ਕ੍ਰਿਸ਼ਨ ਚੌਦਸ (ਪੂਰਨਿਮਾਂਤ), ਕ੍ਰਿਸ਼ਨ ਦੀ ਨਰਕਾਸੁਰ ਉੱਤੇ ਜਿੱਤ ਦੀ ਯਾਦ ਹੈ। ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਪਹਿਲਾਂ, ਜਦੋਂ ਚੰਦਰਮਾ ਅਜੇ ਅਸਮਾਨ ਵਿੱਚ ਹੋਵੇ, ਲੋਕ ਵਟਣੇ ਨਾਲ ਤੇਲ ਇਸ਼ਨਾਨ (ਅਭਯੰਗ ਇਸ਼ਨਾਨ) ਕਰਦੇ ਹਨ, ਅਤੇ ਸ਼ਾਮ ਨੂੰ ਯਮ ਲਈ ਦੀਵਾ ਬਾਲਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: Tulsi Vivah, on Kartika Shukla Dwadashi, is the ceremonial wedding of the tulsi plant (as
     #     Vrinda) to Lord Vishnu as Shaligram. Families decorate the tulsi like a bride and perform
     #     the rites of a wedding; the Hindu wedding season begins after it.
-    "tulsi-vivah": "",
+    "tulsi-vivah": "ਤੁਲਸੀ ਵਿਆਹ, ਕੱਤਕ ਸ਼ੁਕਲ ਦੁਆਦਸ਼ੀ ਨੂੰ, ਤੁਲਸੀ ਦੇ ਬੂਟੇ (ਵ੍ਰਿੰਦਾ ਰੂਪ ਵਿੱਚ) ਦਾ ਭਗਵਾਨ ਵਿਸ਼ਨੂੰ ਨਾਲ, ਸ਼ਾਲੀਗ੍ਰਾਮ ਰੂਪ ਵਿੱਚ, ਰਸਮੀ ਵਿਆਹ ਹੈ। ਪਰਿਵਾਰ ਤੁਲਸੀ ਨੂੰ ਲਾੜੀ ਵਾਂਗ ਸਜਾਉਂਦੇ ਹਨ ਅਤੇ ਵਿਆਹ ਦੀਆਂ ਰਸਮਾਂ ਕਰਦੇ ਹਨ; ਹਿੰਦੂ ਵਿਆਹਾਂ ਦਾ ਮੌਸਮ ਇਸ ਤੋਂ ਬਾਅਦ ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ।",
     # EN: Kartik Purnima ends the holy month of Kartika. It is a great day for bathing in the Ganga
     #     or a holy river and giving in charity, and also Guru Nanak Jayanti and Tripuri Purnima,
     #     when Shiva destroyed Tripurasura.
-    "kartik-purnima": "",
+    "kartik-purnima": "ਕੱਤਕ ਦੀ ਪੂਰਨਮਾਸ਼ੀ ਪਵਿੱਤਰ ਕੱਤਕ ਮਹੀਨੇ ਦਾ ਅੰਤ ਕਰਦੀ ਹੈ। ਇਹ ਗੰਗਾ ਜਾਂ ਕਿਸੇ ਪਵਿੱਤਰ ਦਰਿਆ ਵਿੱਚ ਇਸ਼ਨਾਨ ਅਤੇ ਦਾਨ ਦਾ ਵੱਡਾ ਦਿਨ ਹੈ, ਅਤੇ ਨਾਲ ਹੀ ਗੁਰੂ ਨਾਨਕ ਜਯੰਤੀ ਅਤੇ ਤ੍ਰਿਪੁਰੀ ਪੂਰਨਿਮਾ ਵੀ, ਜਦੋਂ ਸ਼ਿਵ ਨੇ ਤ੍ਰਿਪੁਰਾਸੁਰ ਦਾ ਨਾਸ਼ ਕੀਤਾ।",
     # EN: Dev Deepawali, the 'Diwali of the gods', is celebrated on Kartik Purnima evening, above
     #     all on the ghats of Varanasi, which are lit with lakhs of diyas. It marks Shiva's victory
     #     over Tripurasura; lamps are offered to the Ganga in Pradosh kaal.
-    "dev-deepawali": "",
+    "dev-deepawali": "ਦੇਵ ਦੀਵਾਲੀ, ‘ਦੇਵਤਿਆਂ ਦੀ ਦੀਵਾਲੀ’, ਕੱਤਕ ਪੂਰਨਮਾਸ਼ੀ ਦੀ ਸ਼ਾਮ ਨੂੰ ਮਨਾਈ ਜਾਂਦੀ ਹੈ, ਸਭ ਤੋਂ ਵੱਧ ਵਾਰਾਣਸੀ ਦੇ ਘਾਟਾਂ ’ਤੇ, ਜੋ ਲੱਖਾਂ ਦੀਵਿਆਂ ਨਾਲ ਜਗਮਗਾ ਉੱਠਦੇ ਹਨ। ਇਹ ਸ਼ਿਵ ਦੀ ਤ੍ਰਿਪੁਰਾਸੁਰ ਉੱਤੇ ਜਿੱਤ ਦਾ ਪ੍ਰਤੀਕ ਹੈ; ਪ੍ਰਦੋਸ਼ ਕਾਲ ਵਿੱਚ ਗੰਗਾ ਨੂੰ ਦੀਵੇ ਭੇਟ ਕੀਤੇ ਜਾਂਦੇ ਹਨ।",
 }
 
 # app/vrat_text.py NOTES["pa"] — tradition notes on dates that differ between almanacs (key = festival slug)  [11]
@@ -1651,77 +1651,77 @@ VRAT_NOTES = {
     # EN: Dates follow Drik Panchang. When Bhadra covers the whole Purnima night and Purnima lasts
     #     most of the next day, Drik moves Holika Dahan to the next evening's Pradosh (as in 2026, 3
     #     March); some almanacs instead give a time late on the first night, after Bhadra ends.
-    "holika-dahan": "",
+    "holika-dahan": "ਤਾਰੀਖ਼ਾਂ ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਅਨੁਸਾਰ ਹਨ। ਜਦੋਂ ਭਦਰਾ ਪੂਰੀ ਪੂਰਨਮਾਸ਼ੀ ਦੀ ਰਾਤ ਨੂੰ ਘੇਰ ਲਵੇ ਅਤੇ ਪੂਰਨਮਾਸ਼ੀ ਅਗਲੇ ਦਿਨ ਦੇ ਵੱਡੇ ਹਿੱਸੇ ਤੱਕ ਰਹੇ, ਤਾਂ ਦ੍ਰਿਕ ਹੋਲਿਕਾ ਦਹਨ ਨੂੰ ਅਗਲੀ ਸ਼ਾਮ ਦੇ ਪ੍ਰਦੋਸ਼ ਵਿੱਚ ਲੈ ਜਾਂਦਾ ਹੈ (ਜਿਵੇਂ 2026 ਵਿੱਚ, 3 ਮਾਰਚ); ਕੁਝ ਪੰਚਾਂਗ ਇਸ ਦੀ ਥਾਂ ਭਦਰਾ ਖ਼ਤਮ ਹੋਣ ਮਗਰੋਂ ਪਹਿਲੀ ਰਾਤ ਦੇ ਅਖ਼ੀਰ ਦਾ ਸਮਾਂ ਦਿੰਦੇ ਹਨ।",
     # EN: Dates follow Drik Panchang's Smarta (default) reckoning, with Rohini nakshatra at midnight
     #     preferred. Vaishnava/ISKCON communities sometimes keep Janmashtami a day later.
-    "janmashtami": "",
+    "janmashtami": "ਤਾਰੀਖ਼ਾਂ ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਦੀ ਸਮਾਰਤ (ਮੂਲ) ਗਣਨਾ ਅਨੁਸਾਰ ਹਨ, ਜਿਸ ਵਿੱਚ ਅੱਧੀ ਰਾਤ ਨੂੰ ਰੋਹਿਣੀ ਨਕਸ਼ਤਰ ਨੂੰ ਤਰਜੀਹ ਦਿੱਤੀ ਜਾਂਦੀ ਹੈ। ਵੈਸ਼ਨਵ/ਇਸਕੋਨ ਭਾਈਚਾਰੇ ਕਈ ਵਾਰ ਜਨਮ ਅਸ਼ਟਮੀ ਇੱਕ ਦਿਨ ਬਾਅਦ ਮਨਾਉਂਦੇ ਹਨ।",
     # EN: This is the Smarta (householder) date. Where Ekadashi spans two days, Vaishnavas may fast
     #     on the second day.
-    "devuthani-ekadashi": "",
+    "devuthani-ekadashi": "ਇਹ ਸਮਾਰਤ (ਗ੍ਰਿਹਸਥ) ਤਾਰੀਖ਼ ਹੈ। ਜਿੱਥੇ ਇਕਾਦਸ਼ੀ ਦੋ ਦਿਨਾਂ ਵਿੱਚ ਫੈਲੀ ਹੋਵੇ, ਉੱਥੇ ਵੈਸ਼ਨਵ ਦੂਜੇ ਦਿਨ ਵਰਤ ਰੱਖ ਸਕਦੇ ਹਨ।",
     # EN: Dates follow Drik Panchang (Dashami in Aparahna, Shravana nakshatra preferred). In Bengal
     #     and some almanacs Vijayadashami can fall a day later.
-    "dussehra": "",
+    "dussehra": "ਤਾਰੀਖ਼ਾਂ ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਅਨੁਸਾਰ ਹਨ (ਅਪਰਾਹਨ ਵਿੱਚ ਦਸਮੀ, ਸ਼ਰਵਣ ਨਕਸ਼ਤਰ ਨੂੰ ਤਰਜੀਹ)। ਬੰਗਾਲ ਅਤੇ ਕੁਝ ਪੰਚਾਂਗਾਂ ਵਿੱਚ ਵਿਜੈ ਦਸ਼ਮੀ ਇੱਕ ਦਿਨ ਬਾਅਦ ਪੈ ਸਕਦੀ ਹੈ।",
     # EN: Dates follow Drik Panchang (Ashtami at midday; when it is at sunrise only briefly, as in
     #     2023, the previous day). Nahay-khay is the day before and parana the next morning;
     #     regional panchangs (e.g. Mithila) can differ by a day.
-    "jivitputrika": "",
+    "jivitputrika": "ਤਾਰੀਖ਼ਾਂ ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਅਨੁਸਾਰ ਹਨ (ਦੁਪਹਿਰ ਨੂੰ ਅਸ਼ਟਮੀ; ਜਦੋਂ ਇਹ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਸਿਰਫ਼ ਥੋੜ੍ਹੀ ਦੇਰ ਹੋਵੇ, ਜਿਵੇਂ 2023 ਵਿੱਚ, ਤਾਂ ਪਿਛਲਾ ਦਿਨ)। ਨਹਾਏ-ਖਾਏ ਇੱਕ ਦਿਨ ਪਹਿਲਾਂ ਅਤੇ ਪਾਰਣਾ ਅਗਲੀ ਸਵੇਰ ਹੁੰਦਾ ਹੈ; ਇਲਾਕਾਈ ਪੰਚਾਂਗ (ਜਿਵੇਂ ਮਿਥਿਲਾ) ਇੱਕ ਦਿਨ ਵੱਖਰੇ ਹੋ ਸਕਦੇ ਹਨ।",
     # EN: Two traditions: North India keeps Vat Savitri on Jyeshtha Amavasya (this date);
     #     Maharashtra, Gujarat and the south keep it as Vat Purnima fifteen days later.
-    "vat-savitri": "",
+    "vat-savitri": "ਦੋ ਰਵਾਇਤਾਂ ਹਨ: ਉੱਤਰੀ ਭਾਰਤ ਵਟ ਸਾਵਿਤਰੀ ਨੂੰ ਜੇਠ ਦੀ ਮੱਸਿਆ (ਇਹ ਤਾਰੀਖ਼) ਨੂੰ ਮਨਾਉਂਦਾ ਹੈ; ਮਹਾਰਾਸ਼ਟਰ, ਗੁਜਰਾਤ ਅਤੇ ਦੱਖਣ ਇਸ ਨੂੰ ਪੰਦਰਾਂ ਦਿਨ ਬਾਅਦ ਵਟ ਪੂਰਨਿਮਾ ਵਜੋਂ ਮਨਾਉਂਦੇ ਹਨ।",
     # EN: Two traditions: this is the Purnima (amanta) date of Maharashtra, Gujarat and the south;
     #     North India keeps Vat Savitri on the Amavasya fifteen days earlier.
-    "vat-purnima": "",
+    "vat-purnima": "ਦੋ ਰਵਾਇਤਾਂ ਹਨ: ਇਹ ਮਹਾਰਾਸ਼ਟਰ, ਗੁਜਰਾਤ ਅਤੇ ਦੱਖਣ ਦੀ ਪੂਰਨਿਮਾ (ਅਮਾਂਤ) ਤਾਰੀਖ਼ ਹੈ; ਉੱਤਰੀ ਭਾਰਤ ਵਟ ਸਾਵਿਤਰੀ ਨੂੰ ਪੰਦਰਾਂ ਦਿਨ ਪਹਿਲਾਂ ਮੱਸਿਆ ਨੂੰ ਮਨਾਉਂਦਾ ਹੈ।",
     # EN: When Jyeshtha is doubled (an adhika month, as in 2026), Drik Panchang keeps Ganga Dussehra
     #     in the adhika Jyeshtha; some almanacs give the nija Jyeshtha date a month later.
-    "ganga-dussehra": "",
+    "ganga-dussehra": "ਜਦੋਂ ਜੇਠ ਦੁਹਰਾਇਆ ਜਾਂਦਾ ਹੈ (ਅਧਿਕ ਮਹੀਨਾ, ਜਿਵੇਂ 2026 ਵਿੱਚ), ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਗੰਗਾ ਦੁਸਹਿਰਾ ਨੂੰ ਅਧਿਕ ਜੇਠ ਵਿੱਚ ਰੱਖਦਾ ਹੈ; ਕੁਝ ਪੰਚਾਂਗ ਨਿਜ ਜੇਠ ਦੀ ਤਾਰੀਖ਼ ਇੱਕ ਮਹੀਨਾ ਬਾਅਦ ਦਿੰਦੇ ਹਨ।",
     # EN: Drik Panchang counts Pitru Paksha from the Pratipada shraddha; Purnima shraddha is on the
     #     day before, and many calendars start the fortnight there.
-    "pitru-paksha": "",
+    "pitru-paksha": "ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਪਿਤਰ ਪੱਖ ਨੂੰ ਪ੍ਰਤਿਪਦਾ ਸ਼ਰਾਧ ਤੋਂ ਗਿਣਦਾ ਹੈ; ਪੂਰਨਮਾਸ਼ੀ ਦਾ ਸ਼ਰਾਧ ਇੱਕ ਦਿਨ ਪਹਿਲਾਂ ਹੁੰਦਾ ਹੈ, ਅਤੇ ਕਈ ਕੈਲੰਡਰ ਪੰਦਰਵਾੜੇ ਨੂੰ ਉੱਥੋਂ ਹੀ ਸ਼ੁਰੂ ਕਰਦੇ ਹਨ।",
     # EN: Drik Panchang publishes Dev Deepawali for Varanasi; the date here uses the same rule
     #     (Purnima in Pradosh), and the Pradosh kaal shown is New Delhi's.
-    "dev-deepawali": "",
+    "dev-deepawali": "ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਦੇਵ ਦੀਵਾਲੀ ਵਾਰਾਣਸੀ ਲਈ ਛਾਪਦਾ ਹੈ; ਇੱਥੇ ਦੀ ਤਾਰੀਖ਼ ਵੀ ਇਸੇ ਨਿਯਮ (ਪ੍ਰਦੋਸ਼ ਵਿੱਚ ਪੂਰਨਮਾਸ਼ੀ) ਨਾਲ ਹੈ, ਅਤੇ ਦਿਖਾਇਆ ਗਿਆ ਪ੍ਰਦੋਸ਼ ਕਾਲ ਨਵੀਂ ਦਿੱਲੀ ਦਾ ਹੈ।",
     # EN: This is the snan-daan day (Purnima at sunrise). When Purnima begins the previous
     #     afternoon, the Purnima fast and Dev Deepawali can fall a day earlier.
-    "kartik-purnima": "",
+    "kartik-purnima": "ਇਹ ਇਸ਼ਨਾਨ-ਦਾਨ ਦਾ ਦਿਨ ਹੈ (ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਪੂਰਨਮਾਸ਼ੀ)। ਜਦੋਂ ਪੂਰਨਮਾਸ਼ੀ ਪਿਛਲੀ ਦੁਪਹਿਰ ਨੂੰ ਸ਼ੁਰੂ ਹੋ ਜਾਵੇ, ਤਾਂ ਪੂਰਨਮਾਸ਼ੀ ਦਾ ਵਰਤ ਅਤੇ ਦੇਵ ਦੀਵਾਲੀ ਇੱਕ ਦਿਨ ਪਹਿਲਾਂ ਪੈ ਸਕਦੇ ਹਨ।",
 }
 
 # app/vrat_text.py RULES["pa"] — 'how the date is fixed' sentences: head {month}, tithi {paksha} {tithi}, rule.<kind>, key.<observance>  [16]
 VRAT_RULES = {
     # EN: {month} (amanta)
     # keep: {month}
-    "head": "",
+    "head": "{month} (ਅਮਾਂਤ) ",
     # EN: {paksha} {tithi}:
     # keep: {paksha} {tithi}
-    "tithi": "",
+    "tithi": "{paksha} {tithi}: ",
     # EN: tithi prevailing at sunrise
-    "rule.udaya": "",
+    "rule.udaya": "ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: tithi prevailing in Pratahkala (first fifth of the day)
-    "rule.pratah": "",
+    "rule.pratah": "ਪ੍ਰਾਤਃ ਕਾਲ (ਦਿਨ ਦਾ ਪਹਿਲਾ ਪੰਜਵਾਂ ਹਿੱਸਾ) ਵਿੱਚ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: tithi prevailing in the forenoon (purvahna)
-    "rule.purvahna": "",
+    "rule.purvahna": "ਪੂਰਵਾਹਨ (ਦੁਪਹਿਰ ਤੋਂ ਪਹਿਲਾਂ) ਵਿੱਚ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: tithi prevailing at Madhyahna (midday fifth of the day)
-    "rule.madhyahna": "",
+    "rule.madhyahna": "ਮੱਧਾਹਨ (ਦਿਨ ਦਾ ਵਿਚਕਾਰਲਾ ਪੰਜਵਾਂ ਹਿੱਸਾ) ਵਿੱਚ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: tithi prevailing at Aparahna (fourth fifth of the day)
-    "rule.aparahna": "",
+    "rule.aparahna": "ਅਪਰਾਹਨ (ਦਿਨ ਦਾ ਚੌਥਾ ਪੰਜਵਾਂ ਹਿੱਸਾ) ਵਿੱਚ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: first day on which the tithi is present between sunrise and sunset
-    "rule.dina": "",
+    "rule.dina": "ਪਹਿਲਾ ਦਿਨ ਜਿਸ ਵਿੱਚ ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਛਿਪਣ ਵਿਚਕਾਰ ਤਿਥੀ ਮੌਜੂਦ ਹੋਵੇ",
     # EN: tithi prevailing at sunset
-    "rule.sayahna": "",
+    "rule.sayahna": "ਸੂਰਜ ਛਿਪਣ ਵੇਲੇ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: tithi prevailing in Pradosh kaal (after sunset)
-    "rule.pradosh": "",
+    "rule.pradosh": "ਪ੍ਰਦੋਸ਼ ਕਾਲ (ਸੂਰਜ ਛਿਪਣ ਤੋਂ ਬਾਅਦ) ਵਿੱਚ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: tithi prevailing at Nishita kaal (midnight)
-    "rule.nishita": "",
+    "rule.nishita": "ਨਿਸ਼ੀਥ ਕਾਲ (ਅੱਧੀ ਰਾਤ) ਵਿੱਚ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: tithi prevailing at moonrise
-    "rule.moonrise": "",
+    "rule.moonrise": "ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਵੇਲੇ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: Smarta: Ekadashi prevailing at sunrise (second day if at two sunrises); parana next day
     #     after sunrise and after Hari Vasara, within Pratahkala and before Dwadashi ends
-    "key.ekadashi": "",
+    "key.ekadashi": "ਸਮਾਰਤ: ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਮੌਜੂਦ ਇਕਾਦਸ਼ੀ (ਦੋ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਹੋਵੇ ਤਾਂ ਦੂਜਾ ਦਿਨ); ਪਾਰਣਾ ਅਗਲੇ ਦਿਨ ਸੂਰਜ ਚੜ੍ਹਨ ਅਤੇ ਹਰਿ ਵਾਸਰ ਲੰਘਣ ਮਗਰੋਂ, ਪ੍ਰਾਤਃ ਕਾਲ ਦੇ ਅੰਦਰ ਅਤੇ ਦੁਆਦਸ਼ੀ ਖ਼ਤਮ ਹੋਣ ਤੋਂ ਪਹਿਲਾਂ",
     # EN: the Sun's entry into sidereal Makara (Capricorn); punya kaal follows it until sunset
-    "key.makar_sankranti": "",
+    "key.makar_sankranti": "ਸੂਰਜ ਦਾ ਨਿਰਯਨ ਮਕਰ ਰਾਸ਼ੀ ਵਿੱਚ ਪ੍ਰਵੇਸ਼; ਪੁੰਨ ਕਾਲ ਇਸ ਤੋਂ ਬਾਅਦ ਸੂਰਜ ਛਿਪਣ ਤੱਕ ਹੁੰਦਾ ਹੈ",
     # EN: the day before Makar Sankranti
-    "key.lohri": "",
+    "key.lohri": "ਮਕਰ ਸੰਕ੍ਰਾਂਤੀ ਤੋਂ ਇੱਕ ਦਿਨ ਪਹਿਲਾਂ",
     # EN: the day after Holika Dahan
-    "key.holi": "",
+    "key.holi": "ਹੋਲਿਕਾ ਦਹਨ ਤੋਂ ਅਗਲਾ ਦਿਨ",
 }
 
 # ----------------------------------------------------------------------------
@@ -1731,228 +1731,228 @@ VRAT_RULES = {
 # app/nakshatra_page_text.py TEXT["pa"] — page text of /nakshatra /rashi (nakshatra_pages.py)  [88]
 NAKSHATRA_PAGE_TEXT = {
     # EN: Get your free kundali — find your exact birth nakshatra and Moon sign
-    "kundali_cta": "",
+    "kundali_cta": "ਆਪਣੀ ਮੁਫ਼ਤ ਕੁੰਡਲੀ ਲਵੋ — ਆਪਣਾ ਜਨਮ ਨਕਸ਼ਤਰ ਅਤੇ ਚੰਦਰ ਰਾਸ਼ੀ ਠੀਕ ਜਾਣੋ",
     # EN: More free tools
-    "more.heading": "",
+    "more.heading": "ਹੋਰ ਮੁਫ਼ਤ ਟੂਲ",
     # EN: All 27 nakshatras
-    "more.naks": "",
+    "more.naks": "ਸਾਰੇ 27 ਨਕਸ਼ਤਰ",
     # EN: All 12 rashis
-    "more.rashis": "",
+    "more.rashis": "ਸਾਰੀਆਂ 12 ਰਾਸ਼ੀਆਂ",
     # EN: Naam se Kundali Milan
-    "more.milan": "",
+    "more.milan": "ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ",
     # EN: Kundali Milan (36 guna)
-    "more.kundali_milan": "",
+    "more.kundali_milan": "ਕੁੰਡਲੀ ਮਿਲਾਨ (36 ਗੁਣ)",
     # EN: Today's Rashifal
-    "more.rashifal": "",
+    "more.rashifal": "ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ",
     # EN: Today's Panchang
-    "more.panchang": "",
+    "more.panchang": "ਅੱਜ ਦਾ ਪੰਚਾਂਗ",
     # EN: All 27 nakshatras
-    "list.naks": "",
+    "list.naks": "ਸਾਰੇ 27 ਨਕਸ਼ਤਰ",
     # EN: All 12 rashis
-    "list.rashis": "",
+    "list.rashis": "ਸਾਰੀਆਂ 12 ਰਾਸ਼ੀਆਂ",
     # EN: {name} ({english})
     # keep: {name}
-    "sign": "",
+    "sign": "{name}",
     # EN: {name} · {english}
     # keep: {name}
-    "sign.pill": "",
+    "sign.pill": "{name}",
     # EN: <strong>Today the Moon is in {name} (at sunrise in New Delhi).</strong>
     # keep: {name}
-    "today.same": "",
+    "today.same": "<strong>ਅੱਜ ਚੰਦਰਮਾ {name} ਵਿੱਚ ਹੈ (ਨਵੀਂ ਦਿੱਲੀ ਵਿੱਚ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ)।</strong>",
     # EN: Today's nakshatra is <a href="{href}"><strong>{name}</strong></a> (at sunrise in New
     #     Delhi).
     # keep: {href} {name}
-    "today.other": "",
+    "today.other": "ਅੱਜ ਦਾ ਨਕਸ਼ਤਰ <a href=\"{href}\"><strong>{name}</strong></a> ਹੈ (ਨਵੀਂ ਦਿੱਲੀ ਵਿੱਚ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ)।",
     # EN: Its end time, the tithi and Rahu Kaal are on <a href="{pan}">today's Panchang</a>.
     # keep: {pan}
-    "today.tail": "",
+    "today.tail": " ਇਸ ਦਾ ਅੰਤ ਸਮਾਂ, ਤਿਥੀ ਅਤੇ ਰਾਹੂ ਕਾਲ <a href=\"{pan}\">ਅੱਜ ਦੇ ਪੰਚਾਂਗ</a> ’ਤੇ ਹਨ।",
     # EN: Nakshatras
-    "crumb.naks": "",
+    "crumb.naks": "ਨਕਸ਼ਤਰ",
     # EN: Rashis
-    "crumb.rashis": "",
+    "crumb.rashis": "ਰਾਸ਼ੀਆਂ",
     # EN: Nakshatra not found
-    "nf.nak": "",
+    "nf.nak": "ਨਕਸ਼ਤਰ ਨਹੀਂ ਮਿਲਿਆ",
     # EN: Rashi not found
-    "nf.rashi": "",
+    "nf.rashi": "ਰਾਸ਼ੀ ਨਹੀਂ ਮਿਲੀ",
     # EN: Nature and traits
-    "trait_head": "",
+    "trait_head": "ਸੁਭਾਅ ਅਤੇ ਗੁਣ",
     # EN: male
-    "gender.male": "",
+    "gender.male": "ਨਰ",
     # EN: female
-    "gender.female": "",
+    "gender.female": "ਮਾਦਾ",
     # EN: Fire
-    "element.Fire": "",
+    "element.Fire": "ਅਗਨੀ",
     # EN: Earth
-    "element.Earth": "",
+    "element.Earth": "ਪ੍ਰਿਥਵੀ",
     # EN: Air
-    "element.Air": "",
+    "element.Air": "ਵਾਯੂ",
     # EN: Water
-    "element.Water": "",
+    "element.Water": "ਜਲ",
     # EN: Movable (Chara)
-    "quality.Cardinal": "",
+    "quality.Cardinal": "ਚਰ",
     # EN: Fixed (Sthira)
-    "quality.Fixed": "",
+    "quality.Fixed": "ਸਥਿਰ",
     # EN: Dual (Dwiswabhava)
-    "quality.Mutable": "",
+    "quality.Mutable": "ਦ੍ਵਿਸਵਭਾਵ",
     # EN: {name} Nakshatra — Deity, Lord, Gana, Yoni, Nadi & Name Letters ({lat}) | {brand}
     # keep: {brand} {name}
-    "nak.title": "",
+    "nak.title": "{name} ਨਕਸ਼ਤਰ — ਦੇਵਤਾ, ਸੁਆਮੀ, ਗਣ, ਯੋਨੀ, ਨਾੜੀ ਅਤੇ ਨਾਂ ਦੇ ਅੱਖਰ | {brand}",
     # EN: {name} nakshatra ({name_hi}): {span}, ruled by {lord}, deity {deity_short}, {gana} gana,
     #     {nadi} nadi, {yoni} yoni. Name syllables {lat} and traits.
     # keep: {gana} {lord} {nadi} {name} {span} {yoni}
     # may also use: {name_en}
-    "nak.desc": "",
+    "nak.desc": "{name} ਨਕਸ਼ਤਰ ({name_en}): {span}, ਸੁਆਮੀ ਗ੍ਰਹਿ {lord}, {gana} ਗਣ, {nadi} ਨਾੜੀ, {yoni} ਯੋਨੀ। ਚਾਰ ਚਰਣਾਂ ਦੇ ਨਾਮਾਕਸ਼ਰ ਅਤੇ ਸੁਭਾਅ।",
     # EN: <h1>{name} Nakshatra</h1>
     # keep: {name}
-    "nak.h1": "",
+    "nak.h1": "<h1>{name} ਨਕਸ਼ਤਰ</h1>",
     # EN: <p class="hi" lang="hi">{name_hi} नक्षत्र</p>
     # may also use: {name_en} {name}
-    "nak.sub": "",
+    "nak.sub": "<p class=\"hi\" lang=\"en\">{name_en}</p>",
     # EN: <p class="note">These are traditional tendencies, not verdicts. Your full kundali —
     #     ascendant, planets and dasha — gives the personal picture.</p>
-    "nak.trait_note": "",
+    "nak.trait_note": "<p class=\"note\">ਇਹ ਰਵਾਇਤੀ ਰੁਝਾਨ ਹਨ, ਫ਼ੈਸਲੇ ਨਹੀਂ। ਤੁਹਾਡੀ ਪੂਰੀ ਕੁੰਡਲੀ — ਲਗਨ, ਗ੍ਰਹਿ ਅਤੇ ਦਸ਼ਾ — ਨਿੱਜੀ ਤਸਵੀਰ ਦਿੰਦੀ ਹੈ।</p>",
     # EN: Number
-    "f.number": "",
+    "f.number": "ਨੰਬਰ",
     # EN: {n} of 27
     # keep: {n}
-    "f.number_v": "",
+    "f.number_v": "27 ਵਿੱਚੋਂ {n}",
     # EN: Span (sidereal)
-    "f.span": "",
+    "f.span": "ਵਿਸਤਾਰ (ਨਿਰਯਨ)",
     # EN: Rashi
-    "f.rashi": "",
+    "f.rashi": "ਰਾਸ਼ੀ",
     # EN: Ruling planet (Vimshottari lord)
-    "f.lord": "",
+    "f.lord": "ਸੁਆਮੀ ਗ੍ਰਹਿ (ਵਿਮਸ਼ੋਤਰੀ ਸੁਆਮੀ)",
     # EN: {lord} <small>{years}-year mahadasha</small>
     # keep: {lord} {years}
-    "f.lord_v": "",
+    "f.lord_v": "{lord} <small>{years} ਸਾਲ ਦੀ ਮਹਾਦਸ਼ਾ</small>",
     # EN: Deity
-    "f.deity": "",
+    "f.deity": "ਦੇਵਤਾ",
     # EN: Symbol
-    "f.symbol": "",
+    "f.symbol": "ਚਿੰਨ੍ਹ",
     # EN: Gana
-    "f.gana": "",
+    "f.gana": "ਗਣ",
     # EN: {gana} <small lang="hi">{gana_hi}</small>
     # keep: {gana}
-    "f.gana_v": "",
+    "f.gana_v": "{gana}",
     # EN: Yoni (animal)
-    "f.yoni": "",
+    "f.yoni": "ਯੋਨੀ (ਪਸ਼ੂ)",
     # EN: Nadi
-    "f.nadi": "",
+    "f.nadi": "ਨਾੜੀ",
     # EN: Varna (from its rashi, as used in Guna Milan)
-    "f.varna": "",
+    "f.varna": "ਵਰਣ (ਇਸ ਦੀ ਰਾਸ਼ੀ ਤੋਂ, ਜਿਵੇਂ ਗੁਣ ਮਿਲਾਨ ਵਿੱਚ ਵਰਤਿਆ ਜਾਂਦਾ ਹੈ)",
     # EN: Name syllables (namakshar)
-    "f.syl": "",
+    "f.syl": "ਨਾਂ ਦੇ ਅੱਖਰ (ਨਾਮਾਕਸ਼ਰ)",
     # EN: <span class="syl" lang="hi">{syl}</span> <small>{lat}</small>
     # keep: {syl}
-    "f.syl_v": "",
+    "f.syl_v": "<span class=\"syl\">{syl}</span>",
     # EN: The four padas and their name syllables
-    "pada.title": "",
+    "pada.title": "ਚਾਰ ਚਰਣ ਅਤੇ ਉਨ੍ਹਾਂ ਦੇ ਨਾਂ ਦੇ ਅੱਖਰ",
     # EN: <tr><th>Pada</th><th>Span</th><th>Rashi</th><th>Name syllable</th></tr>
-    "pada.head": "",
+    "pada.head": "<tr><th>ਚਰਣ</th><th>ਵਿਸਤਾਰ</th><th>ਰਾਸ਼ੀ</th><th>ਨਾਂ ਦਾ ਅੱਖਰ</th></tr>",
     # EN: <p class="note">Traditionally a child's name begins with the syllable of the pada the Moon
     #     occupied at birth (namakshar). Syllables follow the 108-pada Swar Siddhanta list (the
     #     Avakahada Chakra) as published by Drik Panchang.</p>
-    "pada.note": "",
+    "pada.note": "<p class=\"note\">ਰਵਾਇਤ ਅਨੁਸਾਰ ਬੱਚੇ ਦਾ ਨਾਂ ਉਸ ਚਰਣ ਦੇ ਅੱਖਰ ਤੋਂ ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ ਜਿਸ ਵਿੱਚ ਜਨਮ ਵੇਲੇ ਚੰਦਰਮਾ ਸੀ (ਨਾਮਾਕਸ਼ਰ)। ਅੱਖਰ 108 ਚਰਣਾਂ ਦੀ ਸੁਰ ਸਿਧਾਂਤ ਸੂਚੀ (ਅਵਕਹਡਾ ਚੱਕਰ) ਮੁਤਾਬਕ ਹਨ, ਜਿਵੇਂ ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਨੇ ਛਾਪੀ ਹੈ।</p>",
     # EN: Related
-    "rel.heading": "",
+    "rel.heading": "ਸੰਬੰਧਿਤ",
     # EN: Today's {name} Rashifal
     # keep: {name}
-    "rel.rashifal": "",
+    "rel.rashifal": "ਅੱਜ ਦਾ {name} ਰਾਸ਼ੀਫਲ",
     # EN: The 27 Nakshatras — Lords, Deities, Gana & Name Syllables | {brand}
     # keep: {brand}
-    "ni.title": "",
+    "ni.title": "27 ਨਕਸ਼ਤਰ — ਸੁਆਮੀ, ਦੇਵਤੇ, ਗਣ ਅਤੇ ਨਾਂ ਦੇ ਅੱਖਰ | {brand}",
     # EN: All 27 nakshatras from Ashwini to Revati: span, rashi, ruling planet, deity, gana, yoni,
     #     nadi and the name syllables of all four padas — consistent with our Kundali Milan tables.
-    "ni.desc": "",
+    "ni.desc": "ਅਸ਼ਵਿਨੀ ਤੋਂ ਰੇਵਤੀ ਤੱਕ ਸਾਰੇ 27 ਨਕਸ਼ਤਰ: ਵਿਸਤਾਰ, ਰਾਸ਼ੀ, ਸੁਆਮੀ ਗ੍ਰਹਿ, ਦੇਵਤਾ, ਗਣ, ਯੋਨੀ, ਨਾੜੀ ਅਤੇ ਚਾਰੇ ਚਰਣਾਂ ਦੇ ਨਾਂ ਦੇ ਅੱਖਰ — ਸਾਡੀਆਂ ਕੁੰਡਲੀ ਮਿਲਾਨ ਸਾਰਣੀਆਂ ਨਾਲ ਮੇਲ ਖਾਂਦੇ।",
     # EN: <h1>The 27 Nakshatras</h1>
-    "ni.h1": "",
+    "ni.h1": "<h1>27 ਨਕਸ਼ਤਰ</h1>",
     # EN: <p class="hi" lang="hi">27 नक्षत्र</p>
-    "ni.sub": "",
+    "ni.sub": "<p class=\"hi\">ਸਾਰੇ 27 ਨਕਸ਼ਤਰ ਇੱਕ ਨਜ਼ਰ ਵਿੱਚ</p>",
     # EN: <p>Vedic astrology divides the zodiac into 27 nakshatras (lunar mansions) of 13°20′ each,
     #     and each nakshatra into four padas of 3°20′. The 108 padas fall exactly nine to a sign
     #     across the 12 rashis. Your birth nakshatra is the one the Moon occupied when you were
     #     born: it starts your Vimshottari dasha and drives the Tara, Yoni, Gana and Nadi kootas of
     #     Kundali Milan.</p>
-    "ni.intro": "",
+    "ni.intro": "<p>ਵੈਦਿਕ ਜੋਤਿਸ਼ ਰਾਸ਼ੀ ਚੱਕਰ ਨੂੰ 13°20′ ਦੇ 27 ਨਕਸ਼ਤਰਾਂ (ਚੰਦਰ ਟਿਕਾਣਿਆਂ) ਵਿੱਚ ਵੰਡਦੀ ਹੈ, ਅਤੇ ਹਰ ਨਕਸ਼ਤਰ ਨੂੰ 3°20′ ਦੇ ਚਾਰ ਚਰਣਾਂ ਵਿੱਚ। 108 ਚਰਣ ਠੀਕ ਨੌਂ-ਨੌਂ ਕਰਕੇ 12 ਰਾਸ਼ੀਆਂ ਵਿੱਚ ਪੈਂਦੇ ਹਨ। ਤੁਹਾਡਾ ਜਨਮ ਨਕਸ਼ਤਰ ਉਹ ਹੈ ਜਿਸ ਵਿੱਚ ਤੁਹਾਡੇ ਜਨਮ ਵੇਲੇ ਚੰਦਰਮਾ ਸੀ: ਉਸੇ ਤੋਂ ਤੁਹਾਡੀ ਵਿਮਸ਼ੋਤਰੀ ਦਸ਼ਾ ਸ਼ੁਰੂ ਹੁੰਦੀ ਹੈ ਅਤੇ ਉਹੀ ਕੁੰਡਲੀ ਮਿਲਾਨ ਦੇ ਤਾਰਾ, ਯੋਨੀ, ਗਣ ਅਤੇ ਨਾੜੀ ਕੂਟ ਚਲਾਉਂਦਾ ਹੈ।</p>",
     # EN: <tr><th>#</th><th>Nakshatra</th><th>Rashi</th><th>Lord</th><th>Gana</th><th>Name
     #     syllables</th></tr>
-    "ni.head": "",
+    "ni.head": "<tr><th>#</th><th>ਨਕਸ਼ਤਰ</th><th>ਰਾਸ਼ੀ</th><th>ਸੁਆਮੀ</th><th>ਗਣ</th><th>ਨਾਂ ਦੇ ਅੱਖਰ</th></tr>",
     # EN: {name} Rashi ({english}) — Lord, Element, Nakshatras & Name Letters | {brand}
     # keep: {brand} {name}
     # may also use: {english}
-    "rs.title": "",
+    "rs.title": "{name} ਰਾਸ਼ੀ ({english}) — ਸੁਆਮੀ, ਤੱਤ, ਨਕਸ਼ਤਰ ਅਤੇ ਨਾਂ ਦੇ ਅੱਖਰ | {brand}",
     # EN: {name} rashi ({english} Moon sign, {name_hi}): ruled by {lord}, {element_lower} element,
     #     {quality_lower} quality. Its 9 nakshatra padas, name syllables ({lat}) and traits.
     # keep: {lord} {name}
     # may also use: {element_lower} {element} {english} {name_en} {quality_lower} {quality}
-    "rs.desc": "",
+    "rs.desc": "{name} ਰਾਸ਼ੀ ({name_en}, {english} ਚੰਦਰ ਰਾਸ਼ੀ): ਸੁਆਮੀ {lord}, {element_lower} ਤੱਤ, {quality_lower} ਸੁਭਾਅ। ਇਸ ਦੇ 9 ਨਕਸ਼ਤਰ ਚਰਣ, ਨਾਂ ਦੇ ਅੱਖਰ ਅਤੇ ਸੁਭਾਅ।",
     # EN: <h1>{name} Rashi — {english} Moon Sign</h1>
     # keep: {name}
     # may also use: {english}
-    "rs.h1": "",
+    "rs.h1": "<h1>{name} ਰਾਸ਼ੀ — {english} ਚੰਦਰ ਰਾਸ਼ੀ</h1>",
     # EN: <p class="hi" lang="hi">{name_hi} राशि</p>
     # may also use: {english} {name_en} {name}
-    "rs.sub": "",
+    "rs.sub": "<p class=\"hi\" lang=\"en\">{name_en} · {english}</p>",
     # EN: Read today's {name} Rashifal
     # keep: {name}
-    "rs.today": "",
+    "rs.today": "ਅੱਜ ਦਾ {name} ਰਾਸ਼ੀਫਲ ਪੜ੍ਹੋ",
     # EN: <p class="note">In Vedic astrology "rashi" usually means the Moon sign — the sign the Moon
     #     occupied at birth, in the sidereal zodiac. It is often different from a Western sun
     #     sign.</p>
-    "rs.note": "",
+    "rs.note": "<p class=\"note\">ਵੈਦਿਕ ਜੋਤਿਸ਼ ਵਿੱਚ “ਰਾਸ਼ੀ” ਆਮ ਤੌਰ ’ਤੇ ਚੰਦਰ ਰਾਸ਼ੀ ਨੂੰ ਕਹਿੰਦੇ ਹਨ — ਉਹ ਰਾਸ਼ੀ ਜਿਸ ਵਿੱਚ ਜਨਮ ਵੇਲੇ ਚੰਦਰਮਾ ਸੀ, ਨਿਰਯਨ ਰਾਸ਼ੀ ਚੱਕਰ ਵਿੱਚ। ਇਹ ਅਕਸਰ ਪੱਛਮੀ ਸੂਰਜ ਰਾਸ਼ੀ ਤੋਂ ਵੱਖਰੀ ਹੁੰਦੀ ਹੈ।</p>",
     # EN: Number
-    "r.number": "",
+    "r.number": "ਨੰਬਰ",
     # EN: {n} of 12
     # keep: {n}
-    "r.number_v": "",
+    "r.number_v": "12 ਵਿੱਚੋਂ {n}",
     # EN: Span (sidereal zodiac)
-    "r.span": "",
+    "r.span": "ਵਿਸਤਾਰ (ਨਿਰਯਨ ਰਾਸ਼ੀ ਚੱਕਰ)",
     # EN: Sign lord
-    "r.lord": "",
+    "r.lord": "ਰਾਸ਼ੀ ਸੁਆਮੀ",
     # EN: Element
-    "r.element": "",
+    "r.element": "ਤੱਤ",
     # EN: Quality
-    "r.quality": "",
+    "r.quality": "ਸੁਭਾਅ",
     # EN: Varna (used in Guna Milan)
-    "r.varna": "",
+    "r.varna": "ਵਰਣ (ਗੁਣ ਮਿਲਾਨ ਵਿੱਚ ਵਰਤਿਆ ਜਾਂਦਾ ਹੈ)",
     # EN: Nakshatras
-    "r.naks": "",
+    "r.naks": "ਨਕਸ਼ਤਰ",
     # EN: Name syllables (namakshar)
-    "r.syl": "",
+    "r.syl": "ਨਾਂ ਦੇ ਅੱਖਰ (ਨਾਮਾਕਸ਼ਰ)",
     # EN: <span class="syl" lang="hi">{syl}</span>
     # keep: {syl}
-    "r.syl_v": "",
+    "r.syl_v": "<span class=\"syl\">{syl}</span>",
     # EN: The nine nakshatra padas in this sign
-    "rp.title": "",
+    "rp.title": "ਇਸ ਰਾਸ਼ੀ ਦੇ ਨੌਂ ਨਕਸ਼ਤਰ ਚਰਣ",
     # EN: <tr><th>Nakshatra</th><th>Pada</th><th>Degrees in sign</th><th>Syllable</th></tr>
-    "rp.head": "",
+    "rp.head": "<tr><th>ਨਕਸ਼ਤਰ</th><th>ਚਰਣ</th><th>ਰਾਸ਼ੀ ਵਿੱਚ ਅੰਸ਼</th><th>ਅੱਖਰ</th></tr>",
     # EN: The 12 Rashis — Lords, Elements, Nakshatras & Name Letters | {brand}
     # keep: {brand}
-    "ri.title": "",
+    "ri.title": "12 ਰਾਸ਼ੀਆਂ — ਸੁਆਮੀ, ਤੱਤ, ਨਕਸ਼ਤਰ ਅਤੇ ਨਾਂ ਦੇ ਅੱਖਰ | {brand}",
     # EN: All 12 rashis (Vedic Moon signs) from Mesh to Meen: sign lord, element, quality, the nine
     #     nakshatra padas in each and their name syllables (namakshar).
-    "ri.desc": "",
+    "ri.desc": "ਮੇਖ ਤੋਂ ਮੀਨ ਤੱਕ ਸਾਰੀਆਂ 12 ਰਾਸ਼ੀਆਂ (ਵੈਦਿਕ ਚੰਦਰ ਰਾਸ਼ੀਆਂ): ਰਾਸ਼ੀ ਸੁਆਮੀ, ਤੱਤ, ਸੁਭਾਅ, ਹਰ ਇੱਕ ਦੇ ਨੌਂ ਨਕਸ਼ਤਰ ਚਰਣ ਅਤੇ ਉਨ੍ਹਾਂ ਦੇ ਨਾਂ ਦੇ ਅੱਖਰ (ਨਾਮਾਕਸ਼ਰ)।",
     # EN: <h1>The 12 Rashis (Moon Signs)</h1>
-    "ri.h1": "",
+    "ri.h1": "<h1>12 ਰਾਸ਼ੀਆਂ (ਚੰਦਰ ਰਾਸ਼ੀਆਂ)</h1>",
     # EN: <p class="hi" lang="hi">12 राशियाँ</p>
-    "ri.sub": "",
+    "ri.sub": "<p class=\"hi\">ਸਾਰੀਆਂ 12 ਚੰਦਰ ਰਾਸ਼ੀਆਂ ਇੱਕ ਨਜ਼ਰ ਵਿੱਚ</p>",
     # EN: <p>Each rashi spans 30° of the sidereal zodiac and holds exactly nine nakshatra padas.
     #     Your rashi is your Moon sign — the sign the Moon occupied at birth — and it is what
     #     rashifal, Sade Sati and Kundali Milan are read from.</p>
-    "ri.intro": "",
+    "ri.intro": "<p>ਹਰ ਰਾਸ਼ੀ ਨਿਰਯਨ ਰਾਸ਼ੀ ਚੱਕਰ ਦੇ 30° ਵਿੱਚ ਫੈਲੀ ਹੈ ਅਤੇ ਉਸ ਵਿੱਚ ਠੀਕ ਨੌਂ ਨਕਸ਼ਤਰ ਚਰਣ ਹਨ। ਤੁਹਾਡੀ ਰਾਸ਼ੀ ਤੁਹਾਡੀ ਚੰਦਰ ਰਾਸ਼ੀ ਹੈ — ਜਨਮ ਵੇਲੇ ਚੰਦਰਮਾ ਜਿਸ ਰਾਸ਼ੀ ਵਿੱਚ ਸੀ — ਅਤੇ ਰਾਸ਼ੀਫਲ, ਸਾੜ੍ਹਸਾਤੀ ਅਤੇ ਕੁੰਡਲੀ ਮਿਲਾਨ ਇਸੇ ਤੋਂ ਪੜ੍ਹੇ ਜਾਂਦੇ ਹਨ।</p>",
     # EN: <tr><th>Rashi</th><th>Lord</th><th>Element</th><th>Nakshatras</th><th>Name
     #     syllables</th></tr>
-    "ri.head": "",
+    "ri.head": "<tr><th>ਰਾਸ਼ੀ</th><th>ਸੁਆਮੀ</th><th>ਤੱਤ</th><th>ਨਕਸ਼ਤਰ</th><th>ਨਾਂ ਦੇ ਅੱਖਰ</th></tr>",
     # EN: {name} <small>{english}</small>
     # keep: {name}
     # may also use: {english}
-    "ri.name": "",
+    "ri.name": "{name} <small>{english}</small>",
     # EN: Vata
-    "humour.Vata": "",
+    "humour.Vata": "ਵਾਤ",
     # EN: Pitta
-    "humour.Pitta": "",
+    "humour.Pitta": "ਪਿੱਤ",
     # EN: Kapha
-    "humour.Kapha": "",
+    "humour.Kapha": "ਕਫ਼",
 }
 
 # app/nakshatra_text.py NAKSHATRA_TRAITS["pa"] — character paragraph of each of the 27 nakshatras (key = slug)  [27]
@@ -1964,7 +1964,7 @@ NAKSHATRA_TRAITS = {
     #     medicine, sport, travel or any work that needs swift, practical action. The gift of this
     #     nakshatra is initiative and a youthful optimism; the lesson is patience, finishing what
     #     was started with the same enthusiasm with which it began.
-    "ashwini": "",
+    "ashwini": "ਅਸ਼ਵਿਨੀ ਪਹਿਲਾ ਨਕਸ਼ਤਰ ਹੈ, ਜਿਸ ਦੇ ਸੁਆਮੀ ਅਸ਼ਵਿਨੀ ਕੁਮਾਰ, ਦੇਵਤਿਆਂ ਦੇ ਜੁੜਵਾਂ ਵੈਦ, ਹਨ ਅਤੇ ਜਿਸ ਦਾ ਚਿੰਨ੍ਹ ਘੋੜੇ ਦਾ ਸਿਰ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਫੁਰਤੀਲੇ, ਜੋਸ਼ੀਲੇ ਅਤੇ ਕੰਮ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਉਤਾਵਲੇ ਹੁੰਦੇ ਹਨ — ਮਦਦ ਕਰਨ ਵਾਲੇ ਪਹਿਲੇ, ਕੁਝ ਨਵਾਂ ਅਜ਼ਮਾਉਣ ਵਾਲੇ ਪਹਿਲੇ। ਪਰੰਪਰਾ ਅਸ਼ਵਿਨੀ ਨੂੰ ਇਲਾਜ, ਤੇਜ਼ੀ ਅਤੇ ਨਵੀਂ ਸ਼ੁਰੂਆਤ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਬਹੁਤ ਸਾਰੇ ਦਵਾਈ, ਖੇਡ, ਸਫ਼ਰ ਜਾਂ ਫੁਰਤੀਲੇ, ਵਿਹਾਰਕ ਕੰਮ ਵਾਲੇ ਖੇਤਰਾਂ ਵੱਲ ਖਿੱਚੇ ਜਾਂਦੇ ਹਨ। ਇਸ ਨਕਸ਼ਤਰ ਦੀ ਦਾਤ ਪਹਿਲਕਦਮੀ ਅਤੇ ਜਵਾਨ ਆਸ਼ਾਵਾਦ ਹੈ; ਸਬਕ ਸਬਰ ਹੈ — ਸ਼ੁਰੂ ਕੀਤੇ ਕੰਮ ਨੂੰ ਓਸੇ ਜੋਸ਼ ਨਾਲ ਪੂਰਾ ਕਰਨਾ ਜਿਸ ਨਾਲ ਉਹ ਸ਼ੁਰੂ ਹੋਇਆ ਸੀ।",
     # EN: Bharani is ruled by Yama, the lord of dharma, and its symbol is the yoni, the womb that
     #     carries and protects new life. People with the Moon here often have strong will, deep
     #     feelings and a serious sense of responsibility. They tend to carry their commitments
@@ -1972,7 +1972,7 @@ NAKSHATRA_TRAITS = {
     #     bearing and nurturing — holding something until it is ready to be born — so creativity,
     #     family, art and work that asks for endurance suit it well. Its strength is steadfastness;
     #     its lesson is balancing desire with restraint and kindness.
-    "bharani": "",
+    "bharani": "ਭਰਣੀ ਦੇ ਸੁਆਮੀ ਯਮ, ਧਰਮ ਦੇ ਸੁਆਮੀ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਯੋਨੀ ਹੈ, ਉਹ ਕੁੱਖ ਜੋ ਨਵੇਂ ਜੀਵਨ ਨੂੰ ਧਾਰਦੀ ਤੇ ਸੰਭਾਲਦੀ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਨ੍ਹਾਂ ਵਿੱਚ ਅਕਸਰ ਮਜ਼ਬੂਤ ਇੱਛਾ-ਸ਼ਕਤੀ, ਡੂੰਘੀਆਂ ਭਾਵਨਾਵਾਂ ਅਤੇ ਜ਼ਿੰਮੇਵਾਰੀ ਦਾ ਗੰਭੀਰ ਅਹਿਸਾਸ ਹੁੰਦਾ ਹੈ। ਉਹ ਆਪਣੇ ਵਾਅਦੇ ਅੰਤ ਤੱਕ ਨਿਭਾਉਂਦੇ ਹਨ ਅਤੇ ਆਸਾਨੀ ਨਾਲ ਡੋਲਦੇ ਨਹੀਂ। ਪਰੰਪਰਾ ਭਰਣੀ ਨੂੰ ਧਾਰਨ ਅਤੇ ਪਾਲਣ ਦਾ ਨਕਸ਼ਤਰ ਮੰਨਦੀ ਹੈ — ਕਿਸੇ ਚੀਜ਼ ਨੂੰ ਜਨਮ ਲੈਣ ਤੱਕ ਸੰਭਾਲੀ ਰੱਖਣਾ — ਇਸ ਲਈ ਸਿਰਜਣਾ, ਪਰਿਵਾਰ, ਕਲਾ ਅਤੇ ਸਹਿਣਸ਼ੀਲਤਾ ਮੰਗਣ ਵਾਲਾ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦੀ ਤਾਕਤ ਦ੍ਰਿੜ੍ਹਤਾ ਹੈ; ਸਬਕ ਇੱਛਾ ਨੂੰ ਸੰਜਮ ਅਤੇ ਦਇਆ ਨਾਲ ਸੰਤੁਲਿਤ ਕਰਨਾ ਹੈ।",
     # EN: Krittika is ruled by Agni, the sacred fire, and symbolised by a razor or a flame. Fire
     #     purifies and cuts through confusion, and people with the Moon here are often direct,
     #     principled and sharp in judgement. They can be protective of those they love and are
@@ -1980,7 +1980,7 @@ NAKSHATRA_TRAITS = {
     #     who nursed Kartikeya, so beneath the sharpness there is real warmth and care. Teaching,
     #     cooking, leadership and any work that needs clarity suit it. Its lesson is to let the fire
     #     warm and guide rather than burn.
-    "krittika": "",
+    "krittika": "ਕ੍ਰਿਤਿਕਾ ਦੇ ਸੁਆਮੀ ਅਗਨੀ, ਪਵਿੱਤਰ ਅੱਗ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਉਸਤਰਾ ਜਾਂ ਲਾਟ ਹੈ। ਅੱਗ ਸ਼ੁੱਧ ਕਰਦੀ ਹੈ ਅਤੇ ਉਲਝਣ ਨੂੰ ਚੀਰ ਦਿੰਦੀ ਹੈ, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਸਿੱਧੇ, ਅਸੂਲਾਂ ਵਾਲੇ ਅਤੇ ਤਿੱਖੀ ਸਮਝ ਵਾਲੇ ਹੁੰਦੇ ਹਨ। ਉਹ ਆਪਣਿਆਂ ਦੀ ਰਾਖੀ ਕਰਦੇ ਹਨ ਅਤੇ ਜੋ ਕਹਿਣਾ ਜ਼ਰੂਰੀ ਹੋਵੇ ਕਹਿਣ ਤੋਂ ਝਿਜਕਦੇ ਨਹੀਂ। ਕ੍ਰਿਤਿਕਾ ਉਨ੍ਹਾਂ ਛੇ ਮਾਵਾਂ ਦਾ ਵੀ ਨਕਸ਼ਤਰ ਹੈ ਜਿਨ੍ਹਾਂ ਨੇ ਕਾਰਤਿਕੇਯ ਨੂੰ ਪਾਲਿਆ, ਇਸ ਲਈ ਤਿੱਖਾਪਣ ਹੇਠ ਸੱਚੀ ਨਿੱਘ ਅਤੇ ਫ਼ਿਕਰ ਵੀ ਹੈ। ਪੜ੍ਹਾਉਣਾ, ਰਸੋਈ, ਅਗਵਾਈ ਅਤੇ ਸਪੱਸ਼ਟਤਾ ਮੰਗਣ ਵਾਲਾ ਹਰ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦਾ ਸਬਕ ਇਹ ਹੈ ਕਿ ਅੱਗ ਸਾੜੇ ਨਹੀਂ, ਸਗੋਂ ਨਿੱਘ ਅਤੇ ਸੇਧ ਦੇਵੇ।",
     # EN: Rohini is ruled by Brahma, the creator, and symbolised by a chariot or ox-cart. It is said
     #     to be the Moon's favourite nakshatra, and people with the Moon here are often warm,
     #     attractive, artistic and fond of comfort and beauty. They have a gift for making things
@@ -1988,7 +1988,7 @@ NAKSHATRA_TRAITS = {
     #     fertility, abundance and steady progress, so agriculture, the arts, design, food and
     #     hospitality suit it well. Its nature is gentle and settled; its lesson is to enjoy what is
     #     beautiful without holding on too tightly to it.
-    "rohini": "",
+    "rohini": "ਰੋਹਿਣੀ ਦੇ ਸੁਆਮੀ ਬ੍ਰਹਮਾ, ਰਚਣਹਾਰ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਰਥ ਜਾਂ ਬਲਦ-ਗੱਡੀ ਹੈ। ਇਸ ਨੂੰ ਚੰਦਰਮਾ ਦਾ ਸਭ ਤੋਂ ਪਿਆਰਾ ਨਕਸ਼ਤਰ ਕਿਹਾ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਨਿੱਘੇ, ਆਕਰਸ਼ਕ, ਕਲਾਪ੍ਰੇਮੀ ਅਤੇ ਆਰਾਮ ਤੇ ਸੁੰਦਰਤਾ ਦੇ ਸ਼ੌਕੀਨ ਹੁੰਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਵਿੱਚ ਚੀਜ਼ਾਂ ਨੂੰ ਵਧਾਉਣ-ਫੁੱਲਣ ਦੀ ਦਾਤ ਹੁੰਦੀ ਹੈ — ਬਾਗ਼, ਘਰ, ਕਾਰੋਬਾਰ ਅਤੇ ਰਿਸ਼ਤੇ। ਪਰੰਪਰਾ ਰੋਹਿਣੀ ਨੂੰ ਉਪਜਾਊਪਨ, ਖ਼ੁਸ਼ਹਾਲੀ ਅਤੇ ਪੱਕੀ ਤਰੱਕੀ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਖੇਤੀ, ਕਲਾਵਾਂ, ਡਿਜ਼ਾਈਨ, ਖਾਣ-ਪੀਣ ਅਤੇ ਮਹਿਮਾਨਨਿਵਾਜ਼ੀ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦਾ ਸੁਭਾਅ ਕੋਮਲ ਅਤੇ ਟਿਕਿਆ ਹੋਇਆ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਜੋ ਸੋਹਣਾ ਹੈ ਉਸ ਦਾ ਆਨੰਦ ਲਵੋ, ਪਰ ਉਸ ਨੂੰ ਬਹੁਤ ਕੱਸ ਕੇ ਨਾ ਫੜੋ।",
     # EN: Mrigashira is ruled by Soma, the Moon, and its symbol is a deer's head — the deer that is
     #     always alert, curious and searching. People with the Moon here are often gentle,
     #     inquisitive and fond of learning, travel and conversation. They enjoy exploring ideas and
@@ -1996,7 +1996,7 @@ NAKSHATRA_TRAITS = {
     #     nakshatra, which suits research, writing, teaching, trade and any work that rewards
     #     curiosity. Its charm is a light, friendly mind; its lesson is to settle on what has been
     #     found, so that the search leads somewhere rather than becoming restlessness.
-    "mrigashira": "",
+    "mrigashira": "ਮ੍ਰਿਗਸ਼ਿਰਾ ਦੇ ਸੁਆਮੀ ਸੋਮ, ਚੰਦਰਮਾ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਹਿਰਨ ਦਾ ਸਿਰ ਹੈ — ਉਹ ਹਿਰਨ ਜੋ ਹਮੇਸ਼ਾ ਚੌਕੰਨਾ, ਜਗਿਆਸੂ ਅਤੇ ਖੋਜ ਵਿੱਚ ਰਹਿੰਦਾ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਕੋਮਲ, ਸਵਾਲ ਪੁੱਛਣ ਵਾਲੇ ਅਤੇ ਪੜ੍ਹਾਈ, ਸਫ਼ਰ ਤੇ ਗੱਲ-ਬਾਤ ਦੇ ਸ਼ੌਕੀਨ ਹੁੰਦੇ ਹਨ। ਉਹ ਵਿਚਾਰਾਂ ਅਤੇ ਥਾਵਾਂ ਨੂੰ ਖੰਗਾਲਣ ਦਾ ਆਨੰਦ ਲੈਂਦੇ ਹਨ ਅਤੇ ਸਵਾਲ ਪੁੱਛਣੋਂ ਘੱਟ ਹੀ ਰੁਕਦੇ ਹਨ। ਪਰੰਪਰਾ ਮ੍ਰਿਗਸ਼ਿਰਾ ਨੂੰ ਖੋਜੀ ਦਾ ਨਕਸ਼ਤਰ ਮੰਨਦੀ ਹੈ, ਜੋ ਖੋਜ, ਲਿਖਣ, ਪੜ੍ਹਾਉਣ, ਵਪਾਰ ਅਤੇ ਜਗਿਆਸਾ ਨੂੰ ਇਨਾਮ ਦੇਣ ਵਾਲੇ ਹਰ ਕੰਮ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦੀ ਖਿੱਚ ਹਲਕਾ, ਦੋਸਤਾਨਾ ਮਨ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਜੋ ਲੱਭ ਲਿਆ ਉਸ ’ਤੇ ਟਿਕੋ, ਤਾਂ ਜੋ ਖੋਜ ਕਿਤੇ ਪਹੁੰਚੇ ਅਤੇ ਬੇਚੈਨੀ ਨਾ ਬਣ ਜਾਵੇ।",
     # EN: Ardra is ruled by Rudra, the storm form of Shiva, and symbolised by a teardrop or a
     #     diamond. As a storm clears the air and brings rain, people with the Moon here often have a
     #     strong, searching intellect and the ability to see through things to the truth. They can
@@ -2004,7 +2004,7 @@ NAKSHATRA_TRAITS = {
     #     difficulty, so research, technology, writing, counselling and problem-solving suit it
     #     well. Its gift is honesty and a sharp mind; its lesson is to let feelings pass like the
     #     rain, leaving the ground greener.
-    "ardra": "",
+    "ardra": "ਆਰਦਰਾ ਦੇ ਸੁਆਮੀ ਰੁਦਰ, ਸ਼ਿਵ ਦਾ ਤੂਫ਼ਾਨੀ ਰੂਪ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਅੱਥਰੂ ਦੀ ਬੂੰਦ ਜਾਂ ਹੀਰਾ ਹੈ। ਜਿਵੇਂ ਤੂਫ਼ਾਨ ਹਵਾ ਸਾਫ਼ ਕਰਦਾ ਅਤੇ ਮੀਂਹ ਲਿਆਉਂਦਾ ਹੈ, ਓਵੇਂ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਨ੍ਹਾਂ ਵਿੱਚ ਅਕਸਰ ਤਿੱਖੀ, ਖੋਜੀ ਬੁੱਧੀ ਅਤੇ ਚੀਜ਼ਾਂ ਦੇ ਆਰ-ਪਾਰ ਸੱਚ ਵੇਖਣ ਦੀ ਸਮਰੱਥਾ ਹੁੰਦੀ ਹੈ। ਉਹ ਡੂੰਘਾ ਮਹਿਸੂਸ ਕਰਦੇ ਹਨ ਅਤੇ ਬਦਲਾਅ ਤੋਂ ਡਰਦੇ ਨਹੀਂ। ਪਰੰਪਰਾ ਆਰਦਰਾ ਨੂੰ ਔਖਿਆਈ ਤੋਂ ਬਾਅਦ ਨਵੀਨੀਕਰਨ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਖੋਜ, ਤਕਨਾਲੋਜੀ, ਲਿਖਣ, ਸਲਾਹ-ਮਸ਼ਵਰਾ ਅਤੇ ਸਮੱਸਿਆ ਸੁਲਝਾਉਣਾ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਇਮਾਨਦਾਰੀ ਅਤੇ ਤੇਜ਼ ਦਿਮਾਗ਼ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਭਾਵਨਾਵਾਂ ਨੂੰ ਮੀਂਹ ਵਾਂਗ ਲੰਘਣ ਦਿਓ, ਜੋ ਧਰਤੀ ਨੂੰ ਪਹਿਲਾਂ ਨਾਲੋਂ ਹਰੀ ਛੱਡ ਜਾਂਦਾ ਹੈ।",
     # EN: Punarvasu is ruled by Aditi, the boundless mother of the gods, and symbolised by a bow and
     #     quiver. Its name means "return of the light", and people with the Moon here are often
     #     optimistic, generous and able to begin again after any setback. They tend to be content
@@ -2012,7 +2012,7 @@ NAKSHATRA_TRAITS = {
     #     Punarvasu as a nakshatra of renewal and homecoming, suited to teaching, counselling,
     #     writing, travel and caring work. Its blessing is a hopeful, forgiving heart; its lesson is
     #     to aim the arrow — to choose a direction and stay with it.
-    "punarvasu": "",
+    "punarvasu": "ਪੁਨਰਵਸੂ ਦੇ ਸੁਆਮੀ ਅਦਿਤੀ, ਦੇਵਤਿਆਂ ਦੀ ਅਸੀਮ ਮਾਂ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਧਨੁਸ਼ ਅਤੇ ਤਰਕਸ਼ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਰੌਸ਼ਨੀ ਦੀ ਵਾਪਸੀ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਆਸ਼ਾਵਾਦੀ, ਦਿਲ ਦੇ ਖੁੱਲ੍ਹੇ ਅਤੇ ਹਰ ਝਟਕੇ ਤੋਂ ਬਾਅਦ ਦੁਬਾਰਾ ਸ਼ੁਰੂ ਕਰਨ ਦੇ ਕਾਬਲ ਹੁੰਦੇ ਹਨ। ਉਹ ਸਾਦੀਆਂ ਚੀਜ਼ਾਂ ਵਿੱਚ ਸੰਤੁਸ਼ਟ, ਹੱਸਮੁੱਖ ਅਤੇ ਪਰਿਵਾਰ ਤੇ ਮਹਿਮਾਨਾਂ ਪ੍ਰਤੀ ਮਿਹਰਬਾਨ ਹੁੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਪੁਨਰਵਸੂ ਨੂੰ ਨਵੀਨੀਕਰਨ ਅਤੇ ਘਰ ਵਾਪਸੀ ਦਾ ਨਕਸ਼ਤਰ ਮੰਨਦੀ ਹੈ, ਜੋ ਪੜ੍ਹਾਉਣ, ਸਲਾਹ-ਮਸ਼ਵਰੇ, ਲਿਖਣ, ਸਫ਼ਰ ਅਤੇ ਸੇਵਾ ਵਾਲੇ ਕੰਮਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦੀ ਬਖ਼ਸ਼ਿਸ਼ ਆਸ ਭਰਿਆ, ਮੁਆਫ਼ ਕਰਨ ਵਾਲਾ ਦਿਲ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਤੀਰ ਦਾ ਨਿਸ਼ਾਨਾ ਬੰਨ੍ਹੋ — ਇੱਕ ਦਿਸ਼ਾ ਚੁਣੋ ਅਤੇ ਉਸ ’ਤੇ ਕਾਇਮ ਰਹੋ।",
     # EN: Pushya is ruled by Brihaspati, the guru of the gods, and symbolised by a cow's udder or a
     #     lotus — images of nourishment. It is counted among the most auspicious nakshatras, and
     #     people with the Moon here are often caring, dependable, devoted and generous with their
@@ -2020,7 +2020,7 @@ NAKSHATRA_TRAITS = {
     #     links Pushya with nourishment and wisdom, so teaching, counselling, food, social service,
     #     finance and spiritual work suit it well. Its gift is a steady, protective kindness; its
     #     lesson is to nourish oneself as faithfully as one nourishes others.
-    "pushya": "",
+    "pushya": "ਪੁਸ਼ਯ ਦੇ ਸੁਆਮੀ ਬ੍ਰਿਹਸਪਤੀ, ਦੇਵਤਿਆਂ ਦੇ ਗੁਰੂ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਗਾਂ ਦਾ ਥਣ ਜਾਂ ਕਮਲ ਹੈ — ਪਾਲਣ-ਪੋਸ਼ਣ ਦੇ ਪ੍ਰਤੀਕ। ਇਸ ਦੀ ਗਿਣਤੀ ਸਭ ਤੋਂ ਸ਼ੁਭ ਨਕਸ਼ਤਰਾਂ ਵਿੱਚ ਹੁੰਦੀ ਹੈ, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਫ਼ਿਕਰ ਕਰਨ ਵਾਲੇ, ਭਰੋਸੇਯੋਗ, ਸਮਰਪਿਤ ਅਤੇ ਆਪਣਾ ਸਮਾਂ ਦੇਣ ਵਿੱਚ ਉਦਾਰ ਹੁੰਦੇ ਹਨ। ਉਹ ਦੂਜਿਆਂ ਦਾ ਸਹਾਰਾ ਬਣਨਾ, ਰਵਾਇਤਾਂ ਨਿਭਾਉਣਾ ਅਤੇ ਕੁਝ ਟਿਕਾਊ ਬਣਾਉਣਾ ਪਸੰਦ ਕਰਦੇ ਹਨ। ਪਰੰਪਰਾ ਪੁਸ਼ਯ ਨੂੰ ਪੋਸ਼ਣ ਅਤੇ ਸਿਆਣਪ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਪੜ੍ਹਾਉਣਾ, ਸਲਾਹ-ਮਸ਼ਵਰਾ, ਖਾਣ-ਪੀਣ, ਸਮਾਜ ਸੇਵਾ, ਵਿੱਤ ਅਤੇ ਅਧਿਆਤਮਿਕ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਪੱਕੀ, ਰਾਖੀ ਕਰਨ ਵਾਲੀ ਮਿਹਰਬਾਨੀ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਆਪਣਾ ਵੀ ਓਨੀ ਹੀ ਵਫ਼ਾਦਾਰੀ ਨਾਲ ਪਾਲਣ ਕਰੋ ਜਿੰਨੀ ਦੂਜਿਆਂ ਦਾ ਕਰਦੇ ਹੋ।",
     # EN: Ashlesha is ruled by the Nagas, the serpent deities, and symbolised by a coiled serpent —
     #     an image of kundalini, hidden energy and deep wisdom. People with the Moon here are often
     #     perceptive, intelligent and good at understanding what others leave unsaid. They can be
@@ -2028,7 +2028,7 @@ NAKSHATRA_TRAITS = {
     #     Ashlesha with insight and with the healing knowledge of herbs, so psychology, research,
     #     medicine, writing and negotiation suit it well. Its gift is penetrating understanding; its
     #     lesson is to use that insight to embrace and heal, the way the serpent's coil protects.
-    "ashlesha": "",
+    "ashlesha": "ਅਸ਼ਲੇਸ਼ਾ ਦੇ ਸੁਆਮੀ ਨਾਗ, ਸੱਪ ਦੇਵਤੇ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਕੁੰਡਲੀ ਮਾਰਿਆ ਸੱਪ ਹੈ — ਕੁੰਡਲਿਨੀ, ਛੁਪੀ ਹੋਈ ਊਰਜਾ ਅਤੇ ਡੂੰਘੀ ਸਿਆਣਪ ਦਾ ਪ੍ਰਤੀਕ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਸੂਝਵਾਨ, ਬੁੱਧੀਮਾਨ ਅਤੇ ਉਹ ਸਮਝਣ ਵਿੱਚ ਮਾਹਰ ਹੁੰਦੇ ਹਨ ਜੋ ਦੂਜੇ ਅਣਕਿਹਾ ਛੱਡ ਦਿੰਦੇ ਹਨ। ਉਹ ਕਾਇਲ ਕਰਨ ਵਾਲੇ ਅਤੇ ਰਣਨੀਤਕ ਹੋ ਸਕਦੇ ਹਨ, ਆਪਣੀ ਰਾਖੀ ਦੀ ਮਜ਼ਬੂਤ ਸੂਝ ਨਾਲ। ਪਰੰਪਰਾ ਅਸ਼ਲੇਸ਼ਾ ਨੂੰ ਅੰਤਰ-ਦ੍ਰਿਸ਼ਟੀ ਅਤੇ ਜੜ੍ਹੀ-ਬੂਟੀਆਂ ਦੇ ਇਲਾਜੀ ਗਿਆਨ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਮਨੋਵਿਗਿਆਨ, ਖੋਜ, ਦਵਾਈ, ਲਿਖਣ ਅਤੇ ਗੱਲ-ਬਾਤ ਰਾਹੀਂ ਸਮਝੌਤਾ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਆਰ-ਪਾਰ ਵੇਖਣ ਵਾਲੀ ਸਮਝ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਉਸ ਸੂਝ ਨੂੰ ਗਲੇ ਲਾਉਣ ਤੇ ਠੀਕ ਕਰਨ ਲਈ ਵਰਤੋ, ਜਿਵੇਂ ਸੱਪ ਦੀ ਕੁੰਡਲੀ ਰਾਖੀ ਕਰਦੀ ਹੈ।",
     # EN: Magha is ruled by the Pitris, the ancestors, and symbolised by a royal throne. People with
     #     the Moon here often carry a natural dignity, a respect for family and tradition, and a
     #     wish to live up to the name they were given. They can be generous leaders who take
@@ -2036,7 +2036,7 @@ NAKSHATRA_TRAITS = {
     #     so leadership, administration, history, law and work that preserves heritage suit it well.
     #     Its gift is nobility of heart; its lesson is to wear the crown lightly — to lead through
     #     service and to honour the ancestors through good deeds.
-    "magha": "",
+    "magha": "ਮਘਾ ਦੇ ਸੁਆਮੀ ਪਿਤਰ, ਪੁਰਖੇ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਸ਼ਾਹੀ ਸਿੰਘਾਸਣ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਨ੍ਹਾਂ ਵਿੱਚ ਅਕਸਰ ਕੁਦਰਤੀ ਮਾਣ, ਪਰਿਵਾਰ ਅਤੇ ਰਵਾਇਤ ਲਈ ਆਦਰ, ਅਤੇ ਮਿਲੇ ਹੋਏ ਨਾਂ ਦੇ ਕਾਬਲ ਬਣਨ ਦੀ ਇੱਛਾ ਹੁੰਦੀ ਹੈ। ਉਹ ਉਦਾਰ ਆਗੂ ਹੋ ਸਕਦੇ ਹਨ ਜੋ ਆਪਣੇ ਲੋਕਾਂ ਦੀ ਜ਼ਿੰਮੇਵਾਰੀ ਲੈਂਦੇ ਹਨ। ਪਰੰਪਰਾ ਮਘਾ ਨੂੰ ਵੰਸ਼, ਇੱਜ਼ਤ ਅਤੇ ਅਧਿਕਾਰ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਅਗਵਾਈ, ਪ੍ਰਸ਼ਾਸਨ, ਇਤਿਹਾਸ, ਕਾਨੂੰਨ ਅਤੇ ਵਿਰਸੇ ਨੂੰ ਸੰਭਾਲਣ ਵਾਲਾ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦੀ ਦਾਤ ਦਿਲ ਦੀ ਨੇਕੀ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਤਾਜ ਨੂੰ ਹਲਕੇ ਹੱਥੀਂ ਪਹਿਨੋ — ਸੇਵਾ ਰਾਹੀਂ ਅਗਵਾਈ ਕਰੋ ਅਤੇ ਚੰਗੇ ਕੰਮਾਂ ਨਾਲ ਪੁਰਖਿਆਂ ਦਾ ਮਾਣ ਰੱਖੋ।",
     # EN: Purva Phalguni is ruled by Bhaga, the god of fortune and marital happiness, and symbolised
     #     by the front legs of a bed — an image of rest and enjoyment. People with the Moon here are
     #     often warm, charming, creative and fond of celebration, music and good company. They bring
@@ -2044,7 +2044,7 @@ NAKSHATRA_TRAITS = {
     #     Purva Phalguni with love, the arts and leisure, so entertainment, design, hospitality and
     #     relationship-centred work suit it well. Its gift is joy that is easily shared; its lesson
     #     is balance between pleasure and duty.
-    "purva-phalguni": "",
+    "purva-phalguni": "ਪੂਰਵਾ ਫਾਲਗੁਨੀ ਦੇ ਸੁਆਮੀ ਭਗ, ਕਿਸਮਤ ਅਤੇ ਵਿਆਹੁਤਾ ਸੁੱਖ ਦੇ ਦੇਵਤਾ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਪਲੰਘ ਦੀਆਂ ਅਗਲੀਆਂ ਲੱਤਾਂ ਹੈ — ਆਰਾਮ ਅਤੇ ਆਨੰਦ ਦਾ ਪ੍ਰਤੀਕ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਨਿੱਘੇ, ਮਨਮੋਹਕ, ਸਿਰਜਣਾਤਮਕ ਅਤੇ ਜਸ਼ਨ, ਸੰਗੀਤ ਤੇ ਚੰਗੀ ਸੰਗਤ ਦੇ ਸ਼ੌਕੀਨ ਹੁੰਦੇ ਹਨ। ਉਹ ਲੋਕਾਂ ਨੂੰ ਇਕੱਠਾ ਕਰਦੇ ਹਨ ਅਤੇ ਜਾਣਦੇ ਹਨ ਕਿ ਕਮਾਈ ਹੋਈ ਚੀਜ਼ ਦਾ ਆਰਾਮ ਨਾਲ ਆਨੰਦ ਕਿਵੇਂ ਲੈਣਾ ਹੈ। ਪਰੰਪਰਾ ਪੂਰਵਾ ਫਾਲਗੁਨੀ ਨੂੰ ਪ੍ਰੇਮ, ਕਲਾਵਾਂ ਅਤੇ ਫ਼ੁਰਸਤ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਮਨੋਰੰਜਨ, ਡਿਜ਼ਾਈਨ, ਮਹਿਮਾਨਨਿਵਾਜ਼ੀ ਅਤੇ ਰਿਸ਼ਤਿਆਂ ’ਤੇ ਟਿਕਿਆ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦੀ ਦਾਤ ਆਸਾਨੀ ਨਾਲ ਵੰਡੀ ਜਾਣ ਵਾਲੀ ਖ਼ੁਸ਼ੀ ਹੈ; ਸਬਕ ਆਨੰਦ ਅਤੇ ਫ਼ਰਜ਼ ਵਿਚਕਾਰ ਸੰਤੁਲਨ ਹੈ।",
     # EN: Uttara Phalguni is ruled by Aryaman, the god of friendship, contracts and marriage vows,
     #     and symbolised by the back legs of a bed. Where its twin Purva Phalguni enjoys, Uttara
     #     Phalguni commits. People with the Moon here are often reliable, helpful, fair-minded and
@@ -2052,7 +2052,7 @@ NAKSHATRA_TRAITS = {
     #     Tradition links this nakshatra with patronage and lasting partnerships, so management,
     #     public service, counselling, law and charitable work suit it well. Its gift is dependable
     #     kindness; its lesson is to accept help as gracefully as it is given.
-    "uttara-phalguni": "",
+    "uttara-phalguni": "ਉੱਤਰਾ ਫਾਲਗੁਨੀ ਦੇ ਸੁਆਮੀ ਅਰਿਆਮਾ, ਦੋਸਤੀ, ਇਕਰਾਰਾਂ ਅਤੇ ਵਿਆਹ ਦੇ ਵਚਨਾਂ ਦੇ ਦੇਵਤਾ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਪਲੰਘ ਦੀਆਂ ਪਿਛਲੀਆਂ ਲੱਤਾਂ ਹੈ। ਜਿੱਥੇ ਇਸ ਦੀ ਜੋੜੀਦਾਰ ਪੂਰਵਾ ਫਾਲਗੁਨੀ ਆਨੰਦ ਲੈਂਦੀ ਹੈ, ਉੱਤਰਾ ਫਾਲਗੁਨੀ ਵਚਨਬੱਧ ਹੁੰਦੀ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਭਰੋਸੇਯੋਗ, ਮਦਦਗਾਰ, ਨਿਆਂਪਸੰਦ ਅਤੇ ਦੋਸਤਾਂ ਤੇ ਸਾਥੀਆਂ ਪ੍ਰਤੀ ਵਫ਼ਾਦਾਰ ਹੁੰਦੇ ਹਨ। ਉਹ ਆਪਣੀ ਜ਼ੁਬਾਨ ਨਿਭਾਉਂਦੇ ਹਨ ਅਤੇ ਦੂਜਿਆਂ ਦੇ ਸੱਚਮੁੱਚ ਕੰਮ ਆਉਣਾ ਚਾਹੁੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਇਸ ਨਕਸ਼ਤਰ ਨੂੰ ਸਰਪ੍ਰਸਤੀ ਅਤੇ ਪੱਕੀਆਂ ਸਾਂਝੇਦਾਰੀਆਂ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਪ੍ਰਬੰਧ, ਲੋਕ ਸੇਵਾ, ਸਲਾਹ-ਮਸ਼ਵਰਾ, ਕਾਨੂੰਨ ਅਤੇ ਪਰਉਪਕਾਰੀ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਭਰੋਸੇ ਵਾਲੀ ਮਿਹਰਬਾਨੀ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਮਦਦ ਨੂੰ ਓਨੀ ਹੀ ਸੁਹਿਰਦਤਾ ਨਾਲ ਕਬੂਲ ਕਰੋ ਜਿੰਨੀ ਨਾਲ ਦਿੰਦੇ ਹੋ।",
     # EN: Hasta is ruled by Savitr, the radiant Sun, and symbolised by a hand. People with the Moon
     #     here are often skilful, practical, witty and clever with their hands as well as their
     #     minds. They like to get things done and can turn an idea into something real. Tradition
@@ -2060,7 +2060,7 @@ NAKSHATRA_TRAITS = {
     #     surgery, massage, writing, trade and any skilled trade suit it well. Its gift is the
     #     ability to make and to mend; its lesson is to hold things with an open hand, trusting that
     #     effort brings its own rewards.
-    "hasta": "",
+    "hasta": "ਹਸਤ ਦੇ ਸੁਆਮੀ ਸਵਿਤ੍ਰ, ਚਮਕਦਾ ਸੂਰਜ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਹੱਥ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਹੁਨਰਮੰਦ, ਵਿਹਾਰਕ, ਹਾਜ਼ਰ-ਜਵਾਬ ਅਤੇ ਦਿਮਾਗ਼ ਦੇ ਨਾਲ-ਨਾਲ ਹੱਥਾਂ ਦੇ ਵੀ ਚਤੁਰ ਹੁੰਦੇ ਹਨ। ਉਹ ਕੰਮ ਨਿਬੇੜਨਾ ਪਸੰਦ ਕਰਦੇ ਹਨ ਅਤੇ ਕਿਸੇ ਵਿਚਾਰ ਨੂੰ ਹਕੀਕਤ ਬਣਾ ਸਕਦੇ ਹਨ। ਪਰੰਪਰਾ ਹਸਤ ਨੂੰ ਦਸਤਕਾਰੀ, ਇਲਾਜੀ ਛੋਹ ਅਤੇ ਸਾਧਨ-ਭਰਪੂਰਤਾ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਦਸਤਕਾਰੀ, ਕਲਾਵਾਂ, ਸਰਜਰੀ, ਮਾਲਸ਼, ਲਿਖਣ, ਵਪਾਰ ਅਤੇ ਹਰ ਹੁਨਰ ਵਾਲਾ ਕਿੱਤਾ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦੀ ਦਾਤ ਬਣਾਉਣ ਅਤੇ ਮੁਰੰਮਤ ਕਰਨ ਦੀ ਸਮਰੱਥਾ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਚੀਜ਼ਾਂ ਨੂੰ ਖੁੱਲ੍ਹੇ ਹੱਥ ਨਾਲ ਫੜੋ, ਇਹ ਭਰੋਸਾ ਰੱਖਦਿਆਂ ਕਿ ਮਿਹਨਤ ਆਪਣਾ ਇਨਾਮ ਆਪ ਲਿਆਉਂਦੀ ਹੈ।",
     # EN: Chitra is ruled by Tvashtr, also known as Vishwakarma, the divine architect, and
     #     symbolised by a bright jewel. Its name means "brilliant" or "picture", and people with the
     #     Moon here often have a strong sense of beauty, design and form. They enjoy creating things
@@ -2068,7 +2068,7 @@ NAKSHATRA_TRAITS = {
     #     architecture, the arts and craftsmanship, so design, engineering, fashion, jewellery,
     #     photography and planning suit it well. Its gift is the eye of an artist and the hand of a
     #     builder; its lesson is to value inner beauty as much as outer polish.
-    "chitra": "",
+    "chitra": "ਚਿੱਤਰਾ ਦੇ ਸੁਆਮੀ ਤ੍ਵਸ਼ਟਾ ਹਨ, ਜਿਨ੍ਹਾਂ ਨੂੰ ਵਿਸ਼ਵਕਰਮਾ, ਦੈਵੀ ਵਾਸਤੂਕਾਰ, ਵੀ ਕਿਹਾ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਚਮਕਦਾ ਰਤਨ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਚਮਕਦਾਰ” ਜਾਂ “ਤਸਵੀਰ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਨ੍ਹਾਂ ਵਿੱਚ ਅਕਸਰ ਸੁੰਦਰਤਾ, ਡਿਜ਼ਾਈਨ ਅਤੇ ਰੂਪ ਦੀ ਪ੍ਰਬਲ ਸੂਝ ਹੁੰਦੀ ਹੈ। ਉਹ ਉਹ ਚੀਜ਼ਾਂ ਬਣਾਉਣ ਦਾ ਆਨੰਦ ਲੈਂਦੇ ਹਨ ਜੋ ਕੰਮ ਦੀਆਂ ਵੀ ਹੋਣ ਅਤੇ ਸੋਹਣੀਆਂ ਵੀ, ਅਤੇ ਬਾਰੀਕੀਆਂ ਨੂੰ ਨੋਟਿਸ ਕਰਦੇ ਹਨ। ਪਰੰਪਰਾ ਚਿੱਤਰਾ ਨੂੰ ਵਾਸਤੂਕਲਾ, ਕਲਾਵਾਂ ਅਤੇ ਦਸਤਕਾਰੀ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਡਿਜ਼ਾਈਨ, ਇੰਜੀਨੀਅਰਿੰਗ, ਫ਼ੈਸ਼ਨ, ਗਹਿਣੇ, ਫ਼ੋਟੋਗ੍ਰਾਫ਼ੀ ਅਤੇ ਯੋਜਨਾਬੰਦੀ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਕਲਾਕਾਰ ਦੀ ਅੱਖ ਅਤੇ ਉਸਾਰ ਦਾ ਹੱਥ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਅੰਦਰੂਨੀ ਸੁੰਦਰਤਾ ਦੀ ਓਨੀ ਹੀ ਕਦਰ ਕਰੋ ਜਿੰਨੀ ਬਾਹਰੀ ਚਮਕ-ਦਮਕ ਦੀ।",
     # EN: Swati is ruled by Vayu, the wind, and symbolised by a young shoot swaying in the breeze —
     #     flexible, independent and able to bend without breaking. People with the Moon here often
     #     value freedom, fairness and their own way of doing things. They are usually diplomatic,
@@ -2076,7 +2076,7 @@ NAKSHATRA_TRAITS = {
     #     and self-reliance, so commerce, law, diplomacy, communication and independent work suit it
     #     well. Its gift is adaptability and a gentle, balanced manner; its lesson is to put down
     #     roots, so that the young shoot can grow into a strong tree.
-    "swati": "",
+    "swati": "ਸਵਾਤੀ ਦੇ ਸੁਆਮੀ ਵਾਯੂ, ਹਵਾ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਹਵਾ ਵਿੱਚ ਝੂਲਦਾ ਨਵਾਂ ਫੁੱਟਿਆ ਬੂਟਾ ਹੈ — ਲਚਕੀਲਾ, ਆਜ਼ਾਦ ਅਤੇ ਟੁੱਟੇ ਬਿਨਾਂ ਝੁਕ ਜਾਣ ਵਾਲਾ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਆਜ਼ਾਦੀ, ਨਿਆਂ ਅਤੇ ਆਪਣੇ ਢੰਗ ਨਾਲ ਕੰਮ ਕਰਨ ਦੀ ਕਦਰ ਕਰਦੇ ਹਨ। ਉਹ ਆਮ ਤੌਰ ’ਤੇ ਕੂਟਨੀਤਕ, ਸ਼ਿਸ਼ਟ ਅਤੇ ਵਪਾਰ ਤੇ ਗੱਲ-ਬਾਤ ਵਿੱਚ ਮਾਹਰ ਹੁੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਸਵਾਤੀ ਨੂੰ ਵਪਾਰ, ਸਫ਼ਰ ਅਤੇ ਆਤਮ-ਨਿਰਭਰਤਾ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਵਣਜ, ਕਾਨੂੰਨ, ਕੂਟਨੀਤੀ, ਸੰਚਾਰ ਅਤੇ ਆਜ਼ਾਦ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਢਲ ਜਾਣ ਦੀ ਸਮਰੱਥਾ ਅਤੇ ਕੋਮਲ, ਸੰਤੁਲਿਤ ਸੁਭਾਅ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਜੜ੍ਹਾਂ ਫੜੋ, ਤਾਂ ਜੋ ਇਹ ਨਵਾਂ ਬੂਟਾ ਮਜ਼ਬੂਤ ਰੁੱਖ ਬਣ ਸਕੇ।",
     # EN: Vishakha is ruled by Indra and Agni together, and symbolised by a triumphal arch decorated
     #     with leaves. People with the Moon here are often purposeful, ambitious and determined to
     #     reach the goal they have set. They have energy, conviction and the patience to keep going
@@ -2084,7 +2084,7 @@ NAKSHATRA_TRAITS = {
     #     research, politics, sales, teaching and any long-term mission suit it well. Its gift is
     #     focus and the ability to inspire others towards a shared aim; its lesson is to enjoy the
     #     journey, not only the arch at its end.
-    "vishakha": "",
+    "vishakha": "ਵਿਸ਼ਾਖਾ ਦੇ ਸੁਆਮੀ ਇੰਦਰ ਅਤੇ ਅਗਨੀ ਦੋਵੇਂ ਹਨ, ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਪੱਤਿਆਂ ਨਾਲ ਸਜਿਆ ਜਿੱਤ ਦਾ ਦੁਆਰ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਮਕਸਦ ਵਾਲੇ, ਉੱਚ-ਅਕਾਂਖਿਆ ਵਾਲੇ ਅਤੇ ਆਪਣੇ ਮਿੱਥੇ ਟੀਚੇ ਤੱਕ ਪਹੁੰਚਣ ਲਈ ਦ੍ਰਿੜ੍ਹ ਹੁੰਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਵਿੱਚ ਊਰਜਾ, ਪੱਕਾ ਯਕੀਨ ਅਤੇ ਲੰਮੇ ਰਾਹ ’ਤੇ ਤੁਰੇ ਰਹਿਣ ਦਾ ਸਬਰ ਹੁੰਦਾ ਹੈ। ਪਰੰਪਰਾ ਵਿਸ਼ਾਖਾ ਨੂੰ ਮਕਸਦ ਦਾ ਨਕਸ਼ਤਰ ਕਹਿੰਦੀ ਹੈ, ਇਸ ਲਈ ਅਗਵਾਈ, ਖੋਜ, ਸਿਆਸਤ, ਵਿਕਰੀ, ਪੜ੍ਹਾਉਣਾ ਅਤੇ ਹਰ ਲੰਮੇ ਸਮੇਂ ਦਾ ਮਿਸ਼ਨ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦੀ ਦਾਤ ਇਕਾਗਰਤਾ ਅਤੇ ਦੂਜਿਆਂ ਨੂੰ ਸਾਂਝੇ ਉਦੇਸ਼ ਵੱਲ ਪ੍ਰੇਰਿਤ ਕਰਨ ਦੀ ਸਮਰੱਥਾ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਸਫ਼ਰ ਦਾ ਆਨੰਦ ਲਵੋ, ਸਿਰਫ਼ ਉਸ ਦੇ ਅਖ਼ੀਰ ਦੇ ਦੁਆਰ ਦਾ ਨਹੀਂ।",
     # EN: Anuradha is ruled by Mitra, the god of friendship and cooperation, and symbolised by a
     #     lotus that blooms out of muddy water. People with the Moon here are often loyal friends,
     #     devoted to their ideals and able to keep going with quiet faith in difficult places. They
@@ -2092,7 +2092,7 @@ NAKSHATRA_TRAITS = {
     #     with friendship, devotion and success away from home, so teamwork, organisation,
     #     counselling, travel and spiritual practice suit it well. Its gift is the ability to
     #     blossom anywhere; its lesson is to be as gentle with oneself as with friends.
-    "anuradha": "",
+    "anuradha": "ਅਨੁਰਾਧਾ ਦੇ ਸੁਆਮੀ ਮਿਤ੍ਰ, ਦੋਸਤੀ ਅਤੇ ਸਹਿਯੋਗ ਦੇ ਦੇਵਤਾ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਕਮਲ ਹੈ ਜੋ ਚਿੱਕੜ ਵਾਲੇ ਪਾਣੀ ਵਿੱਚੋਂ ਖਿੜਦਾ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਵਫ਼ਾਦਾਰ ਦੋਸਤ, ਆਪਣੇ ਆਦਰਸ਼ਾਂ ਪ੍ਰਤੀ ਸਮਰਪਿਤ ਅਤੇ ਔਖੀਆਂ ਥਾਵਾਂ ’ਤੇ ਵੀ ਚੁੱਪ ਭਰੋਸੇ ਨਾਲ ਤੁਰਦੇ ਰਹਿਣ ਵਾਲੇ ਹੁੰਦੇ ਹਨ। ਉਹ ਸਮੂਹਾਂ ਅਤੇ ਸੰਸਥਾਵਾਂ ਵਿੱਚ ਲੋਕਾਂ ਨੂੰ ਇਕੱਠਾ ਕਰਨ ਵਿੱਚ ਮਾਹਰ ਹੁੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਅਨੁਰਾਧਾ ਨੂੰ ਦੋਸਤੀ, ਭਗਤੀ ਅਤੇ ਘਰੋਂ ਦੂਰ ਸਫਲਤਾ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਟੀਮ ਵਰਕ, ਸੰਗਠਨ, ਸਲਾਹ-ਮਸ਼ਵਰਾ, ਸਫ਼ਰ ਅਤੇ ਅਧਿਆਤਮਿਕ ਸਾਧਨਾ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਕਿਤੇ ਵੀ ਖਿੜ ਜਾਣ ਦੀ ਸਮਰੱਥਾ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਆਪਣੇ ਨਾਲ ਓਨੀ ਹੀ ਨਰਮੀ ਰੱਖੋ ਜਿੰਨੀ ਦੋਸਤਾਂ ਨਾਲ ਰੱਖਦੇ ਹੋ।",
     # EN: Jyeshtha is ruled by Indra, king of the gods, and symbolised by a circular amulet or
     #     earring. Its name means "the eldest", and people with the Moon here often take on
     #     responsibility early, protect those around them and carry a quiet authority. They are
@@ -2100,7 +2100,7 @@ NAKSHATRA_TRAITS = {
     #     seniority and protection, so leadership, management, administration, security and any role
     #     that looks after others suit it well. Its gift is courage and capability; its lesson is to
     #     lead with humility and to let others share the load rather than carrying everything alone.
-    "jyeshtha": "",
+    "jyeshtha": "ਜੇਸ਼ਠਾ ਦੇ ਸੁਆਮੀ ਇੰਦਰ, ਦੇਵਤਿਆਂ ਦੇ ਰਾਜਾ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਗੋਲ ਤਵੀਤ ਜਾਂ ਕੰਨ ਦੀ ਵਾਲੀ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਸਭ ਤੋਂ ਵੱਡਾ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਛੋਟੀ ਉਮਰੇ ਹੀ ਜ਼ਿੰਮੇਵਾਰੀ ਚੁੱਕ ਲੈਂਦੇ ਹਨ, ਆਪਣੇ ਆਲੇ-ਦੁਆਲੇ ਦੇ ਲੋਕਾਂ ਦੀ ਰਾਖੀ ਕਰਦੇ ਹਨ ਅਤੇ ਚੁੱਪ ਰੋਅਬ ਰੱਖਦੇ ਹਨ। ਉਹ ਸਾਧਨ-ਭਰਪੂਰ, ਸੂਝਵਾਨ ਅਤੇ ਦਬਾਅ ਹੇਠ ਵੀ ਕਾਬਲ ਹੁੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਜੇਸ਼ਠਾ ਨੂੰ ਸੀਨੀਅਰਤਾ ਅਤੇ ਰਾਖੀ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਅਗਵਾਈ, ਪ੍ਰਬੰਧ, ਪ੍ਰਸ਼ਾਸਨ, ਸੁਰੱਖਿਆ ਅਤੇ ਦੂਜਿਆਂ ਦੀ ਸੰਭਾਲ ਕਰਨ ਵਾਲੀ ਹਰ ਭੂਮਿਕਾ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੀ ਹੈ। ਇਸ ਦੀ ਦਾਤ ਹਿੰਮਤ ਅਤੇ ਕਾਬਲੀਅਤ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਨਿਮਰਤਾ ਨਾਲ ਅਗਵਾਈ ਕਰੋ ਅਤੇ ਸਭ ਕੁਝ ਇਕੱਲੇ ਚੁੱਕਣ ਦੀ ਥਾਂ ਦੂਜਿਆਂ ਨੂੰ ਵੀ ਬੋਝ ਵੰਡਣ ਦਿਓ।",
     # EN: Mula is ruled by Nirriti and symbolised by a bunch of roots. Its name means "the root",
     #     and people with the Moon here are often drawn to get to the bottom of things — to find the
     #     origin of a question, an idea or a tradition. They can be independent, philosophical and
@@ -2108,7 +2108,7 @@ NAKSHATRA_TRAITS = {
     #     with letting go of what is no longer needed, so research, medicine, philosophy, botany and
     #     spiritual inquiry suit it well. Its gift is depth; its lesson is that clearing old ground
     #     makes room for new growth.
-    "mula": "",
+    "mula": "ਮੂਲ ਦੇ ਸੁਆਮੀ ਨਿਰ੍ਰਿਤੀ ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਜੜ੍ਹਾਂ ਦਾ ਗੁੱਛਾ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਜੜ੍ਹ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਗੱਲ ਦੀ ਤਹਿ ਤੱਕ ਜਾਣ ਵੱਲ ਖਿੱਚੇ ਜਾਂਦੇ ਹਨ — ਕਿਸੇ ਸਵਾਲ, ਵਿਚਾਰ ਜਾਂ ਰਵਾਇਤ ਦੀ ਜੜ੍ਹ ਲੱਭਣ ਵੱਲ। ਉਹ ਆਜ਼ਾਦ, ਦਾਰਸ਼ਨਿਕ ਅਤੇ ਬੁਨਿਆਦੀ ਸਿਧਾਂਤਾਂ ਤੋਂ ਮੁੜ ਸ਼ੁਰੂ ਕਰਨ ਤੋਂ ਨਾ ਡਰਨ ਵਾਲੇ ਹੋ ਸਕਦੇ ਹਨ। ਪਰੰਪਰਾ ਮੂਲ ਨੂੰ ਪੜਤਾਲ ਅਤੇ ਉਸ ਨੂੰ ਛੱਡ ਦੇਣ ਨਾਲ ਜੋੜਦੀ ਹੈ ਜਿਸ ਦੀ ਹੁਣ ਲੋੜ ਨਹੀਂ, ਇਸ ਲਈ ਖੋਜ, ਦਵਾਈ, ਫ਼ਲਸਫ਼ਾ, ਬਨਸਪਤੀ ਵਿਗਿਆਨ ਅਤੇ ਅਧਿਆਤਮਿਕ ਜਗਿਆਸਾ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਡੂੰਘਾਈ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਪੁਰਾਣੀ ਜ਼ਮੀਨ ਸਾਫ਼ ਕਰਨ ਨਾਲ ਨਵੇਂ ਵਾਧੇ ਲਈ ਥਾਂ ਬਣਦੀ ਹੈ।",
     # EN: Purva Ashadha is ruled by Apas, the cosmic waters, and symbolised by a winnowing fan or an
     #     elephant tusk. Its name means "the early invincible", and people with the Moon here are
     #     often confident, persuasive and full of conviction. Like water, they can be gentle and yet
@@ -2116,7 +2116,7 @@ NAKSHATRA_TRAITS = {
     #     victory won through persistence, so teaching, law, debate, the arts, shipping and anything
     #     to do with water suit it well. Its gift is optimism and inner strength; its lesson is to
     #     stay open to other views while holding firm to its own.
-    "purva-ashadha": "",
+    "purva-ashadha": "ਪੂਰਵਾ ਆਸ਼ਾੜ੍ਹਾ ਦੇ ਸੁਆਮੀ ਆਪਸ, ਬ੍ਰਹਿਮੰਡੀ ਜਲ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਛੱਜ ਜਾਂ ਹਾਥੀ ਦਾ ਦੰਦ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਪਹਿਲਾ ਅਜਿੱਤ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਆਤਮ-ਵਿਸ਼ਵਾਸੀ, ਕਾਇਲ ਕਰਨ ਵਾਲੇ ਅਤੇ ਯਕੀਨ ਨਾਲ ਭਰੇ ਹੁੰਦੇ ਹਨ। ਪਾਣੀ ਵਾਂਗ ਉਹ ਕੋਮਲ ਵੀ ਹੋ ਸਕਦੇ ਹਨ ਅਤੇ ਸਮੇਂ ਨਾਲ ਹਰ ਰੁਕਾਵਟ ਨੂੰ ਘਸਾ ਵੀ ਦਿੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਪੂਰਵਾ ਆਸ਼ਾੜ੍ਹਾ ਨੂੰ ਸ਼ੁੱਧੀ ਅਤੇ ਲਗਾਤਾਰ ਕੋਸ਼ਿਸ਼ ਨਾਲ ਮਿਲੀ ਜਿੱਤ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਪੜ੍ਹਾਉਣਾ, ਕਾਨੂੰਨ, ਬਹਿਸ, ਕਲਾਵਾਂ, ਜਹਾਜ਼ਰਾਨੀ ਅਤੇ ਪਾਣੀ ਨਾਲ ਜੁੜੀ ਹਰ ਚੀਜ਼ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੀ ਹੈ। ਇਸ ਦੀ ਦਾਤ ਆਸ਼ਾਵਾਦ ਅਤੇ ਅੰਦਰੂਨੀ ਤਾਕਤ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਆਪਣੀ ਗੱਲ ’ਤੇ ਪੱਕੇ ਰਹਿੰਦਿਆਂ ਦੂਜਿਆਂ ਦੇ ਵਿਚਾਰਾਂ ਲਈ ਵੀ ਖੁੱਲ੍ਹੇ ਰਹੋ।",
     # EN: Uttara Ashadha is ruled by the Vishvedevas, the universal gods, and symbolised by an
     #     elephant tusk. Its name means "the later invincible" — the victory that lasts because it
     #     was earned honestly. People with the Moon here are often principled, patient, responsible
@@ -2124,7 +2124,7 @@ NAKSHATRA_TRAITS = {
     #     Tradition links Uttara Ashadha with righteous leadership, so government, management, law,
     #     teaching and social causes suit it well. Its gift is steady, ethical strength; its lesson
     #     is to keep a little lightness and warmth alongside the seriousness of duty.
-    "uttara-ashadha": "",
+    "uttara-ashadha": "ਉੱਤਰਾ ਆਸ਼ਾੜ੍ਹਾ ਦੇ ਸੁਆਮੀ ਵਿਸ਼ਵੇਦੇਵ, ਸਰਬ-ਵਿਆਪੀ ਦੇਵਤੇ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਹਾਥੀ ਦਾ ਦੰਦ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਪਿਛਲਾ ਅਜਿੱਤ” — ਉਹ ਜਿੱਤ ਜੋ ਟਿਕਦੀ ਹੈ ਕਿਉਂਕਿ ਇਮਾਨਦਾਰੀ ਨਾਲ ਕਮਾਈ ਗਈ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਅਸੂਲਾਂ ਵਾਲੇ, ਸਬਰ ਵਾਲੇ, ਜ਼ਿੰਮੇਵਾਰ ਅਤੇ ਆਪਣੀ ਈਮਾਨਦਾਰੀ ਕਰਕੇ ਇੱਜ਼ਤ ਪਾਉਣ ਵਾਲੇ ਹੁੰਦੇ ਹਨ। ਉਹ ਲੰਮੀ ਨਜ਼ਰ ਰੱਖਦੇ ਹਨ ਅਤੇ ਜਿਸ ਦਾ ਵਾਅਦਾ ਕਰਦੇ ਹਨ ਉਸ ਨੂੰ ਪੂਰਾ ਕਰਦੇ ਹਨ। ਪਰੰਪਰਾ ਉੱਤਰਾ ਆਸ਼ਾੜ੍ਹਾ ਨੂੰ ਧਰਮੀ ਅਗਵਾਈ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਸਰਕਾਰ, ਪ੍ਰਬੰਧ, ਕਾਨੂੰਨ, ਪੜ੍ਹਾਉਣਾ ਅਤੇ ਸਮਾਜਿਕ ਕਾਰਜ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਟਿਕਵੀਂ, ਨੈਤਿਕ ਤਾਕਤ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਫ਼ਰਜ਼ ਦੀ ਗੰਭੀਰਤਾ ਦੇ ਨਾਲ ਥੋੜ੍ਹੀ ਹਲਕਾਪਣ ਅਤੇ ਨਿੱਘ ਵੀ ਰੱਖੋ।",
     # EN: Shravana is ruled by Vishnu, the preserver, and symbolised by an ear or three footprints.
     #     Its name means "hearing", and people with the Moon here are often good listeners, eager
     #     learners and keepers of knowledge and tradition. They learn by listening and pass on what
@@ -2132,7 +2132,7 @@ NAKSHATRA_TRAITS = {
     #     connecting people, so teaching, counselling, media, languages, music and travel suit it
     #     well. Its gift is attentive understanding and a wish to be useful; its lesson is to listen
     #     to one's own inner voice as carefully as to others.
-    "shravana": "",
+    "shravana": "ਸ਼ਰਵਣ ਦੇ ਸੁਆਮੀ ਵਿਸ਼ਨੂੰ, ਪਾਲਣਹਾਰ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਕੰਨ ਜਾਂ ਤਿੰਨ ਪੈੜਾਂ ਹਨ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਸੁਣਨਾ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਚੰਗੇ ਸਰੋਤੇ, ਸਿੱਖਣ ਦੇ ਸ਼ੌਕੀਨ ਅਤੇ ਗਿਆਨ ਤੇ ਰਵਾਇਤ ਦੇ ਰਖਵਾਲੇ ਹੁੰਦੇ ਹਨ। ਉਹ ਸੁਣ ਕੇ ਸਿੱਖਦੇ ਹਨ ਅਤੇ ਜੋ ਸਿੱਖਿਆ ਉਸ ਨੂੰ ਅੱਗੇ ਪਹੁੰਚਾਉਂਦੇ ਹਨ। ਪਰੰਪਰਾ ਸ਼ਰਵਣ ਨੂੰ ਪੜ੍ਹਾਈ ਨਾਲ ਮਿਲੀ ਸਿਆਣਪ ਅਤੇ ਲੋਕਾਂ ਨੂੰ ਜੋੜਨ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਪੜ੍ਹਾਉਣਾ, ਸਲਾਹ-ਮਸ਼ਵਰਾ, ਮੀਡੀਆ, ਭਾਸ਼ਾਵਾਂ, ਸੰਗੀਤ ਅਤੇ ਸਫ਼ਰ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਧਿਆਨ ਨਾਲ ਸਮਝਣ ਦੀ ਯੋਗਤਾ ਅਤੇ ਕੰਮ ਆਉਣ ਦੀ ਇੱਛਾ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਆਪਣੀ ਅੰਦਰਲੀ ਆਵਾਜ਼ ਨੂੰ ਵੀ ਓਨੇ ਹੀ ਧਿਆਨ ਨਾਲ ਸੁਣੋ ਜਿੰਨੇ ਨਾਲ ਦੂਜਿਆਂ ਨੂੰ ਸੁਣਦੇ ਹੋ।",
     # EN: Dhanishta is ruled by the eight Vasus, gods of abundance, and symbolised by a drum. Its
     #     name means "the wealthiest", and people with the Moon here often have rhythm, energy and a
     #     talent for music, dance or teamwork. They are generous, sociable and able to keep a group
@@ -2140,7 +2140,7 @@ NAKSHATRA_TRAITS = {
     #     performance, sport, property, finance and community work suit it well. Its gift is the
     #     ability to set the beat that others follow; its lesson is to listen as well as play,
     #     leaving space for others' rhythms.
-    "dhanishta": "",
+    "dhanishta": "ਧਨਿਸ਼ਠਾ ਦੇ ਸੁਆਮੀ ਅੱਠ ਵਸੂ, ਖ਼ੁਸ਼ਹਾਲੀ ਦੇ ਦੇਵਤੇ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਢੋਲ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਸਭ ਤੋਂ ਧਨਵਾਨ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਨ੍ਹਾਂ ਵਿੱਚ ਅਕਸਰ ਤਾਲ, ਊਰਜਾ ਅਤੇ ਸੰਗੀਤ, ਨਾਚ ਜਾਂ ਟੀਮ ਵਰਕ ਦਾ ਹੁਨਰ ਹੁੰਦਾ ਹੈ। ਉਹ ਉਦਾਰ, ਮਿਲਣਸਾਰ ਅਤੇ ਕਿਸੇ ਟੋਲੇ ਨੂੰ ਇਕੱਠਿਆਂ ਤੋਰ ਕੇ ਰੱਖਣ ਦੇ ਕਾਬਲ ਹੁੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਧਨਿਸ਼ਠਾ ਨੂੰ ਖ਼ੁਸ਼ਹਾਲੀ ਅਤੇ ਧੁਨੀ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਸੰਗੀਤ, ਪੇਸ਼ਕਾਰੀ, ਖੇਡ, ਜਾਇਦਾਦ, ਵਿੱਤ ਅਤੇ ਭਾਈਚਾਰਕ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਉਹ ਤਾਲ ਬੰਨ੍ਹਣ ਦੀ ਸਮਰੱਥਾ ਹੈ ਜਿਸ ਪਿੱਛੇ ਹੋਰ ਚੱਲਦੇ ਹਨ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਵਜਾਉਣ ਦੇ ਨਾਲ ਸੁਣੋ ਵੀ, ਅਤੇ ਦੂਜਿਆਂ ਦੀਆਂ ਤਾਲਾਂ ਲਈ ਥਾਂ ਛੱਡੋ।",
     # EN: Shatabhisha is ruled by Varuna, lord of the cosmic waters and of truth, and symbolised by
     #     an empty circle. Its name means "a hundred healers", and people with the Moon here are
     #     often independent thinkers, private, truthful and drawn to understanding how things really
@@ -2148,7 +2148,7 @@ NAKSHATRA_TRAITS = {
     #     the search for hidden truth, so medicine, research, science, technology, astronomy and
     #     alternative healing suit it well. Its gift is clear, original insight; its lesson is to
     #     let others into the circle, sharing what is understood with warmth.
-    "shatabhisha": "",
+    "shatabhisha": "ਸ਼ਤਭਿਸ਼ਾ ਦੇ ਸੁਆਮੀ ਵਰੁਣ, ਬ੍ਰਹਿਮੰਡੀ ਜਲ ਅਤੇ ਸੱਚ ਦੇ ਸੁਆਮੀ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਖ਼ਾਲੀ ਚੱਕਰ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਸੌ ਵੈਦ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਆਜ਼ਾਦ ਵਿਚਾਰਕ, ਨਿੱਜਤਾ ਪਸੰਦ, ਸੱਚੇ ਅਤੇ ਇਹ ਸਮਝਣ ਵੱਲ ਖਿੱਚੇ ਹੁੰਦੇ ਹਨ ਕਿ ਚੀਜ਼ਾਂ ਅਸਲ ਵਿੱਚ ਕਿਵੇਂ ਕੰਮ ਕਰਦੀਆਂ ਹਨ। ਉਹ ਉਹ ਪੈਟਰਨ ਵੇਖ ਲੈਂਦੇ ਹਨ ਜੋ ਹੋਰਾਂ ਤੋਂ ਖੁੰਝ ਜਾਂਦੇ ਹਨ। ਪਰੰਪਰਾ ਸ਼ਤਭਿਸ਼ਾ ਨੂੰ ਇਲਾਜ ਅਤੇ ਛੁਪੇ ਸੱਚ ਦੀ ਖੋਜ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਦਵਾਈ, ਖੋਜ, ਵਿਗਿਆਨ, ਤਕਨਾਲੋਜੀ, ਖਗੋਲ ਵਿਗਿਆਨ ਅਤੇ ਬਦਲਵੇਂ ਇਲਾਜ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਸਾਫ਼, ਮੌਲਿਕ ਸੂਝ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਦੂਜਿਆਂ ਨੂੰ ਚੱਕਰ ਦੇ ਅੰਦਰ ਆਉਣ ਦਿਓ, ਅਤੇ ਜੋ ਸਮਝਿਆ ਹੈ ਉਹ ਨਿੱਘ ਨਾਲ ਵੰਡੋ।",
     # EN: Purva Bhadrapada is ruled by Aja Ekapada, the one-footed form of Shiva, and symbolised by
     #     swords or the front legs of a cot. People with the Moon here are often idealistic, intense
     #     and willing to give themselves fully to a cause they believe in. They can be eloquent,
@@ -2156,7 +2156,7 @@ NAKSHATRA_TRAITS = {
     #     with the fire of tapas — sincere effort for a higher aim — so social reform, philosophy,
     #     writing, research and spiritual life suit it well. Its gift is passionate commitment; its
     #     lesson is to temper intensity with patience and calm.
-    "purva-bhadrapada": "",
+    "purva-bhadrapada": "ਪੂਰਵਾ ਭਾਦਰਪਦ ਦੇ ਸੁਆਮੀ ਅਜ ਏਕਪਾਦ, ਸ਼ਿਵ ਦਾ ਇੱਕ ਪੈਰ ਵਾਲਾ ਰੂਪ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਤਲਵਾਰਾਂ ਜਾਂ ਮੰਜੇ ਦੀਆਂ ਅਗਲੀਆਂ ਲੱਤਾਂ ਹਨ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਆਦਰਸ਼ਵਾਦੀ, ਤੀਬਰ ਅਤੇ ਜਿਸ ਮਕਸਦ ’ਤੇ ਯਕੀਨ ਕਰਦੇ ਹੋਣ ਉਸ ਲਈ ਆਪਣਾ ਸਭ ਕੁਝ ਦੇਣ ਨੂੰ ਤਿਆਰ ਹੁੰਦੇ ਹਨ। ਉਹ ਬੋਲਣ ਵਿੱਚ ਪ੍ਰਭਾਵਸ਼ਾਲੀ, ਉਦਾਰ ਅਤੇ ਡੂੰਘੇ ਅਧਿਆਤਮਿਕ ਹੋ ਸਕਦੇ ਹਨ। ਪਰੰਪਰਾ ਪੂਰਵਾ ਭਾਦਰਪਦ ਨੂੰ ਰੂਪਾਂਤਰਨ ਅਤੇ ਤਪ ਦੀ ਅੱਗ — ਉੱਚੇ ਉਦੇਸ਼ ਲਈ ਸੱਚੀ ਕੋਸ਼ਿਸ਼ — ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਸਮਾਜ ਸੁਧਾਰ, ਫ਼ਲਸਫ਼ਾ, ਲਿਖਣ, ਖੋਜ ਅਤੇ ਅਧਿਆਤਮਿਕ ਜੀਵਨ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਜੋਸ਼ ਭਰੀ ਵਚਨਬੱਧਤਾ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਤੀਬਰਤਾ ਨੂੰ ਸਬਰ ਅਤੇ ਸ਼ਾਂਤੀ ਨਾਲ ਸੰਤੁਲਿਤ ਕਰੋ।",
     # EN: Uttara Bhadrapada is ruled by Ahir Budhnya, the serpent of the deep waters, and symbolised
     #     by the back legs of a cot or twins. Where Purva Bhadrapada burns, Uttara Bhadrapada
     #     settles into calm depth. People with the Moon here are often wise, patient, composed and
@@ -2165,7 +2165,7 @@ NAKSHATRA_TRAITS = {
     #     renunciation and kindness, so counselling, charity, teaching, research and spiritual
     #     practice suit it well. Its gift is serene wisdom; its lesson is to share it actively, not
     #     only privately.
-    "uttara-bhadrapada": "",
+    "uttara-bhadrapada": "ਉੱਤਰਾ ਭਾਦਰਪਦ ਦੇ ਸੁਆਮੀ ਅਹਿਰ ਬੁਧਨਯ, ਡੂੰਘੇ ਜਲ ਦਾ ਸੱਪ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਮੰਜੇ ਦੀਆਂ ਪਿਛਲੀਆਂ ਲੱਤਾਂ ਜਾਂ ਜੁੜਵਾਂ ਹੈ। ਜਿੱਥੇ ਪੂਰਵਾ ਭਾਦਰਪਦ ਬਲਦਾ ਹੈ, ਉੱਤਰਾ ਭਾਦਰਪਦ ਸ਼ਾਂਤ ਡੂੰਘਾਈ ਵਿੱਚ ਟਿਕ ਜਾਂਦਾ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਸਿਆਣੇ, ਸਬਰ ਵਾਲੇ, ਸ਼ਾਂਤ-ਚਿੱਤ ਅਤੇ ਦਇਆਵਾਨ ਹੁੰਦੇ ਹਨ, ਸੰਜਮ ਅਤੇ ਸਲਾਹ ਦੇਣ ਦੀ ਦਾਤ ਨਾਲ। ਉਹ ਬੋਲਣ ਤੋਂ ਪਹਿਲਾਂ ਸੋਚਦੇ ਹਨ ਅਤੇ ਔਖੇ ਸਮਿਆਂ ਵਿੱਚ ਡਟੇ ਰਹਿੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਇਸ ਨਕਸ਼ਤਰ ਨੂੰ ਡੂੰਘਾਈ, ਤਿਆਗ ਅਤੇ ਮਿਹਰਬਾਨੀ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਸਲਾਹ-ਮਸ਼ਵਰਾ, ਦਾਨ, ਪੜ੍ਹਾਉਣਾ, ਖੋਜ ਅਤੇ ਅਧਿਆਤਮਿਕ ਸਾਧਨਾ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਸ਼ਾਂਤ ਸਿਆਣਪ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਇਸ ਨੂੰ ਸਿਰਫ਼ ਨਿੱਜੀ ਤੌਰ ’ਤੇ ਨਹੀਂ, ਸਰਗਰਮੀ ਨਾਲ ਵੰਡੋ।",
     # EN: Revati, the last nakshatra, is ruled by Pushan, the nourisher who guides travellers and
     #     protects herds on their way, and symbolised by a fish. People with the Moon here are often
     #     gentle, kind, imaginative and protective of the weak, with a love of animals, art and
@@ -2173,7 +2173,7 @@ NAKSHATRA_TRAITS = {
     #     safely. Tradition links Revati with safe journeys, prosperity and completion, so caring
     #     work, the arts, travel, hospitality and spiritual life suit it well. Its gift is
     #     compassion and faith; its lesson is to care for oneself while caring for everyone else.
-    "revati": "",
+    "revati": "ਰੇਵਤੀ, ਆਖ਼ਰੀ ਨਕਸ਼ਤਰ, ਦੇ ਸੁਆਮੀ ਪੂਸ਼ਨ ਹਨ, ਪਾਲਣਹਾਰ ਜੋ ਮੁਸਾਫ਼ਰਾਂ ਨੂੰ ਰਾਹ ਦਿਖਾਉਂਦਾ ਅਤੇ ਪਸ਼ੂਆਂ ਦੇ ਇੱਜੜਾਂ ਦੀ ਰਾਹ ਵਿੱਚ ਰਾਖੀ ਕਰਦਾ ਹੈ, ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਮੱਛੀ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਕੋਮਲ, ਮਿਹਰਬਾਨ, ਕਲਪਨਾਸ਼ੀਲ ਅਤੇ ਕਮਜ਼ੋਰਾਂ ਦੇ ਰਖਵਾਲੇ ਹੁੰਦੇ ਹਨ, ਜਾਨਵਰਾਂ, ਕਲਾ ਅਤੇ ਸੰਗੀਤ ਨਾਲ ਪਿਆਰ ਕਰਨ ਵਾਲੇ। ਉਹ ਹਰ ਸਫ਼ਰ ਵਿੱਚ ਚੰਗੇ ਸਾਥੀ ਬਣਦੇ ਹਨ ਅਤੇ ਦੂਜਿਆਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਮੰਜ਼ਿਲ ਤੱਕ ਪਹੁੰਚਣ ਵਿੱਚ ਮਦਦ ਕਰਦੇ ਹਨ। ਪਰੰਪਰਾ ਰੇਵਤੀ ਨੂੰ ਸੁਰੱਖਿਅਤ ਸਫ਼ਰ, ਖ਼ੁਸ਼ਹਾਲੀ ਅਤੇ ਸੰਪੂਰਨਤਾ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਸੇਵਾ ਵਾਲੇ ਕੰਮ, ਕਲਾਵਾਂ, ਸਫ਼ਰ, ਮਹਿਮਾਨਨਿਵਾਜ਼ੀ ਅਤੇ ਅਧਿਆਤਮਿਕ ਜੀਵਨ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਦਇਆ ਅਤੇ ਵਿਸ਼ਵਾਸ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਬਾਕੀ ਸਭ ਦੀ ਸੰਭਾਲ ਕਰਦਿਆਂ ਆਪਣੀ ਸੰਭਾਲ ਵੀ ਕਰੋ।",
 }
 
 # app/nakshatra_text.py RASHI_TRAITS["pa"] — character paragraph of each of the 12 rashis (key = slug)  [12]
@@ -2185,7 +2185,7 @@ RASHI_TRAITS = {
     #     bring enthusiasm wherever they go. Work that rewards initiative — sport, the armed forces,
     #     engineering, entrepreneurship, surgery — often suits them. Their growth lies in patience
     #     and in listening before acting, so that their courage is matched by care for others.
-    "mesh": "",
+    "mesh": "ਮੇਖ ਪਹਿਲੀ ਰਾਸ਼ੀ ਹੈ, ਚਰ ਸੁਭਾਅ ਦੀ ਅਗਨੀ ਰਾਸ਼ੀ, ਜਿਸ ਦਾ ਸੁਆਮੀ ਮੰਗਲ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਮੇਖ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਊਰਜਾਵਾਨ, ਸਿੱਧੇ, ਹਿੰਮਤੀ ਅਤੇ ਛੇਤੀ ਕਦਮ ਚੁੱਕਣ ਵਾਲੇ ਹੁੰਦੇ ਹਨ — ਕੁਦਰਤੀ ਸ਼ੁਰੂਆਤ ਕਰਨ ਵਾਲੇ ਜੋ ਚੁਣੌਤੀ ਦਾ ਆਨੰਦ ਲੈਂਦੇ ਅਤੇ ਅੱਗੇ ਹੋ ਕੇ ਅਗਵਾਈ ਕਰਨਾ ਪਸੰਦ ਕਰਦੇ ਹਨ। ਉਹ ਆਪਣੀਆਂ ਭਾਵਨਾਵਾਂ ਬਾਰੇ ਸਾਫ਼-ਗੋ ਹੁੰਦੇ ਹਨ ਅਤੇ ਝਟਕਿਆਂ ਤੋਂ ਛੇਤੀ ਉੱਭਰ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਭਾਵਨਾਤਮਕ ਜੀਵਨ ਨਿੱਘਾ ਅਤੇ ਬੇਝਿਜਕ ਹੁੰਦਾ ਹੈ, ਅਤੇ ਉਹ ਜਿੱਥੇ ਵੀ ਜਾਣ ਉਤਸ਼ਾਹ ਲੈ ਕੇ ਜਾਂਦੇ ਹਨ। ਪਹਿਲਕਦਮੀ ਨੂੰ ਇਨਾਮ ਦੇਣ ਵਾਲੇ ਕੰਮ — ਖੇਡ, ਫ਼ੌਜ, ਇੰਜੀਨੀਅਰਿੰਗ, ਉੱਦਮ, ਸਰਜਰੀ — ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਸਬਰ ਅਤੇ ਕਦਮ ਚੁੱਕਣ ਤੋਂ ਪਹਿਲਾਂ ਸੁਣਨ ਵਿੱਚ ਹੈ, ਤਾਂ ਜੋ ਉਨ੍ਹਾਂ ਦੀ ਹਿੰਮਤ ਦੇ ਨਾਲ ਦੂਜਿਆਂ ਦੀ ਪਰਵਾਹ ਵੀ ਹੋਵੇ।",
     # EN: Vrishabh (Taurus) is a fixed earth sign ruled by Venus, and the Moon is exalted here.
     #     People with the Moon in Vrishabh are often calm, patient, loyal and steady, with a love of
     #     comfort, good food, music and beautiful things. They build slowly and surely, and what
@@ -2193,7 +2193,7 @@ RASHI_TRAITS = {
     #     security to drama. Finance, agriculture, the arts, food, design and any work that rewards
     #     persistence often suit them. Their growth lies in flexibility — welcoming change when it
     #     comes, and holding possessions and opinions a little more lightly.
-    "vrishabh": "",
+    "vrishabh": "ਬ੍ਰਿਖ ਸਥਿਰ ਸੁਭਾਅ ਦੀ ਪ੍ਰਿਥਵੀ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਸ਼ੁੱਕਰ ਹੈ, ਅਤੇ ਇੱਥੇ ਚੰਦਰਮਾ ਉੱਚ ਦਾ ਹੁੰਦਾ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਬ੍ਰਿਖ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਸ਼ਾਂਤ, ਸਬਰ ਵਾਲੇ, ਵਫ਼ਾਦਾਰ ਅਤੇ ਟਿਕੇ ਹੋਏ ਹੁੰਦੇ ਹਨ, ਆਰਾਮ, ਚੰਗੇ ਖਾਣੇ, ਸੰਗੀਤ ਅਤੇ ਸੋਹਣੀਆਂ ਚੀਜ਼ਾਂ ਦੇ ਸ਼ੌਕੀਨ। ਉਹ ਹੌਲੀ ਪਰ ਪੱਕੇ ਤੌਰ ’ਤੇ ਉਸਾਰੀ ਕਰਦੇ ਹਨ, ਅਤੇ ਜੋ ਉਹ ਬਣਾਉਂਦੇ ਹਨ ਉਹ ਟਿਕਦਾ ਹੈ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਹ ਭਰੋਸੇਯੋਗ ਅਤੇ ਪਿਆਰ ਕਰਨ ਵਾਲੇ ਹੁੰਦੇ ਹਨ, ਡਰਾਮੇ ਨਾਲੋਂ ਸੁਰੱਖਿਆ ਨੂੰ ਤਰਜੀਹ ਦਿੰਦੇ ਹਨ। ਵਿੱਤ, ਖੇਤੀ, ਕਲਾਵਾਂ, ਖਾਣ-ਪੀਣ, ਡਿਜ਼ਾਈਨ ਅਤੇ ਦ੍ਰਿੜ੍ਹਤਾ ਨੂੰ ਇਨਾਮ ਦੇਣ ਵਾਲਾ ਹਰ ਕੰਮ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਲਚਕ ਵਿੱਚ ਹੈ — ਬਦਲਾਅ ਆਵੇ ਤਾਂ ਉਸ ਦਾ ਸਵਾਗਤ ਕਰਨਾ, ਅਤੇ ਚੀਜ਼ਾਂ ਤੇ ਰਾਵਾਂ ਨੂੰ ਥੋੜ੍ਹਾ ਹਲਕੇ ਹੱਥ ਨਾਲ ਫੜਨਾ।",
     # EN: Mithun (Gemini) is a dual air sign ruled by Mercury. People with the Moon in Mithun are
     #     often curious, witty, talkative and quick to learn, with many interests and a gift for
     #     connecting ideas and people. They enjoy conversation, reading, travel and anything that
@@ -2201,7 +2201,7 @@ RASHI_TRAITS = {
     #     can talk to. Writing, teaching, media, sales, technology and trade often suit them. Their
     #     growth lies in depth and focus — choosing a few things and seeing them through — and in
     #     giving their own feelings the attention they give to ideas.
-    "mithun": "",
+    "mithun": "ਮਿਥੁਨ ਦ੍ਵਿਸਵਭਾਵ ਦੀ ਵਾਯੂ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਬੁੱਧ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਮਿਥੁਨ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਜਗਿਆਸੂ, ਹਾਜ਼ਰ-ਜਵਾਬ, ਗੱਲਾਂ ਕਰਨ ਵਾਲੇ ਅਤੇ ਛੇਤੀ ਸਿੱਖਣ ਵਾਲੇ ਹੁੰਦੇ ਹਨ, ਕਈ ਸ਼ੌਕਾਂ ਅਤੇ ਵਿਚਾਰਾਂ ਤੇ ਲੋਕਾਂ ਨੂੰ ਜੋੜਨ ਦੀ ਦਾਤ ਵਾਲੇ। ਉਹ ਗੱਲ-ਬਾਤ, ਪੜ੍ਹਨ, ਸਫ਼ਰ ਅਤੇ ਮਨ ਨੂੰ ਰੁੱਝਿਆ ਰੱਖਣ ਵਾਲੀ ਹਰ ਚੀਜ਼ ਦਾ ਆਨੰਦ ਲੈਂਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਨ੍ਹਾਂ ਨੂੰ ਬਦਲਾਅ ਅਤੇ ਅਜਿਹੇ ਸਾਥੀ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ ਜੋ ਦੋਸਤ ਵੀ ਹੋਵੇ ਜਿਸ ਨਾਲ ਉਹ ਗੱਲ ਕਰ ਸਕਣ। ਲਿਖਣਾ, ਪੜ੍ਹਾਉਣਾ, ਮੀਡੀਆ, ਵਿਕਰੀ, ਤਕਨਾਲੋਜੀ ਅਤੇ ਵਪਾਰ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਡੂੰਘਾਈ ਅਤੇ ਇਕਾਗਰਤਾ ਵਿੱਚ ਹੈ — ਕੁਝ ਚੀਜ਼ਾਂ ਚੁਣ ਕੇ ਉਨ੍ਹਾਂ ਨੂੰ ਨਿਭਾਉਣਾ — ਅਤੇ ਆਪਣੀਆਂ ਭਾਵਨਾਵਾਂ ਨੂੰ ਓਨਾ ਹੀ ਧਿਆਨ ਦੇਣਾ ਜਿੰਨਾ ਉਹ ਵਿਚਾਰਾਂ ਨੂੰ ਦਿੰਦੇ ਹਨ।",
     # EN: Kark (Cancer) is a movable water sign ruled by the Moon itself, so the Moon is at home
     #     here. People with the Moon in Kark are often caring, sensitive, intuitive and devoted to
     #     family and home. They remember kindness, protect those they love and create warmth
@@ -2209,7 +2209,7 @@ RASHI_TRAITS = {
     #     Nursing, teaching, hospitality, food, real estate, counselling and public service often
     #     suit them. Their growth lies in trusting their own strength, letting go of old hurts and
     #     allowing others to care for them in return.
-    "kark": "",
+    "kark": "ਕਰਕ ਚਰ ਸੁਭਾਅ ਦੀ ਜਲ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਖ਼ੁਦ ਚੰਦਰਮਾ ਹੈ, ਇਸ ਲਈ ਇੱਥੇ ਚੰਦਰਮਾ ਆਪਣੇ ਘਰ ਵਿੱਚ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਕਰਕ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਪਰਵਾਹ ਕਰਨ ਵਾਲੇ, ਸੰਵੇਦਨਸ਼ੀਲ, ਅੰਤਰ-ਗਿਆਨੀ ਅਤੇ ਪਰਿਵਾਰ ਤੇ ਘਰ ਨੂੰ ਸਮਰਪਿਤ ਹੁੰਦੇ ਹਨ। ਉਹ ਮਿਹਰਬਾਨੀ ਨੂੰ ਯਾਦ ਰੱਖਦੇ ਹਨ, ਆਪਣਿਆਂ ਦੀ ਰਾਖੀ ਕਰਦੇ ਹਨ ਅਤੇ ਜਿੱਥੇ ਵੀ ਰਹਿਣ ਨਿੱਘ ਪੈਦਾ ਕਰ ਦਿੰਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦੇ ਮੂਡ ਲਹਿਰਾਂ ਵਾਂਗ ਬਦਲ ਸਕਦੇ ਹਨ, ਪਰ ਵਫ਼ਾਦਾਰੀ ਡੂੰਘੀ ਹੁੰਦੀ ਹੈ। ਨਰਸਿੰਗ, ਪੜ੍ਹਾਉਣਾ, ਮਹਿਮਾਨਨਿਵਾਜ਼ੀ, ਖਾਣ-ਪੀਣ, ਰੀਅਲ ਅਸਟੇਟ, ਸਲਾਹ-ਮਸ਼ਵਰਾ ਅਤੇ ਲੋਕ ਸੇਵਾ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਆਪਣੀ ਤਾਕਤ ’ਤੇ ਭਰੋਸਾ ਕਰਨ, ਪੁਰਾਣੇ ਜ਼ਖ਼ਮ ਛੱਡਣ ਅਤੇ ਬਦਲੇ ਵਿੱਚ ਦੂਜਿਆਂ ਨੂੰ ਆਪਣੀ ਸੰਭਾਲ ਕਰਨ ਦੇਣ ਵਿੱਚ ਹੈ।",
     # EN: Simha (Leo) is a fixed fire sign ruled by the Sun. People with the Moon in Simha are often
     #     generous, dignified, confident and warm-hearted, with a natural sense of leadership and a
     #     love of recognition. They are loyal to those who trust them and protective of their family
@@ -2217,7 +2217,7 @@ RASHI_TRAITS = {
     #     Leadership, administration, politics, the performing arts, teaching and government service
     #     often suit them. Their growth lies in humility — letting others share the stage, and
     #     finding confidence from within rather than from applause.
-    "simha": "",
+    "simha": "ਸਿੰਘ ਸਥਿਰ ਸੁਭਾਅ ਦੀ ਅਗਨੀ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਸੂਰਜ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਸਿੰਘ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਉਦਾਰ, ਮਾਣਮੱਤੇ, ਆਤਮ-ਵਿਸ਼ਵਾਸੀ ਅਤੇ ਨਿੱਘੇ ਦਿਲ ਵਾਲੇ ਹੁੰਦੇ ਹਨ, ਅਗਵਾਈ ਦੀ ਕੁਦਰਤੀ ਸੂਝ ਅਤੇ ਪਛਾਣ ਮਿਲਣ ਦੀ ਚਾਹਤ ਨਾਲ। ਜੋ ਉਨ੍ਹਾਂ ’ਤੇ ਭਰੋਸਾ ਕਰਦੇ ਹਨ, ਉਨ੍ਹਾਂ ਪ੍ਰਤੀ ਉਹ ਵਫ਼ਾਦਾਰ ਹੁੰਦੇ ਹਨ ਅਤੇ ਪਰਿਵਾਰ ਤੇ ਦੋਸਤਾਂ ਦੀ ਰਾਖੀ ਕਰਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਹ ਸਵੈਮਾਣੀ ਅਤੇ ਖੁੱਲ੍ਹੇ ਦਿਲ ਵਾਲੇ ਹੁੰਦੇ ਹਨ, ਅਤੇ ਕਦਰ ਮਿਲਣ ’ਤੇ ਚਮਕ ਉੱਠਦੇ ਹਨ। ਅਗਵਾਈ, ਪ੍ਰਸ਼ਾਸਨ, ਸਿਆਸਤ, ਪੇਸ਼ਕਾਰੀ ਕਲਾਵਾਂ, ਪੜ੍ਹਾਉਣਾ ਅਤੇ ਸਰਕਾਰੀ ਸੇਵਾ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਨਿਮਰਤਾ ਵਿੱਚ ਹੈ — ਦੂਜਿਆਂ ਨੂੰ ਮੰਚ ਸਾਂਝਾ ਕਰਨ ਦੇਣਾ, ਅਤੇ ਤਾੜੀਆਂ ਦੀ ਥਾਂ ਅੰਦਰੋਂ ਆਤਮ-ਵਿਸ਼ਵਾਸ ਲੱਭਣਾ।",
     # EN: Kanya (Virgo) is a dual earth sign ruled by Mercury. People with the Moon in Kanya are
     #     often practical, analytical, modest and helpful, with an eye for detail and a wish to make
     #     things work properly. They show care through service — fixing, organising and looking
@@ -2225,7 +2225,7 @@ RASHI_TRAITS = {
     #     deeply dependable. Medicine, accounting, research, editing, nutrition, teaching and any
     #     precise craft often suit them. Their growth lies in self-acceptance: being as kind to
     #     their own imperfections as they are patient with other people's needs.
-    "kanya": "",
+    "kanya": "ਕੰਨਿਆ ਦ੍ਵਿਸਵਭਾਵ ਦੀ ਪ੍ਰਿਥਵੀ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਬੁੱਧ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਕੰਨਿਆ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਵਿਹਾਰਕ, ਵਿਸ਼ਲੇਸ਼ਣੀ, ਨਿਮਰ ਅਤੇ ਮਦਦਗਾਰ ਹੁੰਦੇ ਹਨ, ਬਾਰੀਕੀਆਂ ’ਤੇ ਨਜ਼ਰ ਅਤੇ ਚੀਜ਼ਾਂ ਨੂੰ ਠੀਕ ਤਰ੍ਹਾਂ ਚਲਾਉਣ ਦੀ ਇੱਛਾ ਨਾਲ। ਉਹ ਸੇਵਾ ਰਾਹੀਂ ਪਰਵਾਹ ਜਤਾਉਂਦੇ ਹਨ — ਮੁਰੰਮਤ ਕਰਕੇ, ਸਲੀਕਾ ਬਣਾ ਕੇ ਅਤੇ ਉਹ ਛੋਟੀਆਂ ਗੱਲਾਂ ਸੰਭਾਲ ਕੇ ਜੋ ਹੋਰ ਅਣਡਿੱਠ ਕਰ ਦਿੰਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਹ ਸੰਕੋਚੀ ਹੋ ਸਕਦੇ ਹਨ, ਪਰ ਡੂੰਘੀ ਤਰ੍ਹਾਂ ਭਰੋਸੇਯੋਗ ਹੁੰਦੇ ਹਨ। ਦਵਾਈ, ਲੇਖਾਕਾਰੀ, ਖੋਜ, ਸੰਪਾਦਨ, ਪੋਸ਼ਣ, ਪੜ੍ਹਾਉਣਾ ਅਤੇ ਹਰ ਬਾਰੀਕ ਦਸਤਕਾਰੀ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੀ ਹੈ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਆਪਣੇ ਆਪ ਨੂੰ ਕਬੂਲਣ ਵਿੱਚ ਹੈ: ਆਪਣੀਆਂ ਕਮੀਆਂ ਨਾਲ ਓਨੇ ਹੀ ਮਿਹਰਬਾਨ ਹੋਣਾ ਜਿੰਨੇ ਉਹ ਦੂਜਿਆਂ ਦੀਆਂ ਲੋੜਾਂ ਲਈ ਸਬਰ ਵਾਲੇ ਹਨ।",
     # EN: Tula (Libra) is a movable air sign ruled by Venus, symbolised by the scales. People with
     #     the Moon in Tula are often gracious, fair-minded, sociable and diplomatic, with a strong
     #     sense of beauty and justice. They value harmony in relationships and are good at seeing
@@ -2233,7 +2233,7 @@ RASHI_TRAITS = {
     #     things around them are balanced. Law, diplomacy, design, fashion, the arts, counselling
     #     and business partnerships often suit them. Their growth lies in decisiveness — trusting
     #     their own judgement and accepting that a little disagreement can be healthy.
-    "tula": "",
+    "tula": "ਤੁਲਾ ਚਰ ਸੁਭਾਅ ਦੀ ਵਾਯੂ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਸ਼ੁੱਕਰ ਹੈ, ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਤੱਕੜੀ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਤੁਲਾ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਸ਼ਾਲੀਨ, ਨਿਆਂਪਸੰਦ, ਮਿਲਣਸਾਰ ਅਤੇ ਕੂਟਨੀਤਕ ਹੁੰਦੇ ਹਨ, ਸੁੰਦਰਤਾ ਤੇ ਇਨਸਾਫ਼ ਦੀ ਪ੍ਰਬਲ ਸੂਝ ਨਾਲ। ਉਹ ਰਿਸ਼ਤਿਆਂ ਵਿੱਚ ਸਦਭਾਵ ਦੀ ਕਦਰ ਕਰਦੇ ਹਨ ਅਤੇ ਕਿਸੇ ਵੀ ਸਵਾਲ ਦੇ ਦੋਵੇਂ ਪੱਖ ਵੇਖਣ ਵਿੱਚ ਮਾਹਰ ਹੁੰਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਨ੍ਹਾਂ ਨੂੰ ਸਾਂਝੇਦਾਰੀ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ ਅਤੇ ਜਦੋਂ ਆਲੇ-ਦੁਆਲੇ ਸੰਤੁਲਨ ਹੋਵੇ ਤਾਂ ਉਹ ਸਭ ਤੋਂ ਸਹਿਜ ਮਹਿਸੂਸ ਕਰਦੇ ਹਨ। ਕਾਨੂੰਨ, ਕੂਟਨੀਤੀ, ਡਿਜ਼ਾਈਨ, ਫ਼ੈਸ਼ਨ, ਕਲਾਵਾਂ, ਸਲਾਹ-ਮਸ਼ਵਰਾ ਅਤੇ ਕਾਰੋਬਾਰੀ ਸਾਂਝੇਦਾਰੀਆਂ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੀਆਂ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਫ਼ੈਸਲਾਕੁੰਨ ਹੋਣ ਵਿੱਚ ਹੈ — ਆਪਣੀ ਸਮਝ ’ਤੇ ਭਰੋਸਾ ਕਰਨਾ ਅਤੇ ਇਹ ਮੰਨਣਾ ਕਿ ਥੋੜ੍ਹੀ ਅਸਹਿਮਤੀ ਸਿਹਤਮੰਦ ਹੋ ਸਕਦੀ ਹੈ।",
     # EN: Vrishchik (Scorpio) is a fixed water sign ruled by Mars. People with the Moon in Vrishchik
     #     are often intense, perceptive, determined and deeply loyal, with feelings that run far
     #     below the surface. They are not satisfied with appearances and want to understand what is
@@ -2241,7 +2241,7 @@ RASHI_TRAITS = {
     #     Research, investigation, medicine, psychology, finance and crisis work often suit them.
     #     Their growth lies in trust and forgiveness: letting others in, and allowing old feelings
     #     to transform rather than be held.
-    "vrishchik": "",
+    "vrishchik": "ਬ੍ਰਿਸ਼ਚਕ ਸਥਿਰ ਸੁਭਾਅ ਦੀ ਜਲ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਮੰਗਲ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਬ੍ਰਿਸ਼ਚਕ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਤੀਬਰ, ਸੂਝਵਾਨ, ਦ੍ਰਿੜ੍ਹ ਅਤੇ ਡੂੰਘੀ ਤਰ੍ਹਾਂ ਵਫ਼ਾਦਾਰ ਹੁੰਦੇ ਹਨ, ਉਨ੍ਹਾਂ ਦੀਆਂ ਭਾਵਨਾਵਾਂ ਸਤਹ ਤੋਂ ਬਹੁਤ ਹੇਠਾਂ ਵਗਦੀਆਂ ਹਨ। ਉਹ ਦਿਖਾਵੇ ਨਾਲ ਸੰਤੁਸ਼ਟ ਨਹੀਂ ਹੁੰਦੇ ਅਤੇ ਸਮਝਣਾ ਚਾਹੁੰਦੇ ਹਨ ਕਿ ਅਸਲ ਵਿੱਚ ਕੀ ਚੱਲ ਰਿਹਾ ਹੈ। ਇੱਕ ਵਾਰ ਕਿਸੇ ਵਿਅਕਤੀ, ਮਕਸਦ ਜਾਂ ਟੀਚੇ ਪ੍ਰਤੀ ਵਚਨਬੱਧ ਹੋ ਜਾਣ ਤਾਂ ਉਹ ਘੱਟ ਹੀ ਛੱਡਦੇ ਹਨ। ਖੋਜ, ਜਾਂਚ-ਪੜਤਾਲ, ਦਵਾਈ, ਮਨੋਵਿਗਿਆਨ, ਵਿੱਤ ਅਤੇ ਸੰਕਟ ਦਾ ਕੰਮ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਭਰੋਸੇ ਅਤੇ ਮੁਆਫ਼ੀ ਵਿੱਚ ਹੈ: ਦੂਜਿਆਂ ਨੂੰ ਅੰਦਰ ਆਉਣ ਦੇਣਾ, ਅਤੇ ਪੁਰਾਣੀਆਂ ਭਾਵਨਾਵਾਂ ਨੂੰ ਫੜੀ ਰੱਖਣ ਦੀ ਥਾਂ ਬਦਲਣ ਦੇਣਾ।",
     # EN: Dhanu (Sagittarius) is a dual fire sign ruled by Jupiter, symbolised by the archer. People
     #     with the Moon in Dhanu are often optimistic, honest, generous and philosophical, with a
     #     love of learning, travel and freedom. They look for meaning in life and enjoy sharing what
@@ -2249,7 +2249,7 @@ RASHI_TRAITS = {
     #     Teaching, law, religion and philosophy, publishing, travel and sport often suit them.
     #     Their growth lies in following through — giving the same attention to the details of daily
     #     life that they give to big ideas and distant horizons.
-    "dhanu": "",
+    "dhanu": "ਧਨੁ ਦ੍ਵਿਸਵਭਾਵ ਦੀ ਅਗਨੀ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਬ੍ਰਿਹਸਪਤੀ ਹੈ, ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਤੀਰਅੰਦਾਜ਼ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਧਨੁ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਆਸ਼ਾਵਾਦੀ, ਸੱਚੇ, ਉਦਾਰ ਅਤੇ ਦਾਰਸ਼ਨਿਕ ਹੁੰਦੇ ਹਨ, ਪੜ੍ਹਾਈ, ਸਫ਼ਰ ਅਤੇ ਆਜ਼ਾਦੀ ਦੇ ਪ੍ਰੇਮੀ। ਉਹ ਜ਼ਿੰਦਗੀ ਦਾ ਮਤਲਬ ਲੱਭਦੇ ਹਨ ਅਤੇ ਜੋ ਸਿੱਖਿਆ ਹੋਵੇ ਉਹ ਵੰਡਣਾ ਪਸੰਦ ਕਰਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਹ ਖੁੱਲ੍ਹੇ ਅਤੇ ਖ਼ੁਸ਼ਮਿਜ਼ਾਜ ਹੁੰਦੇ ਹਨ, ਅਤੇ ਉਨ੍ਹਾਂ ਨੂੰ ਵਧਣ ਲਈ ਥਾਂ ਚਾਹੀਦੀ ਹੈ। ਪੜ੍ਹਾਉਣਾ, ਕਾਨੂੰਨ, ਧਰਮ ਤੇ ਫ਼ਲਸਫ਼ਾ, ਪ੍ਰਕਾਸ਼ਨ, ਸਫ਼ਰ ਅਤੇ ਖੇਡ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਕੰਮ ਨੂੰ ਪੂਰਾ ਕਰਨ ਵਿੱਚ ਹੈ — ਰੋਜ਼ਾਨਾ ਜ਼ਿੰਦਗੀ ਦੀਆਂ ਬਾਰੀਕੀਆਂ ਨੂੰ ਓਨਾ ਹੀ ਧਿਆਨ ਦੇਣਾ ਜਿੰਨਾ ਉਹ ਵੱਡੇ ਵਿਚਾਰਾਂ ਅਤੇ ਦੂਰ ਦੇ ਦਿਸਹੱਦਿਆਂ ਨੂੰ ਦਿੰਦੇ ਹਨ।",
     # EN: Makar (Capricorn) is a movable earth sign ruled by Saturn. People with the Moon in Makar
     #     are often responsible, disciplined, practical and ambitious in a patient, long-term way.
     #     They take duty seriously, work steadily and earn respect over time. Emotionally they can
@@ -2257,7 +2257,7 @@ RASHI_TRAITS = {
     #     management, engineering, government service, finance and any field that rewards
     #     perseverance often suit them. Their growth lies in warmth and rest — allowing themselves
     #     joy along the way, and remembering that their worth is not measured only by achievement.
-    "makar": "",
+    "makar": "ਮਕਰ ਚਰ ਸੁਭਾਅ ਦੀ ਪ੍ਰਿਥਵੀ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਸ਼ਨੀ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਮਕਰ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਜ਼ਿੰਮੇਵਾਰ, ਅਨੁਸ਼ਾਸਿਤ, ਵਿਹਾਰਕ ਅਤੇ ਸਬਰ ਵਾਲੇ, ਲੰਮੇ ਸਮੇਂ ਦੇ ਢੰਗ ਨਾਲ ਉੱਚ-ਅਕਾਂਖਿਆ ਵਾਲੇ ਹੁੰਦੇ ਹਨ। ਉਹ ਫ਼ਰਜ਼ ਨੂੰ ਗੰਭੀਰਤਾ ਨਾਲ ਲੈਂਦੇ ਹਨ, ਲਗਾਤਾਰ ਕੰਮ ਕਰਦੇ ਹਨ ਅਤੇ ਸਮੇਂ ਨਾਲ ਇੱਜ਼ਤ ਕਮਾਉਂਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਹ ਸੰਕੋਚੀ ਲੱਗ ਸਕਦੇ ਹਨ, ਪਰ ਪਿਆਰ ਭਰੋਸੇਯੋਗਤਾ ਅਤੇ ਚੁੱਪ ਸਹਾਰੇ ਰਾਹੀਂ ਜਤਾਉਂਦੇ ਹਨ। ਪ੍ਰਸ਼ਾਸਨ, ਪ੍ਰਬੰਧ, ਇੰਜੀਨੀਅਰਿੰਗ, ਸਰਕਾਰੀ ਸੇਵਾ, ਵਿੱਤ ਅਤੇ ਲਗਨ ਨੂੰ ਇਨਾਮ ਦੇਣ ਵਾਲਾ ਹਰ ਖੇਤਰ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਨਿੱਘ ਅਤੇ ਆਰਾਮ ਵਿੱਚ ਹੈ — ਰਾਹ ਵਿੱਚ ਆਪਣੇ ਆਪ ਨੂੰ ਖ਼ੁਸ਼ੀ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣਾ, ਅਤੇ ਯਾਦ ਰੱਖਣਾ ਕਿ ਉਨ੍ਹਾਂ ਦੀ ਕੀਮਤ ਸਿਰਫ਼ ਪ੍ਰਾਪਤੀ ਨਾਲ ਨਹੀਂ ਮਾਪੀ ਜਾਂਦੀ।",
     # EN: Kumbh (Aquarius) is a fixed air sign ruled by Saturn, symbolised by the water-bearer who
     #     pours knowledge out for all. People with the Moon in Kumbh are often independent,
     #     humanitarian, inventive and loyal to friends and ideals. They think about the wider
@@ -2265,7 +2265,7 @@ RASHI_TRAITS = {
     #     freedom, and they show care through principle and action. Science, technology, social
     #     work, research, education and community organisations often suit them. Their growth lies
     #     in closeness — letting their warmth show to individuals as well as to humanity as a whole.
-    "kumbh": "",
+    "kumbh": "ਕੁੰਭ ਸਥਿਰ ਸੁਭਾਅ ਦੀ ਵਾਯੂ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਸ਼ਨੀ ਹੈ, ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਪਾਣੀ ਢੋਣ ਵਾਲਾ ਹੈ ਜੋ ਸਭ ਲਈ ਗਿਆਨ ਵਹਾਉਂਦਾ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਕੁੰਭ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਆਜ਼ਾਦ, ਮਨੁੱਖਤਾਵਾਦੀ, ਕਾਢਕਾਰ ਅਤੇ ਦੋਸਤਾਂ ਤੇ ਆਦਰਸ਼ਾਂ ਪ੍ਰਤੀ ਵਫ਼ਾਦਾਰ ਹੁੰਦੇ ਹਨ। ਉਹ ਵਿਸ਼ਾਲ ਭਾਈਚਾਰੇ ਬਾਰੇ ਸੋਚਦੇ ਹਨ ਅਤੇ ਨਵੇਂ ਵਿਚਾਰਾਂ, ਵਿਗਿਆਨ ਤੇ ਸੁਧਾਰ ਦਾ ਆਨੰਦ ਲੈਂਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਹ ਦੋਸਤੀ ਅਤੇ ਆਜ਼ਾਦੀ ਦੀ ਕਦਰ ਕਰਦੇ ਹਨ, ਅਤੇ ਪਰਵਾਹ ਅਸੂਲਾਂ ਤੇ ਕਰਮ ਰਾਹੀਂ ਜਤਾਉਂਦੇ ਹਨ। ਵਿਗਿਆਨ, ਤਕਨਾਲੋਜੀ, ਸਮਾਜ ਸੇਵਾ, ਖੋਜ, ਸਿੱਖਿਆ ਅਤੇ ਭਾਈਚਾਰਕ ਸੰਸਥਾਵਾਂ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੀਆਂ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਨੇੜਤਾ ਵਿੱਚ ਹੈ — ਆਪਣੀ ਨਿੱਘ ਨੂੰ ਪੂਰੀ ਮਨੁੱਖਤਾ ਦੇ ਨਾਲ-ਨਾਲ ਇੱਕ-ਇੱਕ ਵਿਅਕਤੀ ਲਈ ਵੀ ਦਿਖਾਉਣਾ।",
     # EN: Meen (Pisces) is a dual water sign ruled by Jupiter, the last of the twelve rashis. People
     #     with the Moon in Meen are often compassionate, imaginative, gentle and spiritually
     #     inclined, with a deep sensitivity to the feelings of others. They forgive easily, help
@@ -2274,203 +2274,203 @@ RASHI_TRAITS = {
     #     spiritual work often suit them. Their growth lies in healthy boundaries — caring for
     #     others without losing themselves, and turning their rich imagination into practical
     #     action.
-    "meen": "",
+    "meen": "ਮੀਨ ਦ੍ਵਿਸਵਭਾਵ ਦੀ ਜਲ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਬ੍ਰਿਹਸਪਤੀ ਹੈ, ਬਾਰਾਂ ਰਾਸ਼ੀਆਂ ਵਿੱਚੋਂ ਆਖ਼ਰੀ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਮੀਨ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਦਇਆਵਾਨ, ਕਲਪਨਾਸ਼ੀਲ, ਕੋਮਲ ਅਤੇ ਅਧਿਆਤਮਿਕ ਝੁਕਾਅ ਵਾਲੇ ਹੁੰਦੇ ਹਨ, ਦੂਜਿਆਂ ਦੀਆਂ ਭਾਵਨਾਵਾਂ ਪ੍ਰਤੀ ਡੂੰਘੀ ਸੰਵੇਦਨਸ਼ੀਲਤਾ ਨਾਲ। ਉਹ ਆਸਾਨੀ ਨਾਲ ਮੁਆਫ਼ ਕਰ ਦਿੰਦੇ ਹਨ, ਬਿਨਾਂ ਕਹੇ ਮਦਦ ਕਰਦੇ ਹਨ ਅਤੇ ਸੰਗੀਤ, ਕਲਾ ਤੇ ਭਗਤੀ ਤੋਂ ਪ੍ਰਭਾਵਿਤ ਹੁੰਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਹ ਖੁੱਲ੍ਹੇ ਦਿਲ ਵਾਲੇ ਅਤੇ ਅੰਤਰ-ਗਿਆਨੀ ਹੁੰਦੇ ਹਨ। ਇਲਾਜ, ਸਲਾਹ-ਮਸ਼ਵਰਾ, ਕਲਾਵਾਂ, ਸੰਗੀਤ, ਦਾਨ, ਪੜ੍ਹਾਉਣਾ ਅਤੇ ਅਧਿਆਤਮਿਕ ਕੰਮ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਸਿਹਤਮੰਦ ਹੱਦਾਂ ਵਿੱਚ ਹੈ — ਆਪਣੇ ਆਪ ਨੂੰ ਗੁਆਏ ਬਿਨਾਂ ਦੂਜਿਆਂ ਦੀ ਪਰਵਾਹ ਕਰਨਾ, ਅਤੇ ਆਪਣੀ ਅਮੀਰ ਕਲਪਨਾ ਨੂੰ ਵਿਹਾਰਕ ਕਰਮ ਵਿੱਚ ਬਦਲਣਾ।",
 }
 
 # app/nakshatra_text.py FACTS["pa"] — deity.<slug> and symbol.<slug> of each nakshatra  [54]
 NAKSHATRA_FACTS = {
     # EN: The Ashwini Kumaras, the divine physicians
-    "deity.ashwini": "",
+    "deity.ashwini": "ਅਸ਼ਵਿਨੀ ਕੁਮਾਰ, ਦੇਵਤਿਆਂ ਦੇ ਵੈਦ",
     # EN: A horse's head
-    "symbol.ashwini": "",
+    "symbol.ashwini": "ਘੋੜੇ ਦਾ ਸਿਰ",
     # EN: Yama, lord of dharma
-    "deity.bharani": "",
+    "deity.bharani": "ਯਮ, ਧਰਮ ਦਾ ਸੁਆਮੀ",
     # EN: The yoni (womb)
-    "symbol.bharani": "",
+    "symbol.bharani": "ਯੋਨੀ (ਕੁੱਖ)",
     # EN: Agni, the fire
-    "deity.krittika": "",
+    "deity.krittika": "ਅਗਨੀ, ਅੱਗ",
     # EN: A razor or flame
-    "symbol.krittika": "",
+    "symbol.krittika": "ਉਸਤਰਾ ਜਾਂ ਲਾਟ",
     # EN: Brahma (Prajapati)
-    "deity.rohini": "",
+    "deity.rohini": "ਬ੍ਰਹਮਾ (ਪ੍ਰਜਾਪਤੀ)",
     # EN: A chariot or ox-cart
-    "symbol.rohini": "",
+    "symbol.rohini": "ਰਥ ਜਾਂ ਬਲਦ-ਗੱਡੀ",
     # EN: Soma, the Moon
-    "deity.mrigashira": "",
+    "deity.mrigashira": "ਸੋਮ, ਚੰਦਰਮਾ",
     # EN: A deer's head
-    "symbol.mrigashira": "",
+    "symbol.mrigashira": "ਹਿਰਨ ਦਾ ਸਿਰ",
     # EN: Rudra
-    "deity.ardra": "",
+    "deity.ardra": "ਰੁਦਰ",
     # EN: A teardrop or diamond
-    "symbol.ardra": "",
+    "symbol.ardra": "ਅੱਥਰੂ ਦੀ ਬੂੰਦ ਜਾਂ ਹੀਰਾ",
     # EN: Aditi, mother of the gods
-    "deity.punarvasu": "",
+    "deity.punarvasu": "ਅਦਿਤੀ, ਦੇਵਤਿਆਂ ਦੀ ਮਾਂ",
     # EN: A bow and quiver
-    "symbol.punarvasu": "",
+    "symbol.punarvasu": "ਧਨੁਸ਼ ਅਤੇ ਤਰਕਸ਼",
     # EN: Brihaspati, guru of the gods
-    "deity.pushya": "",
+    "deity.pushya": "ਬ੍ਰਿਹਸਪਤੀ, ਦੇਵਤਿਆਂ ਦਾ ਗੁਰੂ",
     # EN: A cow's udder or lotus
-    "symbol.pushya": "",
+    "symbol.pushya": "ਗਾਂ ਦਾ ਥਣ ਜਾਂ ਕਮਲ",
     # EN: The Nagas (serpent deities)
-    "deity.ashlesha": "",
+    "deity.ashlesha": "ਨਾਗ (ਸੱਪ ਦੇਵਤੇ)",
     # EN: A coiled serpent
-    "symbol.ashlesha": "",
+    "symbol.ashlesha": "ਕੁੰਡਲੀ ਮਾਰਿਆ ਸੱਪ",
     # EN: The Pitris (ancestors)
-    "deity.magha": "",
+    "deity.magha": "ਪਿਤਰ (ਪੁਰਖੇ)",
     # EN: A royal throne
-    "symbol.magha": "",
+    "symbol.magha": "ਸ਼ਾਹੀ ਸਿੰਘਾਸਣ",
     # EN: Bhaga, giver of fortune
-    "deity.purva-phalguni": "",
+    "deity.purva-phalguni": "ਭਗ, ਕਿਸਮਤ ਦੇਣ ਵਾਲਾ",
     # EN: The front legs of a bed
-    "symbol.purva-phalguni": "",
+    "symbol.purva-phalguni": "ਪਲੰਘ ਦੀਆਂ ਅਗਲੀਆਂ ਲੱਤਾਂ",
     # EN: Aryaman, lord of friendship
-    "deity.uttara-phalguni": "",
+    "deity.uttara-phalguni": "ਅਰਿਆਮਾ, ਦੋਸਤੀ ਦਾ ਸੁਆਮੀ",
     # EN: The back legs of a bed
-    "symbol.uttara-phalguni": "",
+    "symbol.uttara-phalguni": "ਪਲੰਘ ਦੀਆਂ ਪਿਛਲੀਆਂ ਲੱਤਾਂ",
     # EN: Savitr, the Sun
-    "deity.hasta": "",
+    "deity.hasta": "ਸਵਿਤ੍ਰ, ਸੂਰਜ",
     # EN: A hand
-    "symbol.hasta": "",
+    "symbol.hasta": "ਹੱਥ",
     # EN: Tvashtr (Vishwakarma), the divine architect
-    "deity.chitra": "",
+    "deity.chitra": "ਤ੍ਵਸ਼ਟਾ (ਵਿਸ਼ਵਕਰਮਾ), ਦੈਵੀ ਵਾਸਤੂਕਾਰ",
     # EN: A bright jewel
-    "symbol.chitra": "",
+    "symbol.chitra": "ਚਮਕਦਾ ਰਤਨ",
     # EN: Vayu, the wind
-    "deity.swati": "",
+    "deity.swati": "ਵਾਯੂ, ਹਵਾ",
     # EN: A young shoot swaying in the wind
-    "symbol.swati": "",
+    "symbol.swati": "ਹਵਾ ਵਿੱਚ ਝੂਲਦਾ ਨਵਾਂ ਫੁੱਟਿਆ ਬੂਟਾ",
     # EN: Indra and Agni (Indragni)
-    "deity.vishakha": "",
+    "deity.vishakha": "ਇੰਦਰ ਅਤੇ ਅਗਨੀ (ਇੰਦਰਾਗਨੀ)",
     # EN: A triumphal arch
-    "symbol.vishakha": "",
+    "symbol.vishakha": "ਜਿੱਤ ਦਾ ਦੁਆਰ",
     # EN: Mitra, lord of friendship
-    "deity.anuradha": "",
+    "deity.anuradha": "ਮਿਤ੍ਰ, ਦੋਸਤੀ ਦਾ ਸੁਆਮੀ",
     # EN: A lotus
-    "symbol.anuradha": "",
+    "symbol.anuradha": "ਕਮਲ",
     # EN: Indra, king of the gods
-    "deity.jyeshtha": "",
+    "deity.jyeshtha": "ਇੰਦਰ, ਦੇਵਤਿਆਂ ਦਾ ਰਾਜਾ",
     # EN: A circular amulet or earring
-    "symbol.jyeshtha": "",
+    "symbol.jyeshtha": "ਗੋਲ ਤਵੀਤ ਜਾਂ ਕੰਨ ਦੀ ਵਾਲੀ",
     # EN: Nirriti
-    "deity.mula": "",
+    "deity.mula": "ਨਿਰ੍ਰਿਤੀ",
     # EN: A bunch of roots
-    "symbol.mula": "",
+    "symbol.mula": "ਜੜ੍ਹਾਂ ਦਾ ਗੁੱਛਾ",
     # EN: Apas, the waters
-    "deity.purva-ashadha": "",
+    "deity.purva-ashadha": "ਆਪਸ, ਜਲ",
     # EN: A winnowing fan or elephant tusk
-    "symbol.purva-ashadha": "",
+    "symbol.purva-ashadha": "ਛੱਜ ਜਾਂ ਹਾਥੀ ਦਾ ਦੰਦ",
     # EN: The Vishvedevas (universal gods)
-    "deity.uttara-ashadha": "",
+    "deity.uttara-ashadha": "ਵਿਸ਼ਵੇਦੇਵ (ਸਰਬ ਦੇਵਤੇ)",
     # EN: An elephant tusk
-    "symbol.uttara-ashadha": "",
+    "symbol.uttara-ashadha": "ਹਾਥੀ ਦਾ ਦੰਦ",
     # EN: Vishnu
-    "deity.shravana": "",
+    "deity.shravana": "ਵਿਸ਼ਨੂੰ",
     # EN: An ear, or three footprints
-    "symbol.shravana": "",
+    "symbol.shravana": "ਕੰਨ, ਜਾਂ ਤਿੰਨ ਪੈੜਾਂ",
     # EN: The eight Vasus
-    "deity.dhanishta": "",
+    "deity.dhanishta": "ਅੱਠ ਵਸੂ",
     # EN: A drum (mridanga)
-    "symbol.dhanishta": "",
+    "symbol.dhanishta": "ਢੋਲ (ਮ੍ਰਿਦੰਗ)",
     # EN: Varuna, lord of the waters
-    "deity.shatabhisha": "",
+    "deity.shatabhisha": "ਵਰੁਣ, ਜਲ ਦਾ ਸੁਆਮੀ",
     # EN: An empty circle
-    "symbol.shatabhisha": "",
+    "symbol.shatabhisha": "ਖ਼ਾਲੀ ਚੱਕਰ",
     # EN: Aja Ekapada
-    "deity.purva-bhadrapada": "",
+    "deity.purva-bhadrapada": "ਅਜ ਏਕਪਾਦ",
     # EN: Swords, or the front legs of a cot
-    "symbol.purva-bhadrapada": "",
+    "symbol.purva-bhadrapada": "ਤਲਵਾਰਾਂ, ਜਾਂ ਮੰਜੇ ਦੀਆਂ ਅਗਲੀਆਂ ਲੱਤਾਂ",
     # EN: Ahir Budhnya, serpent of the deep
-    "deity.uttara-bhadrapada": "",
+    "deity.uttara-bhadrapada": "ਅਹਿਰ ਬੁਧਨਯ, ਡੂੰਘੇ ਜਲ ਦਾ ਸੱਪ",
     # EN: The back legs of a cot, or twins
-    "symbol.uttara-bhadrapada": "",
+    "symbol.uttara-bhadrapada": "ਮੰਜੇ ਦੀਆਂ ਪਿਛਲੀਆਂ ਲੱਤਾਂ, ਜਾਂ ਜੁੜਵਾਂ",
     # EN: Pushan, the nourisher and guide
-    "deity.revati": "",
+    "deity.revati": "ਪੂਸ਼ਨ, ਪਾਲਣਹਾਰ ਅਤੇ ਰਾਹ-ਦਸੇਰਾ",
     # EN: A fish (or a drum)
-    "symbol.revati": "",
+    "symbol.revati": "ਮੱਛੀ (ਜਾਂ ਢੋਲ)",
 }
 
 # app/naam_milan_text.py TEXT["pa"] — page text of /naam-se-kundali-milan  [34]
 NAAM_MILAN_TEXT = {
     # EN: Naam se Kundali Milan — Match 36 Gunas by Name, Free | {brand}
     # keep: {brand}
-    "title": "",
+    "title": "ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ — ਨਾਂ ਨਾਲ 36 ਗੁਣ ਮਿਲਾਓ, ਮੁਫ਼ਤ | {brand}",
     # EN: Kundali milan by name: the first syllable of the boy's and girl's names gives each
     #     nakshatra and rashi, then the full 36-guna Ashtakoot match. Type names in Hindi or English
     #     — free, no sign-up.
-    "desc": "",
+    "desc": "ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ: ਮੁੰਡੇ ਅਤੇ ਕੁੜੀ ਦੇ ਨਾਂ ਦੇ ਪਹਿਲੇ ਅੱਖਰ ਤੋਂ ਨਕਸ਼ਤਰ ਤੇ ਰਾਸ਼ੀ ਨਿਕਲਦੀ ਹੈ, ਫਿਰ ਪੂਰਾ 36 ਗੁਣਾਂ ਦਾ ਅਸ਼ਟਕੂਟ ਮਿਲਾਨ। ਨਾਂ ਹਿੰਦੀ ਜਾਂ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਲਿਖੋ — ਮੁਫ਼ਤ, ਬਿਨਾਂ ਸਾਈਨ ਅੱਪ।",
     # EN: Naam se Kundali Milan
-    "crumb": "",
+    "crumb": "ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ",
     # EN: <h1>Naam se Kundali Milan — Match by Name</h1>
-    "h1": "",
+    "h1": "<h1>ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ — ਨਾਂ ਨਾਲ ਮਿਲਾਨ</h1>",
     # EN: <p class="hi" lang="hi">नाम से कुंडली मिलान</p>
-    "sub": "",
+    "sub": "<p class=\"hi\">ਨਾਂ ਦੇ ਪਹਿਲੇ ਅੱਖਰ ਤੋਂ ਨਕਸ਼ਤਰ, ਰਾਸ਼ੀ ਅਤੇ 36 ਗੁਣ</p>",
     # EN: <p>When birth times are not known, tradition matches a couple by the <strong>first
     #     syllable of their names</strong>. Type both names in Hindi or English: we show the
     #     syllable used, its nakshatra pada and rashi, and the full 36-guna match.</p>
-    "intro": "",
+    "intro": "<p>ਜਦੋਂ ਜਨਮ ਦਾ ਸਮਾਂ ਪਤਾ ਨਾ ਹੋਵੇ, ਰਵਾਇਤ ਅਨੁਸਾਰ ਜੋੜੇ ਦਾ ਮਿਲਾਨ <strong>ਨਾਂ ਦੇ ਪਹਿਲੇ ਅੱਖਰ</strong> ਨਾਲ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਦੋਵੇਂ ਨਾਂ ਹਿੰਦੀ ਜਾਂ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਲਿਖੋ: ਅਸੀਂ ਵਰਤਿਆ ਗਿਆ ਅੱਖਰ, ਉਸ ਦਾ ਨਕਸ਼ਤਰ ਚਰਣ ਅਤੇ ਰਾਸ਼ੀ, ਅਤੇ ਪੂਰਾ 36 ਗੁਣਾਂ ਦਾ ਮਿਲਾਨ ਦਿਖਾਵਾਂਗੇ।</p>",
     # EN: Open birth-chart Kundali Milan
-    "open_milan": "",
+    "open_milan": "ਜਨਮ ਕੁੰਡਲੀ ਵਾਲਾ ਕੁੰਡਲੀ ਮਿਲਾਨ ਖੋਲ੍ਹੋ",
     # EN: Automatic, from the name
-    "auto": "",
+    "auto": "ਆਪਣੇ ਆਪ, ਨਾਂ ਤੋਂ",
     # EN: Other likely syllables for this name
-    "alt_head": "",
+    "alt_head": "ਇਸ ਨਾਂ ਲਈ ਹੋਰ ਸੰਭਵ ਅੱਖਰ",
     # EN: All 108 syllables
-    "all_head": "",
+    "all_head": "ਸਾਰੇ 108 ਅੱਖਰ",
     # EN: Boy's name (groom)
-    "boy_label": "",
+    "boy_label": "ਮੁੰਡੇ (ਲਾੜੇ) ਦਾ ਨਾਂ",
     # EN: Girl's name (bride)
-    "girl_label": "",
+    "girl_label": "ਕੁੜੀ (ਲਾੜੀ) ਦਾ ਨਾਂ",
     # EN: e.g. Ram or राम
-    "boy_ph": "",
+    "boy_ph": "ਜਿਵੇਂ Ram",
     # EN: e.g. Sita or सीता
-    "girl_ph": "",
+    "girl_ph": "ਜਿਵੇਂ Sita",
     # EN: Change the first syllable
-    "pick": "",
+    "pick": "ਪਹਿਲਾ ਅੱਖਰ ਬਦਲੋ",
     # EN: Match the gunas
-    "button": "",
+    "button": "ਗੁਣ ਮਿਲਾਓ",
     # EN: This syllable belongs to Abhijit, the 28th nakshatra; in the 27-nakshatra wheel it is
     #     counted in Uttara Ashadha pada 4.
-    "via.abhijit": "",
+    "via.abhijit": "ਇਹ ਅੱਖਰ ਅਭਿਜੀਤ, ਯਾਨੀ 28ਵੇਂ ਨਕਸ਼ਤਰ, ਦਾ ਹੈ; 27 ਨਕਸ਼ਤਰਾਂ ਦੇ ਚੱਕਰ ਵਿੱਚ ਇਸ ਨੂੰ ਉੱਤਰਾ ਆਸ਼ਾੜ੍ਹਾ ਦੇ ਚੌਥੇ ਚਰਣ ਵਿੱਚ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: By the traditional rule, ब is read as व, and श as ष (with the a-vowel) or स.
-    "via.alias": "",
+    "via.alias": "ਰਵਾਇਤੀ ਨਿਯਮ ਮੁਤਾਬਕ ‘ਬ’ ਨੂੰ ‘ਵ’ ਵਜੋਂ, ਅਤੇ ‘ਸ਼’ ਨੂੰ ਮੂਰਧਨੀ ‘ਸ਼’ (ਅ-ਸੁਰ ਸਮੇਤ) ਜਾਂ ‘ਸ’ ਵਜੋਂ ਪੜ੍ਹਿਆ ਗਿਆ ਹੈ।",
     # EN: This exact syllable is not in the 108-syllable list, so the nearest syllable with the same
     #     consonant was used — change it below if you prefer.
-    "via.nearest": "",
+    "via.nearest": "ਇਹ ਹੂਬਹੂ ਅੱਖਰ 108 ਦੀ ਸੂਚੀ ਵਿੱਚ ਨਹੀਂ ਹੈ, ਇਸ ਲਈ ਓਸੇ ਵਿਅੰਜਨ ਵਾਲਾ ਸਭ ਤੋਂ ਨੇੜਲਾ ਅੱਖਰ ਲਿਆ ਗਿਆ ਹੈ — ਚਾਹੋ ਤਾਂ ਹੇਠਾਂ ਬਦਲ ਲਵੋ।",
     # EN: An English spelling cannot settle this syllable (e.g. T = त or ट), so the most common
     #     reading was used — pick another below if needed.
-    "via.latin": "",
+    "via.latin": "ਅੰਗਰੇਜ਼ੀ ਸਪੈਲਿੰਗ ਤੋਂ ਇਹ ਅੱਖਰ ਪੱਕਾ ਨਹੀਂ ਹੋ ਸਕਦਾ (ਜਿਵੇਂ T = ਤ ਜਾਂ ਟ), ਇਸ ਲਈ ਸਭ ਤੋਂ ਆਮ ਉਚਾਰਨ ਲਿਆ ਗਿਆ ਹੈ — ਲੋੜ ਹੋਵੇ ਤਾਂ ਹੇਠਾਂ ਕੋਈ ਹੋਰ ਚੁਣੋ।",
     # EN: You chose this syllable.
-    "via.chosen": "",
+    "via.chosen": "ਇਹ ਅੱਖਰ ਤੁਸੀਂ ਆਪ ਚੁਣਿਆ ਹੈ।",
     # EN: Could not read a first syllable from this name — pick one from the list below.
-    "unreadable": "",
+    "unreadable": "ਇਸ ਨਾਂ ਤੋਂ ਪਹਿਲਾ ਅੱਖਰ ਨਹੀਂ ਪੜ੍ਹਿਆ ਜਾ ਸਕਿਆ — ਹੇਠਾਂ ਦਿੱਤੀ ਸੂਚੀ ਵਿੱਚੋਂ ਇੱਕ ਚੁਣੋ।",
     # EN: pada
-    "pada": "",
+    "pada": "ਚਰਣ",
     # EN: Result
-    "result": "",
+    "result": "ਨਤੀਜਾ",
     # EN: <tr><th></th><th>First syllable</th><th>Nakshatra</th><th>Rashi</th></tr>
-    "res.head": "",
+    "res.head": "<tr><th></th><th>ਪਹਿਲਾ ਅੱਖਰ</th><th>ਨਕਸ਼ਤਰ</th><th>ਰਾਸ਼ੀ</th></tr>",
     # EN: Boy
-    "boy": "",
+    "boy": "ਮੁੰਡਾ",
     # EN: Girl
-    "girl": "",
+    "girl": "ਕੁੜੀ",
     # EN: <tr><th>Koota</th><th>Points</th><th>Why</th></tr>
-    "res.th": "",
+    "res.th": "<tr><th>ਕੂਟ</th><th>ਅੰਕ</th><th>ਕਾਰਨ</th></tr>",
     # EN: Total
-    "total": "",
+    "total": "ਕੁੱਲ",
     # EN: <strong>Mangal dosha: not applicable.</strong> Mangal dosha depends on where Mars stood
     #     from the Lagna, Moon and Venus at birth — a name cannot tell you that. Use birth-chart
     #     matching for it.
-    "mangal": "",
+    "mangal": "<strong>ਮੰਗਲ ਦੋਸ਼: ਲਾਗੂ ਨਹੀਂ।</strong> ਮੰਗਲ ਦੋਸ਼ ਇਸ ਗੱਲ ’ਤੇ ਨਿਰਭਰ ਕਰਦਾ ਹੈ ਕਿ ਜਨਮ ਵੇਲੇ ਮੰਗਲ ਲਗਨ, ਚੰਦਰਮਾ ਅਤੇ ਸ਼ੁੱਕਰ ਤੋਂ ਕਿੱਥੇ ਸੀ — ਨਾਂ ਤੋਂ ਇਹ ਪਤਾ ਨਹੀਂ ਲੱਗ ਸਕਦਾ। ਇਸ ਲਈ ਜਨਮ ਕੁੰਡਲੀ ਵਾਲਾ ਮਿਲਾਨ ਵਰਤੋ।",
     # EN: Match by birth details instead — more accurate, free
-    "res.cta": "",
+    "res.cta": "ਇਸ ਦੀ ਥਾਂ ਜਨਮ ਦੇ ਵੇਰਵੇ ਨਾਲ ਮਿਲਾਓ — ਵੱਧ ਸਹੀ, ਮੁਫ਼ਤ",
     # EN: <div class="box"><p><strong>Please note:</strong> name-based matching is a traditional
     #     shortcut, used when birth details are not known. It assumes each name was chosen from the
     #     syllable of the person's birth nakshatra — which today is often not the case. Matching
     #     from the date, time and place of birth is far more accurate, and is the only way to check
     #     Mangal dosha.</p></div>
-    "caveat": "",
+    "caveat": "<div class=\"box\"><p><strong>ਕਿਰਪਾ ਕਰਕੇ ਧਿਆਨ ਦਿਓ:</strong> ਨਾਂ ਨਾਲ ਮਿਲਾਨ ਇੱਕ ਰਵਾਇਤੀ ਛੋਟਾ ਰਾਹ ਹੈ, ਜੋ ਜਨਮ ਦਾ ਵੇਰਵਾ ਪਤਾ ਨਾ ਹੋਣ ’ਤੇ ਵਰਤਿਆ ਜਾਂਦਾ ਹੈ। ਇਹ ਮੰਨ ਕੇ ਚੱਲਦਾ ਹੈ ਕਿ ਨਾਂ ਵਿਅਕਤੀ ਦੇ ਜਨਮ ਨਕਸ਼ਤਰ ਦੇ ਅੱਖਰ ਤੋਂ ਰੱਖਿਆ ਗਿਆ ਸੀ — ਜੋ ਅੱਜ ਕੱਲ੍ਹ ਅਕਸਰ ਨਹੀਂ ਹੁੰਦਾ। ਜਨਮ ਦੀ ਤਾਰੀਖ਼, ਸਮੇਂ ਅਤੇ ਥਾਂ ਨਾਲ ਕੀਤਾ ਮਿਲਾਨ ਕਿਤੇ ਵੱਧ ਸਹੀ ਹੈ, ਅਤੇ ਮੰਗਲ ਦੋਸ਼ ਜਾਂਚਣ ਦਾ ਇਹੀ ਇੱਕੋ ਇੱਕ ਤਰੀਕਾ ਹੈ।</p></div>",
     # EN: <tr><th>Rashi</th><th>Name syllables</th></tr>
-    "syl.head": "",
+    "syl.head": "<tr><th>ਰਾਸ਼ੀ</th><th>ਨਾਂ ਦੇ ਅੱਖਰ</th></tr>",
     # EN: <h2>How name-based matching works</h2> <p>Each of the 27 nakshatras has four padas, and
     #     each pada has a syllable (namakshar) — 108 in all. The pada whose syllable a name
     #     <strong>begins with</strong> is taken as that person's nakshatra, and its sign as their
@@ -2488,22 +2488,22 @@ NAAM_MILAN_TEXT = {
     #     {syllables} <p>For each nakshatra's syllables, deity, gana and nadi see <a
     #     href="{href}">all 27 nakshatras</a>.</p>
     # keep: {abhijit} {href} {syllables}
-    "explainer": "",
+    "explainer": " <h2>ਨਾਂ ਨਾਲ ਮਿਲਾਨ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ</h2><p>27 ਨਕਸ਼ਤਰਾਂ ਵਿੱਚੋਂ ਹਰ ਇੱਕ ਦੇ ਚਾਰ ਚਰਣ ਹਨ, ਅਤੇ ਹਰ ਚਰਣ ਦਾ ਇੱਕ ਅੱਖਰ (ਨਾਮਾਕਸ਼ਰ) ਹੈ — ਕੁੱਲ 108। ਨਾਂ ਜਿਸ ਚਰਣ ਦੇ ਅੱਖਰ ਨਾਲ <strong>ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ</strong>, ਉਹੀ ਉਸ ਵਿਅਕਤੀ ਦਾ ਨਕਸ਼ਤਰ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਉਸ ਦੀ ਰਾਸ਼ੀ ਉਸ ਦੀ ਚੰਦਰ ਰਾਸ਼ੀ। ਫਿਰ ਇਨ੍ਹਾਂ ਦੋ ਨਕਸ਼ਤਰਾਂ ਤੋਂ ਓਹੀ <strong>ਅਸ਼ਟਕੂਟ (36 ਗੁਣ)</strong> ਮਿਲਾਨ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ ਜੋ ਜਨਮ ਕੁੰਡਲੀਆਂ ਨਾਲ ਹੁੰਦਾ ਹੈ — ਵਰਣ, ਵਸ਼ਯ, ਤਾਰਾ, ਯੋਨੀ, ਗ੍ਰਹਿ ਮੈਤਰੀ, ਗਣ, ਭਕੂਟ ਅਤੇ ਨਾੜੀ — ਸਾਡੇ ਕੁੰਡਲੀ ਮਿਲਾਨ ਟੂਲ ਦੇ ਓਸੇ ਇੰਜਣ ਨਾਲ।</p><h3>ਪਹਿਲਾ ਅੱਖਰ ਕਿਵੇਂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ</h3><ul><li>ਪਹਿਲੇ ਅੱਖਰ ਦਾ ਪਹਿਲਾ ਵਿਅੰਜਨ ਅਤੇ ਉਸ ਦੀ ਸੁਰ: <strong>ਪ੍ਰਿਯਾ → ਪੀ</strong>, <strong>ਕ੍ਸ਼ਿਤਿਜ → ਕੀ</strong>। ਛੋਟੀਆਂ ਤੇ ਵੱਡੀਆਂ ਸੁਰਾਂ ਨੂੰ ਇੱਕੋ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ (ਇ/ਈ, ਉ/ਊ); ਐ ਨੂੰ ਏ ਅਤੇ ਔ ਨੂੰ ਓ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ।</li><li>‘ਬ’ ਨੂੰ ‘ਵ’ ਵਜੋਂ, ਅਤੇ ‘ਸ਼’ ਨੂੰ ਮੂਰਧਨੀ ‘ਸ਼’ (ਅ-ਸੁਰ ਸਮੇਤ) ਜਾਂ ‘ਸ’ ਵਜੋਂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ; ਰਿ-ਸੁਰ ਨੂੰ ਰੀ।</li><li>ਅਭਿਜੀਤ ਦੇ ਅੱਖਰ ({abhijit}) ਉੱਤਰਾ ਆਸ਼ਾੜ੍ਹਾ ਦੇ ਚੌਥੇ ਚਰਣ ਵਿੱਚ ਗਿਣੇ ਜਾਂਦੇ ਹਨ।</li><li>ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਲਿਖੇ ਨਾਂ ਲਿਪੀਅੰਤਰ ਕਰਕੇ ਪੜ੍ਹੇ ਜਾਂਦੇ ਹਨ; T, D, N, Th ਅਤੇ Dh ਵਰਗੇ ਅੱਖਰ ਦੋ ਵੱਖ ਅੱਖਰਾਂ (ਤ/ਟ, ਦ/ਡ) ਦੀ ਥਾਂ ਹੋ ਸਕਦੇ ਹਨ, ਇਸ ਲਈ ਨਤੀਜਾ ਦੱਸਦਾ ਹੈ ਕਿ ਕਿਹੜਾ ਅੱਖਰ ਲਿਆ ਗਿਆ ਅਤੇ ਤੁਹਾਨੂੰ ਹੋਰ ਚੁਣਨ ਦਿੰਦਾ ਹੈ। ਹਿੰਦੀ (ਦੇਵਨਾਗਰੀ) ਵਿੱਚ ਲਿਖਿਆ ਨਾਂ ਹੂਬਹੂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।</li></ul><h3>ਰਾਸ਼ੀ ਮੁਤਾਬਕ ਨਾਂ ਦੇ ਅੱਖਰ</h3>{syllables}<p>ਹਰ ਨਕਸ਼ਤਰ ਦੇ ਅੱਖਰਾਂ, ਦੇਵਤੇ, ਗਣ ਅਤੇ ਨਾੜੀ ਲਈ <a href=\"{href}\">ਸਾਰੇ 27 ਨਕਸ਼ਤਰ</a> ਵੇਖੋ।</p>",
 }
 
 # app/naam_milan_text.py ENGINE["pa"] — score-band notes and the convention note of a naam-milan result  [5]
 NAAM_MILAN_ENGINE = {
     # EN: Below the traditional minimum of 18 gunas.
-    "band_note0": "",
+    "band_note0": "18 ਗੁਣਾਂ ਦੀ ਰਵਾਇਤੀ ਘੱਟੋ-ਘੱਟ ਹੱਦ ਤੋਂ ਹੇਠਾਂ।",
     # EN: In the traditional 18-24 gunas band.
-    "band_note1": "",
+    "band_note1": "ਰਵਾਇਤੀ 18-24 ਗੁਣਾਂ ਦੇ ਦਾਇਰੇ ਵਿੱਚ।",
     # EN: In the traditional 25-32 gunas band.
-    "band_note2": "",
+    "band_note2": "ਰਵਾਇਤੀ 25-32 ਗੁਣਾਂ ਦੇ ਦਾਇਰੇ ਵਿੱਚ।",
     # EN: In the traditional 33-36 gunas band.
-    "band_note3": "",
+    "band_note3": "ਰਵਾਇਤੀ 33-36 ਗੁਣਾਂ ਦੇ ਦਾਇਰੇ ਵਿੱਚ।",
     # EN: The 18/25/33 guna thresholds are a widely used convention, not a measurement. Astrologers
     #     often accept a lower total if the heavily weighted kootas are free of dosha.
-    "convention_note": "",
+    "convention_note": "18/25/33 ਗੁਣਾਂ ਦੀਆਂ ਹੱਦਾਂ ਇੱਕ ਆਮ ਵਰਤੀ ਜਾਂਦੀ ਰਵਾਇਤ ਹਨ, ਕੋਈ ਮਾਪ ਨਹੀਂ। ਜੇ ਭਾਰੀ ਅੰਕਾਂ ਵਾਲੇ ਕੂਟ ਦੋਸ਼ ਤੋਂ ਮੁਕਤ ਹੋਣ ਤਾਂ ਜੋਤਸ਼ੀ ਅਕਸਰ ਘੱਟ ਕੁੱਲ ਅੰਕ ਵੀ ਮੰਨ ਲੈਂਦੇ ਹਨ।",
 }
 
 # ----------------------------------------------------------------------------
@@ -2513,126 +2513,126 @@ NAAM_MILAN_ENGINE = {
 # app/muhurat_text.py TEXT["pa"] — page text of /muhurat/<kind>-<year> (the mundan-only keys are MUHURAT_MUNDAN)  [37]
 MUHURAT_TEXT = {
     # EN: Vivah Muhurat
-    "kind.vivah": "",
+    "kind.vivah": "ਵਿਆਹ ਮਹੂਰਤ",
     # EN: Griha Pravesh Muhurat
-    "kind.griha-pravesh": "",
+    "kind.griha-pravesh": "ਗ੍ਰਹਿ ਪ੍ਰਵੇਸ਼ ਮਹੂਰਤ",
     # EN: wedding
-    "noun.vivah": "",
+    "noun.vivah": "ਵਿਆਹ ਦੇ",
     # EN: house-warming
-    "noun.griha-pravesh": "",
+    "noun.griha-pravesh": "ਗ੍ਰਹਿ ਪ੍ਰਵੇਸ਼ ਦੇ",
     # EN: {name} {year}: Auspicious {noun_title} Dates (New Delhi) | {brand}
     # keep: {brand} {year}
     # may also use: {name} {noun_title} {noun}
-    "title": "",
+    "title": "{name} {year}: ਸ਼ੁਭ ਦਿਨ ਅਤੇ ਤਾਰੀਖ਼ਾਂ (ਨਵੀਂ ਦਿੱਲੀ) | {brand}",
     # EN: {name} {year}: auspicious {noun} dates
     # keep: {year}
     # may also use: {name} {noun}
-    "h1": "",
+    "h1": "{name} {year}: {noun} ਸ਼ੁਭ ਦਿਨ",
     # EN: {name} {year} for New Delhi — month-by-month auspicious {noun} dates with tithi and
     #     nakshatra. {count} dates; Chaturmas, Kharmas, Adhik Maas, Pitru Paksha and Guru/Shukra
     #     asta explained.
     # keep: {count} {year}
     # may also use: {name} {noun}
-    "desc": "",
+    "desc": "{name} {year} ਨਵੀਂ ਦਿੱਲੀ ਲਈ — ਮਹੀਨੇ ਦਰ ਮਹੀਨੇ {noun} ਸ਼ੁਭ ਦਿਨ, ਤਿਥੀ ਅਤੇ ਨਕਸ਼ਤਰ ਸਮੇਤ। ਕੁੱਲ {count} ਦਿਨ; ਚਾਤੁਰਮਾਸ, ਖਰਮਾਸ, ਅਧਿਕ ਮਾਸ, ਪਿਤਰ ਪੱਖ ਅਤੇ ਗੁਰੂ/ਸ਼ੁੱਕਰ ਅਸਤ ਦੀ ਵਿਆਖਿਆ ਵੀ।",
     # EN: <p class="hi" lang="hi">{name_hi} {year}</p>
     # keep: {year}
     # may also use: {name} {noun}
-    "sub": "",
+    "sub": "<p class=\"hi\">ਪੰਚਾਂਗ ਮੁਤਾਬਕ ਮਹੀਨੇਵਾਰ ਸ਼ੁਭ ਦਿਨਾਂ ਦੀ ਸੂਚੀ · {year}</p>",
     # EN: {label} · IST
     # keep: {label}
-    "place": "",
+    "place": "{label} · IST",
     # EN: <p>By the panchang there are <strong>{count}</strong> {name_lower} dates in {year} for New
     #     Delhi, in {months}. Each date passes the classical checks on the sunrise tithi, nakshatra,
     #     weekday, yoga and Bhadra, and falls outside Chaturmas, Kharmas, Adhik Maas, Pitru Paksha
     #     and the combustion (asta) of Jupiter and Venus.</p>
     # keep: {count} {months} {year}
     # may also use: {name_lower} {name} {noun}
-    "intro": "",
+    "intro": "<p>ਪੰਚਾਂਗ ਮੁਤਾਬਕ ਨਵੀਂ ਦਿੱਲੀ ਲਈ {year} ਵਿੱਚ {name_lower} ਲਈ <strong>{count}</strong> ਦਿਨ ਮਿਲਦੇ ਹਨ, ਇਨ੍ਹਾਂ ਮਹੀਨਿਆਂ ਵਿੱਚ: {months}। ਹਰ ਤਾਰੀਖ਼ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਦੀ ਤਿਥੀ, ਨਕਸ਼ਤਰ, ਵਾਰ, ਯੋਗ ਅਤੇ ਭਦਰਾ ਦੀਆਂ ਸ਼ਾਸਤਰੀ ਜਾਂਚਾਂ ਵਿੱਚੋਂ ਲੰਘਦੀ ਹੈ, ਅਤੇ ਚਾਤੁਰਮਾਸ, ਖਰਮਾਸ, ਅਧਿਕ ਮਾਸ, ਪਿਤਰ ਪੱਖ ਅਤੇ ਬ੍ਰਿਹਸਪਤੀ ਤੇ ਸ਼ੁੱਕਰ ਦੇ ਅਸਤ ਤੋਂ ਬਾਹਰ ਪੈਂਦੀ ਹੈ।</p>",
     # EN: <p><strong>Timings vary by city.</strong> These dates are reckoned from New Delhi's
     #     sunrise; elsewhere a tithi or nakshatra can change on a different day. The exact muhurat
     #     (lagna) for a wedding or griha pravesh should be fixed by your family priest. Check your
     #     own city in the Muhurat Finder.</p>
-    "note": "",
+    "note": "<p><strong>ਸਮੇਂ ਸ਼ਹਿਰ ਮੁਤਾਬਕ ਬਦਲਦੇ ਹਨ।</strong> ਇਹ ਤਾਰੀਖ਼ਾਂ ਨਵੀਂ ਦਿੱਲੀ ਦੇ ਸੂਰਜ ਚੜ੍ਹਨ ਮੁਤਾਬਕ ਗਿਣੀਆਂ ਗਈਆਂ ਹਨ; ਹੋਰ ਥਾਂ ਕੋਈ ਤਿਥੀ ਜਾਂ ਨਕਸ਼ਤਰ ਕਿਸੇ ਹੋਰ ਦਿਨ ਬਦਲ ਸਕਦਾ ਹੈ। ਵਿਆਹ ਜਾਂ ਗ੍ਰਹਿ ਪ੍ਰਵੇਸ਼ ਦਾ ਸਹੀ ਮਹੂਰਤ (ਲਗਨ) ਤੁਹਾਡੇ ਪਰਿਵਾਰ ਦੇ ਪੰਡਿਤ ਜੀ ਤੋਂ ਤੈਅ ਕਰਵਾਉਣਾ ਚਾਹੀਦਾ ਹੈ। ਆਪਣੇ ਸ਼ਹਿਰ ਲਈ ਮਹੂਰਤ ਖੋਜੋ ਵਿੱਚ ਵੇਖੋ।</p>",
     # EN: Find muhurat for your city — free
-    "cta": "",
+    "cta": "ਆਪਣੇ ਸ਼ਹਿਰ ਦਾ ਮਹੂਰਤ ਲੱਭੋ — ਮੁਫ਼ਤ",
     # EN: {name} {year}
     # keep: {name} {year}
-    "crumb": "",
+    "crumb": "{name} {year}",
     # EN: More muhurat dates
-    "more": "",
+    "more": "ਹੋਰ ਮਹੂਰਤ ਤਾਰੀਖ਼ਾਂ",
     # EN: {name} {year}
     # keep: {name} {year}
-    "link.kind": "",
+    "link.kind": "{name} {year}",
     # EN: Today's Panchang
-    "link.panchang": "",
+    "link.panchang": "ਅੱਜ ਦਾ ਪੰਚਾਂਗ",
     # EN: Kundali Milan
-    "link.milan": "",
+    "link.milan": "ਕੁੰਡਲੀ ਮਿਲਾਨ",
     # EN: When there is no {name_lower} in {year}
     # keep: {year}
     # may also use: {name_lower} {name} {noun}
-    "periods.h2": "",
+    "periods.h2": "{year} ਵਿੱਚ {name_lower} ਕਦੋਂ ਨਹੀਂ ਹੁੰਦਾ",
     # EN: No {name_lower} is given during these periods. The dates are computed from the panchang
     #     (New Delhi, sunrise):
     # may also use: {name_lower} {name} {noun}
-    "periods.intro": "",
+    "periods.intro": "ਇਨ੍ਹਾਂ ਸਮਿਆਂ ਵਿੱਚ ਕੋਈ {name_lower} ਨਹੀਂ ਦਿੱਤਾ ਜਾਂਦਾ। ਤਾਰੀਖ਼ਾਂ ਪੰਚਾਂਗ ਤੋਂ ਗਿਣੀਆਂ ਗਈਆਂ ਹਨ (ਨਵੀਂ ਦਿੱਲੀ, ਸੂਰਜ ਚੜ੍ਹਨ):",
     # EN: <li><strong>{period}</strong>, {range} — {about}.</li>
     # keep: {about} {period} {range}
-    "periods.item": "",
+    "periods.item": "<li><strong>{period}</strong>, {range} — {about}।</li>",
     # EN: No {name_lower} in {month} — {periods}.
     # keep: {month} {periods}
     # may also use: {name_lower} {name} {noun}
-    "none.periods": "",
+    "none.periods": "{month} ਵਿੱਚ ਕੋਈ {name_lower} ਨਹੀਂ — {periods}।",
     # EN: No {name_lower} in {month} — no day this month passes the tithi, nakshatra, weekday and
     #     yoga checks.
     # keep: {month}
     # may also use: {name_lower} {name} {noun}
-    "none.plain": "",
+    "none.plain": "{month} ਵਿੱਚ ਕੋਈ {name_lower} ਨਹੀਂ — ਇਸ ਮਹੀਨੇ ਦਾ ਕੋਈ ਵੀ ਦਿਨ ਤਿਥੀ, ਨਕਸ਼ਤਰ, ਵਾਰ ਅਤੇ ਯੋਗ ਦੀਆਂ ਜਾਂਚਾਂ ਪਾਸ ਨਹੀਂ ਕਰਦਾ।",
     # EN: <tr><th>Date</th><th>Day</th><th>Tithi</th><th>Nakshatra</th></tr>
-    "th": "",
+    "th": "<tr><th>ਤਾਰੀਖ਼</th><th>ਦਿਨ</th><th>ਤਿਥੀ</th><th>ਨਕਸ਼ਤਰ</th></tr>",
     # EN: Muhurat page not found
-    "nf.title": "",
+    "nf.title": "ਮਹੂਰਤ ਪੰਨਾ ਨਹੀਂ ਮਿਲਿਆ",
     # EN: Open the Muhurat Finder
-    "nf.open": "",
+    "nf.open": "ਮਹੂਰਤ ਖੋਜੋ ਖੋਲ੍ਹੋ",
     # EN: Chaturmas
-    "period.chaturmas": "",
+    "period.chaturmas": "ਚਾਤੁਰਮਾਸ",
     # EN: Devshayani Ekadashi to Devuthani Ekadashi, when Lord Vishnu is in yoga-nidra
-    "period_about.chaturmas": "",
+    "period_about.chaturmas": "ਦੇਵਸ਼ਯਨੀ ਇਕਾਦਸ਼ੀ ਤੋਂ ਦੇਵਉਠਨੀ ਇਕਾਦਸ਼ੀ ਤੱਕ, ਜਦੋਂ ਭਗਵਾਨ ਵਿਸ਼ਨੂੰ ਯੋਗ-ਨਿਦਰਾ ਵਿੱਚ ਹੁੰਦੇ ਹਨ",
     # EN: Kharmas
-    "period.kharmas": "",
+    "period.kharmas": "ਖਰਮਾਸ",
     # EN: the Sun in Dhanu (Sagittarius) or Meena (Pisces)
-    "period_about.kharmas": "",
+    "period_about.kharmas": "ਸੂਰਜ ਦਾ ਧਨੁ ਜਾਂ ਮੀਨ ਰਾਸ਼ੀ ਵਿੱਚ ਹੋਣਾ",
     # EN: Adhik Maas
-    "period.adhik_maas": "",
+    "period.adhik_maas": "ਅਧਿਕ ਮਾਸ",
     # EN: an intercalary lunar month with no solar ingress
-    "period_about.adhik_maas": "",
+    "period_about.adhik_maas": "ਵਾਧੂ ਚੰਦਰ ਮਹੀਨਾ, ਜਿਸ ਵਿੱਚ ਸੂਰਜ ਦੀ ਸੰਕ੍ਰਾਂਤੀ ਨਹੀਂ ਹੁੰਦੀ",
     # EN: Pitru Paksha
-    "period.pitru_paksha": "",
+    "period.pitru_paksha": "ਪਿਤਰ ਪੱਖ",
     # EN: Bhadrapada Purnima to Sarva Pitru Amavasya, the fortnight of shraddha
-    "period_about.pitru_paksha": "",
+    "period_about.pitru_paksha": "ਭਾਦੋਂ ਦੀ ਪੂਰਨਮਾਸ਼ੀ ਤੋਂ ਸਰਵ ਪਿਤਰ ਮੱਸਿਆ ਤੱਕ, ਸ਼ਰਾਧ ਦਾ ਪੰਦਰਵਾੜਾ",
     # EN: Shukra Asta
-    "period.shukra_asta": "",
+    "period.shukra_asta": "ਸ਼ੁੱਕਰ ਅਸਤ",
     # EN: Venus combust (too close to the Sun to be seen), with 3 days either side
-    "period_about.shukra_asta": "",
+    "period_about.shukra_asta": "ਸ਼ੁੱਕਰ ਅਸਤ ਹੈ (ਸੂਰਜ ਦੇ ਇੰਨਾ ਨੇੜੇ ਕਿ ਦਿਸਦਾ ਨਹੀਂ), ਦੋਵੇਂ ਪਾਸੇ 3 ਦਿਨ ਸਮੇਤ",
     # EN: Guru Asta
-    "period.guru_asta": "",
+    "period.guru_asta": "ਗੁਰੂ ਅਸਤ",
     # EN: Jupiter combust (too close to the Sun to be seen), with 3 days either side
-    "period_about.guru_asta": "",
+    "period_about.guru_asta": "ਬ੍ਰਿਹਸਪਤੀ ਅਸਤ ਹੈ (ਸੂਰਜ ਦੇ ਇੰਨਾ ਨੇੜੇ ਕਿ ਦਿਸਦਾ ਨਹੀਂ), ਦੋਵੇਂ ਪਾਸੇ 3 ਦਿਨ ਸਮੇਤ",
 }
 
 # app/muhurat_text.py MUNDAN["pa"] — the mundan (first haircut) muhurat's own wording  [5]
 MUHURAT_MUNDAN = {
     # EN: Mundan Muhurat
-    "kind.mundan": "",
+    "kind.mundan": "ਮੁੰਡਨ ਮਹੂਰਤ",
     # EN: mundan
-    "noun.mundan": "",
+    "noun.mundan": "ਮੁੰਡਨ ਦੇ",
     # EN: <p><strong>Timings vary by city.</strong> These dates are reckoned from New Delhi's
     #     sunrise; elsewhere a tithi or nakshatra can change on a different day. The exact muhurat
     #     for the mundan (chudakarma) should be fixed by your family priest. Check your own city in
     #     the Muhurat Finder.</p>
-    "note.mundan": "",
+    "note.mundan": "<p><strong>ਸਮੇਂ ਸ਼ਹਿਰ ਮੁਤਾਬਕ ਬਦਲਦੇ ਹਨ।</strong> ਇਹ ਤਾਰੀਖ਼ਾਂ ਨਵੀਂ ਦਿੱਲੀ ਦੇ ਸੂਰਜ ਚੜ੍ਹਨ ਮੁਤਾਬਕ ਗਿਣੀਆਂ ਗਈਆਂ ਹਨ; ਹੋਰ ਥਾਂ ਕੋਈ ਤਿਥੀ ਜਾਂ ਨਕਸ਼ਤਰ ਕਿਸੇ ਹੋਰ ਦਿਨ ਬਦਲ ਸਕਦਾ ਹੈ। ਮੁੰਡਨ (ਚੂੜਾਕਰਮ) ਦਾ ਸਹੀ ਮਹੂਰਤ ਤੁਹਾਡੇ ਪਰਿਵਾਰ ਦੇ ਪੰਡਿਤ ਜੀ ਤੋਂ ਤੈਅ ਕਰਵਾਉਣਾ ਚਾਹੀਦਾ ਹੈ। ਆਪਣੇ ਸ਼ਹਿਰ ਲਈ ਮਹੂਰਤ ਖੋਜੋ ਵਿੱਚ ਵੇਖੋ।</p>",
     # EN: {name} {year}: the rules these dates follow
     # keep: {name} {year}
-    "rules.h2": "",
+    "rules.h2": "{name} {year}: ਇਹ ਤਾਰੀਖ਼ਾਂ ਕਿਹੜੇ ਨਿਯਮਾਂ ’ਤੇ ਚੱਲਦੀਆਂ ਹਨ",
     # EN: <p>Mundan (chudakarma, the first haircut) is judged by its own rules, not a wedding's. A
     #     day is listed only when none of the barred items below applies and it falls in a
     #     favourable nakshatra:</p><ul><li><strong>Barred tithis:</strong>
@@ -2644,7 +2644,7 @@ MUHURAT_MUNDAN = {
     #     against a day without ruling it out, so a few such dates appear - skip them if your family
     #     avoids those days.</li></ul>
     # keep: {nak_bad} {nak_good} {tithi_bad} {tithi_good} {vara_bad} {vara_good} {yoga_bad}
-    "rules.body": "",
+    "rules.body": "<p>ਮੁੰਡਨ (ਚੂੜਾਕਰਮ, ਪਹਿਲੀ ਵਾਰ ਵਾਲ ਕਟਵਾਉਣਾ) ਦੇ ਆਪਣੇ ਨਿਯਮ ਹੁੰਦੇ ਹਨ, ਵਿਆਹ ਵਾਲੇ ਨਹੀਂ। ਕੋਈ ਦਿਨ ਸਿਰਫ਼ ਉਦੋਂ ਸੂਚੀ ਵਿੱਚ ਆਉਂਦਾ ਹੈ ਜਦੋਂ ਹੇਠਾਂ ਦਿੱਤੀਆਂ ਵਰਜਿਤ ਗੱਲਾਂ ਵਿੱਚੋਂ ਕੋਈ ਲਾਗੂ ਨਾ ਹੋਵੇ ਅਤੇ ਉਹ ਸ਼ੁਭ ਨਕਸ਼ਤਰ ਵਿੱਚ ਪੈਂਦਾ ਹੋਵੇ:</p><ul><li><strong>ਵਰਜਿਤ ਤਿਥੀਆਂ:</strong> {tithi_bad}।</li><li><strong>ਪਸੰਦੀਦਾ ਤਿਥੀਆਂ</strong> (ਕਿਸੇ ਵੀ ਪੱਖ ਵਿੱਚ): {tithi_good}; ਬਾਕੀ ਮੱਧਮ ਹਨ।</li><li><strong>ਸ਼ੁਭ ਨਕਸ਼ਤਰ</strong> (ਹੇਠਾਂ ਦਿੱਤੀ ਹਰ ਤਾਰੀਖ਼ ਇਨ੍ਹਾਂ ਵਿੱਚੋਂ ਕਿਸੇ ਇੱਕ ਵਿੱਚ ਪੈਂਦੀ ਹੈ): {nak_good}।</li><li><strong>ਵਰਜਿਤ ਨਕਸ਼ਤਰ:</strong> {nak_bad}।</li><li><strong>ਵਰਜਿਤ ਯੋਗ ਅਤੇ ਕਰਣ:</strong> {yoga_bad}, ਅਤੇ ਭਦਰਾ (ਵਿਸ਼ਟੀ)।</li><li><strong>ਵਾਰ:</strong> {vara_good} ਪਸੰਦੀਦਾ ਹਨ; {vara_bad} ਕਿਸੇ ਦਿਨ ਨੂੰ ਪੂਰੀ ਤਰ੍ਹਾਂ ਬਾਹਰ ਕੀਤੇ ਬਿਨਾਂ ਉਸ ਦੇ ਵਿਰੁੱਧ ਗਿਣੇ ਜਾਂਦੇ ਹਨ, ਇਸ ਲਈ ਅਜਿਹੀਆਂ ਕੁਝ ਤਾਰੀਖ਼ਾਂ ਵੀ ਦਿਸਦੀਆਂ ਹਨ - ਜੇ ਤੁਹਾਡਾ ਪਰਿਵਾਰ ਉਨ੍ਹਾਂ ਦਿਨਾਂ ਤੋਂ ਪਰਹੇਜ਼ ਕਰਦਾ ਹੈ ਤਾਂ ਉਨ੍ਹਾਂ ਨੂੰ ਛੱਡ ਦਿਓ।</li></ul>",
 }
 
 # app/muhurat_text.py MONTHS["pa"] — only if this page must spell the months differently from names_<code>.MONTHS; else leave ()  [12]
@@ -2658,99 +2658,99 @@ MUHURAT_MONTHS = ()   # or 12 month names, January first
 # app/recurring_text.py TEXT["pa"] — page text of /purnima-<year>, /amavasya-<year>, /pradosh-vrat-<year> ... (the keys it shares with VRAT_TEXT are taken from there)  [60]
 RECURRING_TEXT = {
     # EN: Full Moon Dates and Tithi Time
-    "what.purnima": "",
+    "what.purnima": "ਪੂਰਨਮਾਸ਼ੀ ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਤਿਥੀ ਦਾ ਸਮਾਂ",
     # EN: New Moon Dates and Tithi Time
-    "what.amavasya": "",
+    "what.amavasya": "ਮੱਸਿਆ ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਤਿਥੀ ਦਾ ਸਮਾਂ",
     # EN: All Dates and Pradosh Puja Time
-    "what.pradosh": "",
+    "what.pradosh": "ਸਾਰੀਆਂ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਪ੍ਰਦੋਸ਼ ਪੂਜਾ ਦਾ ਸਮਾਂ",
     # EN: All Dates and Moonrise Time
-    "what.sankashti": "",
+    "what.sankashti": "ਸਾਰੀਆਂ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਦਾ ਸਮਾਂ",
     # EN: All Dates and Nishita Puja Time
-    "what.masik_shivratri": "",
+    "what.masik_shivratri": "ਸਾਰੀਆਂ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਨਿਸ਼ੀਥ ਪੂਜਾ ਦਾ ਸਮਾਂ",
     # EN: All Dates and Kala Bhairav Puja
-    "what.kalashtami": "",
+    "what.kalashtami": "ਸਾਰੀਆਂ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਕਾਲ ਭੈਰਵ ਪੂਜਾ",
     # EN: {name} {year}: {what} (New Delhi)
     # keep: {name} {what} {year}
-    "title": "",
+    "title": "{name} {year}: {what} (ਨਵੀਂ ਦਿੱਲੀ)",
     # EN: {name} {year}: {what}
     # keep: {name} {what} {year}
-    "h1": "",
+    "h1": "{name} {year}: {what}",
     # EN: All {count} {name} dates in {year} with weekday, Hindu month and tithi start and end for
     #     New Delhi. {about}{keytime}{next}
     # keep: {about} {count} {keytime} {name} {next} {year}
-    "desc": "",
+    "desc": "{year} ਵਿੱਚ {name} ਦੀਆਂ ਸਾਰੀਆਂ {count} ਤਾਰੀਖ਼ਾਂ, ਵਾਰ, ਹਿੰਦੂ ਮਹੀਨੇ ਅਤੇ ਤਿਥੀ ਦੇ ਸ਼ੁਰੂ ਤੇ ਅੰਤ ਸਮੇਤ, ਨਵੀਂ ਦਿੱਲੀ ਲਈ। {about}{keytime}{next}",
     # EN: Full-moon vrat days for Satyanarayan puja, bathing and charity.
-    "desc.about.purnima": "",
+    "desc.about.purnima": "ਸਤਿਨਾਰਾਇਣ ਪੂਜਾ, ਇਸ਼ਨਾਨ ਅਤੇ ਦਾਨ ਲਈ ਪੂਰਨਮਾਸ਼ੀ ਦੇ ਵਰਤ ਦੇ ਦਿਨ।",
     # EN: New-moon days for shraddha and tarpan, with Somvati and Shani Amavasya.
-    "desc.about.amavasya": "",
+    "desc.about.amavasya": "ਸ਼ਰਾਧ ਅਤੇ ਤਰਪਣ ਲਈ ਮੱਸਿਆ ਦੇ ਦਿਨ, ਸੋਮਵਤੀ ਅਤੇ ਸ਼ਨੀ ਮੱਸਿਆ ਸਮੇਤ।",
     # EN: Lord Shiva's twilight fast on Trayodashi, with the puja window.
-    "desc.about.pradosh": "",
+    "desc.about.pradosh": "ਤ੍ਰਯੋਦਸ਼ੀ ਨੂੰ ਭਗਵਾਨ ਸ਼ਿਵ ਦਾ ਸੰਧਿਆ ਵਰਤ, ਪੂਜਾ ਦੇ ਸਮੇਂ ਸਮੇਤ।",
     # EN: Lord Ganesha's fast on Krishna Chaturthi, broken after moonrise.
-    "desc.about.sankashti": "",
+    "desc.about.sankashti": "ਕ੍ਰਿਸ਼ਨ ਚੌਥ ਨੂੰ ਭਗਵਾਨ ਗਣੇਸ਼ ਦਾ ਵਰਤ, ਜੋ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਤੋਂ ਬਾਅਦ ਖੋਲ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: The monthly night of Shiva on Krishna Chaturdashi, with the midnight puja.
-    "desc.about.masik_shivratri": "",
+    "desc.about.masik_shivratri": "ਕ੍ਰਿਸ਼ਨ ਚੌਦਸ ਨੂੰ ਸ਼ਿਵ ਦੀ ਮਹੀਨਾਵਾਰ ਰਾਤ, ਅੱਧੀ ਰਾਤ ਦੀ ਪੂਜਾ ਸਮੇਤ।",
     # EN: Kala Bhairava worship on Krishna Ashtami, every month.
-    "desc.about.kalashtami": "",
+    "desc.about.kalashtami": "ਹਰ ਮਹੀਨੇ ਕ੍ਰਿਸ਼ਨ ਅਸ਼ਟਮੀ ਨੂੰ ਕਾਲ ਭੈਰਵ ਦੀ ਪੂਜਾ।",
     # EN: Includes {label}.
     # keep: {label}
-    "desc.key": "",
+    "desc.key": " {label} ਸਮੇਤ।",
     # EN: Next: {date}.
     # keep: {date}
-    "desc.next": "",
+    "desc.next": " ਅਗਲੀ: {date}।",
     # EN: The next {name} is on <strong>{when}</strong> ({details}).
     # keep: {details} {name} {when}
-    "ans.next": "",
+    "ans.next": "{name} ਦੀ ਅਗਲੀ ਤਾਰੀਖ਼ <strong>{when}</strong> ਹੈ ({details})।",
     # EN: The first {name} of {year} is on <strong>{when}</strong> ({details}). All {count} dates
     #     for {year} are listed below.
     # keep: {count} {details} {name} {when} {year}
-    "ans.first": "",
+    "ans.first": "{year} ਵਿੱਚ {name} ਦੀ ਪਹਿਲੀ ਤਾਰੀਖ਼ <strong>{when}</strong> ਹੈ ({details})। {year} ਦੀਆਂ ਸਾਰੀਆਂ {count} ਤਾਰੀਖ਼ਾਂ ਹੇਠਾਂ ਦਿੱਤੀਆਂ ਹਨ।",
     # EN: All {count} {name} dates for {year} are listed below; the last was on
     #     <strong>{when}</strong>.
     # keep: {count} {name} {when} {year}
-    "ans.past": "",
+    "ans.past": "{year} ਵਿੱਚ {name} ਦੀਆਂ ਸਾਰੀਆਂ {count} ਤਾਰੀਖ਼ਾਂ ਹੇਠਾਂ ਦਿੱਤੀਆਂ ਹਨ; ਆਖ਼ਰੀ ਤਾਰੀਖ਼ <strong>{when}</strong> ਸੀ।",
     # EN: Dates for {year}: {link}.
     # keep: {link} {year}
-    "ans.more": "",
+    "ans.more": " {year} ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ: {link}।",
     # EN: {name} {year}: all dates
     # keep: {name} {year}
-    "table.h2": "",
+    "table.h2": "{name} {year}: ਸਾਰੀਆਂ ਤਾਰੀਖ਼ਾਂ",
     # EN: Date
-    "th.date": "",
+    "th.date": "ਤਾਰੀਖ਼",
     # EN: Hindu month
-    "th.month": "",
+    "th.month": "ਹਿੰਦੂ ਮਹੀਨਾ",
     # EN: Tithi
-    "th.tithi": "",
+    "th.tithi": "ਤਿਥੀ",
     # EN: Adhik {month}
     # keep: {month}
-    "adhika": "",
+    "adhika": "ਅਧਿਕ {month}",
     # EN: Also:
-    "also": "",
+    "also": "ਇਹ ਵੀ: ",
     # EN: <p class="note"><small>Months are amanta (a month ends on Amavasya, as in South and West
     #     India). North Indian purnimanta calendars name the dark fortnight one month
     #     later.</small></p>
-    "months.note": "",
+    "months.note": "<p class=\"note\"><small>ਮਹੀਨੇ ਅਮਾਂਤ ਹਨ (ਮਹੀਨਾ ਮੱਸਿਆ ’ਤੇ ਖ਼ਤਮ ਹੁੰਦਾ ਹੈ, ਜਿਵੇਂ ਦੱਖਣੀ ਅਤੇ ਪੱਛਮੀ ਭਾਰਤ ਵਿੱਚ)। ਉੱਤਰੀ ਭਾਰਤ ਦੇ ਪੂਰਨਿਮਾਂਤ ਕੈਲੰਡਰ ਕ੍ਰਿਸ਼ਨ ਪੱਖ ਨੂੰ ਇੱਕ ਮਹੀਨਾ ਅੱਗੇ ਦਾ ਨਾਂ ਦਿੰਦੇ ਹਨ।</small></p>",
     # EN: Som Pradosh
-    "variant.pradosh.0": "",
+    "variant.pradosh.0": "ਸੋਮ ਪ੍ਰਦੋਸ਼",
     # EN: Bhauma Pradosh
-    "variant.pradosh.1": "",
+    "variant.pradosh.1": "ਭੌਮ ਪ੍ਰਦੋਸ਼",
     # EN: Shani Pradosh
-    "variant.pradosh.5": "",
+    "variant.pradosh.5": "ਸ਼ਨੀ ਪ੍ਰਦੋਸ਼",
     # EN: Angarki Chaturthi
-    "variant.sankashti.1": "",
+    "variant.sankashti.1": "ਅੰਗਾਰਕੀ ਚੌਥ",
     # EN: Somvati Amavasya
-    "variant.amavasya.0": "",
+    "variant.amavasya.0": "ਸੋਮਵਤੀ ਮੱਸਿਆ",
     # EN: Shani Amavasya
-    "variant.amavasya.5": "",
+    "variant.amavasya.5": "ਸ਼ਨੀ ਮੱਸਿਆ",
     # EN: What {name} is and how it is observed
     # keep: {name}
-    "about.h2": "",
+    "about.h2": "{name} ਕੀ ਹੈ ਅਤੇ ਇਸ ਨੂੰ ਕਿਵੇਂ ਮਨਾਇਆ ਜਾਂਦਾ ਹੈ",
     # EN: Panchang for your city
-    "city.h2": "",
+    "city.h2": "ਤੁਹਾਡੇ ਸ਼ਹਿਰ ਦਾ ਪੰਚਾਂਗ",
     # EN: Related dates and calendars
-    "related.h2": "",
+    "related.h2": "ਸੰਬੰਧਿਤ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਕੈਲੰਡਰ",
     # EN: {name} {year}
     # keep: {name} {year}
-    "crumb.page": "",
+    "crumb.page": "{name} {year}",
     # EN: <p>Purnima is the full-moon tithi, the last (15th) tithi of the bright fortnight (Shukla
     #     paksha), when the Moon stands opposite the Sun and shines full. Devotees keep a fast,
     #     bathe at dawn (in a river or tirtha where they can), worship Lord Vishnu - Satyanarayan
@@ -2758,7 +2758,7 @@ RECURRING_TEXT = {
     #     (daan) of food, clothes or money on this day is said to bring multiplied merit.</p><p>Some
     #     Purnimas are festivals in their own right: Guru Purnima, Sharad Purnima, Kartik Purnima
     #     and Buddha Purnima, and Holika Dahan is kept on the Purnima of Phalguna.</p>
-    "about.purnima": "",
+    "about.purnima": "<p>ਪੂਰਨਮਾਸ਼ੀ ਚੰਦਰਮਾ ਦੇ ਪੂਰੇ ਹੋਣ ਦੀ ਤਿਥੀ ਹੈ, ਸ਼ੁਕਲ ਪੱਖ ਦੀ ਆਖ਼ਰੀ (15ਵੀਂ) ਤਿਥੀ, ਜਦੋਂ ਚੰਦਰਮਾ ਸੂਰਜ ਦੇ ਸਾਹਮਣੇ ਹੁੰਦਾ ਹੈ ਅਤੇ ਪੂਰਾ ਚਮਕਦਾ ਹੈ। ਸ਼ਰਧਾਲੂ ਵਰਤ ਰੱਖਦੇ ਹਨ, ਤੜਕੇ ਇਸ਼ਨਾਨ ਕਰਦੇ ਹਨ (ਜਿੱਥੇ ਹੋ ਸਕੇ ਦਰਿਆ ਜਾਂ ਤੀਰਥ ਵਿੱਚ), ਭਗਵਾਨ ਵਿਸ਼ਨੂੰ ਦੀ ਪੂਜਾ ਕਰਦੇ ਹਨ - ਸਤਿਨਾਰਾਇਣ ਕਥਾ ਪੂਰਨਮਾਸ਼ੀ ਦੀ ਆਮ ਪੂਜਾ ਹੈ - ਅਤੇ ਸ਼ਾਮ ਨੂੰ ਚੰਦਰਮਾ ਨੂੰ ਅਰਘ ਦਿੰਦੇ ਹਨ। ਇਸ ਦਿਨ ਭੋਜਨ, ਕੱਪੜੇ ਜਾਂ ਪੈਸੇ ਦਾ ਦਾਨ ਕਈ ਗੁਣਾ ਪੁੰਨ ਦੇਣ ਵਾਲਾ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ।</p><p>ਕੁਝ ਪੂਰਨਮਾਸ਼ੀਆਂ ਆਪਣੇ ਆਪ ਵਿੱਚ ਤਿਉਹਾਰ ਹਨ: ਗੁਰੂ ਪੂਰਨਿਮਾ, ਸ਼ਰਦ ਪੂਰਨਿਮਾ, ਕੱਤਕ ਪੂਰਨਮਾਸ਼ੀ ਅਤੇ ਬੁੱਧ ਪੂਰਨਿਮਾ, ਅਤੇ ਹੋਲਿਕਾ ਦਹਨ ਫੱਗਣ ਦੀ ਪੂਰਨਮਾਸ਼ੀ ਨੂੰ ਹੁੰਦਾ ਹੈ।</p>",
     # EN: <p>Amavasya is the new-moon tithi, the 30th and last tithi of the dark fortnight (Krishna
     #     paksha), when the Moon is in conjunction with the Sun and cannot be seen. It is the day of
     #     the ancestors (pitru): families offer tarpan and shraddha, feed Brahmins and the poor,
@@ -2766,7 +2766,7 @@ RECURRING_TEXT = {
     #     new.</p><p>An Amavasya on a Monday is called Somvati Amavasya and one on a Saturday Shani
     #     Amavasya, both given extra weight. The great Amavasyas are Mauni Amavasya, Sarva Pitru
     #     Amavasya (the end of Pitru Paksha) and the Amavasya of Diwali.</p>
-    "about.amavasya": "",
+    "about.amavasya": "<p>ਮੱਸਿਆ ਨਵੇਂ ਚੰਦਰਮਾ ਦੀ ਤਿਥੀ ਹੈ, ਕ੍ਰਿਸ਼ਨ ਪੱਖ ਦੀ 30ਵੀਂ ਅਤੇ ਆਖ਼ਰੀ ਤਿਥੀ, ਜਦੋਂ ਚੰਦਰਮਾ ਸੂਰਜ ਨਾਲ ਯੁਤੀ ਵਿੱਚ ਹੁੰਦਾ ਹੈ ਅਤੇ ਦਿਖਾਈ ਨਹੀਂ ਦਿੰਦਾ। ਇਹ ਪਿਤਰਾਂ ਦਾ ਦਿਨ ਹੈ: ਪਰਿਵਾਰ ਤਰਪਣ ਅਤੇ ਸ਼ਰਾਧ ਕਰਦੇ ਹਨ, ਬ੍ਰਾਹਮਣਾਂ ਅਤੇ ਗ਼ਰੀਬਾਂ ਨੂੰ ਭੋਜਨ ਖੁਆਉਂਦੇ ਹਨ, ਦਾਨ ਦਿੰਦੇ ਹਨ ਅਤੇ ਪਵਿੱਤਰ ਜਲ ਵਿੱਚ ਇਸ਼ਨਾਨ ਕਰਦੇ ਹਨ। ਬਹੁਤ ਸਾਰੇ ਲੋਕ ਵਰਤ ਰੱਖਦੇ ਹਨ ਅਤੇ ਕੋਈ ਨਵਾਂ ਕੰਮ ਸ਼ੁਰੂ ਕਰਨ ਤੋਂ ਬਚਦੇ ਹਨ।</p><p>ਸੋਮਵਾਰ ਨੂੰ ਪੈਣ ਵਾਲੀ ਮੱਸਿਆ ਨੂੰ ਸੋਮਵਤੀ ਮੱਸਿਆ ਅਤੇ ਸ਼ਨਿੱਚਰਵਾਰ ਨੂੰ ਪੈਣ ਵਾਲੀ ਨੂੰ ਸ਼ਨੀ ਮੱਸਿਆ ਕਿਹਾ ਜਾਂਦਾ ਹੈ, ਦੋਵਾਂ ਨੂੰ ਵਾਧੂ ਮਹੱਤਵ ਦਿੱਤਾ ਜਾਂਦਾ ਹੈ। ਵੱਡੀਆਂ ਮੱਸਿਆਵਾਂ ਹਨ ਮੌਨੀ ਮੱਸਿਆ, ਸਰਵ ਪਿਤਰ ਮੱਸਿਆ (ਪਿਤਰ ਪੱਖ ਦਾ ਅੰਤ) ਅਤੇ ਦੀਵਾਲੀ ਦੀ ਮੱਸਿਆ।</p>",
     # EN: <p>Pradosh Vrat is the fast of Lord Shiva kept on Trayodashi, the 13th tithi, of both
     #     fortnights - so twice a month. Pradosh kaal is the twilight window just after sunset, when
     #     Shiva is believed to be most pleased. Devotees fast through the day, bathe, and do Shiva
@@ -2774,7 +2774,7 @@ RECURRING_TEXT = {
     #     the Pradosh stotra or Shiva Chalisa. The fast is broken after the puja.</p><p>A Pradosh on
     #     Monday is Som Pradosh, on Tuesday Bhauma Pradosh and on Saturday Shani Pradosh; the
     #     Saturday one is considered especially powerful.</p>
-    "about.pradosh": "",
+    "about.pradosh": "<p>ਪ੍ਰਦੋਸ਼ ਵਰਤ ਭਗਵਾਨ ਸ਼ਿਵ ਦਾ ਵਰਤ ਹੈ ਜੋ ਦੋਵਾਂ ਪੱਖਾਂ ਦੀ ਤ੍ਰਯੋਦਸ਼ੀ, 13ਵੀਂ ਤਿਥੀ, ਨੂੰ ਰੱਖਿਆ ਜਾਂਦਾ ਹੈ - ਯਾਨੀ ਮਹੀਨੇ ਵਿੱਚ ਦੋ ਵਾਰ। ਪ੍ਰਦੋਸ਼ ਕਾਲ ਸੂਰਜ ਛਿਪਣ ਤੋਂ ਠੀਕ ਬਾਅਦ ਦਾ ਸੰਧਿਆ ਸਮਾਂ ਹੈ, ਜਦੋਂ ਸ਼ਿਵ ਸਭ ਤੋਂ ਵੱਧ ਪ੍ਰਸੰਨ ਮੰਨੇ ਜਾਂਦੇ ਹਨ। ਸ਼ਰਧਾਲੂ ਸਾਰਾ ਦਿਨ ਵਰਤ ਰੱਖਦੇ ਹਨ, ਇਸ਼ਨਾਨ ਕਰਦੇ ਹਨ ਅਤੇ ਪ੍ਰਦੋਸ਼ ਦੇ ਸਮੇਂ ਸ਼ਿਵ ਪੂਜਾ ਕਰਦੇ ਹਨ: ਜਲ, ਦੁੱਧ ਅਤੇ ਬੇਲ ਪੱਤਰ ਨਾਲ ਅਭਿਸ਼ੇਕ, ਦੀਵਾ ਅਤੇ ਪ੍ਰਦੋਸ਼ ਸਤੋਤਰ ਜਾਂ ਸ਼ਿਵ ਚਾਲੀਸਾ। ਵਰਤ ਪੂਜਾ ਤੋਂ ਬਾਅਦ ਖੋਲ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।</p><p>ਸੋਮਵਾਰ ਨੂੰ ਪ੍ਰਦੋਸ਼ ਸੋਮ ਪ੍ਰਦੋਸ਼, ਮੰਗਲਵਾਰ ਨੂੰ ਭੌਮ ਪ੍ਰਦੋਸ਼ ਅਤੇ ਸ਼ਨਿੱਚਰਵਾਰ ਨੂੰ ਸ਼ਨੀ ਪ੍ਰਦੋਸ਼ ਹੁੰਦਾ ਹੈ; ਸ਼ਨਿੱਚਰਵਾਰ ਵਾਲਾ ਖ਼ਾਸ ਤੌਰ ’ਤੇ ਸ਼ਕਤੀਸ਼ਾਲੀ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ।</p>",
     # EN: <p>Sankashti Chaturthi (Sankat Hara Chaturthi) is the monthly fast of Lord Ganesha on
     #     Chaturthi, the 4th tithi, of the dark fortnight (Krishna paksha); "sankashti" means
     #     deliverance from trouble. Devotees fast through the day, worship Ganesha in the evening
@@ -2782,86 +2782,86 @@ RECURRING_TEXT = {
     #     moonrise is the key time on this page.</p><p>A Sankashti on a Tuesday is Angarki Sankashti
     #     Chaturthi, believed to be especially fruitful. The Sankashti of Magha (purnimanta) is kept
     #     in North India as Sakat Chauth.</p>
-    "about.sankashti": "",
+    "about.sankashti": "<p>ਸੰਕਸ਼ਟੀ ਚੌਥ (ਸੰਕਟ ਹਰਾ ਚਤੁਰਥੀ) ਕ੍ਰਿਸ਼ਨ ਪੱਖ ਦੀ ਚਤੁਰਥੀ, ਚੌਥੀ ਤਿਥੀ, ਨੂੰ ਭਗਵਾਨ ਗਣੇਸ਼ ਦਾ ਮਹੀਨਾਵਾਰ ਵਰਤ ਹੈ; “ਸੰਕਸ਼ਟੀ” ਦਾ ਮਤਲਬ ਹੈ ਮੁਸੀਬਤ ਤੋਂ ਛੁਟਕਾਰਾ। ਸ਼ਰਧਾਲੂ ਸਾਰਾ ਦਿਨ ਵਰਤ ਰੱਖਦੇ ਹਨ, ਸ਼ਾਮ ਨੂੰ ਗਣੇਸ਼ ਦੀ ਪੂਜਾ ਕਰਦੇ ਹਨ ਅਤੇ ਚੰਦਰਮਾ ਨੂੰ ਵੇਖ ਕੇ ਤੇ ਉਸ ਨੂੰ ਅਰਘ ਦੇ ਕੇ ਹੀ ਵਰਤ ਖੋਲ੍ਹਦੇ ਹਨ, ਇਸੇ ਲਈ ਇਸ ਪੰਨੇ ’ਤੇ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਦਾ ਸਮਾਂ ਮੁੱਖ ਸਮਾਂ ਹੈ।</p><p>ਮੰਗਲਵਾਰ ਨੂੰ ਪੈਣ ਵਾਲੀ ਸੰਕਸ਼ਟੀ ਅੰਗਾਰਕੀ ਸੰਕਸ਼ਟੀ ਚਤੁਰਥੀ ਹੈ, ਜੋ ਖ਼ਾਸ ਤੌਰ ’ਤੇ ਫਲਦਾਇਕ ਮੰਨੀ ਜਾਂਦੀ ਹੈ। ਮਾਘ (ਪੂਰਨਿਮਾਂਤ) ਦੀ ਸੰਕਸ਼ਟੀ ਉੱਤਰੀ ਭਾਰਤ ਵਿੱਚ ਸਕਟ ਚੌਥ ਵਜੋਂ ਮਨਾਈ ਜਾਂਦੀ ਹੈ।</p>",
     # EN: <p>Masik Shivratri (monthly Shivratri) is the night of Lord Shiva kept on Chaturdashi, the
     #     14th tithi, of the dark fortnight (Krishna paksha) every month. Devotees fast and keep
     #     vigil through the night, bathing the Shiva linga with water, milk, honey and bilva leaves
     #     and chanting "Om Namah Shivaya". The best time for the puja is Nishita kaal, the midnight
     #     window.</p><p>Maha Shivratri, which falls on Krishna Chaturdashi of Phalguna (Magha in the
     #     amanta calendar), is the greatest of the twelve.</p>
-    "about.masik_shivratri": "",
+    "about.masik_shivratri": "<p>ਮਾਸਿਕ ਸ਼ਿਵਰਾਤਰੀ (ਮਹੀਨਾਵਾਰ ਸ਼ਿਵਰਾਤਰੀ) ਹਰ ਮਹੀਨੇ ਕ੍ਰਿਸ਼ਨ ਪੱਖ ਦੀ ਚੌਦਸ, 14ਵੀਂ ਤਿਥੀ, ਨੂੰ ਭਗਵਾਨ ਸ਼ਿਵ ਦੀ ਰਾਤ ਹੈ। ਸ਼ਰਧਾਲੂ ਵਰਤ ਰੱਖਦੇ ਹਨ ਅਤੇ ਰਾਤ ਭਰ ਜਾਗਦੇ ਹਨ, ਸ਼ਿਵਲਿੰਗ ਨੂੰ ਜਲ, ਦੁੱਧ, ਸ਼ਹਿਦ ਅਤੇ ਬੇਲ ਪੱਤਰ ਨਾਲ ਇਸ਼ਨਾਨ ਕਰਾਉਂਦੇ ਹਨ ਅਤੇ “ਓਮ ਨਮਃ ਸ਼ਿਵਾਯ” ਦਾ ਜਾਪ ਕਰਦੇ ਹਨ। ਪੂਜਾ ਲਈ ਸਭ ਤੋਂ ਵਧੀਆ ਸਮਾਂ ਨਿਸ਼ੀਥ ਕਾਲ, ਅੱਧੀ ਰਾਤ ਦਾ ਸਮਾਂ, ਹੈ।</p><p>ਮਹਾਂ ਸ਼ਿਵਰਾਤਰੀ, ਜੋ ਫੱਗਣ ਦੀ ਕ੍ਰਿਸ਼ਨ ਚੌਦਸ (ਅਮਾਂਤ ਕੈਲੰਡਰ ਵਿੱਚ ਮਾਘ) ਨੂੰ ਆਉਂਦੀ ਹੈ, ਇਨ੍ਹਾਂ ਬਾਰਾਂ ਵਿੱਚੋਂ ਸਭ ਤੋਂ ਮਹਾਨ ਹੈ।</p>",
     # EN: <p>Kalashtami (Kala Ashtami) is the monthly day of Lord Kala Bhairava, the fierce form of
     #     Shiva who guards time, kept on Ashtami, the 8th tithi, of the dark fortnight (Krishna
     #     paksha). Devotees fast, worship Bhairava at night with a mustard-oil lamp and offerings
     #     such as black sesame, and feed dogs, which are associated with him.</p><p>The Kalashtami
     #     of Margashirsha in the purnimanta calendar (Kartika in the amanta calendar) is
     #     Kalabhairava Jayanti, his appearance day and the most important of the year.</p>
-    "about.kalashtami": "",
+    "about.kalashtami": "<p>ਕਾਲ ਅਸ਼ਟਮੀ ਭਗਵਾਨ ਕਾਲ ਭੈਰਵ, ਸ਼ਿਵ ਦੇ ਉਸ ਭਿਆਨਕ ਰੂਪ ਜੋ ਸਮੇਂ ਦੀ ਰਾਖੀ ਕਰਦਾ ਹੈ, ਦਾ ਮਹੀਨਾਵਾਰ ਦਿਨ ਹੈ, ਜੋ ਕ੍ਰਿਸ਼ਨ ਪੱਖ ਦੀ ਅਸ਼ਟਮੀ, 8ਵੀਂ ਤਿਥੀ, ਨੂੰ ਮਨਾਇਆ ਜਾਂਦਾ ਹੈ। ਸ਼ਰਧਾਲੂ ਵਰਤ ਰੱਖਦੇ ਹਨ, ਰਾਤ ਨੂੰ ਸਰ੍ਹੋਂ ਦੇ ਤੇਲ ਦੇ ਦੀਵੇ ਅਤੇ ਕਾਲੇ ਤਿਲ ਵਰਗੀਆਂ ਭੇਟਾਂ ਨਾਲ ਭੈਰਵ ਦੀ ਪੂਜਾ ਕਰਦੇ ਹਨ, ਅਤੇ ਕੁੱਤਿਆਂ ਨੂੰ ਖੁਆਉਂਦੇ ਹਨ, ਜੋ ਉਨ੍ਹਾਂ ਨਾਲ ਜੁੜੇ ਮੰਨੇ ਜਾਂਦੇ ਹਨ।</p><p>ਪੂਰਨਿਮਾਂਤ ਕੈਲੰਡਰ ਵਿੱਚ ਮੱਘਰ ਦੀ (ਅਮਾਂਤ ਕੈਲੰਡਰ ਵਿੱਚ ਕੱਤਕ ਦੀ) ਕਾਲ ਅਸ਼ਟਮੀ ਕਾਲ ਭੈਰਵ ਜਯੰਤੀ ਹੈ, ਉਨ੍ਹਾਂ ਦਾ ਪ੍ਰਗਟ ਦਿਵਸ ਅਤੇ ਸਾਲ ਦਾ ਸਭ ਤੋਂ ਅਹਿਮ ਦਿਨ।</p>",
     # EN: Purnima can begin one evening and end the next afternoon, so the day the tithi starts and
     #     the day of the vrat can differ. The rule settles it: the vrat goes to the day on which the
     #     tithi covers Madhyahna (the middle fifth of the daytime); if it covers Madhyahna on both
     #     days, the earlier day is taken. Some traditions use the sunrise tithi for the holy bath
     #     and charity instead; the table gives the start and end of the tithi so you can check.
-    "note.purnima": "",
+    "note.purnima": "ਪੂਰਨਮਾਸ਼ੀ ਇੱਕ ਸ਼ਾਮ ਸ਼ੁਰੂ ਹੋ ਕੇ ਅਗਲੇ ਦਿਨ ਦੁਪਹਿਰ ਤੋਂ ਬਾਅਦ ਖ਼ਤਮ ਹੋ ਸਕਦੀ ਹੈ, ਇਸ ਲਈ ਤਿਥੀ ਸ਼ੁਰੂ ਹੋਣ ਦਾ ਦਿਨ ਅਤੇ ਵਰਤ ਦਾ ਦਿਨ ਵੱਖਰੇ ਹੋ ਸਕਦੇ ਹਨ। ਨਿਯਮ ਇਸ ਨੂੰ ਤੈਅ ਕਰਦਾ ਹੈ: ਵਰਤ ਉਸ ਦਿਨ ਦਾ ਹੁੰਦਾ ਹੈ ਜਿਸ ਦਿਨ ਤਿਥੀ ਮੱਧਾਹਨ (ਦਿਨ ਦਾ ਵਿਚਕਾਰਲਾ ਪੰਜਵਾਂ ਹਿੱਸਾ) ਨੂੰ ਢੱਕੇ; ਜੇ ਇਹ ਦੋਵਾਂ ਦਿਨਾਂ ਦੇ ਮੱਧਾਹਨ ਨੂੰ ਢੱਕੇ ਤਾਂ ਪਹਿਲਾ ਦਿਨ ਲਿਆ ਜਾਂਦਾ ਹੈ। ਕੁਝ ਰਵਾਇਤਾਂ ਪਵਿੱਤਰ ਇਸ਼ਨਾਨ ਅਤੇ ਦਾਨ ਲਈ ਇਸ ਦੀ ਥਾਂ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਦੀ ਤਿਥੀ ਵਰਤਦੀਆਂ ਹਨ; ਸਾਰਣੀ ਵਿੱਚ ਤਿਥੀ ਦਾ ਸ਼ੁਰੂ ਅਤੇ ਅੰਤ ਦਿੱਤਾ ਗਿਆ ਹੈ ਤਾਂ ਜੋ ਤੁਸੀਂ ਆਪ ਪਰਖ ਸਕੋ।",
     # EN: Amavasya is a daytime observance (shraddha and tarpan are done in the day), so the date is
     #     the day on which the Amavasya tithi is running at sunrise. The tithi often starts the
     #     evening before, so the times in the table can begin on the previous date. Festival
     #     Amavasyas follow their own rules - Diwali is fixed by Pradosh, Sarva Pitru Amavasya by
     #     Aparahna - and can fall a day away from the date here.
-    "note.amavasya": "",
+    "note.amavasya": "ਮੱਸਿਆ ਦਿਨ ਦਾ ਕਰਮ ਹੈ (ਸ਼ਰਾਧ ਅਤੇ ਤਰਪਣ ਦਿਨ ਵੇਲੇ ਕੀਤੇ ਜਾਂਦੇ ਹਨ), ਇਸ ਲਈ ਤਾਰੀਖ਼ ਉਹ ਦਿਨ ਹੈ ਜਿਸ ਦਿਨ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਮੱਸਿਆ ਤਿਥੀ ਚੱਲ ਰਹੀ ਹੋਵੇ। ਤਿਥੀ ਅਕਸਰ ਇੱਕ ਸ਼ਾਮ ਪਹਿਲਾਂ ਸ਼ੁਰੂ ਹੋ ਜਾਂਦੀ ਹੈ, ਇਸ ਲਈ ਸਾਰਣੀ ਦੇ ਸਮੇਂ ਪਿਛਲੀ ਤਾਰੀਖ਼ ਤੋਂ ਸ਼ੁਰੂ ਹੋ ਸਕਦੇ ਹਨ। ਤਿਉਹਾਰਾਂ ਵਾਲੀਆਂ ਮੱਸਿਆਵਾਂ ਆਪਣੇ ਨਿਯਮਾਂ ਮੁਤਾਬਕ ਚੱਲਦੀਆਂ ਹਨ - ਦੀਵਾਲੀ ਪ੍ਰਦੋਸ਼ ਨਾਲ ਤੈਅ ਹੁੰਦੀ ਹੈ, ਸਰਵ ਪਿਤਰ ਮੱਸਿਆ ਅਪਰਾਹਨ ਨਾਲ - ਅਤੇ ਇੱਥੇ ਦਿੱਤੀ ਤਾਰੀਖ਼ ਤੋਂ ਇੱਕ ਦਿਨ ਦੂਰ ਪੈ ਸਕਦੀਆਂ ਹਨ।",
     # EN: The date is decided in the evening, not at sunrise: the vrat goes to the day on which
     #     Trayodashi is running in Pradosh kaal after sunset, so a Trayodashi that starts at noon
     #     and ends the next afternoon is kept on the first day. If the tithi touches Pradosh kaal on
     #     two evenings, the earlier evening is taken. The puja window in the table starts at sunset
     #     in New Delhi, so it moves through the year and from city to city.
-    "note.pradosh": "",
+    "note.pradosh": "ਤਾਰੀਖ਼ ਦਾ ਫ਼ੈਸਲਾ ਸ਼ਾਮ ਨੂੰ ਹੁੰਦਾ ਹੈ, ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਨਹੀਂ: ਵਰਤ ਉਸ ਦਿਨ ਦਾ ਹੁੰਦਾ ਹੈ ਜਿਸ ਦਿਨ ਸੂਰਜ ਛਿਪਣ ਤੋਂ ਬਾਅਦ ਪ੍ਰਦੋਸ਼ ਕਾਲ ਵਿੱਚ ਤ੍ਰਯੋਦਸ਼ੀ ਚੱਲ ਰਹੀ ਹੋਵੇ, ਇਸ ਲਈ ਜੋ ਤ੍ਰਯੋਦਸ਼ੀ ਦੁਪਹਿਰ ਨੂੰ ਸ਼ੁਰੂ ਹੋ ਕੇ ਅਗਲੇ ਦਿਨ ਦੁਪਹਿਰ ਤੋਂ ਬਾਅਦ ਖ਼ਤਮ ਹੋਵੇ, ਉਹ ਪਹਿਲੇ ਦਿਨ ਰੱਖੀ ਜਾਂਦੀ ਹੈ। ਜੇ ਤਿਥੀ ਦੋ ਸ਼ਾਮਾਂ ਨੂੰ ਪ੍ਰਦੋਸ਼ ਕਾਲ ਨੂੰ ਛੂਹੇ ਤਾਂ ਪਹਿਲੀ ਸ਼ਾਮ ਲਈ ਜਾਂਦੀ ਹੈ। ਸਾਰਣੀ ਵਿੱਚ ਪੂਜਾ ਦੀ ਵਿੰਡੋ ਨਵੀਂ ਦਿੱਲੀ ਵਿੱਚ ਸੂਰਜ ਛਿਪਣ ਤੋਂ ਸ਼ੁਰੂ ਹੁੰਦੀ ਹੈ, ਇਸ ਲਈ ਇਹ ਸਾਲ ਭਰ ਅਤੇ ਸ਼ਹਿਰ ਤੋਂ ਸ਼ਹਿਰ ਬਦਲਦੀ ਹੈ।",
     # EN: Sankashti is decided by the Moon, not the Sun: the vrat goes to the evening on which
     #     Chaturthi is running at moonrise, since that is when the fast is broken. The date can
     #     therefore differ from the Chaturthi date of a Panchang that goes by sunrise. Moonrise is
     #     roughly 50 minutes later each day and differs by several minutes between cities, so check
     #     it for your own city.
-    "note.sankashti": "",
+    "note.sankashti": "ਸੰਕਸ਼ਟੀ ਦਾ ਫ਼ੈਸਲਾ ਚੰਦਰਮਾ ਨਾਲ ਹੁੰਦਾ ਹੈ, ਸੂਰਜ ਨਾਲ ਨਹੀਂ: ਵਰਤ ਉਸ ਸ਼ਾਮ ਦਾ ਹੁੰਦਾ ਹੈ ਜਿਸ ਵੇਲੇ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ’ਤੇ ਚਤੁਰਥੀ ਚੱਲ ਰਹੀ ਹੋਵੇ, ਕਿਉਂਕਿ ਉਦੋਂ ਹੀ ਵਰਤ ਖੋਲ੍ਹਿਆ ਜਾਂਦਾ ਹੈ। ਇਸ ਲਈ ਤਾਰੀਖ਼ ਸੂਰਜ ਚੜ੍ਹਨ ਮੁਤਾਬਕ ਚੱਲਣ ਵਾਲੇ ਪੰਚਾਂਗ ਦੀ ਚਤੁਰਥੀ ਤਾਰੀਖ਼ ਤੋਂ ਵੱਖਰੀ ਹੋ ਸਕਦੀ ਹੈ। ਚੰਦਰਮਾ ਹਰ ਰੋਜ਼ ਲਗਭਗ 50 ਮਿੰਟ ਦੇਰ ਨਾਲ ਚੜ੍ਹਦਾ ਹੈ ਅਤੇ ਸ਼ਹਿਰਾਂ ਵਿਚਕਾਰ ਕਈ ਮਿੰਟ ਦਾ ਫ਼ਰਕ ਹੁੰਦਾ ਹੈ, ਇਸ ਲਈ ਆਪਣੇ ਸ਼ਹਿਰ ਦਾ ਸਮਾਂ ਜ਼ਰੂਰ ਵੇਖੋ।",
     # EN: This is a midnight observance, so the date is the day on which Chaturdashi is running at
     #     Nishita kaal (the 8th of the 15 muhurtas of the night, around midnight). Nishita can fall
     #     just after 12 o'clock, in which case the puja is done in the early hours of the next date
     #     and the time shown carries that date. If the tithi touches Nishita on two nights, the
     #     earlier night is taken.
-    "note.masik_shivratri": "",
+    "note.masik_shivratri": "ਇਹ ਅੱਧੀ ਰਾਤ ਦਾ ਕਰਮ ਹੈ, ਇਸ ਲਈ ਤਾਰੀਖ਼ ਉਹ ਦਿਨ ਹੈ ਜਿਸ ਦਿਨ ਨਿਸ਼ੀਥ ਕਾਲ (ਰਾਤ ਦੇ 15 ਮਹੂਰਤਾਂ ਵਿੱਚੋਂ 8ਵਾਂ, ਅੱਧੀ ਰਾਤ ਦੇ ਆਲੇ-ਦੁਆਲੇ) ਵਿੱਚ ਚੌਦਸ ਚੱਲ ਰਹੀ ਹੋਵੇ। ਨਿਸ਼ੀਥ 12 ਵਜੇ ਤੋਂ ਠੀਕ ਬਾਅਦ ਵੀ ਪੈ ਸਕਦਾ ਹੈ, ਅਜਿਹੀ ਹਾਲਤ ਵਿੱਚ ਪੂਜਾ ਅਗਲੀ ਤਾਰੀਖ਼ ਦੇ ਤੜਕੇ ਹੁੰਦੀ ਹੈ ਅਤੇ ਦਿਖਾਏ ਗਏ ਸਮੇਂ ਨਾਲ ਉਹੀ ਤਾਰੀਖ਼ ਲੱਗਦੀ ਹੈ। ਜੇ ਤਿਥੀ ਦੋ ਰਾਤਾਂ ਨੂੰ ਨਿਸ਼ੀਥ ਨੂੰ ਛੂਹੇ ਤਾਂ ਪਹਿਲੀ ਰਾਤ ਲਈ ਜਾਂਦੀ ਹੈ।",
     # EN: Kalashtami is a night worship, so the date is the day on which Ashtami is running in
     #     Pradosh kaal (the evening window after sunset); the tithi may begin the previous morning
     #     or end during the night, so check its start and end times in the table. If it touches
     #     Pradosh kaal on two evenings, the earlier evening is taken. Some traditions go by the
     #     midnight tithi instead, which can occasionally differ by a day.
-    "note.kalashtami": "",
+    "note.kalashtami": "ਕਾਲ ਅਸ਼ਟਮੀ ਰਾਤ ਦੀ ਪੂਜਾ ਹੈ, ਇਸ ਲਈ ਤਾਰੀਖ਼ ਉਹ ਦਿਨ ਹੈ ਜਿਸ ਦਿਨ ਪ੍ਰਦੋਸ਼ ਕਾਲ (ਸੂਰਜ ਛਿਪਣ ਤੋਂ ਬਾਅਦ ਦੀ ਸ਼ਾਮ ਦੀ ਵਿੰਡੋ) ਵਿੱਚ ਅਸ਼ਟਮੀ ਚੱਲ ਰਹੀ ਹੋਵੇ; ਤਿਥੀ ਪਿਛਲੀ ਸਵੇਰ ਸ਼ੁਰੂ ਹੋ ਸਕਦੀ ਹੈ ਜਾਂ ਰਾਤ ਦੌਰਾਨ ਖ਼ਤਮ ਹੋ ਸਕਦੀ ਹੈ, ਇਸ ਲਈ ਸਾਰਣੀ ਵਿੱਚ ਇਸ ਦੇ ਸ਼ੁਰੂ ਅਤੇ ਅੰਤ ਦੇ ਸਮੇਂ ਵੇਖੋ। ਜੇ ਇਹ ਦੋ ਸ਼ਾਮਾਂ ਨੂੰ ਪ੍ਰਦੋਸ਼ ਕਾਲ ਨੂੰ ਛੂਹੇ ਤਾਂ ਪਹਿਲੀ ਸ਼ਾਮ ਲਈ ਜਾਂਦੀ ਹੈ। ਕੁਝ ਰਵਾਇਤਾਂ ਇਸ ਦੀ ਥਾਂ ਅੱਧੀ ਰਾਤ ਦੀ ਤਿਥੀ ਮੁਤਾਬਕ ਚੱਲਦੀਆਂ ਹਨ, ਜੋ ਕਦੇ-ਕਦੇ ਇੱਕ ਦਿਨ ਦਾ ਫ਼ਰਕ ਪਾ ਸਕਦੀ ਹੈ।",
     # EN: What are the {name} dates in {year}?
     # keep: {name} {year}
-    "faq.all_q": "",
+    "faq.all_q": "{year} ਵਿੱਚ {name} ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ ਕਿਹੜੀਆਂ ਹਨ?",
     # EN: There are {count} {name} dates in {year} (New Delhi): {dates}.
     # keep: {count} {dates} {name} {year}
-    "faq.all_a": "",
+    "faq.all_a": "{year} ਵਿੱਚ {name} ਦੀਆਂ {count} ਤਾਰੀਖ਼ਾਂ ਹਨ (ਨਵੀਂ ਦਿੱਲੀ): {dates}।",
     # EN: When is the next {name}?
     # keep: {name}
-    "faq.next_q": "",
+    "faq.next_q": "{name} ਦੀ ਅਗਲੀ ਤਾਰੀਖ਼ ਕਦੋਂ ਹੈ?",
     # EN: When is the first {name} of {year}?
     # keep: {name} {year}
-    "faq.first_q": "",
+    "faq.first_q": "{year} ਵਿੱਚ {name} ਦੀ ਪਹਿਲੀ ਤਾਰੀਖ਼ ਕਦੋਂ ਹੈ?",
     # EN: {name} is on {when} ({details}).
     # keep: {details} {name} {when}
-    "faq.on_a": "",
+    "faq.on_a": "{name} {when} ਨੂੰ ਹੈ ({details})।",
     # EN: What is the {label} on {name} {short}?
     # keep: {label} {name} {short}
-    "faq.key_q": "",
+    "faq.key_q": "{short} ਨੂੰ {name} ਦਾ {label} ਕੀ ਹੈ?",
     # EN: At what time does the {name} tithi start and end on {short}?
     # keep: {name} {short}
-    "faq.tithi_q": "",
+    "faq.tithi_q": "{short} ਨੂੰ {name} ਦੀ ਤਿਥੀ ਕਿੰਨੇ ਵਜੇ ਸ਼ੁਰੂ ਅਤੇ ਖ਼ਤਮ ਹੁੰਦੀ ਹੈ?",
     # EN: How is the {name} date decided?
     # keep: {name}
-    "faq.why_q": "",
+    "faq.why_q": "{name} ਦੀ ਤਾਰੀਖ਼ ਕਿਵੇਂ ਤੈਅ ਹੁੰਦੀ ਹੈ?",
     # EN: The date follows the rule: {rule}. In {year} this gives {count} dates (New Delhi).
     # keep: {count} {rule} {year}
-    "faq.why_a": "",
+    "faq.why_a": "ਤਾਰੀਖ਼ ਦਾ ਨਿਯਮ ਇਹ ਹੈ: {rule}। {year} ਵਿੱਚ ਇਸ ਨਾਲ {count} ਤਾਰੀਖ਼ਾਂ ਬਣਦੀਆਂ ਹਨ (ਨਵੀਂ ਦਿੱਲੀ)।",
     # EN: Monthly vrat dates
-    "hub.h2": "",
+    "hub.h2": "ਮਹੀਨਾਵਾਰ ਵਰਤ ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ",
 }
 
 # ----------------------------------------------------------------------------
@@ -2871,45 +2871,45 @@ RECURRING_TEXT = {
 # app/hub_text.py LABELS["pa"] — section names of the crawlable /sitemap page and the footer link block  [19]
 HUB_LABELS = {
     # EN: Site map
-    "sitemap": "",
+    "sitemap": "ਸਾਈਟ ਮੈਪ",
     # EN: Panchang
-    "panchang": "",
+    "panchang": "ਪੰਚਾਂਗ",
     # EN: Rashifal (daily horoscope)
-    "rashifal": "",
+    "rashifal": "ਰਾਸ਼ੀਫਲ (ਰੋਜ਼ਾਨਾ ਫਲਾਦੇਸ਼)",
     # EN: Vrat &amp; festivals
-    "vrat": "",
+    "vrat": "ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: Shubh muhurat
-    "muhurat": "",
+    "muhurat": "ਸ਼ੁਭ ਮਹੂਰਤ",
     # EN: Nakshatra
-    "nakshatra": "",
+    "nakshatra": "ਨਕਸ਼ਤਰ",
     # EN: Rashi (zodiac signs)
-    "rashi": "",
+    "rashi": "ਰਾਸ਼ੀ (ਰਾਸ਼ੀ ਚਿੰਨ੍ਹ)",
     # EN: Kathas
-    "katha": "",
+    "katha": "ਕਥਾਵਾਂ",
     # EN: Free tools
-    "tools": "",
+    "tools": "ਮੁਫ਼ਤ ਟੂਲ",
     # EN: Kundali Milan
-    "milan": "",
+    "milan": "ਕੁੰਡਲੀ ਮਿਲਾਨ",
     # EN: Free Kundali
-    "kundali": "",
+    "kundali": "ਮੁਫ਼ਤ ਕੁੰਡਲੀ",
     # EN: Rahu Kaal
-    "rahu": "",
+    "rahu": "ਰਾਹੂ ਕਾਲ",
     # EN: Choghadiya
-    "choghadiya": "",
+    "choghadiya": "ਚੌਘੜੀਆ",
     # EN: Naam se Kundali Milan
-    "naam": "",
+    "naam": "ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ",
     # EN: Today's Panchang by city
-    "cities": "",
+    "cities": "ਸ਼ਹਿਰ ਮੁਤਾਬਕ ਅੱਜ ਦਾ ਪੰਚਾਂਗ",
     # EN: Rashifal by sign
-    "signs": "",
+    "signs": "ਰਾਸ਼ੀ ਮੁਤਾਬਕ ਰਾਸ਼ੀਫਲ",
     # EN: Vrat and festival calendars
-    "years": "",
+    "years": "ਵਰਤ ਅਤੇ ਤਿਉਹਾਰਾਂ ਦੇ ਕੈਲੰਡਰ",
     # EN: Ekadashi
-    "ekadashi": "",
+    "ekadashi": "ਇਕਾਦਸ਼ੀ",
     # EN: Every section of Divine Astro in one place: daily Panchang for Indian cities, Rashifal,
     #     vrat and festival dates, shubh muhurat, nakshatra and rashi guides, kathas and the free
     #     tools.
-    "intro": "",
+    "intro": "Divine Astro ਦਾ ਹਰ ਹਿੱਸਾ ਇੱਕੋ ਥਾਂ: ਭਾਰਤੀ ਸ਼ਹਿਰਾਂ ਦਾ ਰੋਜ਼ਾਨਾ ਪੰਚਾਂਗ, ਰਾਸ਼ੀਫਲ, ਵਰਤ ਅਤੇ ਤਿਉਹਾਰਾਂ ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ, ਸ਼ੁਭ ਮਹੂਰਤ, ਨਕਸ਼ਤਰ ਅਤੇ ਰਾਸ਼ੀ ਗਾਈਡਾਂ, ਕਥਾਵਾਂ ਅਤੇ ਮੁਫ਼ਤ ਟੂਲ।",
 }
 
 # ----------------------------------------------------------------------------
@@ -2919,37 +2919,37 @@ HUB_LABELS = {
 # app/astro_terms.py TERMS["pa"] — house / dasha / sign vocabulary for the AI narration and the chart labels  [16]
 ASTRO_TERMS = {
     # EN: house
-    "house": "",
+    "house": "ਭਾਵ",
     # EN: sign
-    "sign": "",
+    "sign": "ਰਾਸ਼ੀ",
     # EN: lord
-    "lord": "",
+    "lord": "ਸੁਆਮੀ",
     # EN: dasha
-    "dasha": "",
+    "dasha": "ਦਸ਼ਾ",
     # EN: mahadasha
-    "mahadasha": "",
+    "mahadasha": "ਮਹਾਦਸ਼ਾ",
     # EN: antardasha
-    "antardasha": "",
+    "antardasha": "ਅੰਤਰਦਸ਼ਾ",
     # EN: ascendant
-    "ascendant": "",
+    "ascendant": "ਲਗਨ",
     # EN: transit
-    "transit": "",
+    "transit": "ਗੋਚਰ",
     # EN: retrograde
-    "retrograde": "",
+    "retrograde": "ਵੱਕਰੀ",
     # EN: exalted
-    "exalted": "",
+    "exalted": "ਉੱਚ ਦਾ",
     # EN: debilitated
-    "debilitated": "",
+    "debilitated": "ਨੀਚ ਦਾ",
     # EN: own sign
-    "own sign": "",
+    "own sign": "ਆਪਣੀ ਰਾਸ਼ੀ",
     # EN: Sade Sati
-    "Sade Sati": "",
+    "Sade Sati": "ਸਾੜ੍ਹਸਾਤੀ",
     # EN: Navamsa
-    "Navamsa": "",
+    "Navamsa": "ਨਵਾਂਸ਼",
     # EN: yoga
-    "yoga": "",
+    "yoga": "ਯੋਗ",
     # EN: remedy
-    "remedy": "",
+    "remedy": "ਉਪਾਅ",
 }
 
 # app/astro_terms.py MONTH_VARIANTS["pa"] — other spellings of a Gregorian month the AI may write (month number -> spellings)

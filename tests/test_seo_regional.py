@@ -666,8 +666,15 @@ def city_names(lang: str) -> None:
     en = client.get(f"/panchang/{cities[0].slug}").text
     hi = client.get(f"/hi/panchang/{cities[0].slug}").text
     check(f"/panchang/{cities[0].slug} (en, hi) keep City.name / name_hi",
-          cities[0].name in en and seo_cities.city_name(cities[0], lang) not in en
-          and cities[0].name_hi in hi and seo_cities.city_name(cities[0], lang) not in hi)
+          cities[0].name in en
+          # English pages carry the Hindi city gloss, which is the Marathi/Nepali name too.
+          and (seo_cities.city_name(cities[0], lang) == cities[0].name_hi
+               or seo_cities.city_name(cities[0], lang) not in en)
+          and cities[0].name_hi in hi
+          # Marathi writes Pune as पुणे, exactly like Hindi: only assert the regional name is
+          # absent from the Hindi page when it is a different word.
+          and (seo_cities.city_name(cities[0], lang) == cities[0].name_hi
+               or seo_cities.city_name(cities[0], lang) not in hi))
 
 
 NOT_READY_PAGES = {

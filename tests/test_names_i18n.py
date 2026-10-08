@@ -47,7 +47,7 @@ SCRIPT = {
     "ne": (0x0900, 0x097F),
 }
 DEVANAGARI = (0x0900, 0x097F)
-DANDA = {"।", "॥"}          # shared by Bengali and Odia
+DANDA = {"।", "॥"}          # shared by Bengali, Odia, Punjabi, Gujarati, Marathi, Nepali and Assamese
 JOINERS = {"‌", "‍"}
 # Punctuation used in the tables besides ASCII.
 EXTRA_PUNCT = {"—", "–", "·"}
@@ -87,7 +87,7 @@ def _bad_chars(code: str, text: str) -> list[str]:
             continue
         if cp < 0x80 and not ch.isalpha():       # ASCII digits and punctuation
             continue
-        if ch in DANDA and code in ("bn", "or", "hi", "as", "mr", "ne"):
+        if ch in DANDA and code in ("bn", "or", "hi", "as", "mr", "ne", "pa", "gu"):
             continue
         bad.append(f"{ch} U+{cp:04X} {unicodedata.name(ch, '?')}")
     return bad
