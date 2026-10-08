@@ -322,7 +322,7 @@ SEO_TEXT = {
     # keep: {n}
     "km.ordn": "{n}",
     # EN: or
-    "km.or": "ਜਾਂ",
+    "km.or": " ਜਾਂ ",
     # EN: <h2>Mangal Dosha (Manglik)</h2> <p>Mangal Dosha is checked separately from the 36 points.
     #     A chart is Manglik when Mars sits in the {houses} house counted from the
     #     <strong>Lagna</strong> (ascendant), the <strong>Moon</strong> or <strong>Venus</strong>.
@@ -883,7 +883,7 @@ RASHIFAL_TEXT = {
     # keep: {house}
     "house_short": "{house} ਭਾਵ",
     # EN: (retrograde)
-    "rx": "(ਵੱਕਰੀ)",
+    "rx": " (ਵੱਕਰੀ)",
     # EN: Moon
     "planet.Moon": "ਚੰਦਰਮਾ",
     # EN: Saturn
@@ -1326,7 +1326,7 @@ VRAT_TEXT = {
     "today.none": "ਅੱਜ ਕੋਈ ਵੱਡਾ ਵਰਤ ਜਾਂ ਤਿਉਹਾਰ ਨਹੀਂ ਹੈ।",
     # EN: Next: <strong>{name}</strong> on {day}.
     # keep: {day} {name}
-    "today.next": "ਅਗਲਾ: <strong>{name}</strong>, {day} ਨੂੰ।",
+    "today.next": " ਅਗਲਾ: <strong>{name}</strong>, {day} ਨੂੰ।",
     # EN: Vrat &amp; Festivals today
     "block.heading": "ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: Page not found
@@ -1344,10 +1344,10 @@ VRAT_TEXT = {
     "hub.h1_city": "{city} ਵਿੱਚ ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: Today, {date}: {names}.
     # keep: {date} {names}
-    "hub.desc_today": "ਅੱਜ, {date}: {names}।",
+    "hub.desc_today": "ਅੱਜ, {date}: {names}। ",
     # EN: {date}: no major vrat today.
     # keep: {date}
-    "hub.desc_none": "{date}: ਅੱਜ ਕੋਈ ਵੱਡਾ ਵਰਤ ਨਹੀਂ ਹੈ।",
+    "hub.desc_none": "{date}: ਅੱਜ ਕੋਈ ਵੱਡਾ ਵਰਤ ਨਹੀਂ ਹੈ। ",
     # EN: Upcoming fasts and festivals for 30 days with Ekadashi parana, Pradosh and Sankashti
     #     moonrise times - {city}.
     # keep: {city}
@@ -1689,10 +1689,10 @@ VRAT_NOTES = {
 VRAT_RULES = {
     # EN: {month} (amanta)
     # keep: {month}
-    "head": "{month} (ਅਮਾਂਤ)",
+    "head": "{month} (ਅਮਾਂਤ) ",
     # EN: {paksha} {tithi}:
     # keep: {paksha} {tithi}
-    "tithi": "{paksha} {tithi}:",
+    "tithi": "{paksha} {tithi}: ",
     # EN: tithi prevailing at sunrise
     "rule.udaya": "ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: tithi prevailing in Pratahkala (first fifth of the day)
@@ -1765,7 +1765,7 @@ NAKSHATRA_PAGE_TEXT = {
     "today.other": "ਅੱਜ ਦਾ ਨਕਸ਼ਤਰ <a href=\"{href}\"><strong>{name}</strong></a> ਹੈ (ਨਵੀਂ ਦਿੱਲੀ ਵਿੱਚ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ)।",
     # EN: Its end time, the tithi and Rahu Kaal are on <a href="{pan}">today's Panchang</a>.
     # keep: {pan}
-    "today.tail": "ਇਸ ਦਾ ਅੰਤ ਸਮਾਂ, ਤਿਥੀ ਅਤੇ ਰਾਹੂ ਕਾਲ <a href=\"{pan}\">ਅੱਜ ਦੇ ਪੰਚਾਂਗ</a> ’ਤੇ ਹਨ।",
+    "today.tail": " ਇਸ ਦਾ ਅੰਤ ਸਮਾਂ, ਤਿਥੀ ਅਤੇ ਰਾਹੂ ਕਾਲ <a href=\"{pan}\">ਅੱਜ ਦੇ ਪੰਚਾਂਗ</a> ’ਤੇ ਹਨ।",
     # EN: Nakshatras
     "crumb.naks": "ਨਕਸ਼ਤਰ",
     # EN: Rashis
@@ -2488,7 +2488,7 @@ NAAM_MILAN_TEXT = {
     #     {syllables} <p>For each nakshatra's syllables, deity, gana and nadi see <a
     #     href="{href}">all 27 nakshatras</a>.</p>
     # keep: {abhijit} {href} {syllables}
-    "explainer": "<h2>ਨਾਂ ਨਾਲ ਮਿਲਾਨ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ</h2><p>27 ਨਕਸ਼ਤਰਾਂ ਵਿੱਚੋਂ ਹਰ ਇੱਕ ਦੇ ਚਾਰ ਚਰਣ ਹਨ, ਅਤੇ ਹਰ ਚਰਣ ਦਾ ਇੱਕ ਅੱਖਰ (ਨਾਮਾਕਸ਼ਰ) ਹੈ — ਕੁੱਲ 108। ਨਾਂ ਜਿਸ ਚਰਣ ਦੇ ਅੱਖਰ ਨਾਲ <strong>ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ</strong>, ਉਹੀ ਉਸ ਵਿਅਕਤੀ ਦਾ ਨਕਸ਼ਤਰ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਉਸ ਦੀ ਰਾਸ਼ੀ ਉਸ ਦੀ ਚੰਦਰ ਰਾਸ਼ੀ। ਫਿਰ ਇਨ੍ਹਾਂ ਦੋ ਨਕਸ਼ਤਰਾਂ ਤੋਂ ਓਹੀ <strong>ਅਸ਼ਟਕੂਟ (36 ਗੁਣ)</strong> ਮਿਲਾਨ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ ਜੋ ਜਨਮ ਕੁੰਡਲੀਆਂ ਨਾਲ ਹੁੰਦਾ ਹੈ — ਵਰਣ, ਵਸ਼ਯ, ਤਾਰਾ, ਯੋਨੀ, ਗ੍ਰਹਿ ਮੈਤਰੀ, ਗਣ, ਭਕੂਟ ਅਤੇ ਨਾੜੀ — ਸਾਡੇ ਕੁੰਡਲੀ ਮਿਲਾਨ ਟੂਲ ਦੇ ਓਸੇ ਇੰਜਣ ਨਾਲ।</p><h3>ਪਹਿਲਾ ਅੱਖਰ ਕਿਵੇਂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ</h3><ul><li>ਪਹਿਲੇ ਅੱਖਰ ਦਾ ਪਹਿਲਾ ਵਿਅੰਜਨ ਅਤੇ ਉਸ ਦੀ ਸੁਰ: <strong>ਪ੍ਰਿਯਾ → ਪੀ</strong>, <strong>ਕ੍ਸ਼ਿਤਿਜ → ਕੀ</strong>। ਛੋਟੀਆਂ ਤੇ ਵੱਡੀਆਂ ਸੁਰਾਂ ਨੂੰ ਇੱਕੋ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ (ਇ/ਈ, ਉ/ਊ); ਐ ਨੂੰ ਏ ਅਤੇ ਔ ਨੂੰ ਓ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ।</li><li>‘ਬ’ ਨੂੰ ‘ਵ’ ਵਜੋਂ, ਅਤੇ ‘ਸ਼’ ਨੂੰ ਮੂਰਧਨੀ ‘ਸ਼’ (ਅ-ਸੁਰ ਸਮੇਤ) ਜਾਂ ‘ਸ’ ਵਜੋਂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ; ਰਿ-ਸੁਰ ਨੂੰ ਰੀ।</li><li>ਅਭਿਜੀਤ ਦੇ ਅੱਖਰ ({abhijit}) ਉੱਤਰਾ ਆਸ਼ਾੜ੍ਹਾ ਦੇ ਚੌਥੇ ਚਰਣ ਵਿੱਚ ਗਿਣੇ ਜਾਂਦੇ ਹਨ।</li><li>ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਲਿਖੇ ਨਾਂ ਲਿਪੀਅੰਤਰ ਕਰਕੇ ਪੜ੍ਹੇ ਜਾਂਦੇ ਹਨ; T, D, N, Th ਅਤੇ Dh ਵਰਗੇ ਅੱਖਰ ਦੋ ਵੱਖ ਅੱਖਰਾਂ (ਤ/ਟ, ਦ/ਡ) ਦੀ ਥਾਂ ਹੋ ਸਕਦੇ ਹਨ, ਇਸ ਲਈ ਨਤੀਜਾ ਦੱਸਦਾ ਹੈ ਕਿ ਕਿਹੜਾ ਅੱਖਰ ਲਿਆ ਗਿਆ ਅਤੇ ਤੁਹਾਨੂੰ ਹੋਰ ਚੁਣਨ ਦਿੰਦਾ ਹੈ। ਹਿੰਦੀ (ਦੇਵਨਾਗਰੀ) ਵਿੱਚ ਲਿਖਿਆ ਨਾਂ ਹੂਬਹੂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।</li></ul><h3>ਰਾਸ਼ੀ ਮੁਤਾਬਕ ਨਾਂ ਦੇ ਅੱਖਰ</h3>{syllables}<p>ਹਰ ਨਕਸ਼ਤਰ ਦੇ ਅੱਖਰਾਂ, ਦੇਵਤੇ, ਗਣ ਅਤੇ ਨਾੜੀ ਲਈ <a href=\"{href}\">ਸਾਰੇ 27 ਨਕਸ਼ਤਰ</a> ਵੇਖੋ।</p>",
+    "explainer": " <h2>ਨਾਂ ਨਾਲ ਮਿਲਾਨ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ</h2><p>27 ਨਕਸ਼ਤਰਾਂ ਵਿੱਚੋਂ ਹਰ ਇੱਕ ਦੇ ਚਾਰ ਚਰਣ ਹਨ, ਅਤੇ ਹਰ ਚਰਣ ਦਾ ਇੱਕ ਅੱਖਰ (ਨਾਮਾਕਸ਼ਰ) ਹੈ — ਕੁੱਲ 108। ਨਾਂ ਜਿਸ ਚਰਣ ਦੇ ਅੱਖਰ ਨਾਲ <strong>ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ</strong>, ਉਹੀ ਉਸ ਵਿਅਕਤੀ ਦਾ ਨਕਸ਼ਤਰ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਉਸ ਦੀ ਰਾਸ਼ੀ ਉਸ ਦੀ ਚੰਦਰ ਰਾਸ਼ੀ। ਫਿਰ ਇਨ੍ਹਾਂ ਦੋ ਨਕਸ਼ਤਰਾਂ ਤੋਂ ਓਹੀ <strong>ਅਸ਼ਟਕੂਟ (36 ਗੁਣ)</strong> ਮਿਲਾਨ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ ਜੋ ਜਨਮ ਕੁੰਡਲੀਆਂ ਨਾਲ ਹੁੰਦਾ ਹੈ — ਵਰਣ, ਵਸ਼ਯ, ਤਾਰਾ, ਯੋਨੀ, ਗ੍ਰਹਿ ਮੈਤਰੀ, ਗਣ, ਭਕੂਟ ਅਤੇ ਨਾੜੀ — ਸਾਡੇ ਕੁੰਡਲੀ ਮਿਲਾਨ ਟੂਲ ਦੇ ਓਸੇ ਇੰਜਣ ਨਾਲ।</p><h3>ਪਹਿਲਾ ਅੱਖਰ ਕਿਵੇਂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ</h3><ul><li>ਪਹਿਲੇ ਅੱਖਰ ਦਾ ਪਹਿਲਾ ਵਿਅੰਜਨ ਅਤੇ ਉਸ ਦੀ ਸੁਰ: <strong>ਪ੍ਰਿਯਾ → ਪੀ</strong>, <strong>ਕ੍ਸ਼ਿਤਿਜ → ਕੀ</strong>। ਛੋਟੀਆਂ ਤੇ ਵੱਡੀਆਂ ਸੁਰਾਂ ਨੂੰ ਇੱਕੋ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ (ਇ/ਈ, ਉ/ਊ); ਐ ਨੂੰ ਏ ਅਤੇ ਔ ਨੂੰ ਓ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ।</li><li>‘ਬ’ ਨੂੰ ‘ਵ’ ਵਜੋਂ, ਅਤੇ ‘ਸ਼’ ਨੂੰ ਮੂਰਧਨੀ ‘ਸ਼’ (ਅ-ਸੁਰ ਸਮੇਤ) ਜਾਂ ‘ਸ’ ਵਜੋਂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ; ਰਿ-ਸੁਰ ਨੂੰ ਰੀ।</li><li>ਅਭਿਜੀਤ ਦੇ ਅੱਖਰ ({abhijit}) ਉੱਤਰਾ ਆਸ਼ਾੜ੍ਹਾ ਦੇ ਚੌਥੇ ਚਰਣ ਵਿੱਚ ਗਿਣੇ ਜਾਂਦੇ ਹਨ।</li><li>ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਲਿਖੇ ਨਾਂ ਲਿਪੀਅੰਤਰ ਕਰਕੇ ਪੜ੍ਹੇ ਜਾਂਦੇ ਹਨ; T, D, N, Th ਅਤੇ Dh ਵਰਗੇ ਅੱਖਰ ਦੋ ਵੱਖ ਅੱਖਰਾਂ (ਤ/ਟ, ਦ/ਡ) ਦੀ ਥਾਂ ਹੋ ਸਕਦੇ ਹਨ, ਇਸ ਲਈ ਨਤੀਜਾ ਦੱਸਦਾ ਹੈ ਕਿ ਕਿਹੜਾ ਅੱਖਰ ਲਿਆ ਗਿਆ ਅਤੇ ਤੁਹਾਨੂੰ ਹੋਰ ਚੁਣਨ ਦਿੰਦਾ ਹੈ। ਹਿੰਦੀ (ਦੇਵਨਾਗਰੀ) ਵਿੱਚ ਲਿਖਿਆ ਨਾਂ ਹੂਬਹੂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।</li></ul><h3>ਰਾਸ਼ੀ ਮੁਤਾਬਕ ਨਾਂ ਦੇ ਅੱਖਰ</h3>{syllables}<p>ਹਰ ਨਕਸ਼ਤਰ ਦੇ ਅੱਖਰਾਂ, ਦੇਵਤੇ, ਗਣ ਅਤੇ ਨਾੜੀ ਲਈ <a href=\"{href}\">ਸਾਰੇ 27 ਨਕਸ਼ਤਰ</a> ਵੇਖੋ।</p>",
 }
 
 # app/naam_milan_text.py ENGINE["pa"] — score-band notes and the convention note of a naam-milan result  [5]
@@ -2693,10 +2693,10 @@ RECURRING_TEXT = {
     "desc.about.kalashtami": "ਹਰ ਮਹੀਨੇ ਕ੍ਰਿਸ਼ਨ ਅਸ਼ਟਮੀ ਨੂੰ ਕਾਲ ਭੈਰਵ ਦੀ ਪੂਜਾ।",
     # EN: Includes {label}.
     # keep: {label}
-    "desc.key": "{label} ਸਮੇਤ।",
+    "desc.key": " {label} ਸਮੇਤ।",
     # EN: Next: {date}.
     # keep: {date}
-    "desc.next": "ਅਗਲੀ: {date}।",
+    "desc.next": " ਅਗਲੀ: {date}।",
     # EN: The next {name} is on <strong>{when}</strong> ({details}).
     # keep: {details} {name} {when}
     "ans.next": "{name} ਦੀ ਅਗਲੀ ਤਾਰੀਖ਼ <strong>{when}</strong> ਹੈ ({details})।",
@@ -2710,7 +2710,7 @@ RECURRING_TEXT = {
     "ans.past": "{year} ਵਿੱਚ {name} ਦੀਆਂ ਸਾਰੀਆਂ {count} ਤਾਰੀਖ਼ਾਂ ਹੇਠਾਂ ਦਿੱਤੀਆਂ ਹਨ; ਆਖ਼ਰੀ ਤਾਰੀਖ਼ <strong>{when}</strong> ਸੀ।",
     # EN: Dates for {year}: {link}.
     # keep: {link} {year}
-    "ans.more": "{year} ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ: {link}।",
+    "ans.more": " {year} ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ: {link}।",
     # EN: {name} {year}: all dates
     # keep: {name} {year}
     "table.h2": "{name} {year}: ਸਾਰੀਆਂ ਤਾਰੀਖ਼ਾਂ",
@@ -2724,7 +2724,7 @@ RECURRING_TEXT = {
     # keep: {month}
     "adhika": "ਅਧਿਕ {month}",
     # EN: Also:
-    "also": "ਇਹ ਵੀ:",
+    "also": "ਇਹ ਵੀ: ",
     # EN: <p class="note"><small>Months are amanta (a month ends on Amavasya, as in South and West
     #     India). North Indian purnimanta calendars name the dark fortnight one month
     #     later.</small></p>

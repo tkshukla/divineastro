@@ -1692,10 +1692,10 @@ VRAT_NOTES = {
 VRAT_RULES = {
     # EN: {month} (amanta)
     # keep: {month}
-    "head": "{month} (অমান্ত)",
+    "head": "{month} (অমান্ত) ",
     # EN: {paksha} {tithi}:
     # keep: {paksha} {tithi}
-    "tithi": "{paksha} {tithi}:",
+    "tithi": "{paksha} {tithi}: ",
     # EN: tithi prevailing at sunrise
     "rule.udaya": "সূৰ্যোদয়ত থকা তিথি",
     # EN: tithi prevailing in Pratahkala (first fifth of the day)
@@ -2491,7 +2491,7 @@ NAAM_MILAN_TEXT = {
     #     {syllables} <p>For each nakshatra's syllables, deity, gana and nadi see <a
     #     href="{href}">all 27 nakshatras</a>.</p>
     # keep: {abhijit} {href} {syllables}
-    "explainer": "<h2>নামেৰে মিলন কেনেকৈ হয়</h2> <p>27 টা নক্ষত্ৰৰ প্ৰতিটোৰ চাৰিটা পাদ, আৰু প্ৰতিটো পাদৰ এটা আখৰ (নামাক্ষৰ) — মুঠ 108 টা। নামটো যি পাদৰ আখৰেৰে <strong>আৰম্ভ হয়</strong>, সেইটোৱেই সেই ব্যক্তিৰ নক্ষত্ৰ, আৰু ইয়াৰ ৰাশিয়েই চন্দ্ৰ ৰাশি বুলি ধৰা হয়। তাৰ পিছত এই দুটা নক্ষত্ৰৰ পৰা সেই একেটা <strong>অষ্টকূট (36 গুণ)</strong> মিলন কৰা হয়, যিটো জন্মকুণ্ডলীৰে কৰা হয় — বৰ্ণ, বশ্য, তাৰা, যোনি, গ্ৰহ মৈত্ৰী, গণ, ভকূট আৰু নাড়ী — আমাৰ কুণ্ডলী মিলন সঁজুলিৰ সেই একে গণনা-পদ্ধতিৰে।</p> <h3>প্ৰথম আখৰ কেনেকৈ পঢ়া হয়</h3> <ul> <li>প্ৰথম আখৰৰ প্ৰথম ব্যঞ্জন আৰু তাৰ স্বৰচিহ্ন লোৱা হয়: <strong>Priya → পী</strong>, <strong>Kshitij → কী</strong>। হ্ৰস্ব আৰু দীঘল স্বৰ একে ধৰা হয় (ই/ঈ, উ/ঊ); ঐক এ আৰু ঔক ও ধৰা হয়।</li> <li>‘ব’ক ‘ৱ’ হিচাপে, আৰু ‘শ’ক ‘ষ’ (অ-কাৰসহ) বা ‘স’ হিচাপে পঢ়া হয়; ঋক ৰী।</li> <li>অভিজিৎ নক্ষত্ৰৰ আখৰ ({abhijit}) উত্তৰাষাঢ়াৰ চতুৰ্থ পাদত গণনা কৰা হয়।</li> <li>ইংৰাজীত লিখা নাম লিপ্যন্তৰ কৰি পঢ়া হয়; T, D, N, Th, Dh ৰ দৰে আখৰে দুটা বেলেগ আখৰ বুজাব পাৰে (ত/ট, দ/ড), সেয়ে ফলাফলত দেখুওৱা হয় কোনটো আখৰ ধৰা হ'ল, আৰু আপুনি আন এটা বাছিব পাৰে। হিন্দী (দেৱনাগৰী) আখৰেৰে লিখা নাম হুবহু পঢ়া হয়।</li> </ul> <h3>ৰাশি অনুসৰি নামাক্ষৰ</h3> {syllables} <p>প্ৰতিটো নক্ষত্ৰৰ আখৰ, দেৱতা, গণ আৰু নাড়ী জানিবলৈ চাওক <a href=\"{href}\">27 টা নক্ষত্ৰৰ তালিকা</a>।</p>",
+    "explainer": " <h2>নামেৰে মিলন কেনেকৈ হয়</h2> <p>27 টা নক্ষত্ৰৰ প্ৰতিটোৰ চাৰিটা পাদ, আৰু প্ৰতিটো পাদৰ এটা আখৰ (নামাক্ষৰ) — মুঠ 108 টা। নামটো যি পাদৰ আখৰেৰে <strong>আৰম্ভ হয়</strong>, সেইটোৱেই সেই ব্যক্তিৰ নক্ষত্ৰ, আৰু ইয়াৰ ৰাশিয়েই চন্দ্ৰ ৰাশি বুলি ধৰা হয়। তাৰ পিছত এই দুটা নক্ষত্ৰৰ পৰা সেই একেটা <strong>অষ্টকূট (36 গুণ)</strong> মিলন কৰা হয়, যিটো জন্মকুণ্ডলীৰে কৰা হয় — বৰ্ণ, বশ্য, তাৰা, যোনি, গ্ৰহ মৈত্ৰী, গণ, ভকূট আৰু নাড়ী — আমাৰ কুণ্ডলী মিলন সঁজুলিৰ সেই একে গণনা-পদ্ধতিৰে।</p> <h3>প্ৰথম আখৰ কেনেকৈ পঢ়া হয়</h3> <ul> <li>প্ৰথম আখৰৰ প্ৰথম ব্যঞ্জন আৰু তাৰ স্বৰচিহ্ন লোৱা হয়: <strong>Priya → পী</strong>, <strong>Kshitij → কী</strong>। হ্ৰস্ব আৰু দীঘল স্বৰ একে ধৰা হয় (ই/ঈ, উ/ঊ); ঐক এ আৰু ঔক ও ধৰা হয়।</li> <li>‘ব’ক ‘ৱ’ হিচাপে, আৰু ‘শ’ক ‘ষ’ (অ-কাৰসহ) বা ‘স’ হিচাপে পঢ়া হয়; ঋক ৰী।</li> <li>অভিজিৎ নক্ষত্ৰৰ আখৰ ({abhijit}) উত্তৰাষাঢ়াৰ চতুৰ্থ পাদত গণনা কৰা হয়।</li> <li>ইংৰাজীত লিখা নাম লিপ্যন্তৰ কৰি পঢ়া হয়; T, D, N, Th, Dh ৰ দৰে আখৰে দুটা বেলেগ আখৰ বুজাব পাৰে (ত/ট, দ/ড), সেয়ে ফলাফলত দেখুওৱা হয় কোনটো আখৰ ধৰা হ'ল, আৰু আপুনি আন এটা বাছিব পাৰে। হিন্দী (দেৱনাগৰী) আখৰেৰে লিখা নাম হুবহু পঢ়া হয়।</li> </ul> <h3>ৰাশি অনুসৰি নামাক্ষৰ</h3> {syllables} <p>প্ৰতিটো নক্ষত্ৰৰ আখৰ, দেৱতা, গণ আৰু নাড়ী জানিবলৈ চাওক <a href=\"{href}\">27 টা নক্ষত্ৰৰ তালিকা</a>।</p>",
 }
 
 # app/naam_milan_text.py ENGINE["as"] — score-band notes and the convention note of a naam-milan result  [5]
@@ -2696,10 +2696,10 @@ RECURRING_TEXT = {
     "desc.about.kalashtami": "প্ৰতি মাহে কৃষ্ণ অষ্টমীত কালভৈৰৱৰ পূজা।",
     # EN: Includes {label}.
     # keep: {label}
-    "desc.key": "ইয়াত {label} আছে।",
+    "desc.key": " ইয়াত {label} আছে।",
     # EN: Next: {date}.
     # keep: {date}
-    "desc.next": "পৰৱৰ্তী: {date}।",
+    "desc.next": " পৰৱৰ্তী: {date}।",
     # EN: The next {name} is on <strong>{when}</strong> ({details}).
     # keep: {details} {name} {when}
     "ans.next": "পৰৱৰ্তী {name} <strong>{when}</strong> তাৰিখে ({details})।",
@@ -2713,7 +2713,7 @@ RECURRING_TEXT = {
     "ans.past": "{year} চনৰ সকলো {count} টা {name}ৰ তাৰিখ তলত তালিকাভুক্ত কৰা হ'ল; শেষটো আছিল <strong>{when}</strong> তাৰিখে।",
     # EN: Dates for {year}: {link}.
     # keep: {link} {year}
-    "ans.more": "{year} চনৰ তাৰিখ: {link}।",
+    "ans.more": " {year} চনৰ তাৰিখ: {link}।",
     # EN: {name} {year}: all dates
     # keep: {name} {year}
     "table.h2": "{name} {year}: সকলো তাৰিখ",
@@ -2727,7 +2727,7 @@ RECURRING_TEXT = {
     # keep: {month}
     "adhika": "অধিক {month}",
     # EN: Also:
-    "also": "লগতে:",
+    "also": "লগতে: ",
     # EN: <p class="note"><small>Months are amanta (a month ends on Amavasya, as in South and West
     #     India). North Indian purnimanta calendars name the dark fortnight one month
     #     later.</small></p>
