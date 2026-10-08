@@ -9,7 +9,7 @@ const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 /* DIVASTRO-121: the languages, from the registry main.py inlines (app/i18n.py).
    The fallback list only matters if the page was served without it. */
 const LANGS = (window.DA_LANGS && window.DA_LANGS.length) ? window.DA_LANGS
-  : ["en", "hi", "kn", "te", "ta", "ml", "bn", "or"].map((code) => ({ code, native: code, htmlLang: code }));
+  : ["en", "hi", "kn", "te", "ta", "ml", "bn", "or", "pa", "ne", "as", "mr", "gu"].map((code) => ({ code, native: code, htmlLang: code }));
 const LANG_CODES = LANGS.map((l) => l.code);
 const langInfo = (code) => LANGS.find((l) => l.code === code) || LANGS[0];
 function storedLang() { try { return localStorage.getItem("astro.lang"); } catch { return null; } }

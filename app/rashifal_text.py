@@ -1647,3 +1647,15 @@ KETU_LINE[False].update(
        "பயிற்சிக்கும் நல்லது, அவசர நடவடிக்கைகளுக்கு அவ்வளவு அல்ல.",
     ml="നിങ്ങളുടെ {n} ഭാവത്തിലെ കേതു ശാന്തവും ഉൾമുഖവുമായ സ്വാധീനമാണ് — ആത്മചിന്തനത്തിനും "
        "ആത്മീയസാധനയ്ക്കും നല്ലത്, ആവേശത്തിലുള്ള നീക്കങ്ങൾക്ക് അത്ര നല്ലതല്ല.")
+
+# DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py; overlaid here as if written inline.
+from . import lang_data  # noqa: E402
+lang_data.merge("RASHIFAL_TEXT", TEXT)
+lang_data.merge("RASHIFAL_MORE_LINKS", MORE_LINKS)
+lang_data.merge("RASHIFAL_TONE_LABEL", TONE_LABEL)
+lang_data.merge("RASHIFAL_MOON_HOUSE", MOON_HOUSE)
+lang_data.merge("RASHIFAL_SATURN_HOUSE", SATURN_HOUSE)
+lang_data.merge("RASHIFAL_JUPITER_HOUSE", JUPITER_HOUSE)
+lang_data.merge("RASHIFAL_RAHU_HOUSE", RAHU_HOUSE)
+lang_data.merge("RASHIFAL_KETU_LINE", KETU_LINE)
+lang_data.merge("RASHIFAL_CLOCK_LANG", CLOCK_LANG)

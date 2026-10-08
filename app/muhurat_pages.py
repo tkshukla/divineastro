@@ -37,7 +37,7 @@ from dataclasses import dataclass
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from . import i18n, seo_cities, seo_pages
+from . import i18n, lang_data, seo_cities, seo_pages
 from .astro import muhurat
 from .astro import panchang as panchang_engine
 from .astro.muhurat import EVENT_PERIODS, PERIODS
@@ -97,7 +97,8 @@ def _kind_vars(kind: Kind, lang: str) -> dict:
 # DIVASTRO-121: the languages these pages are really written in (app/i18n.py).
 # /<code>/muhurat/... exists for every registry language; an untranslated one
 # shows the English text, noindex, outside the sitemap and hreflang.
-TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te", "ta", "ml", "bn", "or"}  # DIVASTRO-123
+# DIVASTRO-143: + every new language whose app/lang_data/<code>.py READY includes "muhurat".
+TRANSLATED = lang_data.translated("muhurat", i18n.BASE_TRANSLATED, lang_data.LEGACY_CODES)  # DIVASTRO-123/143
 i18n.LOCALIZABLE_ROOTS.add("muhurat")
 
 

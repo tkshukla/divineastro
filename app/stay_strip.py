@@ -113,6 +113,10 @@ TEXT: dict[str, dict[str, str]] = {
 }
 
 
+# DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py; overlaid here as if written inline.
+from . import lang_data  # noqa: E402
+lang_data.merge("STAY_STRIP", TEXT)
+
 def _tx(key: str, lang: str) -> str:
     return i18n.t(key, lang, TEXT)
 

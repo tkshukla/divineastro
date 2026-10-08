@@ -8,7 +8,8 @@
     n.clock(dt.datetime(2026, 1, 1, 6, 14))   # "காலை 6:14"
     add_names(daily_panchang_result, "ta")    # name_ta / label_ta / notes_ta
 
-LANGS: en, hi, kn, te, ta, ml, bn, or. Any other code (or None) gets English.
+LANGS: en, hi, kn, te, ta, ml, bn, or, and (DIVASTRO-143) pa, ne, as, mr, gu. Any other
+code (or None) gets English.
 
 Every table is keyed by the ENGLISH name the engines emit, so a lookup is
 `table.get(english, english)`:
@@ -52,8 +53,12 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Mapping
 
-LANGS = ("en", "hi", "kn", "te", "ta", "ml", "bn", "or")
-REGIONAL_LANGS = ("kn", "te", "ta", "ml", "bn", "or")
+from .. import lang_data
+
+LEGACY_LANGS = lang_data.LEGACY_CODES          # kn te ta ml bn or: complete tables, no fallback
+NEW_LANGS = lang_data.NEW_CODES                # pa ne as mr gu: names_<code>.py filled by a translator
+LANGS = ("en", "hi", *LEGACY_LANGS, *NEW_LANGS)
+REGIONAL_LANGS = (*LEGACY_LANGS, *NEW_LANGS)
 
 TABLES = (
     "TITHI", "NAKSHATRAS", "VARA", "YOGA", "KARANA", "PAKSHA", "MASA", "SOLAR_MASA",
@@ -154,7 +159,31 @@ def _build(code: str, values: dict) -> Names:
 def _regional(code: str) -> Names:
     module = importlib.import_module(f".names_{code}", __package__)
     suffix = code.upper()
-    return _build(code, {name: getattr(module, f"{name}_{suffix}") for name in TABLES + TEXTS})
+    values = {name: getattr(module, f"{name}_{suffix}") for name in TABLES + TEXTS}
+    if code in NEW_LANGS:
+        values = _over_english(values)
+    return _build(code, values)
+
+
+def _over_english(values: dict) -> dict:
+    """DIVASTRO-143: a new language's names_<code>.py is filled in a translator at a
+    time, key by key, so what it leaves out ("" or missing) is the ENGLISH name,
+    never a KeyError and never a hole in a sentence (`{t_rahu_kaal}` must always
+    resolve). The complete tables of kn..or are used as they are."""
+    en = _names("en")
+    out = {}
+    for name in TABLES:
+        base, own = getattr(en, name), values.get(name) or ()
+        if isinstance(base, tuple):                      # MONTHS: 12, by position
+            own = list(own) + [""] * (len(base) - len(own))
+            out[name] = tuple(o or b for o, b in zip(own, base))
+        else:
+            merged = dict(base)
+            merged.update({k: v for k, v in dict(own).items() if v})
+            out[name] = merged
+    for name in TEXTS:
+        out[name] = values.get(name) or getattr(en, name)
+    return out
 
 
 # --------------------------------------------------------------------------
@@ -344,9 +373,11 @@ def add_names(p: dict, lang: str) -> dict:
 
 
 def available() -> list[str]:
-    """The regional languages that have a names module (all six today)."""
+    """The regional languages the API sends names for (add_all): kn..or, and a new
+    language once its app/lang_data READY includes "app" (until then its names are
+    partly English and the app falls back per key anyway)."""
     out = []
-    for code in REGIONAL_LANGS:
+    for code in (*LEGACY_LANGS, *sorted(lang_data.ready("app"), key=NEW_LANGS.index)):
         try:
             _names(code)
         except (ModuleNotFoundError, AttributeError):

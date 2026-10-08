@@ -2426,3 +2426,10 @@ RULES: dict[str, dict[str, str]] = {
         "key.holi": "ହୋଲିକା ଦହନର ପରଦିନ",
     },
 }
+
+# DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py; overlaid here as if written inline.
+from . import lang_data  # noqa: E402
+lang_data.merge("VRAT_TEXT", TEXT)
+lang_data.merge("VRAT_ABOUT", ABOUT)
+lang_data.merge("VRAT_NOTES", NOTES)
+lang_data.merge("VRAT_RULES", RULES)

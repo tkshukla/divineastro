@@ -306,3 +306,8 @@ STATES: dict[str, dict[str, str]] = {
         "Uttar Pradesh": "ଉତ୍ତରପ୍ରଦେଶ", "Uttarakhand": "ଉତ୍ତରାଖଣ୍ଡ", "West Bengal": "ପଶ୍ଚିମବଙ୍ଗ",
     },
 }
+
+# DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py; overlaid here as if written inline.
+from . import lang_data  # noqa: E402
+lang_data.merge("CITY_NAMES", CITIES)
+lang_data.merge("STATE_NAMES", STATES)

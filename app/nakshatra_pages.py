@@ -33,7 +33,7 @@ import json
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from . import i18n, seo_cities
+from . import i18n, lang_data, seo_cities
 from .astro import matching
 from .astro.namakshar import (BY_NAME, BY_SLUG, NAK_MIN, NAKSHATRA_LIST, PADA_MIN, SIGN_MIN,
                               Nakshatra, sign_padas)
@@ -55,7 +55,8 @@ NAAM_MILAN = "/naam-se-kundali-milan"
 # shell) are really written in — see app/i18n.py. Other registry languages get
 # /<code>/nakshatra etc. with the English text, noindex, and no sitemap/hreflang
 # entry until their code is added here.
-TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te", "ta", "ml", "bn", "or"}  # DIVASTRO-123
+# DIVASTRO-143: + every new language whose app/lang_data/<code>.py READY includes "nakshatra".
+TRANSLATED = lang_data.translated("nakshatra", i18n.BASE_TRANSLATED, lang_data.LEGACY_CODES)  # DIVASTRO-123/143
 i18n.LOCALIZABLE_ROOTS.update({"nakshatra", "rashi", NAAM_MILAN.strip("/")})
 
 DASHA_YEARS = dict(VIMSHOTTARI)

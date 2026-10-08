@@ -59,7 +59,7 @@ from dataclasses import dataclass
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from . import i18n, seo_cities
+from . import i18n, lang_data, seo_cities
 from .astro import panchang as panchang_engine
 from .chart_service import SIGNS
 from .seo_pages import (
@@ -112,7 +112,8 @@ LANGS = ("en", "hi")
 # Every registry language gets /<code>/rashifal; one not listed here shows the
 # English text with noindex + "translation coming soon", and stays out of the
 # sitemap and hreflang. Add a code once its rashifal strings are written.
-TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te", "ta", "ml", "bn", "or"}  # DIVASTRO-123
+# DIVASTRO-143: + every new language whose app/lang_data/<code>.py READY includes "rashifal".
+TRANSLATED = lang_data.translated("rashifal", i18n.BASE_TRANSLATED, lang_data.LEGACY_CODES)  # DIVASTRO-123/143
 i18n.LOCALIZABLE_ROOTS.add("rashifal")
 
 

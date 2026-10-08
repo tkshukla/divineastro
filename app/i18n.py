@@ -40,6 +40,8 @@ import unicodedata
 from dataclasses import dataclass, field
 from typing import Iterable, Mapping
 
+from . import lang_data       # DIVASTRO-143: per-language modules; imports nothing from app.*
+
 DEFAULT = "en"
 
 
@@ -116,6 +118,37 @@ LANGUAGES: tuple[Language, ...] = (
              yes="ଓଡ଼ିଆରେ ଦେଖନ୍ତୁ", not_now="ଏବେ ନୁହେଁ",
              notice="ଅନୁବାଦ ଶୀଘ୍ର ଆସୁଛି — ଆପାତତଃ ଏହି ପୃଷ୍ଠାଟି ଇଂରାଜୀରେ ଦେଖାଯାଉଛି।",
              english_answer="ଉତ୍ତରଟି ଇଂରାଜୀରେ ଦେଖାଯାଇଛି।"),
+    # DIVASTRO-143: Punjabi, Nepali, Assamese, Marathi, Gujarati. The short strings below
+    # are hand-written for native review; everything else is filled per language in
+    # app/lang_data/<code>.py (docs/i18n.md, "the per-language-module way").
+    Language("pa", "ਪੰਜਾਬੀ", "Punjabi", "Guru", "pa", "pa-IN", "pa", "pa_IN", "/pa", "beta",
+             "Noto Sans Gurmukhi",
+             choose="ਭਾਸ਼ਾ ਚੁਣੋ", hint="ਕੀ ਤੁਸੀਂ ਇਹ ਸਾਈਟ ਪੰਜਾਬੀ ਵਿੱਚ ਦੇਖਣਾ ਚਾਹੋਗੇ?",
+             yes="ਪੰਜਾਬੀ ਵਿੱਚ ਦੇਖੋ", not_now="ਹੁਣ ਨਹੀਂ",
+             notice="ਅਨੁਵਾਦ ਜਲਦੀ ਆ ਰਿਹਾ ਹੈ — ਇਹ ਪੰਨਾ ਫ਼ਿਲਹਾਲ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਦਿਖਾਇਆ ਜਾ ਰਿਹਾ ਹੈ।",
+             english_answer="ਜਵਾਬ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਦਿਖਾਇਆ ਗਿਆ ਹੈ।"),
+    Language("ne", "नेपाली", "Nepali", "Deva", "ne", "ne-IN", "ne", "ne_NP", "/ne", "beta", None,
+             choose="भाषा छान्नुहोस्", hint="के तपाईं यो साइट नेपालीमा हेर्न चाहनुहुन्छ?",
+             yes="नेपालीमा हेर्नुहोस्", not_now="अहिले होइन",
+             notice="अनुवाद छिट्टै आउँदैछ — यो पृष्ठ अहिलेका लागि अंग्रेजीमा देखाइएको छ।",
+             english_answer="उत्तर अंग्रेजीमा देखाइएको छ।"),
+    Language("as", "অসমীয়া", "Assamese", "Beng", "as", "as-IN", "as", "as_IN", "/as", "beta",
+             "Noto Sans Bengali",
+             choose="ভাষা বাছনি কৰক", hint="আপুনি এই ছাইটখন অসমীয়াত চাব বিচাৰেনে?",
+             yes="অসমীয়াত চাওক", not_now="এতিয়া নহয়",
+             notice="অনুবাদ সোনকালে আহিব — এই পৃষ্ঠাটো এতিয়ালৈ ইংৰাজীত দেখুওৱা হৈছে।",
+             english_answer="উত্তৰটো ইংৰাজীত দেখুওৱা হৈছে।"),
+    Language("mr", "मराठी", "Marathi", "Deva", "mr", "mr-IN", "mr", "mr_IN", "/mr", "beta", None,
+             choose="भाषा निवडा", hint="तुम्हाला ही साइट मराठीत पाहायची आहे का?",
+             yes="मराठीत पाहा", not_now="आत्ता नको",
+             notice="भाषांतर लवकरच येत आहे — हे पान सध्या इंग्रजीत दाखवले आहे.",
+             english_answer="उत्तर इंग्रजीत दाखवले आहे."),
+    Language("gu", "ગુજરાતી", "Gujarati", "Gujr", "gu", "gu-IN", "gu", "gu_IN", "/gu", "beta",
+             "Noto Sans Gujarati",
+             choose="ભાષા પસંદ કરો", hint="શું તમે આ સાઇટ ગુજરાતીમાં જોવા માગો છો?",
+             yes="ગુજરાતીમાં જુઓ", not_now="હમણાં નહીં",
+             notice="અનુવાદ ટૂંક સમયમાં આવી રહ્યો છે — આ પેજ હાલ પૂરતું અંગ્રેજીમાં બતાવવામાં આવ્યું છે.",
+             english_answer="જવાબ અંગ્રેજીમાં બતાવવામાં આવ્યો છે."),
 )
 
 BY_CODE: dict[str, Language] = {lang.code: lang for lang in LANGUAGES}
@@ -141,6 +174,14 @@ def normalize(lang: str | None) -> str:
 
 def is_supported(lang: str | None) -> bool:
     return (lang or "") in BY_CODE
+
+
+def listed_codes(current: str | None = None) -> list[str]:
+    """The codes offered in the language picker and sent to the app, registry order:
+    every language but the new ones (pa ne as mr gu) that nothing is READY for yet
+    (lang_data.listed). A page in a language not listed still shows it, so its own
+    picker has the current language in it."""
+    return [L.code for L in LANGUAGES if lang_data.listed(L.code) or L.code == current]
 
 
 def ordered(codes: Iterable[str]) -> list[str]:
@@ -325,6 +366,10 @@ _AKSHAR: dict[str, tuple[int, dict[str, str]]] = {
 }
 
 
+# DIVASTRO-143: pa, ne, as, mr, gu are declared in app/lang_data/<code>.py (AKSHAR).
+lang_data.merge_akshar(_AKSHAR)
+
+
 def akshar(text: str, lang: str) -> str:
     """`text` with its Devanagari letters in `lang`'s script (see _AKSHAR)."""
     spec = _AKSHAR.get(lang)
@@ -413,6 +458,10 @@ CHROME: dict[str, dict[str, str]] = {
 }
 
 
+# DIVASTRO-143: the new languages' chrome comes from app/lang_data/<code>.py (CHROME).
+lang_data.merge("CHROME", CHROME)
+
+
 def pick(by_lang: Mapping[str, object], lang: str):
     """by_lang[lang] if present (and non-empty), else by_lang['en'] — for the many
     module tables shaped {"en": ..., "hi": ...}. Adding a "kn" entry is how a
@@ -483,7 +532,7 @@ def picker(lang: str, links: Mapping[str, str], *, label: str | None = None) -> 
     cur = get(lang)
     label = label or cur.choose
     items = []
-    for L in LANGUAGES:
+    for L in (BY_CODE[c] for c in listed_codes(cur.code)):
         href = links.get(L.code) or app_link(L.code)
         current = ' aria-current="true"' if L.code == cur.code else ""
         items.append(
@@ -526,6 +575,13 @@ _SCRIPT_FALLBACK = {
     "ml": '"Noto Sans Malayalam", "Kartika", "Nirmala UI"',
     "bn": '"Noto Sans Bengali", "Vrinda", "Nirmala UI"',
     "or": '"Noto Sans Oriya", "Kalinga", "Nirmala UI"',
+    # DIVASTRO-143. Assamese is written in the Bengali block (Noto Sans Bengali has
+    # ৰ and ৱ); Marathi and Nepali are Devanagari, as Hindi, from the system fonts.
+    "pa": '"Noto Sans Gurmukhi", "Raavi", "Nirmala UI"',
+    "gu": '"Noto Sans Gujarati", "Shruti", "Nirmala UI"',
+    "as": '"Noto Sans Bengali", "Vrinda", "Nirmala UI"',
+    "mr": '"Noto Sans Devanagari", "Mangal", "Nirmala UI"',
+    "ne": '"Noto Sans Devanagari", "Mangal", "Nirmala UI"',
 }
 
 
@@ -624,4 +680,4 @@ def client_registry() -> list[dict]:
              "htmlLang": L.html_lang, "prefix": L.prefix, "status": L.status,
              "font": font_url(L.code), "choose": L.choose, "hint": L.hint, "yes": L.yes,
              "notNow": L.not_now, "notice": L.notice,
-             "englishAnswer": L.english_answer} for L in LANGUAGES]
+             "englishAnswer": L.english_answer} for L in LANGUAGES if lang_data.listed(L.code)]
