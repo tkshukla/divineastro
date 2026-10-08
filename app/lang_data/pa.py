@@ -20,7 +20,7 @@ from __future__ import annotations
 
 # Page modules that are complete for this language (the table groups below):
 #   "seo" "rashifal" "vrat" "nakshatra" "muhurat" "recurring" "hub" "app"
-READY = frozenset({"seo", "app"})
+READY = frozenset({"seo", "app", "rashifal", "hub"})
 
 # Latin-script words the pa text may keep besides the defaults (WhatsApp, UPI, PDF ...).
 ALLOW_LATIN = frozenset({"name", "gmail.com"})  # the e-mail placeholder name@gmail.com
@@ -881,110 +881,110 @@ CHOGHADIYA_DESC = {
 RASHIFAL_TEXT = {
     # EN: {house} house
     # keep: {house}
-    "house_short": "",
+    "house_short": "{house} ਭਾਵ",
     # EN: (retrograde)
-    "rx": "",
+    "rx": "(ਵੱਕਰੀ)",
     # EN: Moon
-    "planet.Moon": "",
+    "planet.Moon": "ਚੰਦਰਮਾ",
     # EN: Saturn
-    "planet.Saturn": "",
+    "planet.Saturn": "ਸ਼ਨੀ",
     # EN: Jupiter
-    "planet.Jupiter": "",
+    "planet.Jupiter": "ਬ੍ਰਿਹਸਪਤੀ",
     # EN: Rahu
-    "planet.Rahu": "",
+    "planet.Rahu": "ਰਾਹੂ",
     # EN: Ketu
-    "planet.Ketu": "",
+    "planet.Ketu": "ਕੇਤੂ",
     # EN: {english} ({name})
     # keep: {local}
-    "sign_label": "",
+    "sign_label": "{local}",
     # EN: {name} · {english}
     # keep: {local}
-    "sign_link": "",
+    "sign_link": "{local}",
     # EN: {name}
     # keep: {local}
-    "sign_crumb": "",
+    "sign_crumb": "{local}",
     # EN: {name}
     # keep: {local}
-    "sade_name": "",
+    "sade_name": "{local}",
     # EN: Rashifal
-    "crumb_root": "",
+    "crumb_root": "ਰਾਸ਼ੀਫਲ",
     # EN: hi
     "sub_lang": 'pa',
     # EN: {name} Rashifal Today, {date_short} — {english} Daily Horoscope | {brand}
     # keep: {brand} {local}
     # may also use: {date_short} {date}
-    "s.title": "",
+    "s.title": "{local} ਰਾਸ਼ੀਫਲ ਅੱਜ, {date_short} — ਅੱਜ ਦਾ ਰੋਜ਼ਾਨਾ ਫਲਾਦੇਸ਼ | {brand}",
     # EN: {name} ({english} Moon sign) rashifal for {weekday}, {date}: the Moon transits your
     #     {house} house — {tone_lower}. Plus Saturn, Jupiter and Rahu–Ketu transits, Sade Sati
     #     status and today's tithi, computed from the sidereal sky.
     # keep: {date} {house} {local} {tone} {weekday}
-    "s.desc": "",
+    "s.desc": "{local} ਰਾਸ਼ੀ ਦਾ {weekday}, {date} ਦਾ ਰਾਸ਼ੀਫਲ: ਚੰਦਰਮਾ ਤੁਹਾਡੀ ਰਾਸ਼ੀ ਤੋਂ {house} ਭਾਵ ਵਿੱਚ ਹੈ — {tone}। ਨਾਲ ਸ਼ਨੀ, ਬ੍ਰਿਹਸਪਤੀ ਅਤੇ ਰਾਹੂ-ਕੇਤੂ ਦਾ ਗੋਚਰ, ਸਾੜ੍ਹਸਾਤੀ ਦੀ ਸਥਿਤੀ ਅਤੇ ਅੱਜ ਦੀ ਤਿਥੀ, ਨਿਰਯਨ ਗਣਨਾ ਨਾਲ।",
     # EN: {name} Rashifal Today — {english} Daily Horoscope
     # keep: {local}
-    "s.h1": "",
+    "s.h1": "{local} ਰਾਸ਼ੀ ਦਾ ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ",
     # EN: आज का {name_hi} राशिफल
     # may also use: {local}
-    "s.sub": "",
+    "s.sub": "{local} ਰਾਸ਼ੀ · ਰੋਜ਼ਾਨਾ ਰਾਸ਼ੀਫਲ",
     # EN: the Moon is in your {house} house from {name}.
     # keep: {house}
-    "s.summary": "",
+    "s.summary": "ਚੰਦਰਮਾ ਤੁਹਾਡੀ ਰਾਸ਼ੀ ਤੋਂ {house} ਭਾਵ ਵਿੱਚ ਹੈ।",
     # EN: About {name} rashi — traits, nakshatras and name letters
     # keep: {local}
-    "s.about_rashi": "",
+    "s.about_rashi": "{local} ਰਾਸ਼ੀ ਬਾਰੇ — ਸੁਭਾਅ, ਨਕਸ਼ਤਰ ਅਤੇ ਨਾਂ ਦੇ ਅੱਖਰ",
     # EN: Today's Moon transit (Chandra gochar)
-    "moon.head": "",
+    "moon.head": "ਅੱਜ ਦਾ ਚੰਦਰਮਾ ਗੋਚਰ (ਚੰਦਰ ਗੋਚਰ)",
     # EN: The Moon is in {sign} all day — your {house} house.
     # keep: {house} {sign}
-    "moon.allday": "",
+    "moon.allday": "ਚੰਦਰਮਾ ਸਾਰਾ ਦਿਨ {sign} ਵਿੱਚ ਹੈ — ਤੁਹਾਡਾ {house} ਭਾਵ।",
     # EN: <strong>Until {time} IST:</strong> the Moon is in {sign} — your {house} house.
     # keep: {house} {sign} {time}
-    "moon.until": "",
+    "moon.until": "<strong>{time} IST ਤੱਕ:</strong> ਚੰਦਰਮਾ {sign} ਵਿੱਚ ਹੈ — ਤੁਹਾਡਾ {house} ਭਾਵ।",
     # EN: <strong>From {time} IST:</strong> the Moon enters {sign} — your {house} house.
     # keep: {house} {sign} {time}
-    "moon.from": "",
+    "moon.from": "<strong>{time} IST ਤੋਂ:</strong> ਚੰਦਰਮਾ {sign} ਵਿੱਚ ਆਉਂਦਾ ਹੈ — ਤੁਹਾਡਾ {house} ਭਾਵ।",
     # EN: <p>The Moon changes sign during the day, so the day reads in two parts.</p>
-    "moon.two": "",
+    "moon.two": "<p>ਚੰਦਰਮਾ ਦਿਨ ਵਿੱਚ ਰਾਸ਼ੀ ਬਦਲਦਾ ਹੈ, ਇਸ ਲਈ ਦਿਨ ਦੋ ਹਿੱਸਿਆਂ ਵਿੱਚ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।</p>",
     # EN: The longer backdrop: slow transits
-    "back.head": "",
+    "back.head": "ਲੰਮੀ ਪਿੱਠਭੂਮੀ: ਹੌਲੀ ਚੱਲਣ ਵਾਲੇ ਗੋਚਰ",
     # EN: <p>These planets stay in one sign for months or years, so they set the background against
     #     which each day plays out.</p>
-    "back.intro": "",
+    "back.intro": "<p>ਇਹ ਗ੍ਰਹਿ ਮਹੀਨਿਆਂ ਜਾਂ ਸਾਲਾਂ ਤੱਕ ਇੱਕੋ ਰਾਸ਼ੀ ਵਿੱਚ ਰਹਿੰਦੇ ਹਨ, ਇਸ ਲਈ ਇਹ ਉਹ ਪਿੱਠਭੂਮੀ ਤੈਅ ਕਰਦੇ ਹਨ ਜਿਸ ਵਿੱਚ ਹਰ ਦਿਨ ਬੀਤਦਾ ਹੈ।</p>",
     # EN: {sign}{rx} · {house} house
     # keep: {house} {rx} {sign}
-    "back.where": "",
+    "back.where": "{sign}{rx} · {house} ਭਾਵ",
     # EN: first (rising)
-    "phase.1": "",
+    "phase.1": "ਪਹਿਲਾ (ਚੜ੍ਹਦਾ)",
     # EN: second (peak)
-    "phase.2": "",
+    "phase.2": "ਦੂਜਾ (ਸਿਖ਼ਰ)",
     # EN: third (setting)
-    "phase.3": "",
+    "phase.3": "ਤੀਜਾ (ਢਲਦਾ)",
     # EN: <strong>Sade Sati is running</strong> — the {phase} phase. It is a slow, disciplining
     #     period rather than something to fear; steady routine, service and patience make it
     #     lighter.
     # keep: {phase}
-    "sade.running": "",
+    "sade.running": "<strong>ਸਾੜ੍ਹਸਾਤੀ ਚੱਲ ਰਹੀ ਹੈ</strong> — {phase} ਪੜਾਅ। ਇਹ ਡਰਨ ਵਾਲੀ ਗੱਲ ਨਹੀਂ, ਸਗੋਂ ਹੌਲੀ ਅਤੇ ਅਨੁਸ਼ਾਸਨ ਸਿਖਾਉਣ ਵਾਲਾ ਸਮਾਂ ਹੈ; ਪੱਕਾ ਰੋਜ਼ਮਰ੍ਹਾ, ਸੇਵਾ ਅਤੇ ਸਬਰ ਇਸ ਨੂੰ ਹਲਕਾ ਕਰ ਦਿੰਦੇ ਹਨ।",
     # EN: <strong>No Sade Sati</strong>, but Saturn's Dhaiya is running (see above).
-    "sade.dhaiya": "",
+    "sade.dhaiya": "<strong>ਸਾੜ੍ਹਸਾਤੀ ਨਹੀਂ ਹੈ</strong>, ਪਰ ਸ਼ਨੀ ਦੀ ਢੱਈਆ ਚੱਲ ਰਹੀ ਹੈ (ਉੱਪਰ ਵੇਖੋ)।",
     # EN: <strong>No Sade Sati</strong> — Saturn is not in the 12th, 1st or 2nd from your sign.
-    "sade.none": "",
+    "sade.none": "<strong>ਸਾੜ੍ਹਸਾਤੀ ਨਹੀਂ ਹੈ</strong> — ਸ਼ਨੀ ਤੁਹਾਡੀ ਰਾਸ਼ੀ ਤੋਂ ਬਾਰ੍ਹਵੇਂ, ਪਹਿਲੇ ਜਾਂ ਦੂਜੇ ਭਾਵ ਵਿੱਚ ਨਹੀਂ ਹੈ।",
     # EN: <h2>Today's Panchang</h2><p>At sunrise in New Delhi it is <strong>{paksha}
     #     {tithi}</strong> tithi with the Moon in <strong>{nakshatra}</strong> nakshatra. Rahu Kaal,
     #     sunrise and the full almanac are on <a href="/panchang">today's Panchang</a>.</p>
     # keep: {nakshatra} {tithi}
     # may also use: {paksha_full} {paksha}
-    "panchang": "",
+    "panchang": "<h2>ਅੱਜ ਦਾ ਪੰਚਾਂਗ</h2><p>ਨਵੀਂ ਦਿੱਲੀ ਵਿੱਚ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ <strong>{paksha} {tithi}</strong> ਤਿਥੀ ਹੈ ਅਤੇ ਚੰਦਰਮਾ <strong>{nakshatra}</strong> ਨਕਸ਼ਤਰ ਵਿੱਚ ਹੈ। ਰਾਹੂ ਕਾਲ, ਸੂਰਜ ਚੜ੍ਹਨ ਦਾ ਸਮਾਂ ਅਤੇ ਪੂਰਾ ਪੰਚਾਂਗ <a href=\"/panchang\">ਅੱਜ ਦੇ ਪੰਚਾਂਗ</a> ’ਤੇ ਹੈ।</p>",
     # EN: <p class="note">This rashifal is read from your Moon sign alone — the same for everyone
     #     born with the Moon in that sign. A personal reading uses your full birth chart: the
     #     ascendant, your running dasha and the ashtakavarga strength of each transit. Not sure of
     #     your Moon sign (rashi)? It is the first thing your free kundali shows — it is usually not
     #     your Western sun sign.</p>
-    "personal": "",
+    "personal": "<p class=\"note\">ਇਹ ਰਾਸ਼ੀਫਲ ਸਿਰਫ਼ ਤੁਹਾਡੀ ਚੰਦਰ ਰਾਸ਼ੀ ਤੋਂ ਪੜ੍ਹਿਆ ਗਿਆ ਹੈ — ਉਸ ਰਾਸ਼ੀ ਵਿੱਚ ਚੰਦਰਮਾ ਨਾਲ ਜਨਮੇ ਹਰ ਕਿਸੇ ਲਈ ਇੱਕੋ ਜਿਹਾ। ਨਿੱਜੀ ਫਲਾਦੇਸ਼ ਤੁਹਾਡੀ ਪੂਰੀ ਜਨਮ ਕੁੰਡਲੀ ਵਰਤਦਾ ਹੈ: ਲਗਨ, ਤੁਹਾਡੀ ਚੱਲ ਰਹੀ ਦਸ਼ਾ ਅਤੇ ਹਰ ਗੋਚਰ ਦਾ ਅਸ਼ਟਕਵਰਗ ਬਲ। ਆਪਣੀ ਚੰਦਰ ਰਾਸ਼ੀ ਦਾ ਪੱਕਾ ਨਹੀਂ ਪਤਾ? ਇਹ ਤੁਹਾਡੀ ਮੁਫ਼ਤ ਕੁੰਡਲੀ ਦੀ ਪਹਿਲੀ ਚੀਜ਼ ਹੈ — ਇਹ ਆਮ ਤੌਰ ’ਤੇ ਤੁਹਾਡੀ ਪੱਛਮੀ ਸੂਰਜ ਰਾਸ਼ੀ ਨਹੀਂ ਹੁੰਦੀ।</p>",
     # EN: Get your free kundali — then ask a question about your own chart
-    "cta": "",
+    "cta": "ਆਪਣੀ ਮੁਫ਼ਤ ਕੁੰਡਲੀ ਲਵੋ — ਫਿਰ ਆਪਣੀ ਕੁੰਡਲੀ ਬਾਰੇ ਸਵਾਲ ਪੁੱਛੋ",
     # EN: Today's Rashifal for every sign
-    "signs.head": "",
+    "signs.head": "ਹਰ ਰਾਸ਼ੀ ਲਈ ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ",
     # EN: More free tools
-    "more.head": "",
+    "more.head": "ਹੋਰ ਮੁਫ਼ਤ ਟੂਲ",
     # EN: <h2>How this is calculated</h2><p>Planet positions are computed for today (IST) with the
     #     Swiss Ephemeris in the sidereal zodiac (Lahiri ayanamsa) — the same positions our kundali
     #     and panchang use. Houses are counted from your Moon sign, as in classical gochar. Which
@@ -992,100 +992,100 @@ RASHIFAL_TEXT = {
     #     Mantreswara's Phaladeepika (ch. 26): the Moon is favourable in the 1st, 3rd, 6th, 7th,
     #     10th and 11th; Saturn, Rahu and Ketu in the 3rd, 6th and 11th; Jupiter in the 2nd, 5th,
     #     7th, 9th and 11th.</p>
-    "method": "",
+    "method": "<h2>ਇਹ ਕਿਵੇਂ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ</h2><p>ਗ੍ਰਹਿਆਂ ਦੀਆਂ ਸਥਿਤੀਆਂ ਅੱਜ (IST) ਲਈ ਸਵਿਸ ਐਫ਼ੇਮੇਰਿਸ ਨਾਲ ਨਿਰਯਨ ਰਾਸ਼ੀ ਚੱਕਰ (ਲਾਹਿੜੀ ਅਯਨਾਂਸ਼) ਵਿੱਚ ਗਿਣੀਆਂ ਜਾਂਦੀਆਂ ਹਨ — ਉਹੀ ਸਥਿਤੀਆਂ ਜੋ ਸਾਡੀ ਕੁੰਡਲੀ ਅਤੇ ਪੰਚਾਂਗ ਵਰਤਦੇ ਹਨ। ਭਾਵ ਸ਼ਾਸਤਰੀ ਗੋਚਰ ਵਾਂਗ ਤੁਹਾਡੀ ਚੰਦਰ ਰਾਸ਼ੀ ਤੋਂ ਗਿਣੇ ਜਾਂਦੇ ਹਨ। ਕਿਹੜੇ ਭਾਵ ਸ਼ੁਭ ਹਨ, ਇਹ ਵਰਾਹਮਿਹਿਰ ਦੀ ਬ੍ਰਿਹਤ ਸੰਹਿਤਾ (ਅਧਿਆਇ 104) ਅਤੇ ਮੰਤ੍ਰੇਸ਼ਵਰ ਦੀ ਫਲਦੀਪਿਕਾ (ਅਧਿਆਇ 26) ਦੀ ਵਿਧੀ ਮੁਤਾਬਕ ਹੈ: ਚੰਦਰਮਾ ਪਹਿਲੇ, ਤੀਜੇ, ਛੇਵੇਂ, ਸੱਤਵੇਂ, ਦਸਵੇਂ ਅਤੇ ਗਿਆਰ੍ਹਵੇਂ ਵਿੱਚ ਸ਼ੁਭ ਹੈ; ਸ਼ਨੀ, ਰਾਹੂ ਅਤੇ ਕੇਤੂ ਤੀਜੇ, ਛੇਵੇਂ ਅਤੇ ਗਿਆਰ੍ਹਵੇਂ ਵਿੱਚ; ਬ੍ਰਿਹਸਪਤੀ ਦੂਜੇ, ਪੰਜਵੇਂ, ਸੱਤਵੇਂ, ਨੌਵੇਂ ਅਤੇ ਗਿਆਰ੍ਹਵੇਂ ਵਿੱਚ।</p>",
     # EN: Aaj Ka Rashifal, {date_short} — Today's Horoscope for All 12 Signs | {brand}
     # keep: {brand}
     # may also use: {date_short} {date}
-    "i.title": "",
+    "i.title": "ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ, {date_short} — ਸਾਰੀਆਂ 12 ਰਾਸ਼ੀਆਂ ਦਾ ਅੱਜ ਦਾ ਫਲਾਦੇਸ਼ | {brand}",
     # EN: Today's rashifal for {weekday}, {date}: daily horoscope for all 12 Moon signs from Mesh to
     #     Meen — Moon transit, Saturn, Jupiter and Rahu, and Sade Sati, computed from the sidereal
     #     sky.
     # keep: {date} {weekday}
-    "i.desc": "",
+    "i.desc": "{weekday}, {date} ਦਾ ਰਾਸ਼ੀਫਲ: ਮੇਖ ਤੋਂ ਮੀਨ ਤੱਕ ਸਾਰੀਆਂ 12 ਚੰਦਰ ਰਾਸ਼ੀਆਂ ਦਾ ਰੋਜ਼ਾਨਾ ਫਲਾਦੇਸ਼ — ਚੰਦਰਮਾ ਗੋਚਰ, ਸ਼ਨੀ, ਬ੍ਰਿਹਸਪਤੀ ਅਤੇ ਰਾਹੂ, ਅਤੇ ਸਾੜ੍ਹਸਾਤੀ, ਨਿਰਯਨ ਗਣਨਾ ਨਾਲ।",
     # EN: Today's Rashifal — Daily Horoscope
-    "i.h1": "",
+    "i.h1": "ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ — ਰੋਜ਼ਾਨਾ ਫਲਾਦੇਸ਼",
     # EN: आज का राशिफल — सभी 12 राशियाँ
-    "i.sub": "",
+    "i.sub": "ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ — ਸਾਰੀਆਂ 12 ਰਾਸ਼ੀਆਂ",
     # EN: <p>Rashifal is read from your <strong>Moon sign</strong> (rashi). {moon_text} Saturn is in
     #     {sat_sign}, so Sade Sati is running for {sade_names}.</p>
     # keep: {moon_text} {sade_names} {sat_sign}
-    "i.intro": "",
+    "i.intro": "<p>ਰਾਸ਼ੀਫਲ ਤੁਹਾਡੀ <strong>ਚੰਦਰ ਰਾਸ਼ੀ</strong> ਤੋਂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ। {moon_text} ਸ਼ਨੀ {sat_sign} ਵਿੱਚ ਹੈ, ਇਸ ਲਈ {sade_names} ਲਈ ਸਾੜ੍ਹਸਾਤੀ ਚੱਲ ਰਹੀ ਹੈ।</p>",
     # EN: The Moon is in {now} until {time} IST, then in {next}. The table shows the position for
     #     most of the day.
     # keep: {next} {now} {time}
-    "i.moon_two": "",
+    "i.moon_two": "ਚੰਦਰਮਾ {time} IST ਤੱਕ {now} ਵਿੱਚ ਹੈ, ਫਿਰ {next} ਵਿੱਚ। ਸਾਰਣੀ ਵਿੱਚ ਦਿਨ ਦੇ ਜ਼ਿਆਦਾਤਰ ਹਿੱਸੇ ਦੀ ਸਥਿਤੀ ਦਿੱਤੀ ਗਈ ਹੈ।",
     # EN: The Moon is in {now} all day.
     # keep: {now}
-    "i.moon_one": "",
+    "i.moon_one": "ਚੰਦਰਮਾ ਸਾਰਾ ਦਿਨ {now} ਵਿੱਚ ਹੈ।",
     # EN: {name} <small>{english}</small>
     # keep: {local}
-    "i.name": "",
+    "i.name": "{local}",
     # EN: <small>Sade Sati</small>
-    "i.sade": "",
+    "i.sade": "<small>ਸਾੜ੍ਹਸਾਤੀ</small>",
     # EN: <tr><th>Sign</th><th>Moon in your</th><th>Today</th></tr>
-    "i.head_row": "",
+    "i.head_row": "<tr><th>ਰਾਸ਼ੀ</th><th>ਤੁਹਾਡੀ ਰਾਸ਼ੀ ਤੋਂ ਚੰਦਰਮਾ</th><th>ਅੱਜ</th></tr>",
     # EN: Sign not found
-    "nf.title": "",
+    "nf.title": "ਰਾਸ਼ੀ ਨਹੀਂ ਮਿਲੀ",
     # EN: <h1>Sign not found</h1><p>There is no rashi called “{slug}”. Pick your Moon sign
     #     below.</p>
     # keep: {slug}
-    "nf.body": "",
+    "nf.body": "<h1>ਰਾਸ਼ੀ ਨਹੀਂ ਮਿਲੀ</h1><p>“{slug}” ਨਾਂ ਦੀ ਕੋਈ ਰਾਸ਼ੀ ਨਹੀਂ ਹੈ। ਹੇਠਾਂ ਤੋਂ ਆਪਣੀ ਚੰਦਰ ਰਾਸ਼ੀ ਚੁਣੋ।</p>",
     # EN: 1st
-    "house.1": "",
+    "house.1": "ਪਹਿਲੇ",
     # EN: 2nd
-    "house.2": "",
+    "house.2": "ਦੂਜੇ",
     # EN: 3rd
-    "house.3": "",
+    "house.3": "ਤੀਜੇ",
     # EN: 4th
-    "house.4": "",
+    "house.4": "ਚੌਥੇ",
     # EN: 5th
-    "house.5": "",
+    "house.5": "ਪੰਜਵੇਂ",
     # EN: 6th
-    "house.6": "",
+    "house.6": "ਛੇਵੇਂ",
     # EN: 7th
-    "house.7": "",
+    "house.7": "ਸੱਤਵੇਂ",
     # EN: 8th
-    "house.8": "",
+    "house.8": "ਅੱਠਵੇਂ",
     # EN: 9th
-    "house.9": "",
+    "house.9": "ਨੌਵੇਂ",
     # EN: 10th
-    "house.10": "",
+    "house.10": "ਦਸਵੇਂ",
     # EN: 11th
-    "house.11": "",
+    "house.11": "ਗਿਆਰ੍ਹਵੇਂ",
     # EN: 12th
-    "house.12": "",
+    "house.12": "ਬਾਰ੍ਹਵੇਂ",
 }
 
 # app/rashifal_text.py MORE_LINKS["pa"] — 'More free tools' links: keep every href, translate the text; the first href is '{twin:en}' (this page in English)  [6]
 RASHIFAL_MORE_LINKS = (
     # EN href: {twin:en}
     # EN text: Read in English
-    ("{twin:en}", ""),
+    ("{twin:en}", "ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਪੜ੍ਹੋ"),
     # EN href: /panchang
     # EN text: Today's Panchang
-    ("/panchang", ""),
+    ("/panchang", "ਅੱਜ ਦਾ ਪੰਚਾਂਗ"),
     # EN href: /rahu-kaal
     # EN text: Rahu Kaal today
-    ("/rahu-kaal", ""),
+    ("/rahu-kaal", "ਅੱਜ ਦਾ ਰਾਹੂ ਕਾਲ"),
     # EN href: /choghadiya
     # EN text: Choghadiya today
-    ("/choghadiya", ""),
+    ("/choghadiya", "ਅੱਜ ਦਾ ਚੌਘੜੀਆ"),
     # EN href: /kundali-milan
     # EN text: Kundali Milan
-    ("/kundali-milan", ""),
+    ("/kundali-milan", "ਕੁੰਡਲੀ ਮਿਲਾਨ"),
     # EN href: /vrat-tyohar
     # EN text: Today's vrat & festivals
-    ("/vrat-tyohar", ""),
+    ("/vrat-tyohar", "ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ"),
 )
 
 # app/rashifal_text.py TONE_LABEL["pa"] — the three day tones (keys good / mixed / easy)  [3]
 RASHIFAL_TONE_LABEL = {
     # EN: Favourable day
-    "good": "",
+    "good": "ਸ਼ੁਭ ਦਿਨ",
     # EN: Mixed day
-    "mixed": "",
+    "mixed": "ਮਿਲਿਆ-ਜੁਲਿਆ ਦਿਨ",
     # EN: Take it easy
-    "easy": "",
+    "easy": "ਸਹਿਜ ਨਾਲ ਚੱਲੋ",
 }
 
 # app/rashifal_text.py MOON_HOUSE["pa"] — Moon transit through houses 1-12 (key = house number)  [12]
@@ -1093,162 +1093,162 @@ RASHIFAL_MOON_HOUSE = {
     # EN: The Moon moves through your own sign today (Janma Chandra). Classical texts read this as a
     #     day of comfort and good spirits — good food, warm company and a clear sense of yourself. A
     #     good day to look after your own needs and begin small, personal things.
-    1: "",
+    1: "ਚੰਦਰਮਾ ਅੱਜ ਤੁਹਾਡੀ ਆਪਣੀ ਰਾਸ਼ੀ ਵਿੱਚੋਂ ਲੰਘ ਰਿਹਾ ਹੈ (ਜਨਮ ਚੰਦਰ)। ਸ਼ਾਸਤਰ ਇਸ ਨੂੰ ਸੁੱਖ-ਆਰਾਮ ਅਤੇ ਚੰਗੇ ਮੂਡ ਦਾ ਦਿਨ ਮੰਨਦੇ ਹਨ — ਚੰਗਾ ਖਾਣਾ, ਮਿੱਠਾ ਸਾਥ ਅਤੇ ਆਪਣੇ ਆਪ ਬਾਰੇ ਸਾਫ਼ ਸਮਝ। ਆਪਣੀਆਂ ਲੋੜਾਂ ਦਾ ਖ਼ਿਆਲ ਰੱਖਣ ਅਤੇ ਛੋਟੇ ਨਿੱਜੀ ਕੰਮ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਚੰਗਾ ਦਿਨ ਹੈ।",
     # EN: The Moon is in your 2nd house today. Tradition asks for care with money and words —
     #     expenses can creep up and small misunderstandings arise easily. Keep spending planned and
     #     speak gently at home; routine work goes fine.
-    2: "",
+    2: "ਚੰਦਰਮਾ ਅੱਜ ਤੁਹਾਡੇ ਦੂਜੇ ਭਾਵ ਵਿੱਚ ਹੈ। ਪਰੰਪਰਾ ਪੈਸੇ ਅਤੇ ਬੋਲ-ਚਾਲ ਵਿੱਚ ਸਾਵਧਾਨੀ ਮੰਗਦੀ ਹੈ — ਖ਼ਰਚ ਚੁੱਪਚਾਪ ਵਧ ਸਕਦੇ ਹਨ ਅਤੇ ਛੋਟੀਆਂ ਗ਼ਲਤਫ਼ਹਿਮੀਆਂ ਛੇਤੀ ਪੈਦਾ ਹੋ ਜਾਂਦੀਆਂ ਹਨ। ਖ਼ਰਚ ਯੋਜਨਾ ਨਾਲ ਕਰੋ ਅਤੇ ਘਰ ਵਿੱਚ ਨਰਮੀ ਨਾਲ ਬੋਲੋ; ਰੋਜ਼ ਦੇ ਕੰਮ ਠੀਕ ਚੱਲਣਗੇ।",
     # EN: The Moon in your 3rd house is a favourable transit. Courage and initiative are high,
     #     effort brings results, and contact with siblings, friends and neighbours goes well. A good
     #     day for short trips, calls and pushing a pending task over the line.
-    3: "",
+    3: "ਚੰਦਰਮਾ ਦਾ ਤੀਜੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਸ਼ੁਭ ਗੋਚਰ ਹੈ। ਹਿੰਮਤ ਅਤੇ ਪਹਿਲ-ਕਦਮੀ ਉੱਚੀ ਹੈ, ਮਿਹਨਤ ਦਾ ਫਲ ਮਿਲਦਾ ਹੈ, ਅਤੇ ਭੈਣ-ਭਰਾਵਾਂ, ਦੋਸਤਾਂ ਤੇ ਗੁਆਂਢੀਆਂ ਨਾਲ ਮੇਲ-ਜੋਲ ਚੰਗਾ ਰਹਿੰਦਾ ਹੈ। ਛੋਟੇ ਸਫ਼ਰਾਂ, ਫ਼ੋਨ ਕਾਲਾਂ ਅਤੇ ਕਿਸੇ ਲਟਕੇ ਹੋਏ ਕੰਮ ਨੂੰ ਨਿਬੇੜਨ ਲਈ ਚੰਗਾ ਦਿਨ ਹੈ।",
     # EN: The Moon in your 4th house can leave the mind a little unsettled — home matters or travel
     #     may feel tiring. Keep the day simple, avoid arguments at home and give yourself some quiet
     #     time; the mood lifts as the Moon moves on.
-    4: "",
+    4: "ਚੰਦਰਮਾ ਦਾ ਚੌਥੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਮਨ ਨੂੰ ਥੋੜ੍ਹਾ ਬੇਚੈਨ ਰੱਖ ਸਕਦਾ ਹੈ — ਘਰ ਦੇ ਮਾਮਲੇ ਜਾਂ ਸਫ਼ਰ ਥਕਾਊ ਲੱਗ ਸਕਦੇ ਹਨ। ਦਿਨ ਨੂੰ ਸਾਦਾ ਰੱਖੋ, ਘਰ ਵਿੱਚ ਬਹਿਸ ਤੋਂ ਬਚੋ ਅਤੇ ਆਪਣੇ ਲਈ ਥੋੜ੍ਹਾ ਸ਼ਾਂਤ ਸਮਾਂ ਕੱਢੋ; ਚੰਦਰਮਾ ਦੇ ਅੱਗੇ ਵਧਣ ਨਾਲ ਮੂਡ ਸੁਧਰ ਜਾਵੇਗਾ।",
     # EN: The Moon in your 5th house is a mixed transit. Plans may meet small hurdles and the mind
     #     can swing between ideas. Avoid speculative decisions; study, creative work and time with
     #     children are better uses of the day.
-    5: "",
+    5: "ਚੰਦਰਮਾ ਦਾ ਪੰਜਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਮਿਲਿਆ-ਜੁਲਿਆ ਗੋਚਰ ਹੈ। ਯੋਜਨਾਵਾਂ ਵਿੱਚ ਛੋਟੀਆਂ ਰੁਕਾਵਟਾਂ ਆ ਸਕਦੀਆਂ ਹਨ ਅਤੇ ਮਨ ਵਿਚਾਰਾਂ ਵਿੱਚ ਡੋਲ ਸਕਦਾ ਹੈ। ਜੋਖਮ ਵਾਲੇ ਫ਼ੈਸਲਿਆਂ ਤੋਂ ਬਚੋ; ਪੜ੍ਹਾਈ, ਰਚਨਾਤਮਕ ਕੰਮ ਅਤੇ ਬੱਚਿਆਂ ਨਾਲ ਸਮਾਂ ਦਿਨ ਦੀ ਚੰਗੀ ਵਰਤੋਂ ਹੈ।",
     # EN: The Moon in your 6th house is one of its best transits. Classical texts promise success
     #     over rivals and obstacles, and the energy to clear a backlog. A good day for competitive
     #     work, settling pending issues and steady routines.
-    6: "",
+    6: "ਚੰਦਰਮਾ ਦਾ ਛੇਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਉਸ ਦੇ ਸਭ ਤੋਂ ਵਧੀਆ ਗੋਚਰਾਂ ਵਿੱਚੋਂ ਇੱਕ ਹੈ। ਸ਼ਾਸਤਰ ਵਿਰੋਧੀਆਂ ਅਤੇ ਰੁਕਾਵਟਾਂ ਉੱਤੇ ਜਿੱਤ ਅਤੇ ਜਮ੍ਹਾ ਹੋਏ ਕੰਮ ਨਿਬੇੜਨ ਦੀ ਤਾਕਤ ਦਾ ਵਾਅਦਾ ਕਰਦੇ ਹਨ। ਮੁਕਾਬਲੇ ਵਾਲੇ ਕੰਮ, ਲਟਕੇ ਮਸਲੇ ਸੁਲਝਾਉਣ ਅਤੇ ਪੱਕੇ ਰੁਟੀਨ ਲਈ ਚੰਗਾ ਦਿਨ ਹੈ।",
     # EN: The Moon in your 7th house favours partnership and company. Time with your spouse or
     #     partner, meetings and agreements tend to go smoothly, with comfort and good food. A good
     #     day to reach out and work together.
-    7: "",
+    7: "ਚੰਦਰਮਾ ਦਾ ਸੱਤਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਸਾਂਝੇਦਾਰੀ ਅਤੇ ਸਾਥ ਦੇ ਪੱਖ ਵਿੱਚ ਹੈ। ਜੀਵਨ ਸਾਥੀ ਜਾਂ ਸਾਂਝੇਦਾਰ ਨਾਲ ਸਮਾਂ, ਮੀਟਿੰਗਾਂ ਅਤੇ ਸਮਝੌਤੇ ਆਮ ਤੌਰ ’ਤੇ ਸੁਚਾਰੂ ਰਹਿੰਦੇ ਹਨ, ਸੁੱਖ-ਆਰਾਮ ਅਤੇ ਚੰਗੇ ਖਾਣੇ ਸਮੇਤ। ਹੱਥ ਵਧਾਉਣ ਅਤੇ ਮਿਲ ਕੇ ਕੰਮ ਕਰਨ ਲਈ ਚੰਗਾ ਦਿਨ ਹੈ।",
     # EN: The Moon is in your 8th house — the period known as Chandrashtama. Tradition advises
     #     against starting important new things today; unexpected delays are more likely and the
     #     mind can feel anxious. Keep a margin in your schedule, stick to familiar work and be
     #     gentle with yourself — it passes within two to three days.
-    8: "",
+    8: "ਚੰਦਰਮਾ ਤੁਹਾਡੇ ਅੱਠਵੇਂ ਭਾਵ ਵਿੱਚ ਹੈ — ਜਿਸ ਸਮੇਂ ਨੂੰ ਚੰਦਰਾਸ਼ਟਮ ਕਿਹਾ ਜਾਂਦਾ ਹੈ। ਪਰੰਪਰਾ ਅੱਜ ਕੋਈ ਅਹਿਮ ਨਵੀਂ ਸ਼ੁਰੂਆਤ ਨਾ ਕਰਨ ਦੀ ਸਲਾਹ ਦਿੰਦੀ ਹੈ; ਅਚਾਨਕ ਦੇਰੀਆਂ ਦੀ ਸੰਭਾਵਨਾ ਵੱਧ ਹੈ ਅਤੇ ਮਨ ਚਿੰਤਤ ਹੋ ਸਕਦਾ ਹੈ। ਆਪਣੇ ਪ੍ਰੋਗਰਾਮ ਵਿੱਚ ਗੁੰਜਾਇਸ਼ ਰੱਖੋ, ਜਾਣੇ-ਪਛਾਣੇ ਕੰਮ ਕਰੋ ਅਤੇ ਆਪਣੇ ਨਾਲ ਨਰਮੀ ਨਾਲ ਪੇਸ਼ ਆਓ — ਇਹ ਦੋ-ਤਿੰਨ ਦਿਨਾਂ ਵਿੱਚ ਲੰਘ ਜਾਂਦਾ ਹੈ।",
     # EN: The Moon in your 9th house is a mixed transit. Plans may need extra effort and you may
     #     feel tired or distracted. Prayer, reading and time with elders or teachers suit the day
     #     better than big new ventures.
-    9: "",
+    9: "ਚੰਦਰਮਾ ਦਾ ਨੌਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਮਿਲਿਆ-ਜੁਲਿਆ ਗੋਚਰ ਹੈ। ਯੋਜਨਾਵਾਂ ਲਈ ਵਾਧੂ ਮਿਹਨਤ ਕਰਨੀ ਪੈ ਸਕਦੀ ਹੈ ਅਤੇ ਥਕਾਵਟ ਜਾਂ ਧਿਆਨ ਭਟਕਣ ਦਾ ਅਹਿਸਾਸ ਹੋ ਸਕਦਾ ਹੈ। ਵੱਡੇ ਨਵੇਂ ਕੰਮਾਂ ਨਾਲੋਂ ਪੂਜਾ-ਪਾਠ, ਪੜ੍ਹਨਾ ਅਤੇ ਬਜ਼ੁਰਗਾਂ ਜਾਂ ਗੁਰੂਆਂ ਨਾਲ ਸਮਾਂ ਦਿਨ ਨੂੰ ਜ਼ਿਆਦਾ ਰਾਸ ਆਉਂਦਾ ਹੈ।",
     # EN: The Moon in your 10th house supports work and reputation. Tasks get done, seniors are
     #     receptive and effort is noticed. A good day to present your work, take a professional step
     #     or finish something visible.
-    10: "",
+    10: "ਚੰਦਰਮਾ ਦਾ ਦਸਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਕੰਮ ਅਤੇ ਸਾਖ ਦਾ ਸਾਥ ਦਿੰਦਾ ਹੈ। ਕੰਮ ਨਿਬੜਦੇ ਹਨ, ਵੱਡੇ ਅਫ਼ਸਰ ਗੱਲ ਸੁਣਦੇ ਹਨ ਅਤੇ ਮਿਹਨਤ ਨੂੰ ਨੋਟਿਸ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਆਪਣਾ ਕੰਮ ਪੇਸ਼ ਕਰਨ, ਪੇਸ਼ੇਵਰ ਕਦਮ ਚੁੱਕਣ ਜਾਂ ਕੋਈ ਨਜ਼ਰ ਆਉਣ ਵਾਲਾ ਕੰਮ ਪੂਰਾ ਕਰਨ ਲਈ ਚੰਗਾ ਦਿਨ ਹੈ।",
     # EN: The Moon in your 11th house — the house of gains — is a very favourable transit. Expect
     #     support from friends, good news and the fruit of earlier effort. A good day for
     #     networking, making requests and celebrating with others.
-    11: "",
+    11: "ਚੰਦਰਮਾ ਦਾ ਗਿਆਰ੍ਹਵੇਂ ਭਾਵ — ਲਾਭ ਦੇ ਭਾਵ — ਵਿੱਚ ਹੋਣਾ ਬਹੁਤ ਸ਼ੁਭ ਗੋਚਰ ਹੈ। ਦੋਸਤਾਂ ਦਾ ਸਾਥ, ਚੰਗੀ ਖ਼ਬਰ ਅਤੇ ਪਹਿਲਾਂ ਕੀਤੀ ਮਿਹਨਤ ਦਾ ਫਲ ਮਿਲਣ ਦੀ ਆਸ ਰੱਖੋ। ਜਾਣ-ਪਛਾਣ ਵਧਾਉਣ, ਬੇਨਤੀਆਂ ਕਰਨ ਅਤੇ ਦੂਜਿਆਂ ਨਾਲ ਖ਼ੁਸ਼ੀ ਮਨਾਉਣ ਲਈ ਚੰਗਾ ਦਿਨ ਹੈ।",
     # EN: The Moon in your 12th house can bring extra expenses and a tired, inward mood. Avoid
     #     overspending and late nights; the day suits rest, prayer, charity and finishing old work
     #     rather than starting new.
-    12: "",
+    12: "ਚੰਦਰਮਾ ਦਾ ਬਾਰ੍ਹਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਵਾਧੂ ਖ਼ਰਚ ਅਤੇ ਥਕਾਵਟ ਭਰਿਆ, ਅੰਦਰ ਵੱਲ ਮੁੜਿਆ ਮੂਡ ਲਿਆ ਸਕਦਾ ਹੈ। ਫ਼ਜ਼ੂਲਖ਼ਰਚੀ ਅਤੇ ਦੇਰ ਰਾਤ ਜਾਗਣ ਤੋਂ ਬਚੋ; ਦਿਨ ਆਰਾਮ, ਪੂਜਾ-ਪਾਠ, ਦਾਨ ਅਤੇ ਪੁਰਾਣੇ ਕੰਮ ਨਿਬੇੜਨ ਲਈ ਠੀਕ ਹੈ, ਨਵਾਂ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਨਹੀਂ।",
 }
 
 # app/rashifal_text.py SATURN_HOUSE["pa"] — Saturn transit through houses 1-12  [12]
 RASHIFAL_SATURN_HOUSE = {
     # EN: Saturn is passing over your Moon sign — the peak phase of Sade Sati. It rewards patience,
     #     routine and honest effort; take on a little less and finish what you start.
-    1: "",
+    1: "ਸ਼ਨੀ ਤੁਹਾਡੀ ਚੰਦਰ ਰਾਸ਼ੀ ਉੱਤੋਂ ਲੰਘ ਰਿਹਾ ਹੈ — ਸਾੜ੍ਹਸਾਤੀ ਦਾ ਸਿਖ਼ਰ ਪੜਾਅ। ਇਹ ਸਬਰ, ਰੁਟੀਨ ਅਤੇ ਇਮਾਨਦਾਰ ਮਿਹਨਤ ਦਾ ਫਲ ਦਿੰਦਾ ਹੈ; ਥੋੜ੍ਹਾ ਘੱਟ ਕੰਮ ਲਵੋ ਅਤੇ ਜੋ ਸ਼ੁਰੂ ਕਰੋ ਉਹ ਪੂਰਾ ਕਰੋ।",
     # EN: Saturn is in your 2nd — the last phase of Sade Sati. Be measured with spending and with
     #     words at home; the pressure is easing.
-    2: "",
+    2: "ਸ਼ਨੀ ਤੁਹਾਡੇ ਦੂਜੇ ਭਾਵ ਵਿੱਚ ਹੈ — ਸਾੜ੍ਹਸਾਤੀ ਦਾ ਆਖ਼ਰੀ ਪੜਾਅ। ਖ਼ਰਚ ਅਤੇ ਘਰ ਦੀ ਬੋਲ-ਚਾਲ ਵਿੱਚ ਸੰਜਮ ਰੱਖੋ; ਦਬਾਅ ਘਟ ਰਿਹਾ ਹੈ।",
     # EN: Saturn in your 3rd is one of its best positions — steady effort pays, courage grows and
     #     long-running work gains traction.
-    3: "",
+    3: "ਸ਼ਨੀ ਦਾ ਤੀਜੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਉਸ ਦੀਆਂ ਸਭ ਤੋਂ ਵਧੀਆ ਸਥਿਤੀਆਂ ਵਿੱਚੋਂ ਇੱਕ ਹੈ — ਲਗਾਤਾਰ ਮਿਹਨਤ ਫਲ ਦਿੰਦੀ ਹੈ, ਹਿੰਮਤ ਵਧਦੀ ਹੈ ਅਤੇ ਲੰਮੇ ਸਮੇਂ ਤੋਂ ਚੱਲ ਰਹੇ ਕੰਮ ਰਫ਼ਤਾਰ ਫੜਦੇ ਹਨ।",
     # EN: Saturn in your 4th (Dhaiya, Kantaka Shani) can make home life and peace of mind feel
     #     heavier; keep routines simple and handle family matters calmly.
-    4: "",
+    4: "ਸ਼ਨੀ ਦਾ ਚੌਥੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ (ਢੱਈਆ, ਕੰਟਕ ਸ਼ਨੀ) ਘਰੇਲੂ ਜੀਵਨ ਅਤੇ ਮਨ ਦੀ ਸ਼ਾਂਤੀ ਨੂੰ ਭਾਰੀ ਬਣਾ ਸਕਦਾ ਹੈ; ਰੁਟੀਨ ਸਾਦਾ ਰੱਖੋ ਅਤੇ ਪਰਿਵਾਰਕ ਮਾਮਲੇ ਸ਼ਾਂਤੀ ਨਾਲ ਨਿਬੇੜੋ।",
     # EN: Saturn in your 5th asks for patience with plans, studies and children's matters — slow and
     #     careful beats quick.
-    5: "",
+    5: "ਸ਼ਨੀ ਦਾ ਪੰਜਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਯੋਜਨਾਵਾਂ, ਪੜ੍ਹਾਈ ਅਤੇ ਬੱਚਿਆਂ ਦੇ ਮਾਮਲਿਆਂ ਵਿੱਚ ਸਬਰ ਮੰਗਦਾ ਹੈ — ਜਲਦਬਾਜ਼ੀ ਨਾਲੋਂ ਹੌਲੀ ਅਤੇ ਸੋਚ-ਸਮਝ ਕੇ ਚੱਲਣਾ ਚੰਗਾ ਹੈ।",
     # EN: Saturn in your 6th works in your favour — discipline wins over rivals and backlog, and
     #     hard work gets noticed.
-    6: "",
+    6: "ਸ਼ਨੀ ਦਾ ਛੇਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਤੁਹਾਡੇ ਹੱਕ ਵਿੱਚ ਕੰਮ ਕਰਦਾ ਹੈ — ਅਨੁਸ਼ਾਸਨ ਵਿਰੋਧੀਆਂ ਅਤੇ ਜਮ੍ਹਾ ਕੰਮ ਉੱਤੇ ਜਿੱਤ ਦਿਵਾਉਂਦਾ ਹੈ, ਅਤੇ ਸਖ਼ਤ ਮਿਹਨਤ ਨੂੰ ਪਛਾਣ ਮਿਲਦੀ ਹੈ।",
     # EN: Saturn in your 7th puts partnerships in a slow, serious light — clear agreements and
     #     patience help.
-    7: "",
+    7: "ਸ਼ਨੀ ਦਾ ਸੱਤਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਸਾਂਝੇਦਾਰੀਆਂ ਨੂੰ ਹੌਲੀ ਅਤੇ ਗੰਭੀਰ ਰੰਗ ਵਿੱਚ ਦਿਖਾਉਂਦਾ ਹੈ — ਸਾਫ਼ ਸਮਝੌਤੇ ਅਤੇ ਸਬਰ ਮਦਦ ਕਰਦੇ ਹਨ।",
     # EN: Saturn in your 8th (Dhaiya, Ashtama Shani) is a time to avoid shortcuts and keep a margin
     #     for delays.
-    8: "",
+    8: "ਸ਼ਨੀ ਦਾ ਅੱਠਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ (ਢੱਈਆ, ਅਸ਼ਟਮ ਸ਼ਨੀ) ਸ਼ਾਰਟਕੱਟਾਂ ਤੋਂ ਬਚਣ ਅਤੇ ਦੇਰੀ ਲਈ ਗੁੰਜਾਇਸ਼ ਰੱਖਣ ਦਾ ਸਮਾਂ ਹੈ।",
     # EN: Saturn in your 9th can slow luck and long journeys; respect for elders and steady duty
     #     keep things on track.
-    9: "",
+    9: "ਸ਼ਨੀ ਦਾ ਨੌਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਕਿਸਮਤ ਅਤੇ ਲੰਮੇ ਸਫ਼ਰਾਂ ਨੂੰ ਹੌਲੀ ਕਰ ਸਕਦਾ ਹੈ; ਬਜ਼ੁਰਗਾਂ ਦਾ ਆਦਰ ਅਤੇ ਪੱਕੀ ਜ਼ਿੰਮੇਵਾਰੀ ਗੱਲ ਨੂੰ ਲੀਹ ’ਤੇ ਰੱਖਦੇ ਹਨ।",
     # EN: Saturn in your 10th brings responsibility at work — a heavier load, but sincere effort
     #     builds a lasting reputation.
-    10: "",
+    10: "ਸ਼ਨੀ ਦਾ ਦਸਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਕੰਮ ’ਤੇ ਜ਼ਿੰਮੇਵਾਰੀ ਲਿਆਉਂਦਾ ਹੈ — ਬੋਝ ਭਾਰੀ ਹੈ, ਪਰ ਸੱਚੀ ਮਿਹਨਤ ਪੱਕੀ ਸਾਖ ਬਣਾਉਂਦੀ ਹੈ।",
     # EN: Saturn in your 11th is favourable — gains come slowly but surely, and long effort starts
     #     to pay off.
-    11: "",
+    11: "ਸ਼ਨੀ ਦਾ ਗਿਆਰ੍ਹਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਸ਼ੁਭ ਹੈ — ਲਾਭ ਹੌਲੀ ਪਰ ਪੱਕੇ ਤੌਰ ’ਤੇ ਆਉਂਦਾ ਹੈ, ਅਤੇ ਲੰਮੀ ਮਿਹਨਤ ਦਾ ਫਲ ਮਿਲਣ ਲੱਗਦਾ ਹੈ।",
     # EN: Saturn is in your 12th — the opening phase of Sade Sati. Watch expenses and rest well; a
     #     good time for quiet, inward work.
-    12: "",
+    12: "ਸ਼ਨੀ ਤੁਹਾਡੇ ਬਾਰ੍ਹਵੇਂ ਭਾਵ ਵਿੱਚ ਹੈ — ਸਾੜ੍ਹਸਾਤੀ ਦਾ ਸ਼ੁਰੂਆਤੀ ਪੜਾਅ। ਖ਼ਰਚਿਆਂ ਦਾ ਧਿਆਨ ਰੱਖੋ ਅਤੇ ਚੰਗਾ ਆਰਾਮ ਕਰੋ; ਸ਼ਾਂਤ, ਅੰਦਰੂਨੀ ਕੰਮ ਲਈ ਚੰਗਾ ਸਮਾਂ ਹੈ।",
 }
 
 # app/rashifal_text.py JUPITER_HOUSE["pa"] — Jupiter transit through houses 1-12  [12]
 RASHIFAL_JUPITER_HOUSE = {
     # EN: Jupiter over your Moon sign is classically a restless position; keep plans grounded and
     #     avoid over-committing.
-    1: "",
+    1: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਚੰਦਰ ਰਾਸ਼ੀ ਉੱਤੇ ਹੋਣਾ ਸ਼ਾਸਤਰਾਂ ਅਨੁਸਾਰ ਬੇਚੈਨ ਸਥਿਤੀ ਹੈ; ਯੋਜਨਾਵਾਂ ਜ਼ਮੀਨ ’ਤੇ ਰੱਖੋ ਅਤੇ ਲੋੜ ਤੋਂ ਵੱਧ ਵਾਅਦੇ ਨਾ ਕਰੋ।",
     # EN: Jupiter in your 2nd supports family harmony, savings and kind speech.
-    2: "",
+    2: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਦੂਜੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਪਰਿਵਾਰਕ ਮੇਲ-ਜੋਲ, ਬੱਚਤ ਅਤੇ ਮਿੱਠੀ ਬੋਲੀ ਦਾ ਸਾਥ ਦਿੰਦਾ ਹੈ।",
     # EN: Jupiter in your 3rd asks a little more effort for the same result — keep at it.
-    3: "",
+    3: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਤੀਜੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਉਸੇ ਨਤੀਜੇ ਲਈ ਥੋੜ੍ਹੀ ਵੱਧ ਮਿਹਨਤ ਮੰਗਦਾ ਹੈ — ਲੱਗੇ ਰਹੋ।",
     # EN: Jupiter in your 4th can unsettle home matters; patience with relatives helps.
-    4: "",
+    4: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਚੌਥੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਘਰ ਦੇ ਮਾਮਲਿਆਂ ਨੂੰ ਡਾਵਾਂਡੋਲ ਕਰ ਸਕਦਾ ਹੈ; ਰਿਸ਼ਤੇਦਾਰਾਂ ਨਾਲ ਸਬਰ ਮਦਦ ਕਰਦਾ ਹੈ।",
     # EN: Jupiter in your 5th favours learning, children's matters, creativity and good counsel.
-    5: "",
+    5: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਪੰਜਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਪੜ੍ਹਾਈ, ਬੱਚਿਆਂ ਦੇ ਮਾਮਲਿਆਂ, ਰਚਨਾਤਮਕਤਾ ਅਤੇ ਚੰਗੀ ਸਲਾਹ ਦੇ ਪੱਖ ਵਿੱਚ ਹੈ।",
     # EN: Jupiter in your 6th: steer clear of small disputes and overwork.
-    6: "",
+    6: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਛੇਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ: ਛੋਟੇ ਝਗੜਿਆਂ ਅਤੇ ਹੱਦੋਂ ਵੱਧ ਕੰਮ ਤੋਂ ਬਚੋ।",
     # EN: Jupiter in your 7th blesses partnerships, marriage talks and travel.
-    7: "",
+    7: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਸੱਤਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਸਾਂਝੇਦਾਰੀਆਂ, ਵਿਆਹ ਦੀਆਂ ਗੱਲਾਂ ਅਤੇ ਸਫ਼ਰ ਲਈ ਸ਼ੁਭ ਹੈ।",
     # EN: Jupiter in your 8th suggests care with big decisions — go slow.
-    8: "",
+    8: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਅੱਠਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਵੱਡੇ ਫ਼ੈਸਲਿਆਂ ਵਿੱਚ ਸਾਵਧਾਨੀ ਦਾ ਸੰਕੇਤ ਦਿੰਦਾ ਹੈ — ਹੌਲੀ ਚੱਲੋ।",
     # EN: Jupiter in your 9th is one of its best positions — fortune, dharma and guidance from
     #     teachers.
-    9: "",
+    9: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਨੌਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਉਸ ਦੀਆਂ ਸਭ ਤੋਂ ਵਧੀਆ ਸਥਿਤੀਆਂ ਵਿੱਚੋਂ ਇੱਕ ਹੈ — ਕਿਸਮਤ, ਧਰਮ ਅਤੇ ਗੁਰੂਆਂ ਤੋਂ ਸੇਧ।",
     # EN: Jupiter in your 10th may bring changes at work; stay adaptable.
-    10: "",
+    10: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਦਸਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਕੰਮ ’ਤੇ ਬਦਲਾਅ ਲਿਆ ਸਕਦਾ ਹੈ; ਲਚਕੀਲੇ ਰਹੋ।",
     # EN: Jupiter in your 11th brings gains, fulfilled wishes and helpful friends.
-    11: "",
+    11: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਗਿਆਰ੍ਹਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਲਾਭ, ਮਨ ਦੀਆਂ ਮੁਰਾਦਾਂ ਦੀ ਪੂਰਤੀ ਅਤੇ ਮਦਦਗਾਰ ਦੋਸਤ ਲਿਆਉਂਦਾ ਹੈ।",
     # EN: Jupiter in your 12th brings expenses, often on good causes; charity and spiritual practice
     #     are well placed.
-    12: "",
+    12: "ਬ੍ਰਿਹਸਪਤੀ ਦਾ ਬਾਰ੍ਹਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਖ਼ਰਚ ਲਿਆਉਂਦਾ ਹੈ, ਅਕਸਰ ਚੰਗੇ ਕੰਮਾਂ ’ਤੇ; ਦਾਨ ਅਤੇ ਅਧਿਆਤਮਿਕ ਸਾਧਨਾ ਲਈ ਇਹ ਸਮਾਂ ਠੀਕ ਹੈ।",
 }
 
 # app/rashifal_text.py RAHU_HOUSE["pa"] — Rahu transit through houses 1-12  [12]
 RASHIFAL_RAHU_HOUSE = {
     # EN: Rahu over your Moon sign can stir restlessness and unusual wants; stay grounded.
-    1: "",
+    1: "ਰਾਹੂ ਦਾ ਚੰਦਰ ਰਾਸ਼ੀ ਉੱਤੇ ਹੋਣਾ ਬੇਚੈਨੀ ਅਤੇ ਅਜੀਬ ਇੱਛਾਵਾਂ ਜਗਾ ਸਕਦਾ ਹੈ; ਜ਼ਮੀਨ ਨਾਲ ਜੁੜੇ ਰਹੋ।",
     # EN: Rahu in your 2nd: take care with speech and money talk within the family.
-    2: "",
+    2: "ਰਾਹੂ ਦੂਜੇ ਭਾਵ ਵਿੱਚ: ਪਰਿਵਾਰ ਵਿੱਚ ਬੋਲਣ ਅਤੇ ਪੈਸੇ ਦੀ ਗੱਲ-ਬਾਤ ਵਿੱਚ ਖ਼ਿਆਲ ਰੱਖੋ।",
     # EN: Rahu in your 3rd is favourable — bold initiatives and communication succeed.
-    3: "",
+    3: "ਰਾਹੂ ਦਾ ਤੀਜੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਸ਼ੁਭ ਹੈ — ਦਲੇਰ ਪਹਿਲਕਦਮੀਆਂ ਅਤੇ ਗੱਲ-ਬਾਤ ਵਿੱਚ ਸਫਲਤਾ ਮਿਲਦੀ ਹੈ।",
     # EN: Rahu in your 4th can unsettle domestic peace; avoid hasty property moves.
-    4: "",
+    4: "ਰਾਹੂ ਦਾ ਚੌਥੇ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਘਰ ਦੀ ਸ਼ਾਂਤੀ ਨੂੰ ਡਾਵਾਂਡੋਲ ਕਰ ਸਕਦਾ ਹੈ; ਜਾਇਦਾਦ ਦੇ ਮਾਮਲਿਆਂ ਵਿੱਚ ਕਾਹਲੀ ਨਾ ਕਰੋ।",
     # EN: Rahu in your 5th: double-check risky ideas and keep a clear head.
-    5: "",
+    5: "ਰਾਹੂ ਪੰਜਵੇਂ ਭਾਵ ਵਿੱਚ: ਜੋਖਮ ਭਰੇ ਵਿਚਾਰਾਂ ਨੂੰ ਦੋ ਵਾਰ ਪਰਖੋ ਅਤੇ ਦਿਮਾਗ਼ ਠੰਢਾ ਰੱਖੋ।",
     # EN: Rahu in your 6th helps you get past competition and obstacles.
-    6: "",
+    6: "ਰਾਹੂ ਦਾ ਛੇਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਮੁਕਾਬਲੇ ਅਤੇ ਰੁਕਾਵਟਾਂ ਨੂੰ ਪਾਰ ਕਰਨ ਵਿੱਚ ਮਦਦ ਕਰਦਾ ਹੈ।",
     # EN: Rahu in your 7th: keep partnerships transparent.
-    7: "",
+    7: "ਰਾਹੂ ਸੱਤਵੇਂ ਭਾਵ ਵਿੱਚ: ਸਾਂਝੇਦਾਰੀਆਂ ਵਿੱਚ ਪਾਰਦਰਸ਼ਤਾ ਰੱਖੋ।",
     # EN: Rahu in your 8th: avoid risky shortcuts and stay calm when the unexpected comes.
-    8: "",
+    8: "ਰਾਹੂ ਅੱਠਵੇਂ ਭਾਵ ਵਿੱਚ: ਜੋਖਮ ਭਰੇ ਸ਼ਾਰਟਕੱਟਾਂ ਤੋਂ ਬਚੋ ਅਤੇ ਅਚਾਨਕ ਕੁਝ ਹੋ ਜਾਣ ’ਤੇ ਸ਼ਾਂਤ ਰਹੋ।",
     # EN: Rahu in your 9th can raise doubts about beliefs or mentors; seek advice you trust.
-    9: "",
+    9: "ਰਾਹੂ ਦਾ ਨੌਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਵਿਸ਼ਵਾਸਾਂ ਜਾਂ ਮਾਰਗ-ਦਰਸ਼ਕਾਂ ਬਾਰੇ ਸ਼ੰਕੇ ਪੈਦਾ ਕਰ ਸਕਦਾ ਹੈ; ਭਰੋਸੇਯੋਗ ਸਲਾਹ ਲਵੋ।",
     # EN: Rahu in your 10th brings ambition and sudden openings at work; move with integrity.
-    10: "",
+    10: "ਰਾਹੂ ਦਾ ਦਸਵੇਂ ਭਾਵ ਵਿੱਚ ਹੋਣਾ ਲਾਲਸਾ ਅਤੇ ਕੰਮ ’ਤੇ ਅਚਾਨਕ ਮੌਕੇ ਲਿਆਉਂਦਾ ਹੈ; ਇਮਾਨਦਾਰੀ ਨਾਲ ਅੱਗੇ ਵਧੋ।",
     # EN: Rahu in your 11th — gains through networks and new contacts.
-    11: "",
+    11: "ਰਾਹੂ ਗਿਆਰ੍ਹਵੇਂ ਭਾਵ ਵਿੱਚ — ਜਾਣ-ਪਛਾਣ ਅਤੇ ਨਵੇਂ ਸੰਪਰਕਾਂ ਰਾਹੀਂ ਲਾਭ।",
     # EN: Rahu in your 12th: watch hidden expenses and get proper rest.
-    12: "",
+    12: "ਰਾਹੂ ਬਾਰ੍ਹਵੇਂ ਭਾਵ ਵਿੱਚ: ਲੁਕਵੇਂ ਖ਼ਰਚਿਆਂ ਦਾ ਧਿਆਨ ਰੱਖੋ ਅਤੇ ਪੂਰਾ ਆਰਾਮ ਕਰੋ।",
 }
 
 # app/rashifal_text.py KETU_LINE["pa"] — Ketu line, True = favourable house, False = quiet house; {n} is the house  [2]
 RASHIFAL_KETU_LINE = {
     # EN: Ketu in your {n} house works quietly in your favour — obstacles clear with less fuss.
     # keep: {n}
-    True: "",
+    True: "ਤੁਹਾਡੇ {n} ਭਾਵ ਵਿੱਚ ਕੇਤੂ ਚੁੱਪਚਾਪ ਤੁਹਾਡੇ ਹੱਕ ਵਿੱਚ ਕੰਮ ਕਰਦਾ ਹੈ — ਰੁਕਾਵਟਾਂ ਬਿਨਾਂ ਸ਼ੋਰ-ਸ਼ਰਾਬੇ ਦੇ ਦੂਰ ਹੋ ਜਾਂਦੀਆਂ ਹਨ।",
     # EN: Ketu in your {n} house is a quieter, inward influence — good for reflection and spiritual
     #     practice, less so for impulsive moves.
     # keep: {n}
-    False: "",
+    False: "ਤੁਹਾਡੇ {n} ਭਾਵ ਵਿੱਚ ਕੇਤੂ ਇੱਕ ਸ਼ਾਂਤ, ਅੰਦਰ ਵੱਲ ਮੋੜਨ ਵਾਲਾ ਪ੍ਰਭਾਵ ਹੈ — ਸੋਚ-ਵਿਚਾਰ ਅਤੇ ਅਧਿਆਤਮਿਕ ਸਾਧਨਾ ਲਈ ਚੰਗਾ, ਕਾਹਲੀ ਵਿੱਚ ਚੁੱਕੇ ਕਦਮਾਂ ਲਈ ਘੱਟ।",
 }
 
 # app/rashifal_text.py CLOCK_LANG["pa"] — leave '' (the language's own clock words); 'en' prints 6:29 AM as Hindi pages do
@@ -2871,45 +2871,45 @@ RECURRING_TEXT = {
 # app/hub_text.py LABELS["pa"] — section names of the crawlable /sitemap page and the footer link block  [19]
 HUB_LABELS = {
     # EN: Site map
-    "sitemap": "",
+    "sitemap": "ਸਾਈਟ ਮੈਪ",
     # EN: Panchang
-    "panchang": "",
+    "panchang": "ਪੰਚਾਂਗ",
     # EN: Rashifal (daily horoscope)
-    "rashifal": "",
+    "rashifal": "ਰਾਸ਼ੀਫਲ (ਰੋਜ਼ਾਨਾ ਫਲਾਦੇਸ਼)",
     # EN: Vrat &amp; festivals
-    "vrat": "",
+    "vrat": "ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: Shubh muhurat
-    "muhurat": "",
+    "muhurat": "ਸ਼ੁਭ ਮਹੂਰਤ",
     # EN: Nakshatra
-    "nakshatra": "",
+    "nakshatra": "ਨਕਸ਼ਤਰ",
     # EN: Rashi (zodiac signs)
-    "rashi": "",
+    "rashi": "ਰਾਸ਼ੀ (ਰਾਸ਼ੀ ਚਿੰਨ੍ਹ)",
     # EN: Kathas
-    "katha": "",
+    "katha": "ਕਥਾਵਾਂ",
     # EN: Free tools
-    "tools": "",
+    "tools": "ਮੁਫ਼ਤ ਟੂਲ",
     # EN: Kundali Milan
-    "milan": "",
+    "milan": "ਕੁੰਡਲੀ ਮਿਲਾਨ",
     # EN: Free Kundali
-    "kundali": "",
+    "kundali": "ਮੁਫ਼ਤ ਕੁੰਡਲੀ",
     # EN: Rahu Kaal
-    "rahu": "",
+    "rahu": "ਰਾਹੂ ਕਾਲ",
     # EN: Choghadiya
-    "choghadiya": "",
+    "choghadiya": "ਚੌਘੜੀਆ",
     # EN: Naam se Kundali Milan
-    "naam": "",
+    "naam": "ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ",
     # EN: Today's Panchang by city
-    "cities": "",
+    "cities": "ਸ਼ਹਿਰ ਮੁਤਾਬਕ ਅੱਜ ਦਾ ਪੰਚਾਂਗ",
     # EN: Rashifal by sign
-    "signs": "",
+    "signs": "ਰਾਸ਼ੀ ਮੁਤਾਬਕ ਰਾਸ਼ੀਫਲ",
     # EN: Vrat and festival calendars
-    "years": "",
+    "years": "ਵਰਤ ਅਤੇ ਤਿਉਹਾਰਾਂ ਦੇ ਕੈਲੰਡਰ",
     # EN: Ekadashi
-    "ekadashi": "",
+    "ekadashi": "ਇਕਾਦਸ਼ੀ",
     # EN: Every section of Divine Astro in one place: daily Panchang for Indian cities, Rashifal,
     #     vrat and festival dates, shubh muhurat, nakshatra and rashi guides, kathas and the free
     #     tools.
-    "intro": "",
+    "intro": "Divine Astro ਦਾ ਹਰ ਹਿੱਸਾ ਇੱਕੋ ਥਾਂ: ਭਾਰਤੀ ਸ਼ਹਿਰਾਂ ਦਾ ਰੋਜ਼ਾਨਾ ਪੰਚਾਂਗ, ਰਾਸ਼ੀਫਲ, ਵਰਤ ਅਤੇ ਤਿਉਹਾਰਾਂ ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ, ਸ਼ੁਭ ਮਹੂਰਤ, ਨਕਸ਼ਤਰ ਅਤੇ ਰਾਸ਼ੀ ਗਾਈਡਾਂ, ਕਥਾਵਾਂ ਅਤੇ ਮੁਫ਼ਤ ਟੂਲ।",
 }
 
 # ----------------------------------------------------------------------------
