@@ -116,7 +116,7 @@ def coverage_checks(tables: dict[str, dict]) -> None:
 def js_checks(codes: list[str]) -> None:
     print("\n5. The JS knows every language and has no EN/हिं leftovers")
     app = (STATIC / "app.js").read_text(encoding="utf-8")
-    m = re.search(r"\[((?:\"[a-z]{2}\",?\s*){8})\]\.map\(\(code\)", app)
+    m = re.search(r"\[((?:\"[a-z]{2}\",?\s*){8,})\]\.map\(\(code\)", app)
     fallback = re.findall(r"\"([a-z]{2})\"", m.group(1)) if m else []
     check("app.js's fallback language list is the registry's", fallback == codes, str(fallback))
     check("state.lang is chosen from all registry codes (pickLang), not an en/hi map",
@@ -138,6 +138,7 @@ def js_checks(codes: list[str]) -> None:
 
 
 def page_checks(codes: list[str]) -> None:
+    from app import lang_data
     print("\n6. GET / inlines the registry + en/hi strings and renders the picker")
     tmp = tempfile.mkdtemp(prefix="astro_i18n_")
     os.environ.setdefault("ASTRO_DATABASE_URL", f"sqlite:///{Path(tmp).as_posix()}/t.db")
@@ -146,7 +147,8 @@ def page_checks(codes: list[str]) -> None:
     html = TestClient(app).get("/").text
     m = re.search(r"window\.DA_LANGS=(\[.*?\]);window\.DA_I18N=", html)
     langs = json.loads(m.group(1)) if m else []
-    check("DA_LANGS lists all eight languages in order", [l["code"] for l in langs] == codes,
+    listed = [c for c in codes if lang_data.listed(c)]       # DIVASTRO-143: new ones appear once READY
+    check("DA_LANGS lists the listed languages in order", [l["code"] for l in langs] == listed,
           str([l.get("code") for l in langs]))
     m = re.search(r"window\.DA_I18N=(\{.*?\});window\.DA_I18N_V=", html)
     inline = json.loads(m.group(1)) if m else {}
@@ -155,8 +157,8 @@ def page_checks(codes: list[str]) -> None:
     check("the inline script cannot be closed early by a string", "</script" not in (m.group(1) if m else ""))
     header = html.split("<header", 1)[1].split("</header>", 1)[0] if "<header" in html else ""
     links = re.findall(r'<a href="([^"]*)" hreflang="[^"]*" lang="[^"]*" data-lang="([a-z]{2})"', header)
-    check("the header has the language picker with all eight languages",
-          'class="lang-picker"' in header and [c for _, c in links] == codes, str(links))
+    check("the header has the language picker with every listed language",
+          'class="lang-picker"' in header and [c for _, c in links] == listed, str(links))
     check("each picker link opens the app in that language (works without JS)",
           all(h == f"/?lang={c}" for h, c in links), str(links))
     check("no placeholder is left in the page", "<!--LANG_" not in html)

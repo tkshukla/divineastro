@@ -177,7 +177,8 @@ def filled(code: str, table_id: str) -> bool:
     from .tables import flatten
     module = load(code)
     data = getattr(module, table_id, None) if module else None
-    return any(v for v in flatten(table_id, data).values()) if data else False
+    # a "<x>_lang" entry is the language's own code (prefilled by the skeleton), not text
+    return any(v for k, v in flatten(table_id, data).items() if not str(k).endswith("_lang")) if data else False
 
 
 def _m_text(code, data, table):                 # table[code] = {key: str}
