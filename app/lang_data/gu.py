@@ -88,7 +88,7 @@ SEO_TEXT = {
     # EN: <h1>{tool}: city not found</h1><p>We don't have a page for “{slug}” yet. Pick a city
     #     below, or <a href="{app}">open the {tool} tool</a> to use any place in the world.</p>
     # keep: {app} {slug} {tool}
-    "nf.body": "<h1>{tool}: શહેર મળ્યું નથી</h1><p>“{slug}” માટે અમારી પાસે હજી કોઈ પાનું નથી. નીચેથી કોઈ શહેર પસંદ કરો, અથવા <a href=\"{app}\">{tool} ખોલો</a> — તેમાં દુનિયાનું કોઈ પણ સ્થળ પસંદ કરી શકાય છે.</p>",
+    "nf.body": "<h1>{tool}: શહેર મળ્યું નથી</h1><p>“{slug}” માટે અમારી પાસે હજી કોઈ પેજ નથી. નીચેથી કોઈ શહેર પસંદ કરો, અથવા <a href=\"{app}\">{tool} ખોલો</a> — તેમાં દુનિયાનું કોઈ પણ સ્થળ પસંદ કરી શકાય છે.</p>",
     # EN: Today's Panchang in {city}, {date} — Tithi, Nakshatra, Rahu Kaal | {brand}
     # keep: {brand} {city} {date}
     "p.title": "{city}માં આજનું પંચાંગ, {date} — તિથિ, નક્ષત્ર, રાહુકાળ | {brand}",
@@ -549,7 +549,7 @@ STAY_STRIP = {
     # EN: Join our WhatsApp channel
     "channel": "અમારી WhatsApp ચેનલ સાથે જોડાઓ",
     # EN: Share this page on WhatsApp
-    "share": "આ પાનું WhatsApp પર શેર કરો",
+    "share": "આ પેજ WhatsApp પર શેર કરો",
 }
 
 # app/seo_city_names.py CITIES["gu"] — the 114 cities as that language's newspapers spell them (key = URL slug)  [114]
@@ -883,7 +883,7 @@ RASHIFAL_TEXT = {
     # keep: {house}
     "house_short": "{house} ભાવમાં",
     # EN: (retrograde)
-    "rx": "(વક્રી)",
+    "rx": " (વક્રી)",
     # EN: Moon
     "planet.Moon": "ચંદ્ર",
     # EN: Saturn
@@ -1326,11 +1326,11 @@ VRAT_TEXT = {
     "today.none": "આજે કોઈ મોટું વ્રત કે તહેવાર નથી.",
     # EN: Next: <strong>{name}</strong> on {day}.
     # keep: {day} {name}
-    "today.next": "હવે પછી: <strong>{name}</strong> — {day}.",
+    "today.next": " હવે પછી: <strong>{name}</strong> — {day}.",
     # EN: Vrat &amp; Festivals today
     "block.heading": "આજનાં વ્રત અને તહેવાર",
     # EN: Page not found
-    "nf.h1": "પાનું મળ્યું નથી",
+    "nf.h1": "પેજ મળ્યું નથી",
     # EN: Aaj Ke Vrat aur Tyohar: Today's Vrat & Festivals ({date})
     # keep: {date}
     "hub.title_default": "આજનાં વ્રત અને તહેવાર ({date}) — તિથિ, મુહૂર્ત અને પારણાં",
@@ -1344,10 +1344,10 @@ VRAT_TEXT = {
     "hub.h1_city": "{city}માં આજનાં વ્રત અને તહેવાર",
     # EN: Today, {date}: {names}.
     # keep: {date} {names}
-    "hub.desc_today": "આજે, {date}: {names}.",
+    "hub.desc_today": "આજે, {date}: {names}. ",
     # EN: {date}: no major vrat today.
     # keep: {date}
-    "hub.desc_none": "{date}: આજે કોઈ મોટું વ્રત નથી.",
+    "hub.desc_none": "{date}: આજે કોઈ મોટું વ્રત નથી. ",
     # EN: Upcoming fasts and festivals for 30 days with Ekadashi parana, Pradosh and Sankashti
     #     moonrise times - {city}.
     # keep: {city}
@@ -1689,10 +1689,10 @@ VRAT_NOTES = {
 VRAT_RULES = {
     # EN: {month} (amanta)
     # keep: {month}
-    "head": "{month} (અમાંત)",
+    "head": "{month} (અમાંત) ",
     # EN: {paksha} {tithi}:
     # keep: {paksha} {tithi}
-    "tithi": "{paksha} {tithi}:",
+    "tithi": "{paksha} {tithi}: ",
     # EN: tithi prevailing at sunrise
     "rule.udaya": "સૂર્યોદયે રહેલી તિથિ",
     # EN: tithi prevailing in Pratahkala (first fifth of the day)
@@ -1765,7 +1765,7 @@ NAKSHATRA_PAGE_TEXT = {
     "today.other": "આજનું નક્ષત્ર <a href=\"{href}\"><strong>{name}</strong></a> છે (નવી દિલ્હીમાં સૂર્યોદય સમયે).",
     # EN: Its end time, the tithi and Rahu Kaal are on <a href="{pan}">today's Panchang</a>.
     # keep: {pan}
-    "today.tail": "તેના અંતનો સમય, તિથિ અને રાહુકાળ <a href=\"{pan}\">આજના પંચાંગ</a> પર છે.",
+    "today.tail": " તેના અંતનો સમય, તિથિ અને રાહુકાળ <a href=\"{pan}\">આજના પંચાંગ</a> પર છે.",
     # EN: Nakshatras
     "crumb.naks": "નક્ષત્ર",
     # EN: Rashis
@@ -2488,7 +2488,7 @@ NAAM_MILAN_TEXT = {
     #     {syllables} <p>For each nakshatra's syllables, deity, gana and nadi see <a
     #     href="{href}">all 27 nakshatras</a>.</p>
     # keep: {abhijit} {href} {syllables}
-    "explainer": "<h2>નામ પરથી મિલન કેવી રીતે થાય છે</h2> <p>27 નક્ષત્રમાંથી દરેકને ચાર ચરણ છે, અને દરેક ચરણનો એક અક્ષર (નામાક્ષર) છે — કુલ 108. જે ચરણના અક્ષરથી નામ <strong>શરૂ થાય</strong> તે ચરણ તે વ્યક્તિનું નક્ષત્ર ગણાય છે, અને તેની રાશિ તેની ચંદ્ર રાશિ. પછી જન્મકુંડળી સાથે વપરાતું એ જ <strong>અષ્ટકૂટ (36 ગુણ)</strong> મિલન — વર્ણ, વશ્ય, તારા, યોનિ, ગ્રહમૈત્રી, ગણ, ભકૂટ અને નાડી — આ બે નક્ષત્ર પરથી ગણાય છે, અમારા કુંડળી મિલન સાધન પાછળના એ જ એન્જિન વડે.</p> <h3>પહેલો અક્ષર કેવી રીતે વંચાય છે</h3> <ul> <li>પહેલા અક્ષરનો પહેલો વ્યંજન અને તેનો સ્વર: <strong>પ્રિયા → પી</strong>, <strong>ક્ષિતિજ → કી</strong>. હ્રસ્વ અને દીર્ઘ સ્વર સરખા ગણાય છે (ઇ/ઈ, ઉ/ઊ); ઐ ને એ અને ઔ ને ઓ ગણાય છે.</li> <li>બ ને વ, અને શ ને ષ (અ-સ્વર સાથે) અથવા સ વાંચવામાં આવે છે; ઋ ને રી.</li> <li>અભિજિતના અક્ષરો ({abhijit}) ઉત્તરાષાઢાના ચોથા ચરણમાં ગણાય છે.</li> <li>અંગ્રેજીમાં લખેલાં નામોનું લિપ્યંતર થાય છે; T, D, N, Th અને Dh જેવા અક્ષરો બે હિન્દી અક્ષર (ત/ટ, દ/ડ) માટે હોઈ શકે, તેથી પરિણામ બતાવે છે કે કયો અક્ષર વપરાયો અને બીજો પસંદ કરવા દે છે. હિન્દી (દેવનાગરી) લખાણ બરાબર વંચાય છે.</li> </ul> <h3>રાશિ પ્રમાણે નામના અક્ષર</h3> {syllables} <p>દરેક નક્ષત્રના અક્ષર, દેવતા, ગણ અને નાડી માટે <a href=\"{href}\">બધાં 27 નક્ષત્ર</a> જુઓ.</p>",
+    "explainer": "\n<h2>નામ પરથી મિલન કેવી રીતે થાય છે</h2> <p>27 નક્ષત્રમાંથી દરેકને ચાર ચરણ છે, અને દરેક ચરણનો એક અક્ષર (નામાક્ષર) છે — કુલ 108. જે ચરણના અક્ષરથી નામ <strong>શરૂ થાય</strong> તે ચરણ તે વ્યક્તિનું નક્ષત્ર ગણાય છે, અને તેની રાશિ તેની ચંદ્ર રાશિ. પછી જન્મકુંડળી સાથે વપરાતું એ જ <strong>અષ્ટકૂટ (36 ગુણ)</strong> મિલન — વર્ણ, વશ્ય, તારા, યોનિ, ગ્રહમૈત્રી, ગણ, ભકૂટ અને નાડી — આ બે નક્ષત્ર પરથી ગણાય છે, અમારા કુંડળી મિલન સાધન પાછળના એ જ એન્જિન વડે.</p> <h3>પહેલો અક્ષર કેવી રીતે વંચાય છે</h3> <ul> <li>પહેલા અક્ષરનો પહેલો વ્યંજન અને તેનો સ્વર: <strong>પ્રિયા → પી</strong>, <strong>ક્ષિતિજ → કી</strong>. હ્રસ્વ અને દીર્ઘ સ્વર સરખા ગણાય છે (ઇ/ઈ, ઉ/ઊ); ઐ ને એ અને ઔ ને ઓ ગણાય છે.</li> <li>બ ને વ, અને શ ને ષ (અ-સ્વર સાથે) અથવા સ વાંચવામાં આવે છે; ઋ ને રી.</li> <li>અભિજિતના અક્ષરો ({abhijit}) ઉત્તરાષાઢાના ચોથા ચરણમાં ગણાય છે.</li> <li>અંગ્રેજીમાં લખેલાં નામોનું લિપ્યંતર થાય છે; T, D, N, Th અને Dh જેવા અક્ષરો બે હિન્દી અક્ષર (ત/ટ, દ/ડ) માટે હોઈ શકે, તેથી પરિણામ બતાવે છે કે કયો અક્ષર વપરાયો અને બીજો પસંદ કરવા દે છે. હિન્દી (દેવનાગરી) લખાણ બરાબર વંચાય છે.</li> </ul> <h3>રાશિ પ્રમાણે નામના અક્ષર</h3> {syllables} <p>દરેક નક્ષત્રના અક્ષર, દેવતા, ગણ અને નાડી માટે <a href=\"{href}\">બધાં 27 નક્ષત્ર</a> જુઓ.</p>",
 }
 
 # app/naam_milan_text.py ENGINE["gu"] — score-band notes and the convention note of a naam-milan result  [5]
@@ -2590,7 +2590,7 @@ MUHURAT_TEXT = {
     # EN: <tr><th>Date</th><th>Day</th><th>Tithi</th><th>Nakshatra</th></tr>
     "th": "<tr><th>તારીખ</th><th>વાર</th><th>તિથિ</th><th>નક્ષત્ર</th></tr>",
     # EN: Muhurat page not found
-    "nf.title": "મુહૂર્ત પાનું મળ્યું નથી",
+    "nf.title": "મુહૂર્ત પેજ મળ્યું નથી",
     # EN: Open the Muhurat Finder
     "nf.open": "મુહૂર્ત શોધક ખોલો",
     # EN: Chaturmas
@@ -2710,7 +2710,7 @@ RECURRING_TEXT = {
     "ans.past": "{year}ની {name}ની બધી {count} તારીખો નીચે આપી છે; છેલ્લી <strong>{when}</strong> હતી.",
     # EN: Dates for {year}: {link}.
     # keep: {link} {year}
-    "ans.more": "{year}ની તારીખો: {link}.",
+    "ans.more": " {year}ની તારીખો: {link}.",
     # EN: {name} {year}: all dates
     # keep: {name} {year}
     "table.h2": "{name} {year}: બધી તારીખો",
@@ -2782,7 +2782,7 @@ RECURRING_TEXT = {
     #     moonrise is the key time on this page.</p><p>A Sankashti on a Tuesday is Angarki Sankashti
     #     Chaturthi, believed to be especially fruitful. The Sankashti of Magha (purnimanta) is kept
     #     in North India as Sakat Chauth.</p>
-    "about.sankashti": "<p>સંકષ્ટી ચતુર્થી (સંકટ હર ચતુર્થી) એ ભગવાન ગણેશનું માસિક વ્રત છે જે વદ પક્ષની ચોથ, 4થી તિથિએ, રખાય છે; “સંકષ્ટી” એટલે મુશ્કેલીમાંથી મુક્તિ. ભક્તો આખો દિવસ ઉપવાસ કરે છે, સાંજે ગણેશની પૂજા કરે છે અને ચંદ્રના દર્શન કરીને અર્ઘ્ય આપ્યા પછી જ ઉપવાસ છોડે છે, તેથી આ પાના પર ચંદ્રોદય મુખ્ય સમય છે.</p><p>મંગળવારની સંકષ્ટી અંગારકી સંકષ્ટી ચતુર્થી છે, જે ખાસ ફળદાયી મનાય છે. મહા (પૂર્ણિમાંત)ની સંકષ્ટી ઉત્તર ભારતમાં સકટ ચોથ તરીકે રખાય છે.</p>",
+    "about.sankashti": "<p>સંકષ્ટી ચતુર્થી (સંકટ હર ચતુર્થી) એ ભગવાન ગણેશનું માસિક વ્રત છે જે વદ પક્ષની ચોથ, 4થી તિથિએ, રખાય છે; “સંકષ્ટી” એટલે મુશ્કેલીમાંથી મુક્તિ. ભક્તો આખો દિવસ ઉપવાસ કરે છે, સાંજે ગણેશની પૂજા કરે છે અને ચંદ્રના દર્શન કરીને અર્ઘ્ય આપ્યા પછી જ ઉપવાસ છોડે છે, તેથી આ પેજ પર ચંદ્રોદય મુખ્ય સમય છે.</p><p>મંગળવારની સંકષ્ટી અંગારકી સંકષ્ટી ચતુર્થી છે, જે ખાસ ફળદાયી મનાય છે. મહા (પૂર્ણિમાંત)ની સંકષ્ટી ઉત્તર ભારતમાં સકટ ચોથ તરીકે રખાય છે.</p>",
     # EN: <p>Masik Shivratri (monthly Shivratri) is the night of Lord Shiva kept on Chaturdashi, the
     #     14th tithi, of the dark fortnight (Krishna paksha) every month. Devotees fast and keep
     #     vigil through the night, bathing the Shiva linga with water, milk, honey and bilva leaves
