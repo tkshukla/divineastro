@@ -20,7 +20,7 @@ from __future__ import annotations
 
 # Page modules that are complete for this language (the table groups below):
 #   "seo" "rashifal" "vrat" "nakshatra" "muhurat" "recurring" "hub" "app"
-READY = frozenset({"seo", "app", "rashifal", "hub"})
+READY = frozenset({"seo", "app", "rashifal", "hub", "vrat"})
 
 # Latin-script words the pa text may keep besides the defaults (WhatsApp, UPI, PDF ...).
 ALLOW_LATIN = frozenset({"name", "gmail.com"})  # the e-mail placeholder name@gmail.com
@@ -1262,193 +1262,193 @@ RASHIFAL_CLOCK_LANG = ""
 # app/vrat_text.py TEXT["pa"] — page text of /vrat-tyohar, /ekadashi-<year>, /tyohar/<slug>-<year>  [64]
 VRAT_TEXT = {
     # EN: Vrat & festivals
-    "crumb": "",
+    "crumb": "ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: {date}, {weekday}
     # keep: {date} {weekday}
-    "day_label": "",
+    "day_label": "{date}, {weekday}",
     # EN: {label}: {prefix}{value}
     # keep: {label} {prefix} {value}
-    "timing": "",
+    "timing": "{label}: {prefix}{value}",
     # EN: {paksha} {name}: {start} to {end}
     # keep: {end} {name} {paksha} {start}
-    "tithi.text": "",
+    "tithi.text": "{paksha} {name}: {start} ਤੋਂ {end} ਤੱਕ",
     # EN: {paksha}
     # keep: {paksha}
-    "tithi.paksha": "",
+    "tithi.paksha": "{paksha}",
     # EN: <tr><th>Date</th><th>Vrat / festival</th><th>Timing ({city})</th></tr>
     # keep: {city}
-    "table.th": "",
+    "table.th": "<tr><th>ਤਾਰੀਖ਼</th><th>ਵਰਤ / ਤਿਉਹਾਰ</th><th>ਸਮਾਂ ({city})</th></tr>",
     # EN: <div class="box"><p><strong>Timings vary by city.</strong> Every time here is for {city}'s
     #     sunrise, sunset and moonrise; in another city they shift by a few minutes and occasionally
     #     the date does too. Dates follow Drik Panchang's Smarta (default) reckoning. Check the
     #     Panchang for your own city.</p></div>
     # keep: {city}
-    "city_note": "",
+    "city_note": "<div class=\"box\"><p><strong>ਸਮੇਂ ਸ਼ਹਿਰ ਮੁਤਾਬਕ ਬਦਲਦੇ ਹਨ।</strong> ਇੱਥੇ ਦਿੱਤਾ ਹਰ ਸਮਾਂ {city} ਦੇ ਸੂਰਜ ਚੜ੍ਹਨ, ਸੂਰਜ ਛਿਪਣ ਅਤੇ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਦੇ ਹਿਸਾਬ ਨਾਲ ਹੈ; ਕਿਸੇ ਹੋਰ ਸ਼ਹਿਰ ਵਿੱਚ ਇਹ ਕੁਝ ਮਿੰਟ ਖਿਸਕ ਜਾਂਦੇ ਹਨ ਅਤੇ ਕਦੇ-ਕਦੇ ਤਾਰੀਖ਼ ਵੀ ਬਦਲ ਜਾਂਦੀ ਹੈ। ਤਾਰੀਖ਼ਾਂ ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਦੀ ਸਮਾਰਤ (ਮੂਲ) ਗਣਨਾ ਅਨੁਸਾਰ ਹਨ। ਆਪਣੇ ਸ਼ਹਿਰ ਦਾ ਪੰਚਾਂਗ ਜ਼ਰੂਰ ਵੇਖੋ।</p></div>",
     # EN: <p class="note"><small>For most observances the date is the same across India, but puja
     #     muhurat, parana and moonrise times differ from city to city - every time here is for
     #     <strong>{city}</strong>. Regional traditions may vary.</small></p>
     # keep: {city}
-    "top_note": "",
+    "top_note": "<p class=\"note\"><small>ਬਹੁਤੇ ਵਰਤ-ਤਿਉਹਾਰਾਂ ਦੀ ਤਾਰੀਖ਼ ਸਾਰੇ ਭਾਰਤ ਵਿੱਚ ਇੱਕੋ ਹੁੰਦੀ ਹੈ, ਪਰ ਪੂਜਾ ਮਹੂਰਤ, ਪਾਰਣਾ ਅਤੇ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਦੇ ਸਮੇਂ ਸ਼ਹਿਰ ਮੁਤਾਬਕ ਵੱਖਰੇ ਹੁੰਦੇ ਹਨ - ਇੱਥੇ ਹਰ ਸਮਾਂ <strong>{city}</strong> ਲਈ ਹੈ। ਇਲਾਕਾਈ ਰਵਾਇਤਾਂ ਵੱਖਰੀਆਂ ਹੋ ਸਕਦੀਆਂ ਹਨ।</small></p>",
     # EN: Vrat & festivals in your city
-    "cities.heading": "",
+    "cities.heading": "ਤੁਹਾਡੇ ਸ਼ਹਿਰ ਵਿੱਚ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: Today's Panchang in {city}
     # keep: {city}
-    "tools.panchang": "",
+    "tools.panchang": "{city} ਵਿੱਚ ਅੱਜ ਦਾ ਪੰਚਾਂਗ",
     # EN: Rahu Kaal in {city}
     # keep: {city}
     # may also use: {t_rahu_kaal}
-    "tools.rahu": "",
+    "tools.rahu": "{city} ਵਿੱਚ ਰਾਹੂ ਕਾਲ",
     # EN: More for {city}
     # keep: {city}
-    "tools.heading": "",
+    "tools.heading": "{city} ਲਈ ਹੋਰ",
     # EN: See the Panchang for your city — free
-    "cta": "",
+    "cta": "ਆਪਣੇ ਸ਼ਹਿਰ ਦਾ ਪੰਚਾਂਗ ਵੇਖੋ — ਮੁਫ਼ਤ",
     # EN: Today's vrat & festivals
-    "more.today": "",
+    "more.today": "ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: Festival calendar {year}
     # keep: {year}
-    "more.year": "",
+    "more.year": "ਤਿਉਹਾਰ ਕੈਲੰਡਰ {year}",
     # EN: Ekadashi {year}
     # keep: {year}
-    "more.ekadashi": "",
+    "more.ekadashi": "ਇਕਾਦਸ਼ੀ {year}",
     # EN: Today's Panchang
-    "more.panchang": "",
+    "more.panchang": "ਅੱਜ ਦਾ ਪੰਚਾਂਗ",
     # EN: Today's Rashifal
-    "more.rashifal": "",
+    "more.rashifal": "ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ",
     # EN: More
-    "more.heading": "",
+    "more.heading": "ਹੋਰ",
     # EN: Major festivals {year}
     # keep: {year}
-    "majors.heading": "",
+    "majors.heading": "ਮੁੱਖ ਤਿਉਹਾਰ {year}",
     # EN: Rule
-    "today.rule": "",
+    "today.rule": "ਨਿਯਮ",
     # EN: No major vrat or festival today.
-    "today.none": "",
+    "today.none": "ਅੱਜ ਕੋਈ ਵੱਡਾ ਵਰਤ ਜਾਂ ਤਿਉਹਾਰ ਨਹੀਂ ਹੈ।",
     # EN: Next: <strong>{name}</strong> on {day}.
     # keep: {day} {name}
-    "today.next": "",
+    "today.next": "ਅਗਲਾ: <strong>{name}</strong>, {day} ਨੂੰ।",
     # EN: Vrat &amp; Festivals today
-    "block.heading": "",
+    "block.heading": "ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: Page not found
-    "nf.h1": "",
+    "nf.h1": "ਪੰਨਾ ਨਹੀਂ ਮਿਲਿਆ",
     # EN: Aaj Ke Vrat aur Tyohar: Today's Vrat & Festivals ({date})
     # keep: {date}
-    "hub.title_default": "",
+    "hub.title_default": "ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ ({date}) — ਪੂਜਾ ਮਹੂਰਤ ਸਮੇਤ",
     # EN: Today's Vrat & Festivals in {city} ({date}) - Aaj Ke Vrat
     # keep: {city} {date}
-    "hub.title_city": "",
+    "hub.title_city": "{city} ਵਿੱਚ ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ ({date})",
     # EN: Today's vrat & festivals
-    "hub.h1_default": "",
+    "hub.h1_default": "ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: Today's vrat & festivals in {city}
     # keep: {city}
-    "hub.h1_city": "",
+    "hub.h1_city": "{city} ਵਿੱਚ ਅੱਜ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ",
     # EN: Today, {date}: {names}.
     # keep: {date} {names}
-    "hub.desc_today": "",
+    "hub.desc_today": "ਅੱਜ, {date}: {names}।",
     # EN: {date}: no major vrat today.
     # keep: {date}
-    "hub.desc_none": "",
+    "hub.desc_none": "{date}: ਅੱਜ ਕੋਈ ਵੱਡਾ ਵਰਤ ਨਹੀਂ ਹੈ।",
     # EN: Upcoming fasts and festivals for 30 days with Ekadashi parana, Pradosh and Sankashti
     #     moonrise times - {city}.
     # keep: {city}
-    "hub.desc_rest": "",
+    "hub.desc_rest": "ਅਗਲੇ 30 ਦਿਨਾਂ ਦੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ, ਇਕਾਦਸ਼ੀ ਪਾਰਣਾ, ਪ੍ਰਦੋਸ਼ ਅਤੇ ਸੰਕਸ਼ਟੀ ਦੇ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਦੇ ਸਮਿਆਂ ਸਮੇਤ - {city}।",
     # EN: <p class="hi" lang="hi">आज के व्रत और त्योहार</p>
-    "hub.sub": "",
+    "hub.sub": "<p class=\"hi\">ਅੱਜ ਕਿਹੜਾ ਵਰਤ, ਕਿਹੜਾ ਤਿਉਹਾਰ</p>",
     # EN: Next 30 days
-    "hub.upcoming": "",
+    "hub.upcoming": "ਅਗਲੇ 30 ਦਿਨ",
     # EN: Hindu Festival & Vrat Calendar {year} (New Delhi): Dates and Muhurat
     # keep: {year}
-    "year.title": "",
+    "year.title": "ਹਿੰਦੂ ਤਿਉਹਾਰ ਅਤੇ ਵਰਤ ਕੈਲੰਡਰ {year} (ਨਵੀਂ ਦਿੱਲੀ): ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਮਹੂਰਤ",
     # EN: Vrat & festival calendar {year}
     # keep: {year}
-    "year.h1": "",
+    "year.h1": "ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ ਕੈਲੰਡਰ {year}",
     # EN: Every Hindu vrat and festival of {year}, month by month - Ekadashi, Pradosh, Sankashti,
     #     Purnima, Amavasya, Shivratri and festivals like Diwali, Navratri and Raksha Bandhan, with
     #     puja muhurat for New Delhi.
     # keep: {year}
-    "year.desc": "",
+    "year.desc": "{year} ਦੇ ਸਾਰੇ ਹਿੰਦੂ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ, ਮਹੀਨੇ ਦਰ ਮਹੀਨੇ - ਇਕਾਦਸ਼ੀ, ਪ੍ਰਦੋਸ਼, ਸੰਕਸ਼ਟੀ, ਪੂਰਨਮਾਸ਼ੀ, ਮੱਸਿਆ, ਸ਼ਿਵਰਾਤਰੀ ਅਤੇ ਦੀਵਾਲੀ, ਨਰਾਤੇ ਤੇ ਰੱਖੜੀ ਵਰਗੇ ਤਿਉਹਾਰ, ਨਵੀਂ ਦਿੱਲੀ ਲਈ ਪੂਜਾ ਮਹੂਰਤ ਸਮੇਤ।",
     # EN: <p><strong>{count}</strong> fasts and festivals in {year} for New Delhi, computed from the
     #     panchang. Tap a major festival for its puja muhurat and what it is about.</p>
     # keep: {count} {year}
-    "year.intro": "",
+    "year.intro": "<p>ਨਵੀਂ ਦਿੱਲੀ ਲਈ {year} ਵਿੱਚ <strong>{count}</strong> ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ, ਪੰਚਾਂਗ ਤੋਂ ਗਿਣੇ ਹੋਏ। ਕਿਸੇ ਵੱਡੇ ਤਿਉਹਾਰ ’ਤੇ ਟੈਪ ਕਰੋ ਅਤੇ ਉਸ ਦਾ ਪੂਜਾ ਮਹੂਰਤ ਤੇ ਮਹੱਤਵ ਵੇਖੋ।</p>",
     # EN: {month} {year}
     # keep: {month} {year}
-    "year.month": "",
+    "year.month": "{month} {year}",
     # EN: Major Hindu festivals {year}
     # keep: {year}
-    "year.itemlist": "",
+    "year.itemlist": "ਮੁੱਖ ਹਿੰਦੂ ਤਿਉਹਾਰ {year}",
     # EN: Ekadashi {year}: All Ekadashi Vrat Dates and Parana Time (New Delhi)
     # keep: {year}
-    "ek.title": "",
+    "ek.title": "ਇਕਾਦਸ਼ੀ {year}: ਸਾਰੀਆਂ ਇਕਾਦਸ਼ੀ ਵਰਤ ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਪਾਰਣਾ ਸਮਾਂ (ਨਵੀਂ ਦਿੱਲੀ)",
     # EN: Ekadashi {year}: dates and parana time
     # keep: {year}
-    "ek.h1": "",
+    "ek.h1": "ਇਕਾਦਸ਼ੀ {year}: ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਪਾਰਣਾ ਸਮਾਂ",
     # EN: All {count} Ekadashis of {year} - fasting date, Ekadashi tithi times and the parana (fast-
     #     breaking) window next day, for New Delhi.
     # keep: {count} {year}
-    "ek.desc": "",
+    "ek.desc": "{year} ਦੀਆਂ ਸਾਰੀਆਂ {count} ਇਕਾਦਸ਼ੀਆਂ - ਵਰਤ ਦੀ ਤਾਰੀਖ਼, ਇਕਾਦਸ਼ੀ ਤਿਥੀ ਦੇ ਸਮੇਂ ਅਤੇ ਅਗਲੇ ਦਿਨ ਪਾਰਣਾ (ਵਰਤ ਖੋਲ੍ਹਣ) ਦੀ ਵਿੰਡੋ, ਨਵੀਂ ਦਿੱਲੀ ਲਈ।",
     # EN: <tr><th>Ekadashi</th><th>Fast</th><th>Parana</th></tr>
-    "ek.th": "",
+    "ek.th": "<tr><th>ਇਕਾਦਸ਼ੀ</th><th>ਵਰਤ</th><th>ਪਾਰਣਾ</th></tr>",
     # EN: <p><strong>Rule (Smarta):</strong> fast on the day Ekadashi prevails at sunrise; if it
     #     prevails at two sunrises, the second day, and if at none, the day it falls in. Parana is
     #     the next day after sunrise, once Hari Vasara (the first quarter of Dwadashi) is over,
     #     within Pratahkala and before Dwadashi ends; if Hari Vasara runs past Pratahkala, parana
     #     moves to Aparahna (Madhyahna is avoided).</p>
-    "ek.rule": "",
+    "ek.rule": "<p><strong>ਨਿਯਮ (ਸਮਾਰਤ):</strong> ਵਰਤ ਉਸ ਦਿਨ ਰੱਖੋ ਜਿਸ ਦਿਨ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਇਕਾਦਸ਼ੀ ਹੋਵੇ; ਜੇ ਦੋ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਹੋਵੇ ਤਾਂ ਦੂਜੇ ਦਿਨ, ਅਤੇ ਜੇ ਕਿਸੇ ਵੇਲੇ ਨਾ ਹੋਵੇ ਤਾਂ ਜਿਸ ਦਿਨ ਇਹ ਪੈਂਦੀ ਹੈ। ਪਾਰਣਾ ਅਗਲੇ ਦਿਨ ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਬਾਅਦ, ਹਰਿ ਵਾਸਰ (ਦੁਆਦਸ਼ੀ ਦਾ ਪਹਿਲਾ ਚੌਥਾ ਹਿੱਸਾ) ਲੰਘਣ ਮਗਰੋਂ, ਪ੍ਰਾਤਃ ਕਾਲ ਦੇ ਅੰਦਰ ਅਤੇ ਦੁਆਦਸ਼ੀ ਖ਼ਤਮ ਹੋਣ ਤੋਂ ਪਹਿਲਾਂ ਹੁੰਦਾ ਹੈ; ਜੇ ਹਰਿ ਵਾਸਰ ਪ੍ਰਾਤਃ ਕਾਲ ਤੋਂ ਅੱਗੇ ਚੱਲੇ ਤਾਂ ਪਾਰਣਾ ਅਪਰਾਹਨ ਵਿੱਚ ਚਲਾ ਜਾਂਦਾ ਹੈ (ਮੱਧਾਹਨ ਤੋਂ ਬਚਿਆ ਜਾਂਦਾ ਹੈ)।</p>",
     # EN: <p class="hi" lang="hi">एकादशी {year}</p>
     # keep: {year}
-    "ek.sub": "",
+    "ek.sub": "<p class=\"hi\">ਇਕਾਦਸ਼ੀ {year}</p>",
     # EN: Ekadashi {year}
     # keep: {year}
-    "ek.crumb": "",
+    "ek.crumb": "ਇਕਾਦਸ਼ੀ {year}",
     # EN: {name} {year}: Date and Puja Muhurat - {short}
     # keep: {name} {short} {year}
-    "fest.title": "",
+    "fest.title": "{name} {year}: ਤਾਰੀਖ਼ ਅਤੇ ਪੂਜਾ ਮਹੂਰਤ - {short}",
     # EN: {name} {year}: date and muhurat
     # keep: {name} {year}
-    "fest.h1": "",
+    "fest.h1": "{name} {year}: ਤਾਰੀਖ਼ ਅਤੇ ਮਹੂਰਤ",
     # EN: {text}.
     # keep: {text}
-    "fest.main": "",
+    "fest.main": "{text}। ",
     # EN: {name} {year} is on {weekday}, {date}. {main}Puja timings for New Delhi.
     # keep: {date} {main} {name} {weekday} {year}
-    "fest.desc": "",
+    "fest.desc": "{name} {year} {weekday}, {date} ਨੂੰ ਹੈ। {main}ਨਵੀਂ ਦਿੱਲੀ ਲਈ ਪੂਜਾ ਦੇ ਸਮੇਂ।",
     # EN: {name} {year} is on <strong>{when}</strong>.
     # keep: {name} {when} {year}
-    "fest.when": "",
+    "fest.when": "{name} {year} <strong>{when}</strong> ਨੂੰ ਹੈ।",
     # EN: <p class="hi" lang="hi">{name_hi} {year}</p>
     # keep: {year}
-    "fest.sub": "",
+    "fest.sub": "<p class=\"hi\">ਤਿਥੀ, ਸ਼ੁਭ ਮਹੂਰਤ ਅਤੇ ਪੂਜਾ ਦਾ ਸਮਾਂ · {year}</p>",
     # EN: What it is and how it is observed
-    "fest.about_h2": "",
+    "fest.about_h2": "ਇਹ ਕੀ ਹੈ ਅਤੇ ਕਿਵੇਂ ਮਨਾਇਆ ਜਾਂਦਾ ਹੈ",
     # EN: How the date is fixed
-    "fest.rule_h2": "",
+    "fest.rule_h2": "ਤਾਰੀਖ਼ ਕਿਵੇਂ ਤੈਅ ਹੁੰਦੀ ਹੈ",
     # EN: Frequently asked questions
-    "fest.faq_h2": "",
+    "fest.faq_h2": "ਅਕਸਰ ਪੁੱਛੇ ਜਾਂਦੇ ਸਵਾਲ",
     # EN: India
-    "event.place": "",
+    "event.place": "ਭਾਰਤ",
     # EN: When is {name} {year}?
     # keep: {name} {year}
-    "faq.when_q": "",
+    "faq.when_q": "{name} {year} ਕਦੋਂ ਹੈ?",
     # EN: {name} {year} is on {weekday}, {date}.
     # keep: {date} {name} {weekday} {year}
-    "faq.when_a": "",
+    "faq.when_a": "{name} {year} {weekday}, {date} ਨੂੰ ਹੈ।",
     # EN: What is the {name} {year} puja muhurat?
     # keep: {name} {year}
-    "faq.muhurat_q": "",
+    "faq.muhurat_q": "{name} {year} ਦਾ ਪੂਜਾ ਮਹੂਰਤ ਕੀ ਹੈ?",
     # EN: What are the {name} {year} timings?
     # keep: {name} {year}
-    "faq.timings_q": "",
+    "faq.timings_q": "{name} {year} ਦੇ ਸਮੇਂ ਕੀ ਹਨ?",
     # EN: For New Delhi - {timings}. Timings vary by city by a few minutes; check the Panchang for
     #     your city.
     # keep: {timings}
-    "faq.timings_a": "",
+    "faq.timings_a": "ਨਵੀਂ ਦਿੱਲੀ ਲਈ - {timings}। ਸਮੇਂ ਸ਼ਹਿਰ ਮੁਤਾਬਕ ਕੁਝ ਮਿੰਟ ਵੱਖਰੇ ਹੁੰਦੇ ਹਨ; ਆਪਣੇ ਸ਼ਹਿਰ ਦਾ ਪੰਚਾਂਗ ਵੇਖੋ।",
     # EN: Why is {name} {year} observed on {short}?
     # keep: {name} {short} {year}
-    "faq.why_q": "",
+    "faq.why_q": "{name} {year} {short} ਨੂੰ ਕਿਉਂ ਮਨਾਇਆ ਜਾਂਦਾ ਹੈ?",
     # EN: The date follows the rule: {rule}. In {year} that is {when} (New Delhi).
     # keep: {rule} {when} {year}
-    "faq.why_a": "",
+    "faq.why_a": "ਤਾਰੀਖ਼ ਦਾ ਨਿਯਮ ਇਹ ਹੈ: {rule}। {year} ਵਿੱਚ ਇਹ {when} ਨੂੰ ਪੈਂਦੀ ਹੈ (ਨਵੀਂ ਦਿੱਲੀ)।",
 }
 
 # app/vrat_text.py ABOUT["pa"] — what each of the 47 festivals / vrats is (key = festival slug)  [47]
@@ -1456,194 +1456,194 @@ VRAT_ABOUT = {
     # EN: Makar Sankranti marks the Sun's entry into Makara (Capricorn) and the start of its
     #     northward journey (Uttarayana). It is a harvest festival: people bathe in holy rivers,
     #     give til (sesame), jaggery, khichdi and blankets in charity, and fly kites.
-    "makar-sankranti": "",
+    "makar-sankranti": "ਮਕਰ ਸੰਕ੍ਰਾਂਤੀ ਸੂਰਜ ਦੇ ਮਕਰ ਰਾਸ਼ੀ ਵਿੱਚ ਪ੍ਰਵੇਸ਼ ਅਤੇ ਉੱਤਰ ਵੱਲ ਯਾਤਰਾ (ਉੱਤਰਾਯਣ) ਦੀ ਸ਼ੁਰੂਆਤ ਦਾ ਦਿਨ ਹੈ। ਇਹ ਫ਼ਸਲ ਦਾ ਤਿਉਹਾਰ ਹੈ: ਲੋਕ ਪਵਿੱਤਰ ਦਰਿਆਵਾਂ ਵਿੱਚ ਇਸ਼ਨਾਨ ਕਰਦੇ ਹਨ, ਤਿਲ, ਗੁੜ, ਖਿਚੜੀ ਅਤੇ ਕੰਬਲ ਦਾਨ ਕਰਦੇ ਹਨ, ਅਤੇ ਪਤੰਗ ਉਡਾਉਂਦੇ ਹਨ।",
     # EN: Maha Shivratri, the great night of Shiva, falls on the Krishna Chaturdashi of Magha.
     #     Devotees fast, offer water, milk and bel leaves on the Shivling, chant Om Namah Shivaya
     #     and keep vigil through the four prahars of the night; the Nishita kaal puja around
     #     midnight is the most important.
-    "maha-shivratri": "",
+    "maha-shivratri": "ਮਹਾਂ ਸ਼ਿਵਰਾਤਰੀ, ਸ਼ਿਵ ਦੀ ਮਹਾਨ ਰਾਤ, ਮਾਘ ਦੀ ਕ੍ਰਿਸ਼ਨ ਚੌਦਸ ਨੂੰ ਆਉਂਦੀ ਹੈ। ਸ਼ਰਧਾਲੂ ਵਰਤ ਰੱਖਦੇ ਹਨ, ਸ਼ਿਵਲਿੰਗ ’ਤੇ ਜਲ, ਦੁੱਧ ਅਤੇ ਬੇਲ ਪੱਤਰ ਚੜ੍ਹਾਉਂਦੇ ਹਨ, “ਓਮ ਨਮਃ ਸ਼ਿਵਾਯ” ਦਾ ਜਾਪ ਕਰਦੇ ਹਨ ਅਤੇ ਰਾਤ ਦੇ ਚਾਰ ਪਹਿਰ ਜਾਗਦੇ ਹਨ; ਅੱਧੀ ਰਾਤ ਦੇ ਨੇੜੇ ਨਿਸ਼ੀਥ ਕਾਲ ਦੀ ਪੂਜਾ ਸਭ ਤੋਂ ਅਹਿਮ ਹੈ।",
     # EN: Holika Dahan, on the eve of Holi, celebrates Prahlad's devotion and the victory of good
     #     over evil. A bonfire is lit after sunset, avoiding Bhadra, and families circle it offering
     #     grain, coconut and prayers.
-    "holika-dahan": "",
+    "holika-dahan": "ਹੋਲਿਕਾ ਦਹਨ, ਹੋਲੀ ਦੀ ਪੂਰਵ ਸੰਧਿਆ ’ਤੇ, ਪ੍ਰਹਿਲਾਦ ਦੀ ਭਗਤੀ ਅਤੇ ਬਦੀ ’ਤੇ ਨੇਕੀ ਦੀ ਜਿੱਤ ਦਾ ਪ੍ਰਤੀਕ ਹੈ। ਸੂਰਜ ਛਿਪਣ ਤੋਂ ਬਾਅਦ, ਭਦਰਾ ਤੋਂ ਬਚ ਕੇ, ਅਲਾਵ ਬਾਲਿਆ ਜਾਂਦਾ ਹੈ ਅਤੇ ਪਰਿਵਾਰ ਇਸ ਦੁਆਲੇ ਪਰਿਕਰਮਾ ਕਰਦੇ ਹੋਏ ਅਨਾਜ, ਨਾਰੀਅਲ ਅਤੇ ਅਰਦਾਸਾਂ ਭੇਟ ਕਰਦੇ ਹਨ।",
     # EN: Holi, the festival of colours, is celebrated the morning after Holika Dahan with colours,
     #     music, sweets like gujiya and visits to family and friends.
-    "holi": "",
+    "holi": "ਹੋਲੀ, ਰੰਗਾਂ ਦਾ ਤਿਉਹਾਰ, ਹੋਲਿਕਾ ਦਹਨ ਦੀ ਅਗਲੀ ਸਵੇਰ ਰੰਗਾਂ, ਸੰਗੀਤ, ਗੁਜੀਆ ਵਰਗੀਆਂ ਮਠਿਆਈਆਂ ਅਤੇ ਪਰਿਵਾਰ ਤੇ ਦੋਸਤਾਂ ਨੂੰ ਮਿਲਣ ਨਾਲ ਮਨਾਇਆ ਜਾਂਦਾ ਹੈ।",
     # EN: Ram Navami celebrates the birth of Lord Rama on Chaitra Shukla Navami, at midday. Devotees
     #     fast, read the Ramcharitmanas, and offer puja in the Madhyahna muhurat, the time of his
     #     birth.
-    "ram-navami": "",
+    "ram-navami": "ਰਾਮ ਨੌਮੀ ਚੇਤ ਸ਼ੁਕਲ ਨੌਮੀ ਨੂੰ ਦੁਪਹਿਰ ਵੇਲੇ ਭਗਵਾਨ ਰਾਮ ਦੇ ਜਨਮ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਸ਼ਰਧਾਲੂ ਵਰਤ ਰੱਖਦੇ ਹਨ, ਰਾਮਚਰਿਤਮਾਨਸ ਦਾ ਪਾਠ ਕਰਦੇ ਹਨ ਅਤੇ ਉਨ੍ਹਾਂ ਦੇ ਜਨਮ ਦੇ ਸਮੇਂ, ਮੱਧਾਹਨ ਮਹੂਰਤ ਵਿੱਚ, ਪੂਜਾ ਕਰਦੇ ਹਨ।",
     # EN: Hanuman Jayanti (Chaitra Purnima in North India) celebrates the birth of Lord Hanuman.
     #     Devotees visit Hanuman temples, recite the Hanuman Chalisa and Sundarkand, and offer
     #     sindoor and laddoos.
-    "hanuman-jayanti": "",
+    "hanuman-jayanti": "ਹਨੂੰਮਾਨ ਜਯੰਤੀ (ਉੱਤਰੀ ਭਾਰਤ ਵਿੱਚ ਚੇਤ ਪੂਰਨਮਾਸ਼ੀ) ਭਗਵਾਨ ਹਨੂੰਮਾਨ ਦੇ ਜਨਮ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਸ਼ਰਧਾਲੂ ਹਨੂੰਮਾਨ ਮੰਦਰਾਂ ਵਿੱਚ ਜਾਂਦੇ ਹਨ, ਹਨੂੰਮਾਨ ਚਾਲੀਸਾ ਅਤੇ ਸੁੰਦਰਕਾਂਡ ਦਾ ਪਾਠ ਕਰਦੇ ਹਨ, ਅਤੇ ਸੰਧੂਰ ਤੇ ਲੱਡੂ ਚੜ੍ਹਾਉਂਦੇ ਹਨ।",
     # EN: Akshaya Tritiya, Vaishakha Shukla Tritiya, is held to make every good deed 'akshaya' -
     #     undiminishing. People worship Vishnu and Lakshmi, give in charity, and begin new ventures
     #     or buy gold.
-    "akshaya-tritiya": "",
+    "akshaya-tritiya": "ਅਕਸ਼ੈ ਤ੍ਰਿਤੀਆ, ਵਿਸਾਖ ਸ਼ੁਕਲ ਤੀਜ, ਬਾਰੇ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ ਕਿ ਇਹ ਹਰ ਚੰਗੇ ਕੰਮ ਨੂੰ ‘ਅਕਸ਼ੈ’ — ਕਦੇ ਨਾ ਘਟਣ ਵਾਲਾ — ਬਣਾ ਦਿੰਦੀ ਹੈ। ਲੋਕ ਵਿਸ਼ਨੂੰ ਅਤੇ ਲਕਸ਼ਮੀ ਦੀ ਪੂਜਾ ਕਰਦੇ ਹਨ, ਦਾਨ ਦਿੰਦੇ ਹਨ, ਅਤੇ ਨਵੇਂ ਕੰਮ ਸ਼ੁਰੂ ਕਰਦੇ ਜਾਂ ਸੋਨਾ ਖ਼ਰੀਦਦੇ ਹਨ।",
     # EN: Raksha Bandhan, on Shravana Purnima, celebrates the bond between brothers and sisters.
     #     Sisters tie a rakhi on their brother's wrist and pray for his well-being; the rakhi is
     #     tied in a time free of Bhadra.
-    "raksha-bandhan": "",
+    "raksha-bandhan": "ਰੱਖੜੀ (ਰਕਸ਼ਾ ਬੰਧਨ), ਸਾਵਣ ਦੀ ਪੂਰਨਮਾਸ਼ੀ ਨੂੰ, ਭਰਾ-ਭੈਣ ਦੇ ਰਿਸ਼ਤੇ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਭੈਣਾਂ ਆਪਣੇ ਭਰਾ ਦੀ ਗੁੱਟ ’ਤੇ ਰੱਖੜੀ ਬੰਨ੍ਹਦੀਆਂ ਹਨ ਅਤੇ ਉਸ ਦੀ ਸੁੱਖ-ਸਾਂਦ ਦੀ ਅਰਦਾਸ ਕਰਦੀਆਂ ਹਨ; ਰੱਖੜੀ ਭਦਰਾ ਤੋਂ ਮੁਕਤ ਸਮੇਂ ਵਿੱਚ ਬੰਨ੍ਹੀ ਜਾਂਦੀ ਹੈ।",
     # EN: Krishna Janmashtami celebrates the birth of Lord Krishna at midnight on Krishna Ashtami of
     #     Bhadrapada (purnimanta). Devotees fast through the day and break it after the Nishita
     #     (midnight) puja, when the infant Krishna is bathed and placed in a cradle.
-    "janmashtami": "",
+    "janmashtami": "ਕ੍ਰਿਸ਼ਨ ਜਨਮ ਅਸ਼ਟਮੀ ਭਾਦੋਂ ਦੀ ਕ੍ਰਿਸ਼ਨ ਅਸ਼ਟਮੀ (ਪੂਰਨਿਮਾਂਤ) ਦੀ ਅੱਧੀ ਰਾਤ ਨੂੰ ਭਗਵਾਨ ਕ੍ਰਿਸ਼ਨ ਦੇ ਜਨਮ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਸ਼ਰਧਾਲੂ ਸਾਰਾ ਦਿਨ ਵਰਤ ਰੱਖਦੇ ਹਨ ਅਤੇ ਨਿਸ਼ੀਥ (ਅੱਧੀ ਰਾਤ) ਦੀ ਪੂਜਾ ਤੋਂ ਬਾਅਦ ਵਰਤ ਖੋਲ੍ਹਦੇ ਹਨ, ਜਦੋਂ ਬਾਲ ਕ੍ਰਿਸ਼ਨ ਨੂੰ ਇਸ਼ਨਾਨ ਕਰਾ ਕੇ ਪੰਘੂੜੇ ਵਿੱਚ ਪਾਇਆ ਜਾਂਦਾ ਹੈ।",
     # EN: Ganesh Chaturthi, Bhadrapada Shukla Chaturthi, welcomes Lord Ganesha home. The idol is
     #     installed and worshipped in the Madhyahna (midday) muhurat, the time of his birth, with
     #     modak, durva grass and red flowers; looking at the Moon on this day is avoided.
-    "ganesh-chaturthi": "",
+    "ganesh-chaturthi": "ਗਣੇਸ਼ ਚਤੁਰਥੀ, ਭਾਦੋਂ ਸ਼ੁਕਲ ਚੌਥ, ਭਗਵਾਨ ਗਣੇਸ਼ ਦਾ ਘਰ ਵਿੱਚ ਸਵਾਗਤ ਹੈ। ਮੂਰਤੀ ਸਥਾਪਿਤ ਕਰਕੇ ਉਨ੍ਹਾਂ ਦੇ ਜਨਮ ਦੇ ਸਮੇਂ, ਮੱਧਾਹਨ (ਦੁਪਹਿਰ) ਮਹੂਰਤ ਵਿੱਚ, ਮੋਦਕ, ਦੂਬ ਘਾਹ ਅਤੇ ਲਾਲ ਫੁੱਲਾਂ ਨਾਲ ਪੂਜਾ ਕੀਤੀ ਜਾਂਦੀ ਹੈ; ਇਸ ਦਿਨ ਚੰਦਰਮਾ ਨੂੰ ਵੇਖਣ ਤੋਂ ਬਚਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: Chaitra Navratri, the nine nights of Goddess Durga in spring, begins on Chaitra Shukla
     #     Pratipada - also the Hindu New Year (Vikram Samvat). Ghatasthapana (installing the kalash)
     #     opens the nine days of worship.
-    "chaitra-navratri": "",
+    "chaitra-navratri": "ਚੇਤ ਦੇ ਨਰਾਤੇ, ਬਸੰਤ ਰੁੱਤ ਵਿੱਚ ਦੇਵੀ ਦੁਰਗਾ ਦੀਆਂ ਨੌਂ ਰਾਤਾਂ, ਚੇਤ ਸ਼ੁਕਲ ਏਕਮ ਨੂੰ ਸ਼ੁਰੂ ਹੁੰਦੇ ਹਨ — ਇਹੀ ਹਿੰਦੂ ਨਵਾਂ ਸਾਲ (ਵਿਕਰਮ ਸੰਵਤ) ਵੀ ਹੈ। ਘਟ ਸਥਾਪਨਾ (ਕਲਸ਼ ਦੀ ਸਥਾਪਨਾ) ਨਾਲ ਨੌਂ ਦਿਨਾਂ ਦੀ ਪੂਜਾ ਸ਼ੁਰੂ ਹੁੰਦੀ ਹੈ।",
     # EN: Sharad Navratri, the nine nights of Goddess Durga in autumn, begins on Ashwin Shukla
     #     Pratipada with Ghatasthapana - installing the kalash and sowing barley - in the morning.
     #     Each day honours one of the nine forms of the Goddess.
-    "navratri": "",
+    "navratri": "ਸ਼ਾਰਦੀਆ ਨਰਾਤੇ, ਪਤਝੜ ਵਿੱਚ ਦੇਵੀ ਦੁਰਗਾ ਦੀਆਂ ਨੌਂ ਰਾਤਾਂ, ਅੱਸੂ ਸ਼ੁਕਲ ਏਕਮ ਨੂੰ ਸਵੇਰ ਵੇਲੇ ਘਟ ਸਥਾਪਨਾ — ਕਲਸ਼ ਦੀ ਸਥਾਪਨਾ ਅਤੇ ਜੌਂ ਬੀਜਣ — ਨਾਲ ਸ਼ੁਰੂ ਹੁੰਦੇ ਹਨ। ਹਰ ਦਿਨ ਦੇਵੀ ਦੇ ਨੌਂ ਰੂਪਾਂ ਵਿੱਚੋਂ ਇੱਕ ਨੂੰ ਸਮਰਪਿਤ ਹੁੰਦਾ ਹੈ।",
     # EN: Dussehra (Vijayadashami) marks Lord Rama's victory over Ravana and Goddess Durga's over
     #     Mahishasura. Shami puja, Aparajita puja and the burning of Ravana effigies are held in the
     #     afternoon; the Vijay muhurat is considered good for starting anything new.
-    "dussehra": "",
+    "dussehra": "ਦੁਸਹਿਰਾ (ਵਿਜੈ ਦਸ਼ਮੀ) ਭਗਵਾਨ ਰਾਮ ਦੀ ਰਾਵਣ ਉੱਤੇ ਅਤੇ ਦੇਵੀ ਦੁਰਗਾ ਦੀ ਮਹਿਖਾਸੁਰ ਉੱਤੇ ਜਿੱਤ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਸ਼ਮੀ ਪੂਜਾ, ਅਪਰਾਜਿਤਾ ਪੂਜਾ ਅਤੇ ਰਾਵਣ ਦੇ ਪੁਤਲੇ ਸਾੜਨ ਦੀ ਰਸਮ ਦੁਪਹਿਰ ਤੋਂ ਬਾਅਦ ਹੁੰਦੀ ਹੈ; ਵਿਜੈ ਮਹੂਰਤ ਕੋਈ ਵੀ ਨਵਾਂ ਕੰਮ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਚੰਗਾ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: On Karwa Chauth married women keep a fast from sunrise to moonrise for their husbands'
     #     long life. The evening puja of Karwa Mata is followed by offering water (arghya) to the
     #     Moon, after which the fast is broken.
-    "karwa-chauth": "",
+    "karwa-chauth": "ਕਰਵਾ ਚੌਥ ’ਤੇ ਵਿਆਹੀਆਂ ਔਰਤਾਂ ਆਪਣੇ ਪਤੀ ਦੀ ਲੰਮੀ ਉਮਰ ਲਈ ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਤੱਕ ਵਰਤ ਰੱਖਦੀਆਂ ਹਨ। ਸ਼ਾਮ ਨੂੰ ਕਰਵਾ ਮਾਤਾ ਦੀ ਪੂਜਾ ਤੋਂ ਬਾਅਦ ਚੰਦਰਮਾ ਨੂੰ ਅਰਘ (ਜਲ) ਦਿੱਤਾ ਜਾਂਦਾ ਹੈ, ਫਿਰ ਵਰਤ ਖੋਲ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: On Ahoi Ashtami, eight days before Diwali, mothers keep a fast for the well-being of their
     #     children and worship Ahoi Mata in the evening; the fast is traditionally broken after
     #     sighting the stars (or, in some families, the Moon).
-    "ahoi-ashtami": "",
+    "ahoi-ashtami": "ਦੀਵਾਲੀ ਤੋਂ ਅੱਠ ਦਿਨ ਪਹਿਲਾਂ ਅਹੋਈ ਅਸ਼ਟਮੀ ’ਤੇ ਮਾਵਾਂ ਆਪਣੇ ਬੱਚਿਆਂ ਦੀ ਭਲਾਈ ਲਈ ਵਰਤ ਰੱਖਦੀਆਂ ਹਨ ਅਤੇ ਸ਼ਾਮ ਨੂੰ ਅਹੋਈ ਮਾਤਾ ਦੀ ਪੂਜਾ ਕਰਦੀਆਂ ਹਨ; ਵਰਤ ਰਵਾਇਤ ਅਨੁਸਾਰ ਤਾਰੇ ਵੇਖ ਕੇ (ਜਾਂ ਕੁਝ ਪਰਿਵਾਰਾਂ ਵਿੱਚ ਚੰਦਰਮਾ ਵੇਖ ਕੇ) ਖੋਲ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: Dhanteras, the first day of Diwali, honours Dhanvantari and Goddess Lakshmi. People buy
     #     new utensils, gold or silver and light the Yama deepak at dusk; the puja is done in
     #     Pradosh kaal, ideally in the fixed (sthir) Vrishabha lagna.
-    "dhanteras": "",
+    "dhanteras": "ਧਨਤੇਰਸ, ਦੀਵਾਲੀ ਦਾ ਪਹਿਲਾ ਦਿਨ, ਧਨਵੰਤਰੀ ਅਤੇ ਦੇਵੀ ਲਕਸ਼ਮੀ ਨੂੰ ਸਮਰਪਿਤ ਹੈ। ਲੋਕ ਨਵੇਂ ਭਾਂਡੇ, ਸੋਨਾ ਜਾਂ ਚਾਂਦੀ ਖ਼ਰੀਦਦੇ ਹਨ ਅਤੇ ਸ਼ਾਮ ਢਲੇ ਯਮ ਦਾ ਦੀਵਾ ਬਾਲਦੇ ਹਨ; ਪੂਜਾ ਪ੍ਰਦੋਸ਼ ਕਾਲ ਵਿੱਚ, ਆਦਰਸ਼ ਤੌਰ ’ਤੇ ਸਥਿਰ ਬ੍ਰਿਖ ਲਗਨ ਵਿੱਚ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।",
     # EN: Diwali, on Kartika Amavasya, is the festival of lights. Lakshmi and Ganesha are worshipped
     #     in the evening - in Pradosh kaal, preferably in the fixed (sthir) Vrishabha lagna so that
     #     prosperity stays - and homes are lit with diyas.
-    "diwali": "",
+    "diwali": "ਦੀਵਾਲੀ, ਕੱਤਕ ਦੀ ਮੱਸਿਆ ਨੂੰ, ਰੌਸ਼ਨੀਆਂ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਸ਼ਾਮ ਨੂੰ ਲਕਸ਼ਮੀ ਅਤੇ ਗਣੇਸ਼ ਦੀ ਪੂਜਾ ਕੀਤੀ ਜਾਂਦੀ ਹੈ — ਪ੍ਰਦੋਸ਼ ਕਾਲ ਵਿੱਚ, ਹੋ ਸਕੇ ਤਾਂ ਸਥਿਰ ਬ੍ਰਿਖ ਲਗਨ ਵਿੱਚ, ਤਾਂ ਜੋ ਖ਼ੁਸ਼ਹਾਲੀ ਟਿਕੀ ਰਹੇ — ਅਤੇ ਘਰਾਂ ਨੂੰ ਦੀਵਿਆਂ ਨਾਲ ਰੌਸ਼ਨ ਕੀਤਾ ਜਾਂਦਾ ਹੈ।",
     # EN: Govardhan Puja (Annakut), the day after Diwali, remembers Krishna lifting Govardhan hill.
     #     A Govardhan of cow-dung or food is worshipped and an annakut of many dishes is offered,
     #     usually in the morning (Pratahkala).
-    "govardhan-puja": "",
+    "govardhan-puja": "ਗੋਵਰਧਨ ਪੂਜਾ (ਅੰਨਕੂਟ), ਦੀਵਾਲੀ ਤੋਂ ਅਗਲੇ ਦਿਨ, ਕ੍ਰਿਸ਼ਨ ਵੱਲੋਂ ਗੋਵਰਧਨ ਪਰਬਤ ਚੁੱਕਣ ਦੀ ਯਾਦ ਹੈ। ਗੋਹੇ ਜਾਂ ਭੋਜਨ ਦਾ ਗੋਵਰਧਨ ਬਣਾ ਕੇ ਪੂਜਿਆ ਜਾਂਦਾ ਹੈ ਅਤੇ ਕਈ ਪਕਵਾਨਾਂ ਦਾ ਅੰਨਕੂਟ ਚੜ੍ਹਾਇਆ ਜਾਂਦਾ ਹੈ, ਆਮ ਤੌਰ ’ਤੇ ਸਵੇਰ ਵੇਲੇ (ਪ੍ਰਾਤਃ ਕਾਲ)।",
     # EN: Bhai Dooj, Kartika Shukla Dwitiya, celebrates brothers and sisters: sisters apply a tilak,
     #     perform aarti and pray for their brother's long life, ideally in the Aparahna (afternoon)
     #     time.
-    "bhai-dooj": "",
+    "bhai-dooj": "ਭਾਈ ਦੂਜ, ਕੱਤਕ ਸ਼ੁਕਲ ਦੂਜ, ਭੈਣਾਂ-ਭਰਾਵਾਂ ਦਾ ਤਿਉਹਾਰ ਹੈ: ਭੈਣਾਂ ਤਿਲਕ ਲਾਉਂਦੀਆਂ ਹਨ, ਆਰਤੀ ਕਰਦੀਆਂ ਹਨ ਅਤੇ ਭਰਾ ਦੀ ਲੰਮੀ ਉਮਰ ਦੀ ਅਰਦਾਸ ਕਰਦੀਆਂ ਹਨ, ਆਦਰਸ਼ ਤੌਰ ’ਤੇ ਅਪਰਾਹਨ (ਦੁਪਹਿਰ ਤੋਂ ਬਾਅਦ) ਦੇ ਸਮੇਂ।",
     # EN: Chhath Puja worships the Sun God and Chhathi Maiya over four days. On the main day
     #     (Kartika Shukla Shashthi) devotees stand in water and offer arghya to the setting Sun, and
     #     to the rising Sun the next morning, ending a fast kept without water.
-    "chhath-puja": "",
+    "chhath-puja": "ਛਠ ਪੂਜਾ ਚਾਰ ਦਿਨ ਸੂਰਜ ਦੇਵਤਾ ਅਤੇ ਛਠੀ ਮਈਆ ਦੀ ਪੂਜਾ ਹੈ। ਮੁੱਖ ਦਿਨ (ਕੱਤਕ ਸ਼ੁਕਲ ਛੇਵੀਂ) ਸ਼ਰਧਾਲੂ ਪਾਣੀ ਵਿੱਚ ਖੜ੍ਹੇ ਹੋ ਕੇ ਡੁੱਬਦੇ ਸੂਰਜ ਨੂੰ ਅਤੇ ਅਗਲੀ ਸਵੇਰ ਚੜ੍ਹਦੇ ਸੂਰਜ ਨੂੰ ਅਰਘ ਦਿੰਦੇ ਹਨ, ਅਤੇ ਬਿਨਾਂ ਪਾਣੀ ਦੇ ਰੱਖਿਆ ਵਰਤ ਸਮਾਪਤ ਕਰਦੇ ਹਨ।",
     # EN: Vasant Panchami, Magha Shukla Panchami, welcomes spring and honours Goddess Saraswati.
     #     Students and artists worship books and instruments, people wear yellow, and children often
     #     begin learning to write (vidyarambh).
-    "vasant-panchami": "",
+    "vasant-panchami": "ਬਸੰਤ ਪੰਚਮੀ, ਮਾਘ ਸ਼ੁਕਲ ਪੰਚਮੀ, ਬਸੰਤ ਦਾ ਸਵਾਗਤ ਕਰਦੀ ਹੈ ਅਤੇ ਦੇਵੀ ਸਰਸਵਤੀ ਨੂੰ ਸਮਰਪਿਤ ਹੈ। ਵਿਦਿਆਰਥੀ ਅਤੇ ਕਲਾਕਾਰ ਕਿਤਾਬਾਂ ਅਤੇ ਸਾਜ਼ਾਂ ਦੀ ਪੂਜਾ ਕਰਦੇ ਹਨ, ਲੋਕ ਪੀਲੇ ਕੱਪੜੇ ਪਾਉਂਦੇ ਹਨ, ਅਤੇ ਬੱਚੇ ਅਕਸਰ ਇਸ ਦਿਨ ਲਿਖਣਾ ਸਿੱਖਣਾ ਸ਼ੁਰੂ ਕਰਦੇ ਹਨ (ਵਿਦਿਆਰੰਭ)।",
     # EN: Guru Purnima, Ashadha Purnima, honours one's teachers and Maharishi Ved Vyasa, born on
     #     this day. Disciples offer gratitude, flowers and gifts to their guru.
-    "guru-purnima": "",
+    "guru-purnima": "ਗੁਰੂ ਪੂਰਨਿਮਾ, ਹਾੜ ਦੀ ਪੂਰਨਮਾਸ਼ੀ, ਆਪਣੇ ਗੁਰੂਆਂ ਅਤੇ ਇਸ ਦਿਨ ਜਨਮੇ ਮਹਾਰਿਸ਼ੀ ਵੇਦ ਵਿਆਸ ਦਾ ਸਤਿਕਾਰ ਕਰਨ ਦਾ ਦਿਨ ਹੈ। ਚੇਲੇ ਆਪਣੇ ਗੁਰੂ ਨੂੰ ਧੰਨਵਾਦ, ਫੁੱਲ ਅਤੇ ਤੋਹਫ਼ੇ ਭੇਟ ਕਰਦੇ ਹਨ।",
     # EN: Sharad Purnima, Ashwin Purnima, is the night the Moon is held to be brightest and full of
     #     nectar. Kheer is kept in the moonlight overnight and eaten as prasad; Lakshmi is
     #     worshipped (Kojagari).
-    "sharad-purnima": "",
+    "sharad-purnima": "ਸ਼ਰਦ ਪੂਰਨਿਮਾ, ਅੱਸੂ ਦੀ ਪੂਰਨਮਾਸ਼ੀ, ਉਹ ਰਾਤ ਹੈ ਜਦੋਂ ਚੰਦਰਮਾ ਸਭ ਤੋਂ ਚਮਕਦਾਰ ਅਤੇ ਅੰਮ੍ਰਿਤ ਨਾਲ ਭਰਪੂਰ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ। ਖੀਰ ਸਾਰੀ ਰਾਤ ਚਾਨਣੀ ਵਿੱਚ ਰੱਖੀ ਜਾਂਦੀ ਹੈ ਅਤੇ ਪ੍ਰਸ਼ਾਦ ਵਜੋਂ ਖਾਧੀ ਜਾਂਦੀ ਹੈ; ਲਕਸ਼ਮੀ ਦੀ ਪੂਜਾ ਕੀਤੀ ਜਾਂਦੀ ਹੈ (ਕੋਜਾਗਰੀ)।",
     # EN: Devuthani (Prabodhini) Ekadashi, Kartika Shukla Ekadashi, is when Lord Vishnu is held to
     #     wake from his four-month sleep, ending Chaturmas. Tulsi vivah begins and the wedding
     #     season opens. Devotees fast and break the fast (parana) the next day.
-    "devuthani-ekadashi": "",
+    "devuthani-ekadashi": "ਦੇਵਉਠਨੀ (ਪ੍ਰਬੋਧਿਨੀ) ਇਕਾਦਸ਼ੀ, ਕੱਤਕ ਸ਼ੁਕਲ ਇਕਾਦਸ਼ੀ, ਉਹ ਦਿਨ ਹੈ ਜਦੋਂ ਭਗਵਾਨ ਵਿਸ਼ਨੂੰ ਚਾਰ ਮਹੀਨਿਆਂ ਦੀ ਨੀਂਦ ਤੋਂ ਜਾਗਦੇ ਮੰਨੇ ਜਾਂਦੇ ਹਨ ਅਤੇ ਚਾਤੁਰਮਾਸ ਖ਼ਤਮ ਹੁੰਦਾ ਹੈ। ਤੁਲਸੀ ਵਿਆਹ ਸ਼ੁਰੂ ਹੁੰਦੇ ਹਨ ਅਤੇ ਵਿਆਹਾਂ ਦਾ ਮੌਸਮ ਖੁੱਲ੍ਹਦਾ ਹੈ। ਸ਼ਰਧਾਲੂ ਵਰਤ ਰੱਖਦੇ ਹਨ ਅਤੇ ਅਗਲੇ ਦਿਨ ਪਾਰਣਾ ਕਰਦੇ ਹਨ।",
     # EN: Jivitputrika (Jitiya, Jiutiya) is kept by mothers in Bihar, Jharkhand, eastern Uttar
     #     Pradesh and Nepal for the long life and well-being of their children, on Ashwin Krishna
     #     Ashtami (purnimanta). It begins with nahay-khay the day before; the fast itself is
     #     nirjala, without water, through the day and night, with worship of Jimutavahana and the
     #     Jitiya katha. Parana, breaking the fast, is the next morning.
-    "jivitputrika": "",
+    "jivitputrika": "ਜੀਵਿਤਪੁੱਤ੍ਰਿਕਾ (ਜਿਤੀਆ, ਜਿਉਤੀਆ) ਬਿਹਾਰ, ਝਾਰਖੰਡ, ਪੂਰਬੀ ਉੱਤਰ ਪ੍ਰਦੇਸ਼ ਅਤੇ ਨੇਪਾਲ ਦੀਆਂ ਮਾਵਾਂ ਆਪਣੇ ਬੱਚਿਆਂ ਦੀ ਲੰਮੀ ਉਮਰ ਅਤੇ ਭਲਾਈ ਲਈ ਅੱਸੂ ਕ੍ਰਿਸ਼ਨ ਅਸ਼ਟਮੀ (ਪੂਰਨਿਮਾਂਤ) ਨੂੰ ਰੱਖਦੀਆਂ ਹਨ। ਇਹ ਇੱਕ ਦਿਨ ਪਹਿਲਾਂ ਨਹਾਏ-ਖਾਏ ਨਾਲ ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ; ਵਰਤ ਆਪ ਨਿਰਜਲ ਹੈ, ਬਿਨਾਂ ਪਾਣੀ ਦੇ ਦਿਨ ਅਤੇ ਰਾਤ, ਜਿਸ ਵਿੱਚ ਜੀਮੂਤਵਾਹਨ ਦੀ ਪੂਜਾ ਅਤੇ ਜਿਤੀਆ ਕਥਾ ਹੁੰਦੀ ਹੈ। ਪਾਰਣਾ, ਵਰਤ ਖੋਲ੍ਹਣਾ, ਅਗਲੀ ਸਵੇਰ ਹੁੰਦਾ ਹੈ।",
     # EN: Lohri, the evening before Makar Sankranti, is the winter harvest festival of Punjab and
     #     North India. A bonfire is lit at dusk and people offer til, gur, rewari, peanuts and
     #     popcorn to it, sing and dance; it is especially celebrated for a new bride or a newborn.
-    "lohri": "",
+    "lohri": "ਲੋਹੜੀ, ਮਕਰ ਸੰਕ੍ਰਾਂਤੀ (ਮਾਘੀ) ਤੋਂ ਇੱਕ ਸ਼ਾਮ ਪਹਿਲਾਂ, ਪੰਜਾਬ ਅਤੇ ਉੱਤਰੀ ਭਾਰਤ ਦਾ ਸਰਦੀਆਂ ਦੀ ਫ਼ਸਲ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਸ਼ਾਮ ਢਲੇ ਧੂਣੀ ਬਾਲੀ ਜਾਂਦੀ ਹੈ ਅਤੇ ਲੋਕ ਉਸ ਵਿੱਚ ਤਿਲ, ਗੁੜ, ਰਿਉੜੀਆਂ, ਮੂੰਗਫਲੀ ਅਤੇ ਫੁੱਲੇ ਪਾਉਂਦੇ ਹਨ, ਗਾਉਂਦੇ ਤੇ ਨੱਚਦੇ ਹਨ; ਇਹ ਖ਼ਾਸ ਕਰਕੇ ਨਵੀਂ ਵਿਆਹੀ ਨੂੰਹ ਜਾਂ ਨਵਜੰਮੇ ਬੱਚੇ ਲਈ ਮਨਾਈ ਜਾਂਦੀ ਹੈ।",
     # EN: Sakat Chauth (Tilkut Chauth), the Sankashti Chaturthi of Magha (purnimanta), is kept by
     #     mothers for their children. Ganesha and Sakat Mata are worshipped with til and jaggery,
     #     and the fast is broken after offering arghya to the rising Moon.
-    "sakat-chauth": "",
+    "sakat-chauth": "ਸਕਟ ਚੌਥ (ਤਿਲਕੁਟ ਚੌਥ), ਮਾਘ (ਪੂਰਨਿਮਾਂਤ) ਦੀ ਸੰਕਸ਼ਟੀ ਚੌਥ, ਮਾਵਾਂ ਆਪਣੇ ਬੱਚਿਆਂ ਲਈ ਰੱਖਦੀਆਂ ਹਨ। ਗਣੇਸ਼ ਅਤੇ ਸਕਟ ਮਾਤਾ ਦੀ ਤਿਲ ਅਤੇ ਗੁੜ ਨਾਲ ਪੂਜਾ ਕੀਤੀ ਜਾਂਦੀ ਹੈ, ਅਤੇ ਚੜ੍ਹਦੇ ਚੰਦਰਮਾ ਨੂੰ ਅਰਘ ਦੇ ਕੇ ਵਰਤ ਖੋਲ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: Mauni Amavasya, the Amavasya of Magha (purnimanta), is the great bathing day of the Magh
     #     Mela at Prayagraj. Devotees bathe in the Ganga or a holy river, keep silence (mauna) and
     #     give in charity.
-    "mauni-amavasya": "",
+    "mauni-amavasya": "ਮੌਨੀ ਮੱਸਿਆ, ਮਾਘ (ਪੂਰਨਿਮਾਂਤ) ਦੀ ਮੱਸਿਆ, ਪ੍ਰਯਾਗਰਾਜ ਦੇ ਮਾਘ ਮੇਲੇ ਦਾ ਮੁੱਖ ਇਸ਼ਨਾਨ ਦਿਵਸ ਹੈ। ਸ਼ਰਧਾਲੂ ਗੰਗਾ ਜਾਂ ਕਿਸੇ ਪਵਿੱਤਰ ਦਰਿਆ ਵਿੱਚ ਇਸ਼ਨਾਨ ਕਰਦੇ ਹਨ, ਮੌਨ ਰੱਖਦੇ ਹਨ ਅਤੇ ਦਾਨ ਦਿੰਦੇ ਹਨ।",
     # EN: Sheetala Ashtami (Basoda), Chaitra Krishna Ashtami (purnimanta), honours Sheetala Mata,
     #     the goddess who protects from fevers and pox. Food is cooked the day before and the stale
     #     (basi) food is offered and eaten; no fire is lit for cooking that day.
-    "sheetala-ashtami": "",
+    "sheetala-ashtami": "ਸ਼ੀਤਲਾ ਅਸ਼ਟਮੀ (ਬਸੋੜਾ), ਚੇਤ ਕ੍ਰਿਸ਼ਨ ਅਸ਼ਟਮੀ (ਪੂਰਨਿਮਾਂਤ), ਸ਼ੀਤਲਾ ਮਾਤਾ ਨੂੰ ਸਮਰਪਿਤ ਹੈ, ਜੋ ਬੁਖ਼ਾਰ ਅਤੇ ਚੇਚਕ ਤੋਂ ਬਚਾਉਣ ਵਾਲੀ ਦੇਵੀ ਮੰਨੀ ਜਾਂਦੀ ਹੈ। ਭੋਜਨ ਇੱਕ ਦਿਨ ਪਹਿਲਾਂ ਪਕਾਇਆ ਜਾਂਦਾ ਹੈ ਅਤੇ ਬਾਸੀ ਭੋਜਨ ਚੜ੍ਹਾ ਕੇ ਖਾਧਾ ਜਾਂਦਾ ਹੈ; ਉਸ ਦਿਨ ਰਸੋਈ ਵਿੱਚ ਅੱਗ ਨਹੀਂ ਬਾਲੀ ਜਾਂਦੀ।",
     # EN: Gudi Padwa (Maharashtra) and Ugadi (Karnataka, Andhra Pradesh, Telangana) mark the lunar
     #     New Year on Chaitra Shukla Pratipada. A gudi - a decorated pole with a cloth and kalash -
     #     is raised at the door, and neem with jaggery is eaten for a year of both sweet and bitter.
-    "gudi-padwa": "",
+    "gudi-padwa": "ਗੁੜੀ ਪੜਵਾ (ਮਹਾਰਾਸ਼ਟਰ) ਅਤੇ ਉਗਾਦੀ (ਕਰਨਾਟਕ, ਆਂਧਰਾ ਪ੍ਰਦੇਸ਼, ਤੇਲੰਗਾਨਾ) ਚੇਤ ਸ਼ੁਕਲ ਏਕਮ ਨੂੰ ਚੰਦਰ ਨਵੇਂ ਸਾਲ ਦੀ ਸ਼ੁਰੂਆਤ ਹਨ। ਦਰਵਾਜ਼ੇ ’ਤੇ ਗੁੜੀ — ਕੱਪੜੇ ਅਤੇ ਕਲਸ਼ ਵਾਲਾ ਸਜਾਇਆ ਡੰਡਾ — ਖੜ੍ਹਾ ਕੀਤਾ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਮਿੱਠੇ-ਕੌੜੇ ਦੋਵੇਂ ਤਰ੍ਹਾਂ ਦੇ ਸਾਲ ਲਈ ਨਿੰਮ ਦੇ ਪੱਤੇ ਗੁੜ ਨਾਲ ਖਾਧੇ ਜਾਂਦੇ ਹਨ।",
     # EN: Gangaur, Chaitra Shukla Tritiya, is Rajasthan's festival of Gauri (Parvati) and Shiva.
     #     Women worship Gauri for marital happiness - married women for their husbands, girls for a
     #     good match - ending eighteen days of puja that begin the day after Holi.
-    "gangaur": "",
+    "gangaur": "ਗਣਗੌਰ, ਚੇਤ ਸ਼ੁਕਲ ਤੀਜ, ਗੌਰੀ (ਪਾਰਵਤੀ) ਅਤੇ ਸ਼ਿਵ ਦਾ ਰਾਜਸਥਾਨ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਔਰਤਾਂ ਵਿਆਹੁਤਾ ਸੁੱਖ ਲਈ ਗੌਰੀ ਦੀ ਪੂਜਾ ਕਰਦੀਆਂ ਹਨ — ਵਿਆਹੀਆਂ ਪਤੀ ਲਈ, ਕੁੜੀਆਂ ਚੰਗੇ ਵਰ ਲਈ — ਅਤੇ ਹੋਲੀ ਤੋਂ ਅਗਲੇ ਦਿਨ ਸ਼ੁਰੂ ਹੋਈ ਅਠਾਰਾਂ ਦਿਨਾਂ ਦੀ ਪੂਜਾ ਇਸ ਦਿਨ ਸਮਾਪਤ ਹੁੰਦੀ ਹੈ।",
     # EN: Vat Savitri Vrat, on Jyeshtha Amavasya in North India (purnimanta), remembers Savitri, who
     #     won back her husband Satyavan's life from Yama. Married women fast, worship the banyan
     #     (vat) tree, tie raw thread around it while circling it, and hear the Savitri katha.
-    "vat-savitri": "",
+    "vat-savitri": "ਵਟ ਸਾਵਿਤਰੀ ਵਰਤ, ਉੱਤਰੀ ਭਾਰਤ ਵਿੱਚ ਜੇਠ ਦੀ ਮੱਸਿਆ (ਪੂਰਨਿਮਾਂਤ) ਨੂੰ, ਸਾਵਿਤਰੀ ਦੀ ਯਾਦ ਹੈ ਜਿਸ ਨੇ ਯਮ ਤੋਂ ਆਪਣੇ ਪਤੀ ਸਤਿਆਵਾਨ ਦੇ ਪ੍ਰਾਣ ਵਾਪਸ ਜਿੱਤੇ। ਵਿਆਹੀਆਂ ਔਰਤਾਂ ਵਰਤ ਰੱਖਦੀਆਂ ਹਨ, ਬੋਹੜ (ਵਟ) ਦੇ ਰੁੱਖ ਦੀ ਪੂਜਾ ਕਰਦੀਆਂ ਹਨ, ਉਸ ਦੇ ਦੁਆਲੇ ਪਰਿਕਰਮਾ ਕਰਦਿਆਂ ਕੱਚਾ ਧਾਗਾ ਬੰਨ੍ਹਦੀਆਂ ਹਨ ਅਤੇ ਸਾਵਿਤਰੀ ਕਥਾ ਸੁਣਦੀਆਂ ਹਨ।",
     # EN: Vat Purnima is the same Vat Savitri vrat as kept on Jyeshtha Purnima in Maharashtra,
     #     Gujarat and the south (amanta calendar), fifteen days after the North Indian date. Married
     #     women fast and worship the banyan tree for their husbands' long life.
-    "vat-purnima": "",
+    "vat-purnima": "ਵਟ ਪੂਰਨਿਮਾ ਉਹੀ ਵਟ ਸਾਵਿਤਰੀ ਵਰਤ ਹੈ ਜੋ ਮਹਾਰਾਸ਼ਟਰ, ਗੁਜਰਾਤ ਅਤੇ ਦੱਖਣ (ਅਮਾਂਤ ਕੈਲੰਡਰ) ਵਿੱਚ ਜੇਠ ਦੀ ਪੂਰਨਮਾਸ਼ੀ ਨੂੰ ਰੱਖਿਆ ਜਾਂਦਾ ਹੈ, ਉੱਤਰੀ ਭਾਰਤ ਦੀ ਤਾਰੀਖ਼ ਤੋਂ ਪੰਦਰਾਂ ਦਿਨ ਬਾਅਦ। ਵਿਆਹੀਆਂ ਔਰਤਾਂ ਪਤੀ ਦੀ ਲੰਮੀ ਉਮਰ ਲਈ ਵਰਤ ਰੱਖਦੀਆਂ ਅਤੇ ਬੋਹੜ ਦੀ ਪੂਜਾ ਕਰਦੀਆਂ ਹਨ।",
     # EN: Ganga Dussehra, Jyeshtha Shukla Dashami, celebrates the descent of the Ganga to earth
     #     through Bhagiratha's penance. Devotees bathe in the Ganga, offer lamps and give in
     #     charity; the bath is held to wash away ten kinds of sin.
-    "ganga-dussehra": "",
+    "ganga-dussehra": "ਗੰਗਾ ਦੁਸਹਿਰਾ, ਜੇਠ ਸ਼ੁਕਲ ਦਸਮੀ, ਭਗੀਰਥ ਦੀ ਤਪੱਸਿਆ ਨਾਲ ਗੰਗਾ ਦੇ ਧਰਤੀ ’ਤੇ ਉਤਰਨ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਸ਼ਰਧਾਲੂ ਗੰਗਾ ਵਿੱਚ ਇਸ਼ਨਾਨ ਕਰਦੇ ਹਨ, ਦੀਵੇ ਚੜ੍ਹਾਉਂਦੇ ਹਨ ਅਤੇ ਦਾਨ ਦਿੰਦੇ ਹਨ; ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ ਕਿ ਇਹ ਇਸ਼ਨਾਨ ਦਸ ਕਿਸਮ ਦੇ ਪਾਪ ਧੋ ਦਿੰਦਾ ਹੈ।",
     # EN: Hariyali Teej, Shravana Shukla Tritiya, celebrates the reunion of Shiva and Parvati in the
     #     monsoon. Women wear green, apply mehndi, swing on decorated jhoolas, sing Sawan songs and
     #     many keep a fast for their husbands.
-    "hariyali-teej": "",
+    "hariyali-teej": "ਹਰਿਆਲੀ ਤੀਜ, ਸਾਵਣ ਸ਼ੁਕਲ ਤੀਜ, ਬਰਸਾਤ ਵਿੱਚ ਸ਼ਿਵ ਅਤੇ ਪਾਰਵਤੀ ਦੇ ਮਿਲਾਪ ਦਾ ਤਿਉਹਾਰ ਹੈ। ਔਰਤਾਂ ਹਰੇ ਕੱਪੜੇ ਪਾਉਂਦੀਆਂ ਹਨ, ਮਹਿੰਦੀ ਲਾਉਂਦੀਆਂ ਹਨ, ਸਜੇ ਹੋਏ ਝੂਲਿਆਂ ’ਤੇ ਪੀਂਘਾਂ ਝੂਟਦੀਆਂ ਹਨ, ਸਾਵਣ ਦੇ ਗੀਤ ਗਾਉਂਦੀਆਂ ਹਨ ਅਤੇ ਬਹੁਤ ਸਾਰੀਆਂ ਪਤੀ ਲਈ ਵਰਤ ਰੱਖਦੀਆਂ ਹਨ।",
     # EN: Nag Panchami, Shravana Shukla Panchami, is the day serpent deities (nagas) are worshipped.
     #     Images of snakes are drawn or installed and offered milk, flowers and sweets, with prayers
     #     for the family's protection. (In Gujarat, Nag Pancham falls later, in Bhadrapada.)
-    "nag-panchami": "",
+    "nag-panchami": "ਨਾਗ ਪੰਚਮੀ, ਸਾਵਣ ਸ਼ੁਕਲ ਪੰਚਮੀ, ਸੱਪ ਦੇਵਤਿਆਂ (ਨਾਗਾਂ) ਦੀ ਪੂਜਾ ਦਾ ਦਿਨ ਹੈ। ਸੱਪਾਂ ਦੀਆਂ ਮੂਰਤਾਂ ਬਣਾਈਆਂ ਜਾਂ ਸਥਾਪਿਤ ਕੀਤੀਆਂ ਜਾਂਦੀਆਂ ਹਨ ਅਤੇ ਉਨ੍ਹਾਂ ਨੂੰ ਦੁੱਧ, ਫੁੱਲ ਅਤੇ ਮਠਿਆਈ ਚੜ੍ਹਾ ਕੇ ਪਰਿਵਾਰ ਦੀ ਰੱਖਿਆ ਦੀ ਅਰਦਾਸ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। (ਗੁਜਰਾਤ ਵਿੱਚ ਨਾਗ ਪੰਚਮ ਬਾਅਦ ਵਿੱਚ, ਭਾਦੋਂ ਵਿੱਚ ਆਉਂਦੀ ਹੈ।)",
     # EN: Kajari (Kajli, Badi) Teej, Bhadrapada Krishna Tritiya (purnimanta), is kept by married
     #     women of Uttar Pradesh, Bihar, Rajasthan and Madhya Pradesh. They fast, worship the neem
     #     tree (Neemadi Mata) and break the fast after offering arghya to the Moon; kajari folk
     #     songs are sung.
-    "kajari-teej": "",
+    "kajari-teej": "ਕਜਰੀ (ਕਜਲੀ, ਬੜੀ) ਤੀਜ, ਭਾਦੋਂ ਕ੍ਰਿਸ਼ਨ ਤੀਜ (ਪੂਰਨਿਮਾਂਤ), ਉੱਤਰ ਪ੍ਰਦੇਸ਼, ਬਿਹਾਰ, ਰਾਜਸਥਾਨ ਅਤੇ ਮੱਧ ਪ੍ਰਦੇਸ਼ ਦੀਆਂ ਵਿਆਹੀਆਂ ਔਰਤਾਂ ਰੱਖਦੀਆਂ ਹਨ। ਉਹ ਵਰਤ ਰੱਖਦੀਆਂ ਹਨ, ਨਿੰਮ ਦੇ ਰੁੱਖ (ਨੀਮੜੀ ਮਾਤਾ) ਦੀ ਪੂਜਾ ਕਰਦੀਆਂ ਹਨ ਅਤੇ ਚੰਦਰਮਾ ਨੂੰ ਅਰਘ ਦੇ ਕੇ ਵਰਤ ਖੋਲ੍ਹਦੀਆਂ ਹਨ; ਕਜਰੀ ਲੋਕ ਗੀਤ ਗਾਏ ਜਾਂਦੇ ਹਨ।",
     # EN: Hal Shashthi (Lalahi Chhath, Har Chhath), Bhadrapada Krishna Shashthi (purnimanta), is
     #     Lord Balarama's birthday, whose weapon is the plough (hal). Mothers fast for their
     #     children and eat nothing grown with a plough - often pasahi rice and buffalo milk.
-    "hal-shashthi": "",
+    "hal-shashthi": "ਹਲ ਸ਼ਸ਼ਠੀ (ਲਲਹੀ ਛਠ, ਹਰ ਛਠ), ਭਾਦੋਂ ਕ੍ਰਿਸ਼ਨ ਛੇਵੀਂ (ਪੂਰਨਿਮਾਂਤ), ਭਗਵਾਨ ਬਲਰਾਮ ਦਾ ਜਨਮ ਦਿਨ ਹੈ, ਜਿਨ੍ਹਾਂ ਦਾ ਹਥਿਆਰ ਹਲ ਹੈ। ਮਾਵਾਂ ਬੱਚਿਆਂ ਲਈ ਵਰਤ ਰੱਖਦੀਆਂ ਹਨ ਅਤੇ ਹਲ ਨਾਲ ਉਗਾਈ ਕੋਈ ਚੀਜ਼ ਨਹੀਂ ਖਾਂਦੀਆਂ — ਅਕਸਰ ਪਸਹੀ ਚੌਲ ਅਤੇ ਮੱਝ ਦਾ ਦੁੱਧ।",
     # EN: Hartalika Teej, Bhadrapada Shukla Tritiya, honours Parvati's penance to win Shiva. Women
     #     keep a nirjala fast, make clay images of Shiva and Parvati, worship them (morning puja in
     #     Pratahkala is preferred), keep vigil at night and break the fast next morning.
-    "hartalika-teej": "",
+    "hartalika-teej": "ਹਰਤਾਲਿਕਾ ਤੀਜ, ਭਾਦੋਂ ਸ਼ੁਕਲ ਤੀਜ, ਸ਼ਿਵ ਨੂੰ ਪਾਉਣ ਲਈ ਪਾਰਵਤੀ ਦੀ ਤਪੱਸਿਆ ਦਾ ਸਤਿਕਾਰ ਹੈ। ਔਰਤਾਂ ਨਿਰਜਲ ਵਰਤ ਰੱਖਦੀਆਂ ਹਨ, ਮਿੱਟੀ ਦੀਆਂ ਸ਼ਿਵ-ਪਾਰਵਤੀ ਦੀਆਂ ਮੂਰਤਾਂ ਬਣਾ ਕੇ ਪੂਜਦੀਆਂ ਹਨ (ਪ੍ਰਾਤਃ ਕਾਲ ਵਿੱਚ ਸਵੇਰ ਦੀ ਪੂਜਾ ਨੂੰ ਤਰਜੀਹ), ਰਾਤ ਨੂੰ ਜਾਗਰਣ ਕਰਦੀਆਂ ਹਨ ਅਤੇ ਅਗਲੀ ਸਵੇਰ ਵਰਤ ਖੋਲ੍ਹਦੀਆਂ ਹਨ।",
     # EN: Rishi Panchami, Bhadrapada Shukla Panchami, honours the Saptarishis, the seven sages.
     #     Women in particular bathe, fast and worship the sages at midday (Madhyahna), seeking
     #     purification from faults committed unknowingly.
-    "rishi-panchami": "",
+    "rishi-panchami": "ਰਿਸ਼ੀ ਪੰਚਮੀ, ਭਾਦੋਂ ਸ਼ੁਕਲ ਪੰਚਮੀ, ਸਪਤ ਰਿਸ਼ੀਆਂ, ਸੱਤ ਮਹਾਂਰਿਸ਼ੀਆਂ, ਦਾ ਸਤਿਕਾਰ ਹੈ। ਖ਼ਾਸ ਕਰਕੇ ਔਰਤਾਂ ਇਸ਼ਨਾਨ ਕਰਦੀਆਂ, ਵਰਤ ਰੱਖਦੀਆਂ ਅਤੇ ਦੁਪਹਿਰ (ਮੱਧਾਹਨ) ਨੂੰ ਰਿਸ਼ੀਆਂ ਦੀ ਪੂਜਾ ਕਰਦੀਆਂ ਹਨ, ਅਣਜਾਣੇ ਵਿੱਚ ਹੋਈਆਂ ਭੁੱਲਾਂ ਤੋਂ ਸ਼ੁੱਧੀ ਮੰਗਦਿਆਂ।",
     # EN: Anant Chaturdashi, Bhadrapada Shukla Chaturdashi, is the worship of Lord Vishnu as Anant.
     #     A sacred thread with fourteen knots (the anant sutra) is tied on the arm after puja; it is
     #     also the day Ganesh idols are immersed (Ganesh Visarjan).
-    "anant-chaturdashi": "",
+    "anant-chaturdashi": "ਅਨੰਤ ਚੌਦਸ, ਭਾਦੋਂ ਸ਼ੁਕਲ ਚੌਦਸ, ਭਗਵਾਨ ਵਿਸ਼ਨੂੰ ਦੀ ਅਨੰਤ ਰੂਪ ਵਿੱਚ ਪੂਜਾ ਹੈ। ਪੂਜਾ ਤੋਂ ਬਾਅਦ ਬਾਂਹ ’ਤੇ ਚੌਦਾਂ ਗੰਢਾਂ ਵਾਲਾ ਪਵਿੱਤਰ ਧਾਗਾ (ਅਨੰਤ ਸੂਤਰ) ਬੰਨ੍ਹਿਆ ਜਾਂਦਾ ਹੈ; ਇਹ ਉਹ ਦਿਨ ਵੀ ਹੈ ਜਦੋਂ ਗਣੇਸ਼ ਦੀਆਂ ਮੂਰਤੀਆਂ ਦਾ ਵਿਸਰਜਨ ਹੁੰਦਾ ਹੈ (ਗਣੇਸ਼ ਵਿਸਰਜਨ)।",
     # EN: Pitru Paksha, the fortnight of the ancestors, runs from Pratipada to Amavasya of the dark
     #     half of Ashwin (purnimanta). On the tithi of an ancestor's passing, families offer tarpan
     #     and shraddha - pinda, food for Brahmins, cows, crows and dogs - in the Kutup, Rohina or
     #     Aparahna time.
-    "pitru-paksha": "",
+    "pitru-paksha": "ਪਿਤਰ ਪੱਖ, ਪੁਰਖਿਆਂ ਦਾ ਪੰਦਰਵਾੜਾ, ਅੱਸੂ (ਪੂਰਨਿਮਾਂਤ) ਦੇ ਕ੍ਰਿਸ਼ਨ ਪੱਖ ਦੀ ਏਕਮ ਤੋਂ ਮੱਸਿਆ ਤੱਕ ਚੱਲਦਾ ਹੈ। ਕਿਸੇ ਪੁਰਖੇ ਦੇ ਗੁਜ਼ਰਨ ਦੀ ਤਿਥੀ ’ਤੇ ਪਰਿਵਾਰ ਕੁਤੁਪ, ਰੋਹਿਣ ਜਾਂ ਅਪਰਾਹਨ ਦੇ ਸਮੇਂ ਤਰਪਣ ਅਤੇ ਸ਼ਰਾਧ — ਪਿੰਡ, ਬ੍ਰਾਹਮਣਾਂ, ਗਾਵਾਂ, ਕਾਵਾਂ ਅਤੇ ਕੁੱਤਿਆਂ ਲਈ ਭੋਜਨ — ਕਰਦੇ ਹਨ।",
     # EN: Sarva Pitru Amavasya (Mahalaya Amavasya) closes Pitru Paksha. Shraddha on this day reaches
     #     all ancestors, including those whose tithi is not known; it is done in the Kutup, Rohina
     #     or Aparahna time.
-    "sarva-pitru-amavasya": "",
+    "sarva-pitru-amavasya": "ਸਰਵ ਪਿਤਰ ਮੱਸਿਆ (ਮਹਾਲਿਆ ਮੱਸਿਆ) ਪਿਤਰ ਪੱਖ ਦਾ ਅੰਤ ਕਰਦੀ ਹੈ। ਇਸ ਦਿਨ ਦਾ ਸ਼ਰਾਧ ਸਾਰੇ ਪੁਰਖਿਆਂ ਤੱਕ ਪਹੁੰਚਦਾ ਹੈ, ਉਨ੍ਹਾਂ ਤੱਕ ਵੀ ਜਿਨ੍ਹਾਂ ਦੀ ਤਿਥੀ ਪਤਾ ਨਹੀਂ; ਇਹ ਕੁਤੁਪ, ਰੋਹਿਣ ਜਾਂ ਅਪਰਾਹਨ ਦੇ ਸਮੇਂ ਕੀਤਾ ਜਾਂਦਾ ਹੈ।",
     # EN: Narak Chaturdashi (Roop Chaudas), Kartika Krishna Chaturdashi (purnimanta), remembers
     #     Krishna's victory over Narakasura. Before sunrise, while the Moon is up, people take an
     #     oil bath with ubtan (Abhyang snan), and a lamp for Yama is lit in the evening.
-    "narak-chaturdashi": "",
+    "narak-chaturdashi": "ਨਰਕ ਚੌਦਸ (ਰੂਪ ਚੌਦਸ), ਕੱਤਕ ਕ੍ਰਿਸ਼ਨ ਚੌਦਸ (ਪੂਰਨਿਮਾਂਤ), ਕ੍ਰਿਸ਼ਨ ਦੀ ਨਰਕਾਸੁਰ ਉੱਤੇ ਜਿੱਤ ਦੀ ਯਾਦ ਹੈ। ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਪਹਿਲਾਂ, ਜਦੋਂ ਚੰਦਰਮਾ ਅਜੇ ਅਸਮਾਨ ਵਿੱਚ ਹੋਵੇ, ਲੋਕ ਵਟਣੇ ਨਾਲ ਤੇਲ ਇਸ਼ਨਾਨ (ਅਭਯੰਗ ਇਸ਼ਨਾਨ) ਕਰਦੇ ਹਨ, ਅਤੇ ਸ਼ਾਮ ਨੂੰ ਯਮ ਲਈ ਦੀਵਾ ਬਾਲਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: Tulsi Vivah, on Kartika Shukla Dwadashi, is the ceremonial wedding of the tulsi plant (as
     #     Vrinda) to Lord Vishnu as Shaligram. Families decorate the tulsi like a bride and perform
     #     the rites of a wedding; the Hindu wedding season begins after it.
-    "tulsi-vivah": "",
+    "tulsi-vivah": "ਤੁਲਸੀ ਵਿਆਹ, ਕੱਤਕ ਸ਼ੁਕਲ ਦੁਆਦਸ਼ੀ ਨੂੰ, ਤੁਲਸੀ ਦੇ ਬੂਟੇ (ਵ੍ਰਿੰਦਾ ਰੂਪ ਵਿੱਚ) ਦਾ ਭਗਵਾਨ ਵਿਸ਼ਨੂੰ ਨਾਲ, ਸ਼ਾਲੀਗ੍ਰਾਮ ਰੂਪ ਵਿੱਚ, ਰਸਮੀ ਵਿਆਹ ਹੈ। ਪਰਿਵਾਰ ਤੁਲਸੀ ਨੂੰ ਲਾੜੀ ਵਾਂਗ ਸਜਾਉਂਦੇ ਹਨ ਅਤੇ ਵਿਆਹ ਦੀਆਂ ਰਸਮਾਂ ਕਰਦੇ ਹਨ; ਹਿੰਦੂ ਵਿਆਹਾਂ ਦਾ ਮੌਸਮ ਇਸ ਤੋਂ ਬਾਅਦ ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ।",
     # EN: Kartik Purnima ends the holy month of Kartika. It is a great day for bathing in the Ganga
     #     or a holy river and giving in charity, and also Guru Nanak Jayanti and Tripuri Purnima,
     #     when Shiva destroyed Tripurasura.
-    "kartik-purnima": "",
+    "kartik-purnima": "ਕੱਤਕ ਦੀ ਪੂਰਨਮਾਸ਼ੀ ਪਵਿੱਤਰ ਕੱਤਕ ਮਹੀਨੇ ਦਾ ਅੰਤ ਕਰਦੀ ਹੈ। ਇਹ ਗੰਗਾ ਜਾਂ ਕਿਸੇ ਪਵਿੱਤਰ ਦਰਿਆ ਵਿੱਚ ਇਸ਼ਨਾਨ ਅਤੇ ਦਾਨ ਦਾ ਵੱਡਾ ਦਿਨ ਹੈ, ਅਤੇ ਨਾਲ ਹੀ ਗੁਰੂ ਨਾਨਕ ਜਯੰਤੀ ਅਤੇ ਤ੍ਰਿਪੁਰੀ ਪੂਰਨਿਮਾ ਵੀ, ਜਦੋਂ ਸ਼ਿਵ ਨੇ ਤ੍ਰਿਪੁਰਾਸੁਰ ਦਾ ਨਾਸ਼ ਕੀਤਾ।",
     # EN: Dev Deepawali, the 'Diwali of the gods', is celebrated on Kartik Purnima evening, above
     #     all on the ghats of Varanasi, which are lit with lakhs of diyas. It marks Shiva's victory
     #     over Tripurasura; lamps are offered to the Ganga in Pradosh kaal.
-    "dev-deepawali": "",
+    "dev-deepawali": "ਦੇਵ ਦੀਵਾਲੀ, ‘ਦੇਵਤਿਆਂ ਦੀ ਦੀਵਾਲੀ’, ਕੱਤਕ ਪੂਰਨਮਾਸ਼ੀ ਦੀ ਸ਼ਾਮ ਨੂੰ ਮਨਾਈ ਜਾਂਦੀ ਹੈ, ਸਭ ਤੋਂ ਵੱਧ ਵਾਰਾਣਸੀ ਦੇ ਘਾਟਾਂ ’ਤੇ, ਜੋ ਲੱਖਾਂ ਦੀਵਿਆਂ ਨਾਲ ਜਗਮਗਾ ਉੱਠਦੇ ਹਨ। ਇਹ ਸ਼ਿਵ ਦੀ ਤ੍ਰਿਪੁਰਾਸੁਰ ਉੱਤੇ ਜਿੱਤ ਦਾ ਪ੍ਰਤੀਕ ਹੈ; ਪ੍ਰਦੋਸ਼ ਕਾਲ ਵਿੱਚ ਗੰਗਾ ਨੂੰ ਦੀਵੇ ਭੇਟ ਕੀਤੇ ਜਾਂਦੇ ਹਨ।",
 }
 
 # app/vrat_text.py NOTES["pa"] — tradition notes on dates that differ between almanacs (key = festival slug)  [11]
@@ -1651,77 +1651,77 @@ VRAT_NOTES = {
     # EN: Dates follow Drik Panchang. When Bhadra covers the whole Purnima night and Purnima lasts
     #     most of the next day, Drik moves Holika Dahan to the next evening's Pradosh (as in 2026, 3
     #     March); some almanacs instead give a time late on the first night, after Bhadra ends.
-    "holika-dahan": "",
+    "holika-dahan": "ਤਾਰੀਖ਼ਾਂ ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਅਨੁਸਾਰ ਹਨ। ਜਦੋਂ ਭਦਰਾ ਪੂਰੀ ਪੂਰਨਮਾਸ਼ੀ ਦੀ ਰਾਤ ਨੂੰ ਘੇਰ ਲਵੇ ਅਤੇ ਪੂਰਨਮਾਸ਼ੀ ਅਗਲੇ ਦਿਨ ਦੇ ਵੱਡੇ ਹਿੱਸੇ ਤੱਕ ਰਹੇ, ਤਾਂ ਦ੍ਰਿਕ ਹੋਲਿਕਾ ਦਹਨ ਨੂੰ ਅਗਲੀ ਸ਼ਾਮ ਦੇ ਪ੍ਰਦੋਸ਼ ਵਿੱਚ ਲੈ ਜਾਂਦਾ ਹੈ (ਜਿਵੇਂ 2026 ਵਿੱਚ, 3 ਮਾਰਚ); ਕੁਝ ਪੰਚਾਂਗ ਇਸ ਦੀ ਥਾਂ ਭਦਰਾ ਖ਼ਤਮ ਹੋਣ ਮਗਰੋਂ ਪਹਿਲੀ ਰਾਤ ਦੇ ਅਖ਼ੀਰ ਦਾ ਸਮਾਂ ਦਿੰਦੇ ਹਨ।",
     # EN: Dates follow Drik Panchang's Smarta (default) reckoning, with Rohini nakshatra at midnight
     #     preferred. Vaishnava/ISKCON communities sometimes keep Janmashtami a day later.
-    "janmashtami": "",
+    "janmashtami": "ਤਾਰੀਖ਼ਾਂ ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਦੀ ਸਮਾਰਤ (ਮੂਲ) ਗਣਨਾ ਅਨੁਸਾਰ ਹਨ, ਜਿਸ ਵਿੱਚ ਅੱਧੀ ਰਾਤ ਨੂੰ ਰੋਹਿਣੀ ਨਕਸ਼ਤਰ ਨੂੰ ਤਰਜੀਹ ਦਿੱਤੀ ਜਾਂਦੀ ਹੈ। ਵੈਸ਼ਨਵ/ਇਸਕੋਨ ਭਾਈਚਾਰੇ ਕਈ ਵਾਰ ਜਨਮ ਅਸ਼ਟਮੀ ਇੱਕ ਦਿਨ ਬਾਅਦ ਮਨਾਉਂਦੇ ਹਨ।",
     # EN: This is the Smarta (householder) date. Where Ekadashi spans two days, Vaishnavas may fast
     #     on the second day.
-    "devuthani-ekadashi": "",
+    "devuthani-ekadashi": "ਇਹ ਸਮਾਰਤ (ਗ੍ਰਿਹਸਥ) ਤਾਰੀਖ਼ ਹੈ। ਜਿੱਥੇ ਇਕਾਦਸ਼ੀ ਦੋ ਦਿਨਾਂ ਵਿੱਚ ਫੈਲੀ ਹੋਵੇ, ਉੱਥੇ ਵੈਸ਼ਨਵ ਦੂਜੇ ਦਿਨ ਵਰਤ ਰੱਖ ਸਕਦੇ ਹਨ।",
     # EN: Dates follow Drik Panchang (Dashami in Aparahna, Shravana nakshatra preferred). In Bengal
     #     and some almanacs Vijayadashami can fall a day later.
-    "dussehra": "",
+    "dussehra": "ਤਾਰੀਖ਼ਾਂ ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਅਨੁਸਾਰ ਹਨ (ਅਪਰਾਹਨ ਵਿੱਚ ਦਸਮੀ, ਸ਼ਰਵਣ ਨਕਸ਼ਤਰ ਨੂੰ ਤਰਜੀਹ)। ਬੰਗਾਲ ਅਤੇ ਕੁਝ ਪੰਚਾਂਗਾਂ ਵਿੱਚ ਵਿਜੈ ਦਸ਼ਮੀ ਇੱਕ ਦਿਨ ਬਾਅਦ ਪੈ ਸਕਦੀ ਹੈ।",
     # EN: Dates follow Drik Panchang (Ashtami at midday; when it is at sunrise only briefly, as in
     #     2023, the previous day). Nahay-khay is the day before and parana the next morning;
     #     regional panchangs (e.g. Mithila) can differ by a day.
-    "jivitputrika": "",
+    "jivitputrika": "ਤਾਰੀਖ਼ਾਂ ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਅਨੁਸਾਰ ਹਨ (ਦੁਪਹਿਰ ਨੂੰ ਅਸ਼ਟਮੀ; ਜਦੋਂ ਇਹ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਸਿਰਫ਼ ਥੋੜ੍ਹੀ ਦੇਰ ਹੋਵੇ, ਜਿਵੇਂ 2023 ਵਿੱਚ, ਤਾਂ ਪਿਛਲਾ ਦਿਨ)। ਨਹਾਏ-ਖਾਏ ਇੱਕ ਦਿਨ ਪਹਿਲਾਂ ਅਤੇ ਪਾਰਣਾ ਅਗਲੀ ਸਵੇਰ ਹੁੰਦਾ ਹੈ; ਇਲਾਕਾਈ ਪੰਚਾਂਗ (ਜਿਵੇਂ ਮਿਥਿਲਾ) ਇੱਕ ਦਿਨ ਵੱਖਰੇ ਹੋ ਸਕਦੇ ਹਨ।",
     # EN: Two traditions: North India keeps Vat Savitri on Jyeshtha Amavasya (this date);
     #     Maharashtra, Gujarat and the south keep it as Vat Purnima fifteen days later.
-    "vat-savitri": "",
+    "vat-savitri": "ਦੋ ਰਵਾਇਤਾਂ ਹਨ: ਉੱਤਰੀ ਭਾਰਤ ਵਟ ਸਾਵਿਤਰੀ ਨੂੰ ਜੇਠ ਦੀ ਮੱਸਿਆ (ਇਹ ਤਾਰੀਖ਼) ਨੂੰ ਮਨਾਉਂਦਾ ਹੈ; ਮਹਾਰਾਸ਼ਟਰ, ਗੁਜਰਾਤ ਅਤੇ ਦੱਖਣ ਇਸ ਨੂੰ ਪੰਦਰਾਂ ਦਿਨ ਬਾਅਦ ਵਟ ਪੂਰਨਿਮਾ ਵਜੋਂ ਮਨਾਉਂਦੇ ਹਨ।",
     # EN: Two traditions: this is the Purnima (amanta) date of Maharashtra, Gujarat and the south;
     #     North India keeps Vat Savitri on the Amavasya fifteen days earlier.
-    "vat-purnima": "",
+    "vat-purnima": "ਦੋ ਰਵਾਇਤਾਂ ਹਨ: ਇਹ ਮਹਾਰਾਸ਼ਟਰ, ਗੁਜਰਾਤ ਅਤੇ ਦੱਖਣ ਦੀ ਪੂਰਨਿਮਾ (ਅਮਾਂਤ) ਤਾਰੀਖ਼ ਹੈ; ਉੱਤਰੀ ਭਾਰਤ ਵਟ ਸਾਵਿਤਰੀ ਨੂੰ ਪੰਦਰਾਂ ਦਿਨ ਪਹਿਲਾਂ ਮੱਸਿਆ ਨੂੰ ਮਨਾਉਂਦਾ ਹੈ।",
     # EN: When Jyeshtha is doubled (an adhika month, as in 2026), Drik Panchang keeps Ganga Dussehra
     #     in the adhika Jyeshtha; some almanacs give the nija Jyeshtha date a month later.
-    "ganga-dussehra": "",
+    "ganga-dussehra": "ਜਦੋਂ ਜੇਠ ਦੁਹਰਾਇਆ ਜਾਂਦਾ ਹੈ (ਅਧਿਕ ਮਹੀਨਾ, ਜਿਵੇਂ 2026 ਵਿੱਚ), ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਗੰਗਾ ਦੁਸਹਿਰਾ ਨੂੰ ਅਧਿਕ ਜੇਠ ਵਿੱਚ ਰੱਖਦਾ ਹੈ; ਕੁਝ ਪੰਚਾਂਗ ਨਿਜ ਜੇਠ ਦੀ ਤਾਰੀਖ਼ ਇੱਕ ਮਹੀਨਾ ਬਾਅਦ ਦਿੰਦੇ ਹਨ।",
     # EN: Drik Panchang counts Pitru Paksha from the Pratipada shraddha; Purnima shraddha is on the
     #     day before, and many calendars start the fortnight there.
-    "pitru-paksha": "",
+    "pitru-paksha": "ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਪਿਤਰ ਪੱਖ ਨੂੰ ਪ੍ਰਤਿਪਦਾ ਸ਼ਰਾਧ ਤੋਂ ਗਿਣਦਾ ਹੈ; ਪੂਰਨਮਾਸ਼ੀ ਦਾ ਸ਼ਰਾਧ ਇੱਕ ਦਿਨ ਪਹਿਲਾਂ ਹੁੰਦਾ ਹੈ, ਅਤੇ ਕਈ ਕੈਲੰਡਰ ਪੰਦਰਵਾੜੇ ਨੂੰ ਉੱਥੋਂ ਹੀ ਸ਼ੁਰੂ ਕਰਦੇ ਹਨ।",
     # EN: Drik Panchang publishes Dev Deepawali for Varanasi; the date here uses the same rule
     #     (Purnima in Pradosh), and the Pradosh kaal shown is New Delhi's.
-    "dev-deepawali": "",
+    "dev-deepawali": "ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਦੇਵ ਦੀਵਾਲੀ ਵਾਰਾਣਸੀ ਲਈ ਛਾਪਦਾ ਹੈ; ਇੱਥੇ ਦੀ ਤਾਰੀਖ਼ ਵੀ ਇਸੇ ਨਿਯਮ (ਪ੍ਰਦੋਸ਼ ਵਿੱਚ ਪੂਰਨਮਾਸ਼ੀ) ਨਾਲ ਹੈ, ਅਤੇ ਦਿਖਾਇਆ ਗਿਆ ਪ੍ਰਦੋਸ਼ ਕਾਲ ਨਵੀਂ ਦਿੱਲੀ ਦਾ ਹੈ।",
     # EN: This is the snan-daan day (Purnima at sunrise). When Purnima begins the previous
     #     afternoon, the Purnima fast and Dev Deepawali can fall a day earlier.
-    "kartik-purnima": "",
+    "kartik-purnima": "ਇਹ ਇਸ਼ਨਾਨ-ਦਾਨ ਦਾ ਦਿਨ ਹੈ (ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਪੂਰਨਮਾਸ਼ੀ)। ਜਦੋਂ ਪੂਰਨਮਾਸ਼ੀ ਪਿਛਲੀ ਦੁਪਹਿਰ ਨੂੰ ਸ਼ੁਰੂ ਹੋ ਜਾਵੇ, ਤਾਂ ਪੂਰਨਮਾਸ਼ੀ ਦਾ ਵਰਤ ਅਤੇ ਦੇਵ ਦੀਵਾਲੀ ਇੱਕ ਦਿਨ ਪਹਿਲਾਂ ਪੈ ਸਕਦੇ ਹਨ।",
 }
 
 # app/vrat_text.py RULES["pa"] — 'how the date is fixed' sentences: head {month}, tithi {paksha} {tithi}, rule.<kind>, key.<observance>  [16]
 VRAT_RULES = {
     # EN: {month} (amanta)
     # keep: {month}
-    "head": "",
+    "head": "{month} (ਅਮਾਂਤ)",
     # EN: {paksha} {tithi}:
     # keep: {paksha} {tithi}
-    "tithi": "",
+    "tithi": "{paksha} {tithi}:",
     # EN: tithi prevailing at sunrise
-    "rule.udaya": "",
+    "rule.udaya": "ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: tithi prevailing in Pratahkala (first fifth of the day)
-    "rule.pratah": "",
+    "rule.pratah": "ਪ੍ਰਾਤਃ ਕਾਲ (ਦਿਨ ਦਾ ਪਹਿਲਾ ਪੰਜਵਾਂ ਹਿੱਸਾ) ਵਿੱਚ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: tithi prevailing in the forenoon (purvahna)
-    "rule.purvahna": "",
+    "rule.purvahna": "ਪੂਰਵਾਹਨ (ਦੁਪਹਿਰ ਤੋਂ ਪਹਿਲਾਂ) ਵਿੱਚ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: tithi prevailing at Madhyahna (midday fifth of the day)
-    "rule.madhyahna": "",
+    "rule.madhyahna": "ਮੱਧਾਹਨ (ਦਿਨ ਦਾ ਵਿਚਕਾਰਲਾ ਪੰਜਵਾਂ ਹਿੱਸਾ) ਵਿੱਚ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: tithi prevailing at Aparahna (fourth fifth of the day)
-    "rule.aparahna": "",
+    "rule.aparahna": "ਅਪਰਾਹਨ (ਦਿਨ ਦਾ ਚੌਥਾ ਪੰਜਵਾਂ ਹਿੱਸਾ) ਵਿੱਚ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: first day on which the tithi is present between sunrise and sunset
-    "rule.dina": "",
+    "rule.dina": "ਪਹਿਲਾ ਦਿਨ ਜਿਸ ਵਿੱਚ ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਛਿਪਣ ਵਿਚਕਾਰ ਤਿਥੀ ਮੌਜੂਦ ਹੋਵੇ",
     # EN: tithi prevailing at sunset
-    "rule.sayahna": "",
+    "rule.sayahna": "ਸੂਰਜ ਛਿਪਣ ਵੇਲੇ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: tithi prevailing in Pradosh kaal (after sunset)
-    "rule.pradosh": "",
+    "rule.pradosh": "ਪ੍ਰਦੋਸ਼ ਕਾਲ (ਸੂਰਜ ਛਿਪਣ ਤੋਂ ਬਾਅਦ) ਵਿੱਚ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: tithi prevailing at Nishita kaal (midnight)
-    "rule.nishita": "",
+    "rule.nishita": "ਨਿਸ਼ੀਥ ਕਾਲ (ਅੱਧੀ ਰਾਤ) ਵਿੱਚ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: tithi prevailing at moonrise
-    "rule.moonrise": "",
+    "rule.moonrise": "ਚੰਦਰਮਾ ਚੜ੍ਹਨ ਵੇਲੇ ਮੌਜੂਦ ਤਿਥੀ",
     # EN: Smarta: Ekadashi prevailing at sunrise (second day if at two sunrises); parana next day
     #     after sunrise and after Hari Vasara, within Pratahkala and before Dwadashi ends
-    "key.ekadashi": "",
+    "key.ekadashi": "ਸਮਾਰਤ: ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਮੌਜੂਦ ਇਕਾਦਸ਼ੀ (ਦੋ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਹੋਵੇ ਤਾਂ ਦੂਜਾ ਦਿਨ); ਪਾਰਣਾ ਅਗਲੇ ਦਿਨ ਸੂਰਜ ਚੜ੍ਹਨ ਅਤੇ ਹਰਿ ਵਾਸਰ ਲੰਘਣ ਮਗਰੋਂ, ਪ੍ਰਾਤਃ ਕਾਲ ਦੇ ਅੰਦਰ ਅਤੇ ਦੁਆਦਸ਼ੀ ਖ਼ਤਮ ਹੋਣ ਤੋਂ ਪਹਿਲਾਂ",
     # EN: the Sun's entry into sidereal Makara (Capricorn); punya kaal follows it until sunset
-    "key.makar_sankranti": "",
+    "key.makar_sankranti": "ਸੂਰਜ ਦਾ ਨਿਰਯਨ ਮਕਰ ਰਾਸ਼ੀ ਵਿੱਚ ਪ੍ਰਵੇਸ਼; ਪੁੰਨ ਕਾਲ ਇਸ ਤੋਂ ਬਾਅਦ ਸੂਰਜ ਛਿਪਣ ਤੱਕ ਹੁੰਦਾ ਹੈ",
     # EN: the day before Makar Sankranti
-    "key.lohri": "",
+    "key.lohri": "ਮਕਰ ਸੰਕ੍ਰਾਂਤੀ ਤੋਂ ਇੱਕ ਦਿਨ ਪਹਿਲਾਂ",
     # EN: the day after Holika Dahan
-    "key.holi": "",
+    "key.holi": "ਹੋਲਿਕਾ ਦਹਨ ਤੋਂ ਅਗਲਾ ਦਿਨ",
 }
 
 # ----------------------------------------------------------------------------
