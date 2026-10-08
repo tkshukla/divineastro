@@ -20,7 +20,7 @@ from __future__ import annotations
 
 # Page modules that are complete for this language (the table groups below):
 #   "seo" "rashifal" "vrat" "nakshatra" "muhurat" "recurring" "hub" "app"
-READY = frozenset({"seo", "app", "rashifal", "hub", "vrat", "recurring", "muhurat"})
+READY = frozenset({"seo", "app", "rashifal", "hub", "vrat", "recurring", "muhurat", "nakshatra"})
 
 # Latin-script words the pa text may keep besides the defaults (WhatsApp, UPI, PDF ...).
 ALLOW_LATIN = frozenset({"name", "gmail.com"})  # the e-mail placeholder name@gmail.com
@@ -1731,228 +1731,228 @@ VRAT_RULES = {
 # app/nakshatra_page_text.py TEXT["pa"] — page text of /nakshatra /rashi (nakshatra_pages.py)  [88]
 NAKSHATRA_PAGE_TEXT = {
     # EN: Get your free kundali — find your exact birth nakshatra and Moon sign
-    "kundali_cta": "",
+    "kundali_cta": "ਆਪਣੀ ਮੁਫ਼ਤ ਕੁੰਡਲੀ ਲਵੋ — ਆਪਣਾ ਜਨਮ ਨਕਸ਼ਤਰ ਅਤੇ ਚੰਦਰ ਰਾਸ਼ੀ ਠੀਕ ਜਾਣੋ",
     # EN: More free tools
-    "more.heading": "",
+    "more.heading": "ਹੋਰ ਮੁਫ਼ਤ ਟੂਲ",
     # EN: All 27 nakshatras
-    "more.naks": "",
+    "more.naks": "ਸਾਰੇ 27 ਨਕਸ਼ਤਰ",
     # EN: All 12 rashis
-    "more.rashis": "",
+    "more.rashis": "ਸਾਰੀਆਂ 12 ਰਾਸ਼ੀਆਂ",
     # EN: Naam se Kundali Milan
-    "more.milan": "",
+    "more.milan": "ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ",
     # EN: Kundali Milan (36 guna)
-    "more.kundali_milan": "",
+    "more.kundali_milan": "ਕੁੰਡਲੀ ਮਿਲਾਨ (36 ਗੁਣ)",
     # EN: Today's Rashifal
-    "more.rashifal": "",
+    "more.rashifal": "ਅੱਜ ਦਾ ਰਾਸ਼ੀਫਲ",
     # EN: Today's Panchang
-    "more.panchang": "",
+    "more.panchang": "ਅੱਜ ਦਾ ਪੰਚਾਂਗ",
     # EN: All 27 nakshatras
-    "list.naks": "",
+    "list.naks": "ਸਾਰੇ 27 ਨਕਸ਼ਤਰ",
     # EN: All 12 rashis
-    "list.rashis": "",
+    "list.rashis": "ਸਾਰੀਆਂ 12 ਰਾਸ਼ੀਆਂ",
     # EN: {name} ({english})
     # keep: {name}
-    "sign": "",
+    "sign": "{name}",
     # EN: {name} · {english}
     # keep: {name}
-    "sign.pill": "",
+    "sign.pill": "{name}",
     # EN: <strong>Today the Moon is in {name} (at sunrise in New Delhi).</strong>
     # keep: {name}
-    "today.same": "",
+    "today.same": "<strong>ਅੱਜ ਚੰਦਰਮਾ {name} ਵਿੱਚ ਹੈ (ਨਵੀਂ ਦਿੱਲੀ ਵਿੱਚ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ)।</strong>",
     # EN: Today's nakshatra is <a href="{href}"><strong>{name}</strong></a> (at sunrise in New
     #     Delhi).
     # keep: {href} {name}
-    "today.other": "",
+    "today.other": "ਅੱਜ ਦਾ ਨਕਸ਼ਤਰ <a href=\"{href}\"><strong>{name}</strong></a> ਹੈ (ਨਵੀਂ ਦਿੱਲੀ ਵਿੱਚ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ)।",
     # EN: Its end time, the tithi and Rahu Kaal are on <a href="{pan}">today's Panchang</a>.
     # keep: {pan}
-    "today.tail": "",
+    "today.tail": "ਇਸ ਦਾ ਅੰਤ ਸਮਾਂ, ਤਿਥੀ ਅਤੇ ਰਾਹੂ ਕਾਲ <a href=\"{pan}\">ਅੱਜ ਦੇ ਪੰਚਾਂਗ</a> ’ਤੇ ਹਨ।",
     # EN: Nakshatras
-    "crumb.naks": "",
+    "crumb.naks": "ਨਕਸ਼ਤਰ",
     # EN: Rashis
-    "crumb.rashis": "",
+    "crumb.rashis": "ਰਾਸ਼ੀਆਂ",
     # EN: Nakshatra not found
-    "nf.nak": "",
+    "nf.nak": "ਨਕਸ਼ਤਰ ਨਹੀਂ ਮਿਲਿਆ",
     # EN: Rashi not found
-    "nf.rashi": "",
+    "nf.rashi": "ਰਾਸ਼ੀ ਨਹੀਂ ਮਿਲੀ",
     # EN: Nature and traits
-    "trait_head": "",
+    "trait_head": "ਸੁਭਾਅ ਅਤੇ ਗੁਣ",
     # EN: male
-    "gender.male": "",
+    "gender.male": "ਨਰ",
     # EN: female
-    "gender.female": "",
+    "gender.female": "ਮਾਦਾ",
     # EN: Fire
-    "element.Fire": "",
+    "element.Fire": "ਅਗਨੀ",
     # EN: Earth
-    "element.Earth": "",
+    "element.Earth": "ਪ੍ਰਿਥਵੀ",
     # EN: Air
-    "element.Air": "",
+    "element.Air": "ਵਾਯੂ",
     # EN: Water
-    "element.Water": "",
+    "element.Water": "ਜਲ",
     # EN: Movable (Chara)
-    "quality.Cardinal": "",
+    "quality.Cardinal": "ਚਰ",
     # EN: Fixed (Sthira)
-    "quality.Fixed": "",
+    "quality.Fixed": "ਸਥਿਰ",
     # EN: Dual (Dwiswabhava)
-    "quality.Mutable": "",
+    "quality.Mutable": "ਦ੍ਵਿਸਵਭਾਵ",
     # EN: {name} Nakshatra — Deity, Lord, Gana, Yoni, Nadi & Name Letters ({lat}) | {brand}
     # keep: {brand} {name}
-    "nak.title": "",
+    "nak.title": "{name} ਨਕਸ਼ਤਰ — ਦੇਵਤਾ, ਸੁਆਮੀ, ਗਣ, ਯੋਨੀ, ਨਾੜੀ ਅਤੇ ਨਾਂ ਦੇ ਅੱਖਰ | {brand}",
     # EN: {name} nakshatra ({name_hi}): {span}, ruled by {lord}, deity {deity_short}, {gana} gana,
     #     {nadi} nadi, {yoni} yoni. Name syllables {lat} and traits.
     # keep: {gana} {lord} {nadi} {name} {span} {yoni}
     # may also use: {name_en}
-    "nak.desc": "",
+    "nak.desc": "{name} ਨਕਸ਼ਤਰ ({name_en}): {span}, ਸੁਆਮੀ ਗ੍ਰਹਿ {lord}, {gana} ਗਣ, {nadi} ਨਾੜੀ, {yoni} ਯੋਨੀ। ਚਾਰ ਚਰਣਾਂ ਦੇ ਨਾਮਾਕਸ਼ਰ ਅਤੇ ਸੁਭਾਅ।",
     # EN: <h1>{name} Nakshatra</h1>
     # keep: {name}
-    "nak.h1": "",
+    "nak.h1": "<h1>{name} ਨਕਸ਼ਤਰ</h1>",
     # EN: <p class="hi" lang="hi">{name_hi} नक्षत्र</p>
     # may also use: {name_en} {name}
-    "nak.sub": "",
+    "nak.sub": "<p class=\"hi\" lang=\"en\">{name_en}</p>",
     # EN: <p class="note">These are traditional tendencies, not verdicts. Your full kundali —
     #     ascendant, planets and dasha — gives the personal picture.</p>
-    "nak.trait_note": "",
+    "nak.trait_note": "<p class=\"note\">ਇਹ ਰਵਾਇਤੀ ਰੁਝਾਨ ਹਨ, ਫ਼ੈਸਲੇ ਨਹੀਂ। ਤੁਹਾਡੀ ਪੂਰੀ ਕੁੰਡਲੀ — ਲਗਨ, ਗ੍ਰਹਿ ਅਤੇ ਦਸ਼ਾ — ਨਿੱਜੀ ਤਸਵੀਰ ਦਿੰਦੀ ਹੈ।</p>",
     # EN: Number
-    "f.number": "",
+    "f.number": "ਨੰਬਰ",
     # EN: {n} of 27
     # keep: {n}
-    "f.number_v": "",
+    "f.number_v": "27 ਵਿੱਚੋਂ {n}",
     # EN: Span (sidereal)
-    "f.span": "",
+    "f.span": "ਵਿਸਤਾਰ (ਨਿਰਯਨ)",
     # EN: Rashi
-    "f.rashi": "",
+    "f.rashi": "ਰਾਸ਼ੀ",
     # EN: Ruling planet (Vimshottari lord)
-    "f.lord": "",
+    "f.lord": "ਸੁਆਮੀ ਗ੍ਰਹਿ (ਵਿਮਸ਼ੋਤਰੀ ਸੁਆਮੀ)",
     # EN: {lord} <small>{years}-year mahadasha</small>
     # keep: {lord} {years}
-    "f.lord_v": "",
+    "f.lord_v": "{lord} <small>{years} ਸਾਲ ਦੀ ਮਹਾਦਸ਼ਾ</small>",
     # EN: Deity
-    "f.deity": "",
+    "f.deity": "ਦੇਵਤਾ",
     # EN: Symbol
-    "f.symbol": "",
+    "f.symbol": "ਚਿੰਨ੍ਹ",
     # EN: Gana
-    "f.gana": "",
+    "f.gana": "ਗਣ",
     # EN: {gana} <small lang="hi">{gana_hi}</small>
     # keep: {gana}
-    "f.gana_v": "",
+    "f.gana_v": "{gana}",
     # EN: Yoni (animal)
-    "f.yoni": "",
+    "f.yoni": "ਯੋਨੀ (ਪਸ਼ੂ)",
     # EN: Nadi
-    "f.nadi": "",
+    "f.nadi": "ਨਾੜੀ",
     # EN: Varna (from its rashi, as used in Guna Milan)
-    "f.varna": "",
+    "f.varna": "ਵਰਣ (ਇਸ ਦੀ ਰਾਸ਼ੀ ਤੋਂ, ਜਿਵੇਂ ਗੁਣ ਮਿਲਾਨ ਵਿੱਚ ਵਰਤਿਆ ਜਾਂਦਾ ਹੈ)",
     # EN: Name syllables (namakshar)
-    "f.syl": "",
+    "f.syl": "ਨਾਂ ਦੇ ਅੱਖਰ (ਨਾਮਾਕਸ਼ਰ)",
     # EN: <span class="syl" lang="hi">{syl}</span> <small>{lat}</small>
     # keep: {syl}
-    "f.syl_v": "",
+    "f.syl_v": "<span class=\"syl\">{syl}</span>",
     # EN: The four padas and their name syllables
-    "pada.title": "",
+    "pada.title": "ਚਾਰ ਚਰਣ ਅਤੇ ਉਨ੍ਹਾਂ ਦੇ ਨਾਂ ਦੇ ਅੱਖਰ",
     # EN: <tr><th>Pada</th><th>Span</th><th>Rashi</th><th>Name syllable</th></tr>
-    "pada.head": "",
+    "pada.head": "<tr><th>ਚਰਣ</th><th>ਵਿਸਤਾਰ</th><th>ਰਾਸ਼ੀ</th><th>ਨਾਂ ਦਾ ਅੱਖਰ</th></tr>",
     # EN: <p class="note">Traditionally a child's name begins with the syllable of the pada the Moon
     #     occupied at birth (namakshar). Syllables follow the 108-pada Swar Siddhanta list (the
     #     Avakahada Chakra) as published by Drik Panchang.</p>
-    "pada.note": "",
+    "pada.note": "<p class=\"note\">ਰਵਾਇਤ ਅਨੁਸਾਰ ਬੱਚੇ ਦਾ ਨਾਂ ਉਸ ਚਰਣ ਦੇ ਅੱਖਰ ਤੋਂ ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ ਜਿਸ ਵਿੱਚ ਜਨਮ ਵੇਲੇ ਚੰਦਰਮਾ ਸੀ (ਨਾਮਾਕਸ਼ਰ)। ਅੱਖਰ 108 ਚਰਣਾਂ ਦੀ ਸੁਰ ਸਿਧਾਂਤ ਸੂਚੀ (ਅਵਕਹਡਾ ਚੱਕਰ) ਮੁਤਾਬਕ ਹਨ, ਜਿਵੇਂ ਦ੍ਰਿਕ ਪੰਚਾਂਗ ਨੇ ਛਾਪੀ ਹੈ।</p>",
     # EN: Related
-    "rel.heading": "",
+    "rel.heading": "ਸੰਬੰਧਿਤ",
     # EN: Today's {name} Rashifal
     # keep: {name}
-    "rel.rashifal": "",
+    "rel.rashifal": "ਅੱਜ ਦਾ {name} ਰਾਸ਼ੀਫਲ",
     # EN: The 27 Nakshatras — Lords, Deities, Gana & Name Syllables | {brand}
     # keep: {brand}
-    "ni.title": "",
+    "ni.title": "27 ਨਕਸ਼ਤਰ — ਸੁਆਮੀ, ਦੇਵਤੇ, ਗਣ ਅਤੇ ਨਾਂ ਦੇ ਅੱਖਰ | {brand}",
     # EN: All 27 nakshatras from Ashwini to Revati: span, rashi, ruling planet, deity, gana, yoni,
     #     nadi and the name syllables of all four padas — consistent with our Kundali Milan tables.
-    "ni.desc": "",
+    "ni.desc": "ਅਸ਼ਵਿਨੀ ਤੋਂ ਰੇਵਤੀ ਤੱਕ ਸਾਰੇ 27 ਨਕਸ਼ਤਰ: ਵਿਸਤਾਰ, ਰਾਸ਼ੀ, ਸੁਆਮੀ ਗ੍ਰਹਿ, ਦੇਵਤਾ, ਗਣ, ਯੋਨੀ, ਨਾੜੀ ਅਤੇ ਚਾਰੇ ਚਰਣਾਂ ਦੇ ਨਾਂ ਦੇ ਅੱਖਰ — ਸਾਡੀਆਂ ਕੁੰਡਲੀ ਮਿਲਾਨ ਸਾਰਣੀਆਂ ਨਾਲ ਮੇਲ ਖਾਂਦੇ।",
     # EN: <h1>The 27 Nakshatras</h1>
-    "ni.h1": "",
+    "ni.h1": "<h1>27 ਨਕਸ਼ਤਰ</h1>",
     # EN: <p class="hi" lang="hi">27 नक्षत्र</p>
-    "ni.sub": "",
+    "ni.sub": "<p class=\"hi\">ਸਾਰੇ 27 ਨਕਸ਼ਤਰ ਇੱਕ ਨਜ਼ਰ ਵਿੱਚ</p>",
     # EN: <p>Vedic astrology divides the zodiac into 27 nakshatras (lunar mansions) of 13°20′ each,
     #     and each nakshatra into four padas of 3°20′. The 108 padas fall exactly nine to a sign
     #     across the 12 rashis. Your birth nakshatra is the one the Moon occupied when you were
     #     born: it starts your Vimshottari dasha and drives the Tara, Yoni, Gana and Nadi kootas of
     #     Kundali Milan.</p>
-    "ni.intro": "",
+    "ni.intro": "<p>ਵੈਦਿਕ ਜੋਤਿਸ਼ ਰਾਸ਼ੀ ਚੱਕਰ ਨੂੰ 13°20′ ਦੇ 27 ਨਕਸ਼ਤਰਾਂ (ਚੰਦਰ ਟਿਕਾਣਿਆਂ) ਵਿੱਚ ਵੰਡਦੀ ਹੈ, ਅਤੇ ਹਰ ਨਕਸ਼ਤਰ ਨੂੰ 3°20′ ਦੇ ਚਾਰ ਚਰਣਾਂ ਵਿੱਚ। 108 ਚਰਣ ਠੀਕ ਨੌਂ-ਨੌਂ ਕਰਕੇ 12 ਰਾਸ਼ੀਆਂ ਵਿੱਚ ਪੈਂਦੇ ਹਨ। ਤੁਹਾਡਾ ਜਨਮ ਨਕਸ਼ਤਰ ਉਹ ਹੈ ਜਿਸ ਵਿੱਚ ਤੁਹਾਡੇ ਜਨਮ ਵੇਲੇ ਚੰਦਰਮਾ ਸੀ: ਉਸੇ ਤੋਂ ਤੁਹਾਡੀ ਵਿਮਸ਼ੋਤਰੀ ਦਸ਼ਾ ਸ਼ੁਰੂ ਹੁੰਦੀ ਹੈ ਅਤੇ ਉਹੀ ਕੁੰਡਲੀ ਮਿਲਾਨ ਦੇ ਤਾਰਾ, ਯੋਨੀ, ਗਣ ਅਤੇ ਨਾੜੀ ਕੂਟ ਚਲਾਉਂਦਾ ਹੈ।</p>",
     # EN: <tr><th>#</th><th>Nakshatra</th><th>Rashi</th><th>Lord</th><th>Gana</th><th>Name
     #     syllables</th></tr>
-    "ni.head": "",
+    "ni.head": "<tr><th>#</th><th>ਨਕਸ਼ਤਰ</th><th>ਰਾਸ਼ੀ</th><th>ਸੁਆਮੀ</th><th>ਗਣ</th><th>ਨਾਂ ਦੇ ਅੱਖਰ</th></tr>",
     # EN: {name} Rashi ({english}) — Lord, Element, Nakshatras & Name Letters | {brand}
     # keep: {brand} {name}
     # may also use: {english}
-    "rs.title": "",
+    "rs.title": "{name} ਰਾਸ਼ੀ ({english}) — ਸੁਆਮੀ, ਤੱਤ, ਨਕਸ਼ਤਰ ਅਤੇ ਨਾਂ ਦੇ ਅੱਖਰ | {brand}",
     # EN: {name} rashi ({english} Moon sign, {name_hi}): ruled by {lord}, {element_lower} element,
     #     {quality_lower} quality. Its 9 nakshatra padas, name syllables ({lat}) and traits.
     # keep: {lord} {name}
     # may also use: {element_lower} {element} {english} {name_en} {quality_lower} {quality}
-    "rs.desc": "",
+    "rs.desc": "{name} ਰਾਸ਼ੀ ({name_en}, {english} ਚੰਦਰ ਰਾਸ਼ੀ): ਸੁਆਮੀ {lord}, {element_lower} ਤੱਤ, {quality_lower} ਸੁਭਾਅ। ਇਸ ਦੇ 9 ਨਕਸ਼ਤਰ ਚਰਣ, ਨਾਂ ਦੇ ਅੱਖਰ ਅਤੇ ਸੁਭਾਅ।",
     # EN: <h1>{name} Rashi — {english} Moon Sign</h1>
     # keep: {name}
     # may also use: {english}
-    "rs.h1": "",
+    "rs.h1": "<h1>{name} ਰਾਸ਼ੀ — {english} ਚੰਦਰ ਰਾਸ਼ੀ</h1>",
     # EN: <p class="hi" lang="hi">{name_hi} राशि</p>
     # may also use: {english} {name_en} {name}
-    "rs.sub": "",
+    "rs.sub": "<p class=\"hi\" lang=\"en\">{name_en} · {english}</p>",
     # EN: Read today's {name} Rashifal
     # keep: {name}
-    "rs.today": "",
+    "rs.today": "ਅੱਜ ਦਾ {name} ਰਾਸ਼ੀਫਲ ਪੜ੍ਹੋ",
     # EN: <p class="note">In Vedic astrology "rashi" usually means the Moon sign — the sign the Moon
     #     occupied at birth, in the sidereal zodiac. It is often different from a Western sun
     #     sign.</p>
-    "rs.note": "",
+    "rs.note": "<p class=\"note\">ਵੈਦਿਕ ਜੋਤਿਸ਼ ਵਿੱਚ “ਰਾਸ਼ੀ” ਆਮ ਤੌਰ ’ਤੇ ਚੰਦਰ ਰਾਸ਼ੀ ਨੂੰ ਕਹਿੰਦੇ ਹਨ — ਉਹ ਰਾਸ਼ੀ ਜਿਸ ਵਿੱਚ ਜਨਮ ਵੇਲੇ ਚੰਦਰਮਾ ਸੀ, ਨਿਰਯਨ ਰਾਸ਼ੀ ਚੱਕਰ ਵਿੱਚ। ਇਹ ਅਕਸਰ ਪੱਛਮੀ ਸੂਰਜ ਰਾਸ਼ੀ ਤੋਂ ਵੱਖਰੀ ਹੁੰਦੀ ਹੈ।</p>",
     # EN: Number
-    "r.number": "",
+    "r.number": "ਨੰਬਰ",
     # EN: {n} of 12
     # keep: {n}
-    "r.number_v": "",
+    "r.number_v": "12 ਵਿੱਚੋਂ {n}",
     # EN: Span (sidereal zodiac)
-    "r.span": "",
+    "r.span": "ਵਿਸਤਾਰ (ਨਿਰਯਨ ਰਾਸ਼ੀ ਚੱਕਰ)",
     # EN: Sign lord
-    "r.lord": "",
+    "r.lord": "ਰਾਸ਼ੀ ਸੁਆਮੀ",
     # EN: Element
-    "r.element": "",
+    "r.element": "ਤੱਤ",
     # EN: Quality
-    "r.quality": "",
+    "r.quality": "ਸੁਭਾਅ",
     # EN: Varna (used in Guna Milan)
-    "r.varna": "",
+    "r.varna": "ਵਰਣ (ਗੁਣ ਮਿਲਾਨ ਵਿੱਚ ਵਰਤਿਆ ਜਾਂਦਾ ਹੈ)",
     # EN: Nakshatras
-    "r.naks": "",
+    "r.naks": "ਨਕਸ਼ਤਰ",
     # EN: Name syllables (namakshar)
-    "r.syl": "",
+    "r.syl": "ਨਾਂ ਦੇ ਅੱਖਰ (ਨਾਮਾਕਸ਼ਰ)",
     # EN: <span class="syl" lang="hi">{syl}</span>
     # keep: {syl}
-    "r.syl_v": "",
+    "r.syl_v": "<span class=\"syl\">{syl}</span>",
     # EN: The nine nakshatra padas in this sign
-    "rp.title": "",
+    "rp.title": "ਇਸ ਰਾਸ਼ੀ ਦੇ ਨੌਂ ਨਕਸ਼ਤਰ ਚਰਣ",
     # EN: <tr><th>Nakshatra</th><th>Pada</th><th>Degrees in sign</th><th>Syllable</th></tr>
-    "rp.head": "",
+    "rp.head": "<tr><th>ਨਕਸ਼ਤਰ</th><th>ਚਰਣ</th><th>ਰਾਸ਼ੀ ਵਿੱਚ ਅੰਸ਼</th><th>ਅੱਖਰ</th></tr>",
     # EN: The 12 Rashis — Lords, Elements, Nakshatras & Name Letters | {brand}
     # keep: {brand}
-    "ri.title": "",
+    "ri.title": "12 ਰਾਸ਼ੀਆਂ — ਸੁਆਮੀ, ਤੱਤ, ਨਕਸ਼ਤਰ ਅਤੇ ਨਾਂ ਦੇ ਅੱਖਰ | {brand}",
     # EN: All 12 rashis (Vedic Moon signs) from Mesh to Meen: sign lord, element, quality, the nine
     #     nakshatra padas in each and their name syllables (namakshar).
-    "ri.desc": "",
+    "ri.desc": "ਮੇਖ ਤੋਂ ਮੀਨ ਤੱਕ ਸਾਰੀਆਂ 12 ਰਾਸ਼ੀਆਂ (ਵੈਦਿਕ ਚੰਦਰ ਰਾਸ਼ੀਆਂ): ਰਾਸ਼ੀ ਸੁਆਮੀ, ਤੱਤ, ਸੁਭਾਅ, ਹਰ ਇੱਕ ਦੇ ਨੌਂ ਨਕਸ਼ਤਰ ਚਰਣ ਅਤੇ ਉਨ੍ਹਾਂ ਦੇ ਨਾਂ ਦੇ ਅੱਖਰ (ਨਾਮਾਕਸ਼ਰ)।",
     # EN: <h1>The 12 Rashis (Moon Signs)</h1>
-    "ri.h1": "",
+    "ri.h1": "<h1>12 ਰਾਸ਼ੀਆਂ (ਚੰਦਰ ਰਾਸ਼ੀਆਂ)</h1>",
     # EN: <p class="hi" lang="hi">12 राशियाँ</p>
-    "ri.sub": "",
+    "ri.sub": "<p class=\"hi\">ਸਾਰੀਆਂ 12 ਚੰਦਰ ਰਾਸ਼ੀਆਂ ਇੱਕ ਨਜ਼ਰ ਵਿੱਚ</p>",
     # EN: <p>Each rashi spans 30° of the sidereal zodiac and holds exactly nine nakshatra padas.
     #     Your rashi is your Moon sign — the sign the Moon occupied at birth — and it is what
     #     rashifal, Sade Sati and Kundali Milan are read from.</p>
-    "ri.intro": "",
+    "ri.intro": "<p>ਹਰ ਰਾਸ਼ੀ ਨਿਰਯਨ ਰਾਸ਼ੀ ਚੱਕਰ ਦੇ 30° ਵਿੱਚ ਫੈਲੀ ਹੈ ਅਤੇ ਉਸ ਵਿੱਚ ਠੀਕ ਨੌਂ ਨਕਸ਼ਤਰ ਚਰਣ ਹਨ। ਤੁਹਾਡੀ ਰਾਸ਼ੀ ਤੁਹਾਡੀ ਚੰਦਰ ਰਾਸ਼ੀ ਹੈ — ਜਨਮ ਵੇਲੇ ਚੰਦਰਮਾ ਜਿਸ ਰਾਸ਼ੀ ਵਿੱਚ ਸੀ — ਅਤੇ ਰਾਸ਼ੀਫਲ, ਸਾੜ੍ਹਸਾਤੀ ਅਤੇ ਕੁੰਡਲੀ ਮਿਲਾਨ ਇਸੇ ਤੋਂ ਪੜ੍ਹੇ ਜਾਂਦੇ ਹਨ।</p>",
     # EN: <tr><th>Rashi</th><th>Lord</th><th>Element</th><th>Nakshatras</th><th>Name
     #     syllables</th></tr>
-    "ri.head": "",
+    "ri.head": "<tr><th>ਰਾਸ਼ੀ</th><th>ਸੁਆਮੀ</th><th>ਤੱਤ</th><th>ਨਕਸ਼ਤਰ</th><th>ਨਾਂ ਦੇ ਅੱਖਰ</th></tr>",
     # EN: {name} <small>{english}</small>
     # keep: {name}
     # may also use: {english}
-    "ri.name": "",
+    "ri.name": "{name} <small>{english}</small>",
     # EN: Vata
-    "humour.Vata": "",
+    "humour.Vata": "ਵਾਤ",
     # EN: Pitta
-    "humour.Pitta": "",
+    "humour.Pitta": "ਪਿੱਤ",
     # EN: Kapha
-    "humour.Kapha": "",
+    "humour.Kapha": "ਕਫ਼",
 }
 
 # app/nakshatra_text.py NAKSHATRA_TRAITS["pa"] — character paragraph of each of the 27 nakshatras (key = slug)  [27]
@@ -1964,7 +1964,7 @@ NAKSHATRA_TRAITS = {
     #     medicine, sport, travel or any work that needs swift, practical action. The gift of this
     #     nakshatra is initiative and a youthful optimism; the lesson is patience, finishing what
     #     was started with the same enthusiasm with which it began.
-    "ashwini": "",
+    "ashwini": "ਅਸ਼ਵਿਨੀ ਪਹਿਲਾ ਨਕਸ਼ਤਰ ਹੈ, ਜਿਸ ਦੇ ਸੁਆਮੀ ਅਸ਼ਵਿਨੀ ਕੁਮਾਰ, ਦੇਵਤਿਆਂ ਦੇ ਜੁੜਵਾਂ ਵੈਦ, ਹਨ ਅਤੇ ਜਿਸ ਦਾ ਚਿੰਨ੍ਹ ਘੋੜੇ ਦਾ ਸਿਰ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਫੁਰਤੀਲੇ, ਜੋਸ਼ੀਲੇ ਅਤੇ ਕੰਮ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਉਤਾਵਲੇ ਹੁੰਦੇ ਹਨ — ਮਦਦ ਕਰਨ ਵਾਲੇ ਪਹਿਲੇ, ਕੁਝ ਨਵਾਂ ਅਜ਼ਮਾਉਣ ਵਾਲੇ ਪਹਿਲੇ। ਪਰੰਪਰਾ ਅਸ਼ਵਿਨੀ ਨੂੰ ਇਲਾਜ, ਤੇਜ਼ੀ ਅਤੇ ਨਵੀਂ ਸ਼ੁਰੂਆਤ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਬਹੁਤ ਸਾਰੇ ਦਵਾਈ, ਖੇਡ, ਸਫ਼ਰ ਜਾਂ ਫੁਰਤੀਲੇ, ਵਿਹਾਰਕ ਕੰਮ ਵਾਲੇ ਖੇਤਰਾਂ ਵੱਲ ਖਿੱਚੇ ਜਾਂਦੇ ਹਨ। ਇਸ ਨਕਸ਼ਤਰ ਦੀ ਦਾਤ ਪਹਿਲਕਦਮੀ ਅਤੇ ਜਵਾਨ ਆਸ਼ਾਵਾਦ ਹੈ; ਸਬਕ ਸਬਰ ਹੈ — ਸ਼ੁਰੂ ਕੀਤੇ ਕੰਮ ਨੂੰ ਓਸੇ ਜੋਸ਼ ਨਾਲ ਪੂਰਾ ਕਰਨਾ ਜਿਸ ਨਾਲ ਉਹ ਸ਼ੁਰੂ ਹੋਇਆ ਸੀ।",
     # EN: Bharani is ruled by Yama, the lord of dharma, and its symbol is the yoni, the womb that
     #     carries and protects new life. People with the Moon here often have strong will, deep
     #     feelings and a serious sense of responsibility. They tend to carry their commitments
@@ -1972,7 +1972,7 @@ NAKSHATRA_TRAITS = {
     #     bearing and nurturing — holding something until it is ready to be born — so creativity,
     #     family, art and work that asks for endurance suit it well. Its strength is steadfastness;
     #     its lesson is balancing desire with restraint and kindness.
-    "bharani": "",
+    "bharani": "ਭਰਣੀ ਦੇ ਸੁਆਮੀ ਯਮ, ਧਰਮ ਦੇ ਸੁਆਮੀ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਯੋਨੀ ਹੈ, ਉਹ ਕੁੱਖ ਜੋ ਨਵੇਂ ਜੀਵਨ ਨੂੰ ਧਾਰਦੀ ਤੇ ਸੰਭਾਲਦੀ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਨ੍ਹਾਂ ਵਿੱਚ ਅਕਸਰ ਮਜ਼ਬੂਤ ਇੱਛਾ-ਸ਼ਕਤੀ, ਡੂੰਘੀਆਂ ਭਾਵਨਾਵਾਂ ਅਤੇ ਜ਼ਿੰਮੇਵਾਰੀ ਦਾ ਗੰਭੀਰ ਅਹਿਸਾਸ ਹੁੰਦਾ ਹੈ। ਉਹ ਆਪਣੇ ਵਾਅਦੇ ਅੰਤ ਤੱਕ ਨਿਭਾਉਂਦੇ ਹਨ ਅਤੇ ਆਸਾਨੀ ਨਾਲ ਡੋਲਦੇ ਨਹੀਂ। ਪਰੰਪਰਾ ਭਰਣੀ ਨੂੰ ਧਾਰਨ ਅਤੇ ਪਾਲਣ ਦਾ ਨਕਸ਼ਤਰ ਮੰਨਦੀ ਹੈ — ਕਿਸੇ ਚੀਜ਼ ਨੂੰ ਜਨਮ ਲੈਣ ਤੱਕ ਸੰਭਾਲੀ ਰੱਖਣਾ — ਇਸ ਲਈ ਸਿਰਜਣਾ, ਪਰਿਵਾਰ, ਕਲਾ ਅਤੇ ਸਹਿਣਸ਼ੀਲਤਾ ਮੰਗਣ ਵਾਲਾ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦੀ ਤਾਕਤ ਦ੍ਰਿੜ੍ਹਤਾ ਹੈ; ਸਬਕ ਇੱਛਾ ਨੂੰ ਸੰਜਮ ਅਤੇ ਦਇਆ ਨਾਲ ਸੰਤੁਲਿਤ ਕਰਨਾ ਹੈ।",
     # EN: Krittika is ruled by Agni, the sacred fire, and symbolised by a razor or a flame. Fire
     #     purifies and cuts through confusion, and people with the Moon here are often direct,
     #     principled and sharp in judgement. They can be protective of those they love and are
@@ -1980,7 +1980,7 @@ NAKSHATRA_TRAITS = {
     #     who nursed Kartikeya, so beneath the sharpness there is real warmth and care. Teaching,
     #     cooking, leadership and any work that needs clarity suit it. Its lesson is to let the fire
     #     warm and guide rather than burn.
-    "krittika": "",
+    "krittika": "ਕ੍ਰਿਤਿਕਾ ਦੇ ਸੁਆਮੀ ਅਗਨੀ, ਪਵਿੱਤਰ ਅੱਗ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਉਸਤਰਾ ਜਾਂ ਲਾਟ ਹੈ। ਅੱਗ ਸ਼ੁੱਧ ਕਰਦੀ ਹੈ ਅਤੇ ਉਲਝਣ ਨੂੰ ਚੀਰ ਦਿੰਦੀ ਹੈ, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਸਿੱਧੇ, ਅਸੂਲਾਂ ਵਾਲੇ ਅਤੇ ਤਿੱਖੀ ਸਮਝ ਵਾਲੇ ਹੁੰਦੇ ਹਨ। ਉਹ ਆਪਣਿਆਂ ਦੀ ਰਾਖੀ ਕਰਦੇ ਹਨ ਅਤੇ ਜੋ ਕਹਿਣਾ ਜ਼ਰੂਰੀ ਹੋਵੇ ਕਹਿਣ ਤੋਂ ਝਿਜਕਦੇ ਨਹੀਂ। ਕ੍ਰਿਤਿਕਾ ਉਨ੍ਹਾਂ ਛੇ ਮਾਵਾਂ ਦਾ ਵੀ ਨਕਸ਼ਤਰ ਹੈ ਜਿਨ੍ਹਾਂ ਨੇ ਕਾਰਤਿਕੇਯ ਨੂੰ ਪਾਲਿਆ, ਇਸ ਲਈ ਤਿੱਖਾਪਣ ਹੇਠ ਸੱਚੀ ਨਿੱਘ ਅਤੇ ਫ਼ਿਕਰ ਵੀ ਹੈ। ਪੜ੍ਹਾਉਣਾ, ਰਸੋਈ, ਅਗਵਾਈ ਅਤੇ ਸਪੱਸ਼ਟਤਾ ਮੰਗਣ ਵਾਲਾ ਹਰ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦਾ ਸਬਕ ਇਹ ਹੈ ਕਿ ਅੱਗ ਸਾੜੇ ਨਹੀਂ, ਸਗੋਂ ਨਿੱਘ ਅਤੇ ਸੇਧ ਦੇਵੇ।",
     # EN: Rohini is ruled by Brahma, the creator, and symbolised by a chariot or ox-cart. It is said
     #     to be the Moon's favourite nakshatra, and people with the Moon here are often warm,
     #     attractive, artistic and fond of comfort and beauty. They have a gift for making things
@@ -1988,7 +1988,7 @@ NAKSHATRA_TRAITS = {
     #     fertility, abundance and steady progress, so agriculture, the arts, design, food and
     #     hospitality suit it well. Its nature is gentle and settled; its lesson is to enjoy what is
     #     beautiful without holding on too tightly to it.
-    "rohini": "",
+    "rohini": "ਰੋਹਿਣੀ ਦੇ ਸੁਆਮੀ ਬ੍ਰਹਮਾ, ਰਚਣਹਾਰ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਰਥ ਜਾਂ ਬਲਦ-ਗੱਡੀ ਹੈ। ਇਸ ਨੂੰ ਚੰਦਰਮਾ ਦਾ ਸਭ ਤੋਂ ਪਿਆਰਾ ਨਕਸ਼ਤਰ ਕਿਹਾ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਨਿੱਘੇ, ਆਕਰਸ਼ਕ, ਕਲਾਪ੍ਰੇਮੀ ਅਤੇ ਆਰਾਮ ਤੇ ਸੁੰਦਰਤਾ ਦੇ ਸ਼ੌਕੀਨ ਹੁੰਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਵਿੱਚ ਚੀਜ਼ਾਂ ਨੂੰ ਵਧਾਉਣ-ਫੁੱਲਣ ਦੀ ਦਾਤ ਹੁੰਦੀ ਹੈ — ਬਾਗ਼, ਘਰ, ਕਾਰੋਬਾਰ ਅਤੇ ਰਿਸ਼ਤੇ। ਪਰੰਪਰਾ ਰੋਹਿਣੀ ਨੂੰ ਉਪਜਾਊਪਨ, ਖ਼ੁਸ਼ਹਾਲੀ ਅਤੇ ਪੱਕੀ ਤਰੱਕੀ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਖੇਤੀ, ਕਲਾਵਾਂ, ਡਿਜ਼ਾਈਨ, ਖਾਣ-ਪੀਣ ਅਤੇ ਮਹਿਮਾਨਨਿਵਾਜ਼ੀ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦਾ ਸੁਭਾਅ ਕੋਮਲ ਅਤੇ ਟਿਕਿਆ ਹੋਇਆ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਜੋ ਸੋਹਣਾ ਹੈ ਉਸ ਦਾ ਆਨੰਦ ਲਵੋ, ਪਰ ਉਸ ਨੂੰ ਬਹੁਤ ਕੱਸ ਕੇ ਨਾ ਫੜੋ।",
     # EN: Mrigashira is ruled by Soma, the Moon, and its symbol is a deer's head — the deer that is
     #     always alert, curious and searching. People with the Moon here are often gentle,
     #     inquisitive and fond of learning, travel and conversation. They enjoy exploring ideas and
@@ -1996,7 +1996,7 @@ NAKSHATRA_TRAITS = {
     #     nakshatra, which suits research, writing, teaching, trade and any work that rewards
     #     curiosity. Its charm is a light, friendly mind; its lesson is to settle on what has been
     #     found, so that the search leads somewhere rather than becoming restlessness.
-    "mrigashira": "",
+    "mrigashira": "ਮ੍ਰਿਗਸ਼ਿਰਾ ਦੇ ਸੁਆਮੀ ਸੋਮ, ਚੰਦਰਮਾ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਹਿਰਨ ਦਾ ਸਿਰ ਹੈ — ਉਹ ਹਿਰਨ ਜੋ ਹਮੇਸ਼ਾ ਚੌਕੰਨਾ, ਜਗਿਆਸੂ ਅਤੇ ਖੋਜ ਵਿੱਚ ਰਹਿੰਦਾ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਕੋਮਲ, ਸਵਾਲ ਪੁੱਛਣ ਵਾਲੇ ਅਤੇ ਪੜ੍ਹਾਈ, ਸਫ਼ਰ ਤੇ ਗੱਲ-ਬਾਤ ਦੇ ਸ਼ੌਕੀਨ ਹੁੰਦੇ ਹਨ। ਉਹ ਵਿਚਾਰਾਂ ਅਤੇ ਥਾਵਾਂ ਨੂੰ ਖੰਗਾਲਣ ਦਾ ਆਨੰਦ ਲੈਂਦੇ ਹਨ ਅਤੇ ਸਵਾਲ ਪੁੱਛਣੋਂ ਘੱਟ ਹੀ ਰੁਕਦੇ ਹਨ। ਪਰੰਪਰਾ ਮ੍ਰਿਗਸ਼ਿਰਾ ਨੂੰ ਖੋਜੀ ਦਾ ਨਕਸ਼ਤਰ ਮੰਨਦੀ ਹੈ, ਜੋ ਖੋਜ, ਲਿਖਣ, ਪੜ੍ਹਾਉਣ, ਵਪਾਰ ਅਤੇ ਜਗਿਆਸਾ ਨੂੰ ਇਨਾਮ ਦੇਣ ਵਾਲੇ ਹਰ ਕੰਮ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦੀ ਖਿੱਚ ਹਲਕਾ, ਦੋਸਤਾਨਾ ਮਨ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਜੋ ਲੱਭ ਲਿਆ ਉਸ ’ਤੇ ਟਿਕੋ, ਤਾਂ ਜੋ ਖੋਜ ਕਿਤੇ ਪਹੁੰਚੇ ਅਤੇ ਬੇਚੈਨੀ ਨਾ ਬਣ ਜਾਵੇ।",
     # EN: Ardra is ruled by Rudra, the storm form of Shiva, and symbolised by a teardrop or a
     #     diamond. As a storm clears the air and brings rain, people with the Moon here often have a
     #     strong, searching intellect and the ability to see through things to the truth. They can
@@ -2004,7 +2004,7 @@ NAKSHATRA_TRAITS = {
     #     difficulty, so research, technology, writing, counselling and problem-solving suit it
     #     well. Its gift is honesty and a sharp mind; its lesson is to let feelings pass like the
     #     rain, leaving the ground greener.
-    "ardra": "",
+    "ardra": "ਆਰਦਰਾ ਦੇ ਸੁਆਮੀ ਰੁਦਰ, ਸ਼ਿਵ ਦਾ ਤੂਫ਼ਾਨੀ ਰੂਪ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਅੱਥਰੂ ਦੀ ਬੂੰਦ ਜਾਂ ਹੀਰਾ ਹੈ। ਜਿਵੇਂ ਤੂਫ਼ਾਨ ਹਵਾ ਸਾਫ਼ ਕਰਦਾ ਅਤੇ ਮੀਂਹ ਲਿਆਉਂਦਾ ਹੈ, ਓਵੇਂ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਨ੍ਹਾਂ ਵਿੱਚ ਅਕਸਰ ਤਿੱਖੀ, ਖੋਜੀ ਬੁੱਧੀ ਅਤੇ ਚੀਜ਼ਾਂ ਦੇ ਆਰ-ਪਾਰ ਸੱਚ ਵੇਖਣ ਦੀ ਸਮਰੱਥਾ ਹੁੰਦੀ ਹੈ। ਉਹ ਡੂੰਘਾ ਮਹਿਸੂਸ ਕਰਦੇ ਹਨ ਅਤੇ ਬਦਲਾਅ ਤੋਂ ਡਰਦੇ ਨਹੀਂ। ਪਰੰਪਰਾ ਆਰਦਰਾ ਨੂੰ ਔਖਿਆਈ ਤੋਂ ਬਾਅਦ ਨਵੀਨੀਕਰਨ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਖੋਜ, ਤਕਨਾਲੋਜੀ, ਲਿਖਣ, ਸਲਾਹ-ਮਸ਼ਵਰਾ ਅਤੇ ਸਮੱਸਿਆ ਸੁਲਝਾਉਣਾ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਇਮਾਨਦਾਰੀ ਅਤੇ ਤੇਜ਼ ਦਿਮਾਗ਼ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਭਾਵਨਾਵਾਂ ਨੂੰ ਮੀਂਹ ਵਾਂਗ ਲੰਘਣ ਦਿਓ, ਜੋ ਧਰਤੀ ਨੂੰ ਪਹਿਲਾਂ ਨਾਲੋਂ ਹਰੀ ਛੱਡ ਜਾਂਦਾ ਹੈ।",
     # EN: Punarvasu is ruled by Aditi, the boundless mother of the gods, and symbolised by a bow and
     #     quiver. Its name means "return of the light", and people with the Moon here are often
     #     optimistic, generous and able to begin again after any setback. They tend to be content
@@ -2012,7 +2012,7 @@ NAKSHATRA_TRAITS = {
     #     Punarvasu as a nakshatra of renewal and homecoming, suited to teaching, counselling,
     #     writing, travel and caring work. Its blessing is a hopeful, forgiving heart; its lesson is
     #     to aim the arrow — to choose a direction and stay with it.
-    "punarvasu": "",
+    "punarvasu": "ਪੁਨਰਵਸੂ ਦੇ ਸੁਆਮੀ ਅਦਿਤੀ, ਦੇਵਤਿਆਂ ਦੀ ਅਸੀਮ ਮਾਂ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਧਨੁਸ਼ ਅਤੇ ਤਰਕਸ਼ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਰੌਸ਼ਨੀ ਦੀ ਵਾਪਸੀ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਆਸ਼ਾਵਾਦੀ, ਦਿਲ ਦੇ ਖੁੱਲ੍ਹੇ ਅਤੇ ਹਰ ਝਟਕੇ ਤੋਂ ਬਾਅਦ ਦੁਬਾਰਾ ਸ਼ੁਰੂ ਕਰਨ ਦੇ ਕਾਬਲ ਹੁੰਦੇ ਹਨ। ਉਹ ਸਾਦੀਆਂ ਚੀਜ਼ਾਂ ਵਿੱਚ ਸੰਤੁਸ਼ਟ, ਹੱਸਮੁੱਖ ਅਤੇ ਪਰਿਵਾਰ ਤੇ ਮਹਿਮਾਨਾਂ ਪ੍ਰਤੀ ਮਿਹਰਬਾਨ ਹੁੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਪੁਨਰਵਸੂ ਨੂੰ ਨਵੀਨੀਕਰਨ ਅਤੇ ਘਰ ਵਾਪਸੀ ਦਾ ਨਕਸ਼ਤਰ ਮੰਨਦੀ ਹੈ, ਜੋ ਪੜ੍ਹਾਉਣ, ਸਲਾਹ-ਮਸ਼ਵਰੇ, ਲਿਖਣ, ਸਫ਼ਰ ਅਤੇ ਸੇਵਾ ਵਾਲੇ ਕੰਮਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦੀ ਬਖ਼ਸ਼ਿਸ਼ ਆਸ ਭਰਿਆ, ਮੁਆਫ਼ ਕਰਨ ਵਾਲਾ ਦਿਲ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਤੀਰ ਦਾ ਨਿਸ਼ਾਨਾ ਬੰਨ੍ਹੋ — ਇੱਕ ਦਿਸ਼ਾ ਚੁਣੋ ਅਤੇ ਉਸ ’ਤੇ ਕਾਇਮ ਰਹੋ।",
     # EN: Pushya is ruled by Brihaspati, the guru of the gods, and symbolised by a cow's udder or a
     #     lotus — images of nourishment. It is counted among the most auspicious nakshatras, and
     #     people with the Moon here are often caring, dependable, devoted and generous with their
@@ -2020,7 +2020,7 @@ NAKSHATRA_TRAITS = {
     #     links Pushya with nourishment and wisdom, so teaching, counselling, food, social service,
     #     finance and spiritual work suit it well. Its gift is a steady, protective kindness; its
     #     lesson is to nourish oneself as faithfully as one nourishes others.
-    "pushya": "",
+    "pushya": "ਪੁਸ਼ਯ ਦੇ ਸੁਆਮੀ ਬ੍ਰਿਹਸਪਤੀ, ਦੇਵਤਿਆਂ ਦੇ ਗੁਰੂ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਗਾਂ ਦਾ ਥਣ ਜਾਂ ਕਮਲ ਹੈ — ਪਾਲਣ-ਪੋਸ਼ਣ ਦੇ ਪ੍ਰਤੀਕ। ਇਸ ਦੀ ਗਿਣਤੀ ਸਭ ਤੋਂ ਸ਼ੁਭ ਨਕਸ਼ਤਰਾਂ ਵਿੱਚ ਹੁੰਦੀ ਹੈ, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਫ਼ਿਕਰ ਕਰਨ ਵਾਲੇ, ਭਰੋਸੇਯੋਗ, ਸਮਰਪਿਤ ਅਤੇ ਆਪਣਾ ਸਮਾਂ ਦੇਣ ਵਿੱਚ ਉਦਾਰ ਹੁੰਦੇ ਹਨ। ਉਹ ਦੂਜਿਆਂ ਦਾ ਸਹਾਰਾ ਬਣਨਾ, ਰਵਾਇਤਾਂ ਨਿਭਾਉਣਾ ਅਤੇ ਕੁਝ ਟਿਕਾਊ ਬਣਾਉਣਾ ਪਸੰਦ ਕਰਦੇ ਹਨ। ਪਰੰਪਰਾ ਪੁਸ਼ਯ ਨੂੰ ਪੋਸ਼ਣ ਅਤੇ ਸਿਆਣਪ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਪੜ੍ਹਾਉਣਾ, ਸਲਾਹ-ਮਸ਼ਵਰਾ, ਖਾਣ-ਪੀਣ, ਸਮਾਜ ਸੇਵਾ, ਵਿੱਤ ਅਤੇ ਅਧਿਆਤਮਿਕ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਪੱਕੀ, ਰਾਖੀ ਕਰਨ ਵਾਲੀ ਮਿਹਰਬਾਨੀ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਆਪਣਾ ਵੀ ਓਨੀ ਹੀ ਵਫ਼ਾਦਾਰੀ ਨਾਲ ਪਾਲਣ ਕਰੋ ਜਿੰਨੀ ਦੂਜਿਆਂ ਦਾ ਕਰਦੇ ਹੋ।",
     # EN: Ashlesha is ruled by the Nagas, the serpent deities, and symbolised by a coiled serpent —
     #     an image of kundalini, hidden energy and deep wisdom. People with the Moon here are often
     #     perceptive, intelligent and good at understanding what others leave unsaid. They can be
@@ -2028,7 +2028,7 @@ NAKSHATRA_TRAITS = {
     #     Ashlesha with insight and with the healing knowledge of herbs, so psychology, research,
     #     medicine, writing and negotiation suit it well. Its gift is penetrating understanding; its
     #     lesson is to use that insight to embrace and heal, the way the serpent's coil protects.
-    "ashlesha": "",
+    "ashlesha": "ਅਸ਼ਲੇਸ਼ਾ ਦੇ ਸੁਆਮੀ ਨਾਗ, ਸੱਪ ਦੇਵਤੇ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਕੁੰਡਲੀ ਮਾਰਿਆ ਸੱਪ ਹੈ — ਕੁੰਡਲਿਨੀ, ਛੁਪੀ ਹੋਈ ਊਰਜਾ ਅਤੇ ਡੂੰਘੀ ਸਿਆਣਪ ਦਾ ਪ੍ਰਤੀਕ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਸੂਝਵਾਨ, ਬੁੱਧੀਮਾਨ ਅਤੇ ਉਹ ਸਮਝਣ ਵਿੱਚ ਮਾਹਰ ਹੁੰਦੇ ਹਨ ਜੋ ਦੂਜੇ ਅਣਕਿਹਾ ਛੱਡ ਦਿੰਦੇ ਹਨ। ਉਹ ਕਾਇਲ ਕਰਨ ਵਾਲੇ ਅਤੇ ਰਣਨੀਤਕ ਹੋ ਸਕਦੇ ਹਨ, ਆਪਣੀ ਰਾਖੀ ਦੀ ਮਜ਼ਬੂਤ ਸੂਝ ਨਾਲ। ਪਰੰਪਰਾ ਅਸ਼ਲੇਸ਼ਾ ਨੂੰ ਅੰਤਰ-ਦ੍ਰਿਸ਼ਟੀ ਅਤੇ ਜੜ੍ਹੀ-ਬੂਟੀਆਂ ਦੇ ਇਲਾਜੀ ਗਿਆਨ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਮਨੋਵਿਗਿਆਨ, ਖੋਜ, ਦਵਾਈ, ਲਿਖਣ ਅਤੇ ਗੱਲ-ਬਾਤ ਰਾਹੀਂ ਸਮਝੌਤਾ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਆਰ-ਪਾਰ ਵੇਖਣ ਵਾਲੀ ਸਮਝ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਉਸ ਸੂਝ ਨੂੰ ਗਲੇ ਲਾਉਣ ਤੇ ਠੀਕ ਕਰਨ ਲਈ ਵਰਤੋ, ਜਿਵੇਂ ਸੱਪ ਦੀ ਕੁੰਡਲੀ ਰਾਖੀ ਕਰਦੀ ਹੈ।",
     # EN: Magha is ruled by the Pitris, the ancestors, and symbolised by a royal throne. People with
     #     the Moon here often carry a natural dignity, a respect for family and tradition, and a
     #     wish to live up to the name they were given. They can be generous leaders who take
@@ -2036,7 +2036,7 @@ NAKSHATRA_TRAITS = {
     #     so leadership, administration, history, law and work that preserves heritage suit it well.
     #     Its gift is nobility of heart; its lesson is to wear the crown lightly — to lead through
     #     service and to honour the ancestors through good deeds.
-    "magha": "",
+    "magha": "ਮਘਾ ਦੇ ਸੁਆਮੀ ਪਿਤਰ, ਪੁਰਖੇ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਸ਼ਾਹੀ ਸਿੰਘਾਸਣ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਨ੍ਹਾਂ ਵਿੱਚ ਅਕਸਰ ਕੁਦਰਤੀ ਮਾਣ, ਪਰਿਵਾਰ ਅਤੇ ਰਵਾਇਤ ਲਈ ਆਦਰ, ਅਤੇ ਮਿਲੇ ਹੋਏ ਨਾਂ ਦੇ ਕਾਬਲ ਬਣਨ ਦੀ ਇੱਛਾ ਹੁੰਦੀ ਹੈ। ਉਹ ਉਦਾਰ ਆਗੂ ਹੋ ਸਕਦੇ ਹਨ ਜੋ ਆਪਣੇ ਲੋਕਾਂ ਦੀ ਜ਼ਿੰਮੇਵਾਰੀ ਲੈਂਦੇ ਹਨ। ਪਰੰਪਰਾ ਮਘਾ ਨੂੰ ਵੰਸ਼, ਇੱਜ਼ਤ ਅਤੇ ਅਧਿਕਾਰ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਅਗਵਾਈ, ਪ੍ਰਸ਼ਾਸਨ, ਇਤਿਹਾਸ, ਕਾਨੂੰਨ ਅਤੇ ਵਿਰਸੇ ਨੂੰ ਸੰਭਾਲਣ ਵਾਲਾ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦੀ ਦਾਤ ਦਿਲ ਦੀ ਨੇਕੀ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਤਾਜ ਨੂੰ ਹਲਕੇ ਹੱਥੀਂ ਪਹਿਨੋ — ਸੇਵਾ ਰਾਹੀਂ ਅਗਵਾਈ ਕਰੋ ਅਤੇ ਚੰਗੇ ਕੰਮਾਂ ਨਾਲ ਪੁਰਖਿਆਂ ਦਾ ਮਾਣ ਰੱਖੋ।",
     # EN: Purva Phalguni is ruled by Bhaga, the god of fortune and marital happiness, and symbolised
     #     by the front legs of a bed — an image of rest and enjoyment. People with the Moon here are
     #     often warm, charming, creative and fond of celebration, music and good company. They bring
@@ -2044,7 +2044,7 @@ NAKSHATRA_TRAITS = {
     #     Purva Phalguni with love, the arts and leisure, so entertainment, design, hospitality and
     #     relationship-centred work suit it well. Its gift is joy that is easily shared; its lesson
     #     is balance between pleasure and duty.
-    "purva-phalguni": "",
+    "purva-phalguni": "ਪੂਰਵਾ ਫਾਲਗੁਨੀ ਦੇ ਸੁਆਮੀ ਭਗ, ਕਿਸਮਤ ਅਤੇ ਵਿਆਹੁਤਾ ਸੁੱਖ ਦੇ ਦੇਵਤਾ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਪਲੰਘ ਦੀਆਂ ਅਗਲੀਆਂ ਲੱਤਾਂ ਹੈ — ਆਰਾਮ ਅਤੇ ਆਨੰਦ ਦਾ ਪ੍ਰਤੀਕ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਨਿੱਘੇ, ਮਨਮੋਹਕ, ਸਿਰਜਣਾਤਮਕ ਅਤੇ ਜਸ਼ਨ, ਸੰਗੀਤ ਤੇ ਚੰਗੀ ਸੰਗਤ ਦੇ ਸ਼ੌਕੀਨ ਹੁੰਦੇ ਹਨ। ਉਹ ਲੋਕਾਂ ਨੂੰ ਇਕੱਠਾ ਕਰਦੇ ਹਨ ਅਤੇ ਜਾਣਦੇ ਹਨ ਕਿ ਕਮਾਈ ਹੋਈ ਚੀਜ਼ ਦਾ ਆਰਾਮ ਨਾਲ ਆਨੰਦ ਕਿਵੇਂ ਲੈਣਾ ਹੈ। ਪਰੰਪਰਾ ਪੂਰਵਾ ਫਾਲਗੁਨੀ ਨੂੰ ਪ੍ਰੇਮ, ਕਲਾਵਾਂ ਅਤੇ ਫ਼ੁਰਸਤ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਮਨੋਰੰਜਨ, ਡਿਜ਼ਾਈਨ, ਮਹਿਮਾਨਨਿਵਾਜ਼ੀ ਅਤੇ ਰਿਸ਼ਤਿਆਂ ’ਤੇ ਟਿਕਿਆ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦੀ ਦਾਤ ਆਸਾਨੀ ਨਾਲ ਵੰਡੀ ਜਾਣ ਵਾਲੀ ਖ਼ੁਸ਼ੀ ਹੈ; ਸਬਕ ਆਨੰਦ ਅਤੇ ਫ਼ਰਜ਼ ਵਿਚਕਾਰ ਸੰਤੁਲਨ ਹੈ।",
     # EN: Uttara Phalguni is ruled by Aryaman, the god of friendship, contracts and marriage vows,
     #     and symbolised by the back legs of a bed. Where its twin Purva Phalguni enjoys, Uttara
     #     Phalguni commits. People with the Moon here are often reliable, helpful, fair-minded and
@@ -2052,7 +2052,7 @@ NAKSHATRA_TRAITS = {
     #     Tradition links this nakshatra with patronage and lasting partnerships, so management,
     #     public service, counselling, law and charitable work suit it well. Its gift is dependable
     #     kindness; its lesson is to accept help as gracefully as it is given.
-    "uttara-phalguni": "",
+    "uttara-phalguni": "ਉੱਤਰਾ ਫਾਲਗੁਨੀ ਦੇ ਸੁਆਮੀ ਅਰਿਆਮਾ, ਦੋਸਤੀ, ਇਕਰਾਰਾਂ ਅਤੇ ਵਿਆਹ ਦੇ ਵਚਨਾਂ ਦੇ ਦੇਵਤਾ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਪਲੰਘ ਦੀਆਂ ਪਿਛਲੀਆਂ ਲੱਤਾਂ ਹੈ। ਜਿੱਥੇ ਇਸ ਦੀ ਜੋੜੀਦਾਰ ਪੂਰਵਾ ਫਾਲਗੁਨੀ ਆਨੰਦ ਲੈਂਦੀ ਹੈ, ਉੱਤਰਾ ਫਾਲਗੁਨੀ ਵਚਨਬੱਧ ਹੁੰਦੀ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਭਰੋਸੇਯੋਗ, ਮਦਦਗਾਰ, ਨਿਆਂਪਸੰਦ ਅਤੇ ਦੋਸਤਾਂ ਤੇ ਸਾਥੀਆਂ ਪ੍ਰਤੀ ਵਫ਼ਾਦਾਰ ਹੁੰਦੇ ਹਨ। ਉਹ ਆਪਣੀ ਜ਼ੁਬਾਨ ਨਿਭਾਉਂਦੇ ਹਨ ਅਤੇ ਦੂਜਿਆਂ ਦੇ ਸੱਚਮੁੱਚ ਕੰਮ ਆਉਣਾ ਚਾਹੁੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਇਸ ਨਕਸ਼ਤਰ ਨੂੰ ਸਰਪ੍ਰਸਤੀ ਅਤੇ ਪੱਕੀਆਂ ਸਾਂਝੇਦਾਰੀਆਂ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਪ੍ਰਬੰਧ, ਲੋਕ ਸੇਵਾ, ਸਲਾਹ-ਮਸ਼ਵਰਾ, ਕਾਨੂੰਨ ਅਤੇ ਪਰਉਪਕਾਰੀ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਭਰੋਸੇ ਵਾਲੀ ਮਿਹਰਬਾਨੀ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਮਦਦ ਨੂੰ ਓਨੀ ਹੀ ਸੁਹਿਰਦਤਾ ਨਾਲ ਕਬੂਲ ਕਰੋ ਜਿੰਨੀ ਨਾਲ ਦਿੰਦੇ ਹੋ।",
     # EN: Hasta is ruled by Savitr, the radiant Sun, and symbolised by a hand. People with the Moon
     #     here are often skilful, practical, witty and clever with their hands as well as their
     #     minds. They like to get things done and can turn an idea into something real. Tradition
@@ -2060,7 +2060,7 @@ NAKSHATRA_TRAITS = {
     #     surgery, massage, writing, trade and any skilled trade suit it well. Its gift is the
     #     ability to make and to mend; its lesson is to hold things with an open hand, trusting that
     #     effort brings its own rewards.
-    "hasta": "",
+    "hasta": "ਹਸਤ ਦੇ ਸੁਆਮੀ ਸਵਿਤ੍ਰ, ਚਮਕਦਾ ਸੂਰਜ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਹੱਥ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਹੁਨਰਮੰਦ, ਵਿਹਾਰਕ, ਹਾਜ਼ਰ-ਜਵਾਬ ਅਤੇ ਦਿਮਾਗ਼ ਦੇ ਨਾਲ-ਨਾਲ ਹੱਥਾਂ ਦੇ ਵੀ ਚਤੁਰ ਹੁੰਦੇ ਹਨ। ਉਹ ਕੰਮ ਨਿਬੇੜਨਾ ਪਸੰਦ ਕਰਦੇ ਹਨ ਅਤੇ ਕਿਸੇ ਵਿਚਾਰ ਨੂੰ ਹਕੀਕਤ ਬਣਾ ਸਕਦੇ ਹਨ। ਪਰੰਪਰਾ ਹਸਤ ਨੂੰ ਦਸਤਕਾਰੀ, ਇਲਾਜੀ ਛੋਹ ਅਤੇ ਸਾਧਨ-ਭਰਪੂਰਤਾ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਦਸਤਕਾਰੀ, ਕਲਾਵਾਂ, ਸਰਜਰੀ, ਮਾਲਸ਼, ਲਿਖਣ, ਵਪਾਰ ਅਤੇ ਹਰ ਹੁਨਰ ਵਾਲਾ ਕਿੱਤਾ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦੀ ਦਾਤ ਬਣਾਉਣ ਅਤੇ ਮੁਰੰਮਤ ਕਰਨ ਦੀ ਸਮਰੱਥਾ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਚੀਜ਼ਾਂ ਨੂੰ ਖੁੱਲ੍ਹੇ ਹੱਥ ਨਾਲ ਫੜੋ, ਇਹ ਭਰੋਸਾ ਰੱਖਦਿਆਂ ਕਿ ਮਿਹਨਤ ਆਪਣਾ ਇਨਾਮ ਆਪ ਲਿਆਉਂਦੀ ਹੈ।",
     # EN: Chitra is ruled by Tvashtr, also known as Vishwakarma, the divine architect, and
     #     symbolised by a bright jewel. Its name means "brilliant" or "picture", and people with the
     #     Moon here often have a strong sense of beauty, design and form. They enjoy creating things
@@ -2068,7 +2068,7 @@ NAKSHATRA_TRAITS = {
     #     architecture, the arts and craftsmanship, so design, engineering, fashion, jewellery,
     #     photography and planning suit it well. Its gift is the eye of an artist and the hand of a
     #     builder; its lesson is to value inner beauty as much as outer polish.
-    "chitra": "",
+    "chitra": "ਚਿੱਤਰਾ ਦੇ ਸੁਆਮੀ ਤ੍ਵਸ਼ਟਾ ਹਨ, ਜਿਨ੍ਹਾਂ ਨੂੰ ਵਿਸ਼ਵਕਰਮਾ, ਦੈਵੀ ਵਾਸਤੂਕਾਰ, ਵੀ ਕਿਹਾ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਚਮਕਦਾ ਰਤਨ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਚਮਕਦਾਰ” ਜਾਂ “ਤਸਵੀਰ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਨ੍ਹਾਂ ਵਿੱਚ ਅਕਸਰ ਸੁੰਦਰਤਾ, ਡਿਜ਼ਾਈਨ ਅਤੇ ਰੂਪ ਦੀ ਪ੍ਰਬਲ ਸੂਝ ਹੁੰਦੀ ਹੈ। ਉਹ ਉਹ ਚੀਜ਼ਾਂ ਬਣਾਉਣ ਦਾ ਆਨੰਦ ਲੈਂਦੇ ਹਨ ਜੋ ਕੰਮ ਦੀਆਂ ਵੀ ਹੋਣ ਅਤੇ ਸੋਹਣੀਆਂ ਵੀ, ਅਤੇ ਬਾਰੀਕੀਆਂ ਨੂੰ ਨੋਟਿਸ ਕਰਦੇ ਹਨ। ਪਰੰਪਰਾ ਚਿੱਤਰਾ ਨੂੰ ਵਾਸਤੂਕਲਾ, ਕਲਾਵਾਂ ਅਤੇ ਦਸਤਕਾਰੀ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਡਿਜ਼ਾਈਨ, ਇੰਜੀਨੀਅਰਿੰਗ, ਫ਼ੈਸ਼ਨ, ਗਹਿਣੇ, ਫ਼ੋਟੋਗ੍ਰਾਫ਼ੀ ਅਤੇ ਯੋਜਨਾਬੰਦੀ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਕਲਾਕਾਰ ਦੀ ਅੱਖ ਅਤੇ ਉਸਾਰ ਦਾ ਹੱਥ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਅੰਦਰੂਨੀ ਸੁੰਦਰਤਾ ਦੀ ਓਨੀ ਹੀ ਕਦਰ ਕਰੋ ਜਿੰਨੀ ਬਾਹਰੀ ਚਮਕ-ਦਮਕ ਦੀ।",
     # EN: Swati is ruled by Vayu, the wind, and symbolised by a young shoot swaying in the breeze —
     #     flexible, independent and able to bend without breaking. People with the Moon here often
     #     value freedom, fairness and their own way of doing things. They are usually diplomatic,
@@ -2076,7 +2076,7 @@ NAKSHATRA_TRAITS = {
     #     and self-reliance, so commerce, law, diplomacy, communication and independent work suit it
     #     well. Its gift is adaptability and a gentle, balanced manner; its lesson is to put down
     #     roots, so that the young shoot can grow into a strong tree.
-    "swati": "",
+    "swati": "ਸਵਾਤੀ ਦੇ ਸੁਆਮੀ ਵਾਯੂ, ਹਵਾ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਹਵਾ ਵਿੱਚ ਝੂਲਦਾ ਨਵਾਂ ਫੁੱਟਿਆ ਬੂਟਾ ਹੈ — ਲਚਕੀਲਾ, ਆਜ਼ਾਦ ਅਤੇ ਟੁੱਟੇ ਬਿਨਾਂ ਝੁਕ ਜਾਣ ਵਾਲਾ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਆਜ਼ਾਦੀ, ਨਿਆਂ ਅਤੇ ਆਪਣੇ ਢੰਗ ਨਾਲ ਕੰਮ ਕਰਨ ਦੀ ਕਦਰ ਕਰਦੇ ਹਨ। ਉਹ ਆਮ ਤੌਰ ’ਤੇ ਕੂਟਨੀਤਕ, ਸ਼ਿਸ਼ਟ ਅਤੇ ਵਪਾਰ ਤੇ ਗੱਲ-ਬਾਤ ਵਿੱਚ ਮਾਹਰ ਹੁੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਸਵਾਤੀ ਨੂੰ ਵਪਾਰ, ਸਫ਼ਰ ਅਤੇ ਆਤਮ-ਨਿਰਭਰਤਾ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਵਣਜ, ਕਾਨੂੰਨ, ਕੂਟਨੀਤੀ, ਸੰਚਾਰ ਅਤੇ ਆਜ਼ਾਦ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਢਲ ਜਾਣ ਦੀ ਸਮਰੱਥਾ ਅਤੇ ਕੋਮਲ, ਸੰਤੁਲਿਤ ਸੁਭਾਅ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਜੜ੍ਹਾਂ ਫੜੋ, ਤਾਂ ਜੋ ਇਹ ਨਵਾਂ ਬੂਟਾ ਮਜ਼ਬੂਤ ਰੁੱਖ ਬਣ ਸਕੇ।",
     # EN: Vishakha is ruled by Indra and Agni together, and symbolised by a triumphal arch decorated
     #     with leaves. People with the Moon here are often purposeful, ambitious and determined to
     #     reach the goal they have set. They have energy, conviction and the patience to keep going
@@ -2084,7 +2084,7 @@ NAKSHATRA_TRAITS = {
     #     research, politics, sales, teaching and any long-term mission suit it well. Its gift is
     #     focus and the ability to inspire others towards a shared aim; its lesson is to enjoy the
     #     journey, not only the arch at its end.
-    "vishakha": "",
+    "vishakha": "ਵਿਸ਼ਾਖਾ ਦੇ ਸੁਆਮੀ ਇੰਦਰ ਅਤੇ ਅਗਨੀ ਦੋਵੇਂ ਹਨ, ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਪੱਤਿਆਂ ਨਾਲ ਸਜਿਆ ਜਿੱਤ ਦਾ ਦੁਆਰ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਮਕਸਦ ਵਾਲੇ, ਉੱਚ-ਅਕਾਂਖਿਆ ਵਾਲੇ ਅਤੇ ਆਪਣੇ ਮਿੱਥੇ ਟੀਚੇ ਤੱਕ ਪਹੁੰਚਣ ਲਈ ਦ੍ਰਿੜ੍ਹ ਹੁੰਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਵਿੱਚ ਊਰਜਾ, ਪੱਕਾ ਯਕੀਨ ਅਤੇ ਲੰਮੇ ਰਾਹ ’ਤੇ ਤੁਰੇ ਰਹਿਣ ਦਾ ਸਬਰ ਹੁੰਦਾ ਹੈ। ਪਰੰਪਰਾ ਵਿਸ਼ਾਖਾ ਨੂੰ ਮਕਸਦ ਦਾ ਨਕਸ਼ਤਰ ਕਹਿੰਦੀ ਹੈ, ਇਸ ਲਈ ਅਗਵਾਈ, ਖੋਜ, ਸਿਆਸਤ, ਵਿਕਰੀ, ਪੜ੍ਹਾਉਣਾ ਅਤੇ ਹਰ ਲੰਮੇ ਸਮੇਂ ਦਾ ਮਿਸ਼ਨ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਇਸ ਦੀ ਦਾਤ ਇਕਾਗਰਤਾ ਅਤੇ ਦੂਜਿਆਂ ਨੂੰ ਸਾਂਝੇ ਉਦੇਸ਼ ਵੱਲ ਪ੍ਰੇਰਿਤ ਕਰਨ ਦੀ ਸਮਰੱਥਾ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਸਫ਼ਰ ਦਾ ਆਨੰਦ ਲਵੋ, ਸਿਰਫ਼ ਉਸ ਦੇ ਅਖ਼ੀਰ ਦੇ ਦੁਆਰ ਦਾ ਨਹੀਂ।",
     # EN: Anuradha is ruled by Mitra, the god of friendship and cooperation, and symbolised by a
     #     lotus that blooms out of muddy water. People with the Moon here are often loyal friends,
     #     devoted to their ideals and able to keep going with quiet faith in difficult places. They
@@ -2092,7 +2092,7 @@ NAKSHATRA_TRAITS = {
     #     with friendship, devotion and success away from home, so teamwork, organisation,
     #     counselling, travel and spiritual practice suit it well. Its gift is the ability to
     #     blossom anywhere; its lesson is to be as gentle with oneself as with friends.
-    "anuradha": "",
+    "anuradha": "ਅਨੁਰਾਧਾ ਦੇ ਸੁਆਮੀ ਮਿਤ੍ਰ, ਦੋਸਤੀ ਅਤੇ ਸਹਿਯੋਗ ਦੇ ਦੇਵਤਾ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਕਮਲ ਹੈ ਜੋ ਚਿੱਕੜ ਵਾਲੇ ਪਾਣੀ ਵਿੱਚੋਂ ਖਿੜਦਾ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਵਫ਼ਾਦਾਰ ਦੋਸਤ, ਆਪਣੇ ਆਦਰਸ਼ਾਂ ਪ੍ਰਤੀ ਸਮਰਪਿਤ ਅਤੇ ਔਖੀਆਂ ਥਾਵਾਂ ’ਤੇ ਵੀ ਚੁੱਪ ਭਰੋਸੇ ਨਾਲ ਤੁਰਦੇ ਰਹਿਣ ਵਾਲੇ ਹੁੰਦੇ ਹਨ। ਉਹ ਸਮੂਹਾਂ ਅਤੇ ਸੰਸਥਾਵਾਂ ਵਿੱਚ ਲੋਕਾਂ ਨੂੰ ਇਕੱਠਾ ਕਰਨ ਵਿੱਚ ਮਾਹਰ ਹੁੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਅਨੁਰਾਧਾ ਨੂੰ ਦੋਸਤੀ, ਭਗਤੀ ਅਤੇ ਘਰੋਂ ਦੂਰ ਸਫਲਤਾ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਟੀਮ ਵਰਕ, ਸੰਗਠਨ, ਸਲਾਹ-ਮਸ਼ਵਰਾ, ਸਫ਼ਰ ਅਤੇ ਅਧਿਆਤਮਿਕ ਸਾਧਨਾ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਕਿਤੇ ਵੀ ਖਿੜ ਜਾਣ ਦੀ ਸਮਰੱਥਾ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਆਪਣੇ ਨਾਲ ਓਨੀ ਹੀ ਨਰਮੀ ਰੱਖੋ ਜਿੰਨੀ ਦੋਸਤਾਂ ਨਾਲ ਰੱਖਦੇ ਹੋ।",
     # EN: Jyeshtha is ruled by Indra, king of the gods, and symbolised by a circular amulet or
     #     earring. Its name means "the eldest", and people with the Moon here often take on
     #     responsibility early, protect those around them and carry a quiet authority. They are
@@ -2100,7 +2100,7 @@ NAKSHATRA_TRAITS = {
     #     seniority and protection, so leadership, management, administration, security and any role
     #     that looks after others suit it well. Its gift is courage and capability; its lesson is to
     #     lead with humility and to let others share the load rather than carrying everything alone.
-    "jyeshtha": "",
+    "jyeshtha": "ਜੇਸ਼ਠਾ ਦੇ ਸੁਆਮੀ ਇੰਦਰ, ਦੇਵਤਿਆਂ ਦੇ ਰਾਜਾ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਗੋਲ ਤਵੀਤ ਜਾਂ ਕੰਨ ਦੀ ਵਾਲੀ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਸਭ ਤੋਂ ਵੱਡਾ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਛੋਟੀ ਉਮਰੇ ਹੀ ਜ਼ਿੰਮੇਵਾਰੀ ਚੁੱਕ ਲੈਂਦੇ ਹਨ, ਆਪਣੇ ਆਲੇ-ਦੁਆਲੇ ਦੇ ਲੋਕਾਂ ਦੀ ਰਾਖੀ ਕਰਦੇ ਹਨ ਅਤੇ ਚੁੱਪ ਰੋਅਬ ਰੱਖਦੇ ਹਨ। ਉਹ ਸਾਧਨ-ਭਰਪੂਰ, ਸੂਝਵਾਨ ਅਤੇ ਦਬਾਅ ਹੇਠ ਵੀ ਕਾਬਲ ਹੁੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਜੇਸ਼ਠਾ ਨੂੰ ਸੀਨੀਅਰਤਾ ਅਤੇ ਰਾਖੀ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਅਗਵਾਈ, ਪ੍ਰਬੰਧ, ਪ੍ਰਸ਼ਾਸਨ, ਸੁਰੱਖਿਆ ਅਤੇ ਦੂਜਿਆਂ ਦੀ ਸੰਭਾਲ ਕਰਨ ਵਾਲੀ ਹਰ ਭੂਮਿਕਾ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੀ ਹੈ। ਇਸ ਦੀ ਦਾਤ ਹਿੰਮਤ ਅਤੇ ਕਾਬਲੀਅਤ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਨਿਮਰਤਾ ਨਾਲ ਅਗਵਾਈ ਕਰੋ ਅਤੇ ਸਭ ਕੁਝ ਇਕੱਲੇ ਚੁੱਕਣ ਦੀ ਥਾਂ ਦੂਜਿਆਂ ਨੂੰ ਵੀ ਬੋਝ ਵੰਡਣ ਦਿਓ।",
     # EN: Mula is ruled by Nirriti and symbolised by a bunch of roots. Its name means "the root",
     #     and people with the Moon here are often drawn to get to the bottom of things — to find the
     #     origin of a question, an idea or a tradition. They can be independent, philosophical and
@@ -2108,7 +2108,7 @@ NAKSHATRA_TRAITS = {
     #     with letting go of what is no longer needed, so research, medicine, philosophy, botany and
     #     spiritual inquiry suit it well. Its gift is depth; its lesson is that clearing old ground
     #     makes room for new growth.
-    "mula": "",
+    "mula": "ਮੂਲ ਦੇ ਸੁਆਮੀ ਨਿਰ੍ਰਿਤੀ ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਜੜ੍ਹਾਂ ਦਾ ਗੁੱਛਾ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਜੜ੍ਹ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਗੱਲ ਦੀ ਤਹਿ ਤੱਕ ਜਾਣ ਵੱਲ ਖਿੱਚੇ ਜਾਂਦੇ ਹਨ — ਕਿਸੇ ਸਵਾਲ, ਵਿਚਾਰ ਜਾਂ ਰਵਾਇਤ ਦੀ ਜੜ੍ਹ ਲੱਭਣ ਵੱਲ। ਉਹ ਆਜ਼ਾਦ, ਦਾਰਸ਼ਨਿਕ ਅਤੇ ਬੁਨਿਆਦੀ ਸਿਧਾਂਤਾਂ ਤੋਂ ਮੁੜ ਸ਼ੁਰੂ ਕਰਨ ਤੋਂ ਨਾ ਡਰਨ ਵਾਲੇ ਹੋ ਸਕਦੇ ਹਨ। ਪਰੰਪਰਾ ਮੂਲ ਨੂੰ ਪੜਤਾਲ ਅਤੇ ਉਸ ਨੂੰ ਛੱਡ ਦੇਣ ਨਾਲ ਜੋੜਦੀ ਹੈ ਜਿਸ ਦੀ ਹੁਣ ਲੋੜ ਨਹੀਂ, ਇਸ ਲਈ ਖੋਜ, ਦਵਾਈ, ਫ਼ਲਸਫ਼ਾ, ਬਨਸਪਤੀ ਵਿਗਿਆਨ ਅਤੇ ਅਧਿਆਤਮਿਕ ਜਗਿਆਸਾ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਡੂੰਘਾਈ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਪੁਰਾਣੀ ਜ਼ਮੀਨ ਸਾਫ਼ ਕਰਨ ਨਾਲ ਨਵੇਂ ਵਾਧੇ ਲਈ ਥਾਂ ਬਣਦੀ ਹੈ।",
     # EN: Purva Ashadha is ruled by Apas, the cosmic waters, and symbolised by a winnowing fan or an
     #     elephant tusk. Its name means "the early invincible", and people with the Moon here are
     #     often confident, persuasive and full of conviction. Like water, they can be gentle and yet
@@ -2116,7 +2116,7 @@ NAKSHATRA_TRAITS = {
     #     victory won through persistence, so teaching, law, debate, the arts, shipping and anything
     #     to do with water suit it well. Its gift is optimism and inner strength; its lesson is to
     #     stay open to other views while holding firm to its own.
-    "purva-ashadha": "",
+    "purva-ashadha": "ਪੂਰਵਾ ਆਸ਼ਾੜ੍ਹਾ ਦੇ ਸੁਆਮੀ ਆਪਸ, ਬ੍ਰਹਿਮੰਡੀ ਜਲ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਛੱਜ ਜਾਂ ਹਾਥੀ ਦਾ ਦੰਦ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਪਹਿਲਾ ਅਜਿੱਤ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਆਤਮ-ਵਿਸ਼ਵਾਸੀ, ਕਾਇਲ ਕਰਨ ਵਾਲੇ ਅਤੇ ਯਕੀਨ ਨਾਲ ਭਰੇ ਹੁੰਦੇ ਹਨ। ਪਾਣੀ ਵਾਂਗ ਉਹ ਕੋਮਲ ਵੀ ਹੋ ਸਕਦੇ ਹਨ ਅਤੇ ਸਮੇਂ ਨਾਲ ਹਰ ਰੁਕਾਵਟ ਨੂੰ ਘਸਾ ਵੀ ਦਿੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਪੂਰਵਾ ਆਸ਼ਾੜ੍ਹਾ ਨੂੰ ਸ਼ੁੱਧੀ ਅਤੇ ਲਗਾਤਾਰ ਕੋਸ਼ਿਸ਼ ਨਾਲ ਮਿਲੀ ਜਿੱਤ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਪੜ੍ਹਾਉਣਾ, ਕਾਨੂੰਨ, ਬਹਿਸ, ਕਲਾਵਾਂ, ਜਹਾਜ਼ਰਾਨੀ ਅਤੇ ਪਾਣੀ ਨਾਲ ਜੁੜੀ ਹਰ ਚੀਜ਼ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੀ ਹੈ। ਇਸ ਦੀ ਦਾਤ ਆਸ਼ਾਵਾਦ ਅਤੇ ਅੰਦਰੂਨੀ ਤਾਕਤ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਆਪਣੀ ਗੱਲ ’ਤੇ ਪੱਕੇ ਰਹਿੰਦਿਆਂ ਦੂਜਿਆਂ ਦੇ ਵਿਚਾਰਾਂ ਲਈ ਵੀ ਖੁੱਲ੍ਹੇ ਰਹੋ।",
     # EN: Uttara Ashadha is ruled by the Vishvedevas, the universal gods, and symbolised by an
     #     elephant tusk. Its name means "the later invincible" — the victory that lasts because it
     #     was earned honestly. People with the Moon here are often principled, patient, responsible
@@ -2124,7 +2124,7 @@ NAKSHATRA_TRAITS = {
     #     Tradition links Uttara Ashadha with righteous leadership, so government, management, law,
     #     teaching and social causes suit it well. Its gift is steady, ethical strength; its lesson
     #     is to keep a little lightness and warmth alongside the seriousness of duty.
-    "uttara-ashadha": "",
+    "uttara-ashadha": "ਉੱਤਰਾ ਆਸ਼ਾੜ੍ਹਾ ਦੇ ਸੁਆਮੀ ਵਿਸ਼ਵੇਦੇਵ, ਸਰਬ-ਵਿਆਪੀ ਦੇਵਤੇ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਹਾਥੀ ਦਾ ਦੰਦ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਪਿਛਲਾ ਅਜਿੱਤ” — ਉਹ ਜਿੱਤ ਜੋ ਟਿਕਦੀ ਹੈ ਕਿਉਂਕਿ ਇਮਾਨਦਾਰੀ ਨਾਲ ਕਮਾਈ ਗਈ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਅਸੂਲਾਂ ਵਾਲੇ, ਸਬਰ ਵਾਲੇ, ਜ਼ਿੰਮੇਵਾਰ ਅਤੇ ਆਪਣੀ ਈਮਾਨਦਾਰੀ ਕਰਕੇ ਇੱਜ਼ਤ ਪਾਉਣ ਵਾਲੇ ਹੁੰਦੇ ਹਨ। ਉਹ ਲੰਮੀ ਨਜ਼ਰ ਰੱਖਦੇ ਹਨ ਅਤੇ ਜਿਸ ਦਾ ਵਾਅਦਾ ਕਰਦੇ ਹਨ ਉਸ ਨੂੰ ਪੂਰਾ ਕਰਦੇ ਹਨ। ਪਰੰਪਰਾ ਉੱਤਰਾ ਆਸ਼ਾੜ੍ਹਾ ਨੂੰ ਧਰਮੀ ਅਗਵਾਈ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਸਰਕਾਰ, ਪ੍ਰਬੰਧ, ਕਾਨੂੰਨ, ਪੜ੍ਹਾਉਣਾ ਅਤੇ ਸਮਾਜਿਕ ਕਾਰਜ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਟਿਕਵੀਂ, ਨੈਤਿਕ ਤਾਕਤ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਫ਼ਰਜ਼ ਦੀ ਗੰਭੀਰਤਾ ਦੇ ਨਾਲ ਥੋੜ੍ਹੀ ਹਲਕਾਪਣ ਅਤੇ ਨਿੱਘ ਵੀ ਰੱਖੋ।",
     # EN: Shravana is ruled by Vishnu, the preserver, and symbolised by an ear or three footprints.
     #     Its name means "hearing", and people with the Moon here are often good listeners, eager
     #     learners and keepers of knowledge and tradition. They learn by listening and pass on what
@@ -2132,7 +2132,7 @@ NAKSHATRA_TRAITS = {
     #     connecting people, so teaching, counselling, media, languages, music and travel suit it
     #     well. Its gift is attentive understanding and a wish to be useful; its lesson is to listen
     #     to one's own inner voice as carefully as to others.
-    "shravana": "",
+    "shravana": "ਸ਼ਰਵਣ ਦੇ ਸੁਆਮੀ ਵਿਸ਼ਨੂੰ, ਪਾਲਣਹਾਰ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਕੰਨ ਜਾਂ ਤਿੰਨ ਪੈੜਾਂ ਹਨ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਸੁਣਨਾ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਚੰਗੇ ਸਰੋਤੇ, ਸਿੱਖਣ ਦੇ ਸ਼ੌਕੀਨ ਅਤੇ ਗਿਆਨ ਤੇ ਰਵਾਇਤ ਦੇ ਰਖਵਾਲੇ ਹੁੰਦੇ ਹਨ। ਉਹ ਸੁਣ ਕੇ ਸਿੱਖਦੇ ਹਨ ਅਤੇ ਜੋ ਸਿੱਖਿਆ ਉਸ ਨੂੰ ਅੱਗੇ ਪਹੁੰਚਾਉਂਦੇ ਹਨ। ਪਰੰਪਰਾ ਸ਼ਰਵਣ ਨੂੰ ਪੜ੍ਹਾਈ ਨਾਲ ਮਿਲੀ ਸਿਆਣਪ ਅਤੇ ਲੋਕਾਂ ਨੂੰ ਜੋੜਨ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਪੜ੍ਹਾਉਣਾ, ਸਲਾਹ-ਮਸ਼ਵਰਾ, ਮੀਡੀਆ, ਭਾਸ਼ਾਵਾਂ, ਸੰਗੀਤ ਅਤੇ ਸਫ਼ਰ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਧਿਆਨ ਨਾਲ ਸਮਝਣ ਦੀ ਯੋਗਤਾ ਅਤੇ ਕੰਮ ਆਉਣ ਦੀ ਇੱਛਾ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਆਪਣੀ ਅੰਦਰਲੀ ਆਵਾਜ਼ ਨੂੰ ਵੀ ਓਨੇ ਹੀ ਧਿਆਨ ਨਾਲ ਸੁਣੋ ਜਿੰਨੇ ਨਾਲ ਦੂਜਿਆਂ ਨੂੰ ਸੁਣਦੇ ਹੋ।",
     # EN: Dhanishta is ruled by the eight Vasus, gods of abundance, and symbolised by a drum. Its
     #     name means "the wealthiest", and people with the Moon here often have rhythm, energy and a
     #     talent for music, dance or teamwork. They are generous, sociable and able to keep a group
@@ -2140,7 +2140,7 @@ NAKSHATRA_TRAITS = {
     #     performance, sport, property, finance and community work suit it well. Its gift is the
     #     ability to set the beat that others follow; its lesson is to listen as well as play,
     #     leaving space for others' rhythms.
-    "dhanishta": "",
+    "dhanishta": "ਧਨਿਸ਼ਠਾ ਦੇ ਸੁਆਮੀ ਅੱਠ ਵਸੂ, ਖ਼ੁਸ਼ਹਾਲੀ ਦੇ ਦੇਵਤੇ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਢੋਲ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਸਭ ਤੋਂ ਧਨਵਾਨ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਨ੍ਹਾਂ ਵਿੱਚ ਅਕਸਰ ਤਾਲ, ਊਰਜਾ ਅਤੇ ਸੰਗੀਤ, ਨਾਚ ਜਾਂ ਟੀਮ ਵਰਕ ਦਾ ਹੁਨਰ ਹੁੰਦਾ ਹੈ। ਉਹ ਉਦਾਰ, ਮਿਲਣਸਾਰ ਅਤੇ ਕਿਸੇ ਟੋਲੇ ਨੂੰ ਇਕੱਠਿਆਂ ਤੋਰ ਕੇ ਰੱਖਣ ਦੇ ਕਾਬਲ ਹੁੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਧਨਿਸ਼ਠਾ ਨੂੰ ਖ਼ੁਸ਼ਹਾਲੀ ਅਤੇ ਧੁਨੀ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਸੰਗੀਤ, ਪੇਸ਼ਕਾਰੀ, ਖੇਡ, ਜਾਇਦਾਦ, ਵਿੱਤ ਅਤੇ ਭਾਈਚਾਰਕ ਕੰਮ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਉਹ ਤਾਲ ਬੰਨ੍ਹਣ ਦੀ ਸਮਰੱਥਾ ਹੈ ਜਿਸ ਪਿੱਛੇ ਹੋਰ ਚੱਲਦੇ ਹਨ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਵਜਾਉਣ ਦੇ ਨਾਲ ਸੁਣੋ ਵੀ, ਅਤੇ ਦੂਜਿਆਂ ਦੀਆਂ ਤਾਲਾਂ ਲਈ ਥਾਂ ਛੱਡੋ।",
     # EN: Shatabhisha is ruled by Varuna, lord of the cosmic waters and of truth, and symbolised by
     #     an empty circle. Its name means "a hundred healers", and people with the Moon here are
     #     often independent thinkers, private, truthful and drawn to understanding how things really
@@ -2148,7 +2148,7 @@ NAKSHATRA_TRAITS = {
     #     the search for hidden truth, so medicine, research, science, technology, astronomy and
     #     alternative healing suit it well. Its gift is clear, original insight; its lesson is to
     #     let others into the circle, sharing what is understood with warmth.
-    "shatabhisha": "",
+    "shatabhisha": "ਸ਼ਤਭਿਸ਼ਾ ਦੇ ਸੁਆਮੀ ਵਰੁਣ, ਬ੍ਰਹਿਮੰਡੀ ਜਲ ਅਤੇ ਸੱਚ ਦੇ ਸੁਆਮੀ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਖ਼ਾਲੀ ਚੱਕਰ ਹੈ। ਇਸ ਦੇ ਨਾਂ ਦਾ ਮਤਲਬ ਹੈ “ਸੌ ਵੈਦ”, ਅਤੇ ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਆਜ਼ਾਦ ਵਿਚਾਰਕ, ਨਿੱਜਤਾ ਪਸੰਦ, ਸੱਚੇ ਅਤੇ ਇਹ ਸਮਝਣ ਵੱਲ ਖਿੱਚੇ ਹੁੰਦੇ ਹਨ ਕਿ ਚੀਜ਼ਾਂ ਅਸਲ ਵਿੱਚ ਕਿਵੇਂ ਕੰਮ ਕਰਦੀਆਂ ਹਨ। ਉਹ ਉਹ ਪੈਟਰਨ ਵੇਖ ਲੈਂਦੇ ਹਨ ਜੋ ਹੋਰਾਂ ਤੋਂ ਖੁੰਝ ਜਾਂਦੇ ਹਨ। ਪਰੰਪਰਾ ਸ਼ਤਭਿਸ਼ਾ ਨੂੰ ਇਲਾਜ ਅਤੇ ਛੁਪੇ ਸੱਚ ਦੀ ਖੋਜ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਦਵਾਈ, ਖੋਜ, ਵਿਗਿਆਨ, ਤਕਨਾਲੋਜੀ, ਖਗੋਲ ਵਿਗਿਆਨ ਅਤੇ ਬਦਲਵੇਂ ਇਲਾਜ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਸਾਫ਼, ਮੌਲਿਕ ਸੂਝ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਦੂਜਿਆਂ ਨੂੰ ਚੱਕਰ ਦੇ ਅੰਦਰ ਆਉਣ ਦਿਓ, ਅਤੇ ਜੋ ਸਮਝਿਆ ਹੈ ਉਹ ਨਿੱਘ ਨਾਲ ਵੰਡੋ।",
     # EN: Purva Bhadrapada is ruled by Aja Ekapada, the one-footed form of Shiva, and symbolised by
     #     swords or the front legs of a cot. People with the Moon here are often idealistic, intense
     #     and willing to give themselves fully to a cause they believe in. They can be eloquent,
@@ -2156,7 +2156,7 @@ NAKSHATRA_TRAITS = {
     #     with the fire of tapas — sincere effort for a higher aim — so social reform, philosophy,
     #     writing, research and spiritual life suit it well. Its gift is passionate commitment; its
     #     lesson is to temper intensity with patience and calm.
-    "purva-bhadrapada": "",
+    "purva-bhadrapada": "ਪੂਰਵਾ ਭਾਦਰਪਦ ਦੇ ਸੁਆਮੀ ਅਜ ਏਕਪਾਦ, ਸ਼ਿਵ ਦਾ ਇੱਕ ਪੈਰ ਵਾਲਾ ਰੂਪ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਤਲਵਾਰਾਂ ਜਾਂ ਮੰਜੇ ਦੀਆਂ ਅਗਲੀਆਂ ਲੱਤਾਂ ਹਨ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਆਦਰਸ਼ਵਾਦੀ, ਤੀਬਰ ਅਤੇ ਜਿਸ ਮਕਸਦ ’ਤੇ ਯਕੀਨ ਕਰਦੇ ਹੋਣ ਉਸ ਲਈ ਆਪਣਾ ਸਭ ਕੁਝ ਦੇਣ ਨੂੰ ਤਿਆਰ ਹੁੰਦੇ ਹਨ। ਉਹ ਬੋਲਣ ਵਿੱਚ ਪ੍ਰਭਾਵਸ਼ਾਲੀ, ਉਦਾਰ ਅਤੇ ਡੂੰਘੇ ਅਧਿਆਤਮਿਕ ਹੋ ਸਕਦੇ ਹਨ। ਪਰੰਪਰਾ ਪੂਰਵਾ ਭਾਦਰਪਦ ਨੂੰ ਰੂਪਾਂਤਰਨ ਅਤੇ ਤਪ ਦੀ ਅੱਗ — ਉੱਚੇ ਉਦੇਸ਼ ਲਈ ਸੱਚੀ ਕੋਸ਼ਿਸ਼ — ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਸਮਾਜ ਸੁਧਾਰ, ਫ਼ਲਸਫ਼ਾ, ਲਿਖਣ, ਖੋਜ ਅਤੇ ਅਧਿਆਤਮਿਕ ਜੀਵਨ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਜੋਸ਼ ਭਰੀ ਵਚਨਬੱਧਤਾ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਤੀਬਰਤਾ ਨੂੰ ਸਬਰ ਅਤੇ ਸ਼ਾਂਤੀ ਨਾਲ ਸੰਤੁਲਿਤ ਕਰੋ।",
     # EN: Uttara Bhadrapada is ruled by Ahir Budhnya, the serpent of the deep waters, and symbolised
     #     by the back legs of a cot or twins. Where Purva Bhadrapada burns, Uttara Bhadrapada
     #     settles into calm depth. People with the Moon here are often wise, patient, composed and
@@ -2165,7 +2165,7 @@ NAKSHATRA_TRAITS = {
     #     renunciation and kindness, so counselling, charity, teaching, research and spiritual
     #     practice suit it well. Its gift is serene wisdom; its lesson is to share it actively, not
     #     only privately.
-    "uttara-bhadrapada": "",
+    "uttara-bhadrapada": "ਉੱਤਰਾ ਭਾਦਰਪਦ ਦੇ ਸੁਆਮੀ ਅਹਿਰ ਬੁਧਨਯ, ਡੂੰਘੇ ਜਲ ਦਾ ਸੱਪ, ਹਨ ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਮੰਜੇ ਦੀਆਂ ਪਿਛਲੀਆਂ ਲੱਤਾਂ ਜਾਂ ਜੁੜਵਾਂ ਹੈ। ਜਿੱਥੇ ਪੂਰਵਾ ਭਾਦਰਪਦ ਬਲਦਾ ਹੈ, ਉੱਤਰਾ ਭਾਦਰਪਦ ਸ਼ਾਂਤ ਡੂੰਘਾਈ ਵਿੱਚ ਟਿਕ ਜਾਂਦਾ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਸਿਆਣੇ, ਸਬਰ ਵਾਲੇ, ਸ਼ਾਂਤ-ਚਿੱਤ ਅਤੇ ਦਇਆਵਾਨ ਹੁੰਦੇ ਹਨ, ਸੰਜਮ ਅਤੇ ਸਲਾਹ ਦੇਣ ਦੀ ਦਾਤ ਨਾਲ। ਉਹ ਬੋਲਣ ਤੋਂ ਪਹਿਲਾਂ ਸੋਚਦੇ ਹਨ ਅਤੇ ਔਖੇ ਸਮਿਆਂ ਵਿੱਚ ਡਟੇ ਰਹਿੰਦੇ ਹਨ। ਪਰੰਪਰਾ ਇਸ ਨਕਸ਼ਤਰ ਨੂੰ ਡੂੰਘਾਈ, ਤਿਆਗ ਅਤੇ ਮਿਹਰਬਾਨੀ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਸਲਾਹ-ਮਸ਼ਵਰਾ, ਦਾਨ, ਪੜ੍ਹਾਉਣਾ, ਖੋਜ ਅਤੇ ਅਧਿਆਤਮਿਕ ਸਾਧਨਾ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਸ਼ਾਂਤ ਸਿਆਣਪ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਇਸ ਨੂੰ ਸਿਰਫ਼ ਨਿੱਜੀ ਤੌਰ ’ਤੇ ਨਹੀਂ, ਸਰਗਰਮੀ ਨਾਲ ਵੰਡੋ।",
     # EN: Revati, the last nakshatra, is ruled by Pushan, the nourisher who guides travellers and
     #     protects herds on their way, and symbolised by a fish. People with the Moon here are often
     #     gentle, kind, imaginative and protective of the weak, with a love of animals, art and
@@ -2173,7 +2173,7 @@ NAKSHATRA_TRAITS = {
     #     safely. Tradition links Revati with safe journeys, prosperity and completion, so caring
     #     work, the arts, travel, hospitality and spiritual life suit it well. Its gift is
     #     compassion and faith; its lesson is to care for oneself while caring for everyone else.
-    "revati": "",
+    "revati": "ਰੇਵਤੀ, ਆਖ਼ਰੀ ਨਕਸ਼ਤਰ, ਦੇ ਸੁਆਮੀ ਪੂਸ਼ਨ ਹਨ, ਪਾਲਣਹਾਰ ਜੋ ਮੁਸਾਫ਼ਰਾਂ ਨੂੰ ਰਾਹ ਦਿਖਾਉਂਦਾ ਅਤੇ ਪਸ਼ੂਆਂ ਦੇ ਇੱਜੜਾਂ ਦੀ ਰਾਹ ਵਿੱਚ ਰਾਖੀ ਕਰਦਾ ਹੈ, ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਮੱਛੀ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਇੱਥੇ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਕੋਮਲ, ਮਿਹਰਬਾਨ, ਕਲਪਨਾਸ਼ੀਲ ਅਤੇ ਕਮਜ਼ੋਰਾਂ ਦੇ ਰਖਵਾਲੇ ਹੁੰਦੇ ਹਨ, ਜਾਨਵਰਾਂ, ਕਲਾ ਅਤੇ ਸੰਗੀਤ ਨਾਲ ਪਿਆਰ ਕਰਨ ਵਾਲੇ। ਉਹ ਹਰ ਸਫ਼ਰ ਵਿੱਚ ਚੰਗੇ ਸਾਥੀ ਬਣਦੇ ਹਨ ਅਤੇ ਦੂਜਿਆਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਮੰਜ਼ਿਲ ਤੱਕ ਪਹੁੰਚਣ ਵਿੱਚ ਮਦਦ ਕਰਦੇ ਹਨ। ਪਰੰਪਰਾ ਰੇਵਤੀ ਨੂੰ ਸੁਰੱਖਿਅਤ ਸਫ਼ਰ, ਖ਼ੁਸ਼ਹਾਲੀ ਅਤੇ ਸੰਪੂਰਨਤਾ ਨਾਲ ਜੋੜਦੀ ਹੈ, ਇਸ ਲਈ ਸੇਵਾ ਵਾਲੇ ਕੰਮ, ਕਲਾਵਾਂ, ਸਫ਼ਰ, ਮਹਿਮਾਨਨਿਵਾਜ਼ੀ ਅਤੇ ਅਧਿਆਤਮਿਕ ਜੀਵਨ ਇਸ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਇਸ ਦੀ ਦਾਤ ਦਇਆ ਅਤੇ ਵਿਸ਼ਵਾਸ ਹੈ; ਸਬਕ ਇਹ ਹੈ ਕਿ ਬਾਕੀ ਸਭ ਦੀ ਸੰਭਾਲ ਕਰਦਿਆਂ ਆਪਣੀ ਸੰਭਾਲ ਵੀ ਕਰੋ।",
 }
 
 # app/nakshatra_text.py RASHI_TRAITS["pa"] — character paragraph of each of the 12 rashis (key = slug)  [12]
@@ -2185,7 +2185,7 @@ RASHI_TRAITS = {
     #     bring enthusiasm wherever they go. Work that rewards initiative — sport, the armed forces,
     #     engineering, entrepreneurship, surgery — often suits them. Their growth lies in patience
     #     and in listening before acting, so that their courage is matched by care for others.
-    "mesh": "",
+    "mesh": "ਮੇਖ ਪਹਿਲੀ ਰਾਸ਼ੀ ਹੈ, ਚਰ ਸੁਭਾਅ ਦੀ ਅਗਨੀ ਰਾਸ਼ੀ, ਜਿਸ ਦਾ ਸੁਆਮੀ ਮੰਗਲ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਮੇਖ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਊਰਜਾਵਾਨ, ਸਿੱਧੇ, ਹਿੰਮਤੀ ਅਤੇ ਛੇਤੀ ਕਦਮ ਚੁੱਕਣ ਵਾਲੇ ਹੁੰਦੇ ਹਨ — ਕੁਦਰਤੀ ਸ਼ੁਰੂਆਤ ਕਰਨ ਵਾਲੇ ਜੋ ਚੁਣੌਤੀ ਦਾ ਆਨੰਦ ਲੈਂਦੇ ਅਤੇ ਅੱਗੇ ਹੋ ਕੇ ਅਗਵਾਈ ਕਰਨਾ ਪਸੰਦ ਕਰਦੇ ਹਨ। ਉਹ ਆਪਣੀਆਂ ਭਾਵਨਾਵਾਂ ਬਾਰੇ ਸਾਫ਼-ਗੋ ਹੁੰਦੇ ਹਨ ਅਤੇ ਝਟਕਿਆਂ ਤੋਂ ਛੇਤੀ ਉੱਭਰ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਭਾਵਨਾਤਮਕ ਜੀਵਨ ਨਿੱਘਾ ਅਤੇ ਬੇਝਿਜਕ ਹੁੰਦਾ ਹੈ, ਅਤੇ ਉਹ ਜਿੱਥੇ ਵੀ ਜਾਣ ਉਤਸ਼ਾਹ ਲੈ ਕੇ ਜਾਂਦੇ ਹਨ। ਪਹਿਲਕਦਮੀ ਨੂੰ ਇਨਾਮ ਦੇਣ ਵਾਲੇ ਕੰਮ — ਖੇਡ, ਫ਼ੌਜ, ਇੰਜੀਨੀਅਰਿੰਗ, ਉੱਦਮ, ਸਰਜਰੀ — ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਸਬਰ ਅਤੇ ਕਦਮ ਚੁੱਕਣ ਤੋਂ ਪਹਿਲਾਂ ਸੁਣਨ ਵਿੱਚ ਹੈ, ਤਾਂ ਜੋ ਉਨ੍ਹਾਂ ਦੀ ਹਿੰਮਤ ਦੇ ਨਾਲ ਦੂਜਿਆਂ ਦੀ ਪਰਵਾਹ ਵੀ ਹੋਵੇ।",
     # EN: Vrishabh (Taurus) is a fixed earth sign ruled by Venus, and the Moon is exalted here.
     #     People with the Moon in Vrishabh are often calm, patient, loyal and steady, with a love of
     #     comfort, good food, music and beautiful things. They build slowly and surely, and what
@@ -2193,7 +2193,7 @@ RASHI_TRAITS = {
     #     security to drama. Finance, agriculture, the arts, food, design and any work that rewards
     #     persistence often suit them. Their growth lies in flexibility — welcoming change when it
     #     comes, and holding possessions and opinions a little more lightly.
-    "vrishabh": "",
+    "vrishabh": "ਬ੍ਰਿਖ ਸਥਿਰ ਸੁਭਾਅ ਦੀ ਪ੍ਰਿਥਵੀ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਸ਼ੁੱਕਰ ਹੈ, ਅਤੇ ਇੱਥੇ ਚੰਦਰਮਾ ਉੱਚ ਦਾ ਹੁੰਦਾ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਬ੍ਰਿਖ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਸ਼ਾਂਤ, ਸਬਰ ਵਾਲੇ, ਵਫ਼ਾਦਾਰ ਅਤੇ ਟਿਕੇ ਹੋਏ ਹੁੰਦੇ ਹਨ, ਆਰਾਮ, ਚੰਗੇ ਖਾਣੇ, ਸੰਗੀਤ ਅਤੇ ਸੋਹਣੀਆਂ ਚੀਜ਼ਾਂ ਦੇ ਸ਼ੌਕੀਨ। ਉਹ ਹੌਲੀ ਪਰ ਪੱਕੇ ਤੌਰ ’ਤੇ ਉਸਾਰੀ ਕਰਦੇ ਹਨ, ਅਤੇ ਜੋ ਉਹ ਬਣਾਉਂਦੇ ਹਨ ਉਹ ਟਿਕਦਾ ਹੈ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਹ ਭਰੋਸੇਯੋਗ ਅਤੇ ਪਿਆਰ ਕਰਨ ਵਾਲੇ ਹੁੰਦੇ ਹਨ, ਡਰਾਮੇ ਨਾਲੋਂ ਸੁਰੱਖਿਆ ਨੂੰ ਤਰਜੀਹ ਦਿੰਦੇ ਹਨ। ਵਿੱਤ, ਖੇਤੀ, ਕਲਾਵਾਂ, ਖਾਣ-ਪੀਣ, ਡਿਜ਼ਾਈਨ ਅਤੇ ਦ੍ਰਿੜ੍ਹਤਾ ਨੂੰ ਇਨਾਮ ਦੇਣ ਵਾਲਾ ਹਰ ਕੰਮ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਲਚਕ ਵਿੱਚ ਹੈ — ਬਦਲਾਅ ਆਵੇ ਤਾਂ ਉਸ ਦਾ ਸਵਾਗਤ ਕਰਨਾ, ਅਤੇ ਚੀਜ਼ਾਂ ਤੇ ਰਾਵਾਂ ਨੂੰ ਥੋੜ੍ਹਾ ਹਲਕੇ ਹੱਥ ਨਾਲ ਫੜਨਾ।",
     # EN: Mithun (Gemini) is a dual air sign ruled by Mercury. People with the Moon in Mithun are
     #     often curious, witty, talkative and quick to learn, with many interests and a gift for
     #     connecting ideas and people. They enjoy conversation, reading, travel and anything that
@@ -2201,7 +2201,7 @@ RASHI_TRAITS = {
     #     can talk to. Writing, teaching, media, sales, technology and trade often suit them. Their
     #     growth lies in depth and focus — choosing a few things and seeing them through — and in
     #     giving their own feelings the attention they give to ideas.
-    "mithun": "",
+    "mithun": "ਮਿਥੁਨ ਦ੍ਵਿਸਵਭਾਵ ਦੀ ਵਾਯੂ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਬੁੱਧ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਮਿਥੁਨ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਜਗਿਆਸੂ, ਹਾਜ਼ਰ-ਜਵਾਬ, ਗੱਲਾਂ ਕਰਨ ਵਾਲੇ ਅਤੇ ਛੇਤੀ ਸਿੱਖਣ ਵਾਲੇ ਹੁੰਦੇ ਹਨ, ਕਈ ਸ਼ੌਕਾਂ ਅਤੇ ਵਿਚਾਰਾਂ ਤੇ ਲੋਕਾਂ ਨੂੰ ਜੋੜਨ ਦੀ ਦਾਤ ਵਾਲੇ। ਉਹ ਗੱਲ-ਬਾਤ, ਪੜ੍ਹਨ, ਸਫ਼ਰ ਅਤੇ ਮਨ ਨੂੰ ਰੁੱਝਿਆ ਰੱਖਣ ਵਾਲੀ ਹਰ ਚੀਜ਼ ਦਾ ਆਨੰਦ ਲੈਂਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਨ੍ਹਾਂ ਨੂੰ ਬਦਲਾਅ ਅਤੇ ਅਜਿਹੇ ਸਾਥੀ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ ਜੋ ਦੋਸਤ ਵੀ ਹੋਵੇ ਜਿਸ ਨਾਲ ਉਹ ਗੱਲ ਕਰ ਸਕਣ। ਲਿਖਣਾ, ਪੜ੍ਹਾਉਣਾ, ਮੀਡੀਆ, ਵਿਕਰੀ, ਤਕਨਾਲੋਜੀ ਅਤੇ ਵਪਾਰ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਡੂੰਘਾਈ ਅਤੇ ਇਕਾਗਰਤਾ ਵਿੱਚ ਹੈ — ਕੁਝ ਚੀਜ਼ਾਂ ਚੁਣ ਕੇ ਉਨ੍ਹਾਂ ਨੂੰ ਨਿਭਾਉਣਾ — ਅਤੇ ਆਪਣੀਆਂ ਭਾਵਨਾਵਾਂ ਨੂੰ ਓਨਾ ਹੀ ਧਿਆਨ ਦੇਣਾ ਜਿੰਨਾ ਉਹ ਵਿਚਾਰਾਂ ਨੂੰ ਦਿੰਦੇ ਹਨ।",
     # EN: Kark (Cancer) is a movable water sign ruled by the Moon itself, so the Moon is at home
     #     here. People with the Moon in Kark are often caring, sensitive, intuitive and devoted to
     #     family and home. They remember kindness, protect those they love and create warmth
@@ -2209,7 +2209,7 @@ RASHI_TRAITS = {
     #     Nursing, teaching, hospitality, food, real estate, counselling and public service often
     #     suit them. Their growth lies in trusting their own strength, letting go of old hurts and
     #     allowing others to care for them in return.
-    "kark": "",
+    "kark": "ਕਰਕ ਚਰ ਸੁਭਾਅ ਦੀ ਜਲ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਖ਼ੁਦ ਚੰਦਰਮਾ ਹੈ, ਇਸ ਲਈ ਇੱਥੇ ਚੰਦਰਮਾ ਆਪਣੇ ਘਰ ਵਿੱਚ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਕਰਕ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਪਰਵਾਹ ਕਰਨ ਵਾਲੇ, ਸੰਵੇਦਨਸ਼ੀਲ, ਅੰਤਰ-ਗਿਆਨੀ ਅਤੇ ਪਰਿਵਾਰ ਤੇ ਘਰ ਨੂੰ ਸਮਰਪਿਤ ਹੁੰਦੇ ਹਨ। ਉਹ ਮਿਹਰਬਾਨੀ ਨੂੰ ਯਾਦ ਰੱਖਦੇ ਹਨ, ਆਪਣਿਆਂ ਦੀ ਰਾਖੀ ਕਰਦੇ ਹਨ ਅਤੇ ਜਿੱਥੇ ਵੀ ਰਹਿਣ ਨਿੱਘ ਪੈਦਾ ਕਰ ਦਿੰਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦੇ ਮੂਡ ਲਹਿਰਾਂ ਵਾਂਗ ਬਦਲ ਸਕਦੇ ਹਨ, ਪਰ ਵਫ਼ਾਦਾਰੀ ਡੂੰਘੀ ਹੁੰਦੀ ਹੈ। ਨਰਸਿੰਗ, ਪੜ੍ਹਾਉਣਾ, ਮਹਿਮਾਨਨਿਵਾਜ਼ੀ, ਖਾਣ-ਪੀਣ, ਰੀਅਲ ਅਸਟੇਟ, ਸਲਾਹ-ਮਸ਼ਵਰਾ ਅਤੇ ਲੋਕ ਸੇਵਾ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਆਪਣੀ ਤਾਕਤ ’ਤੇ ਭਰੋਸਾ ਕਰਨ, ਪੁਰਾਣੇ ਜ਼ਖ਼ਮ ਛੱਡਣ ਅਤੇ ਬਦਲੇ ਵਿੱਚ ਦੂਜਿਆਂ ਨੂੰ ਆਪਣੀ ਸੰਭਾਲ ਕਰਨ ਦੇਣ ਵਿੱਚ ਹੈ।",
     # EN: Simha (Leo) is a fixed fire sign ruled by the Sun. People with the Moon in Simha are often
     #     generous, dignified, confident and warm-hearted, with a natural sense of leadership and a
     #     love of recognition. They are loyal to those who trust them and protective of their family
@@ -2217,7 +2217,7 @@ RASHI_TRAITS = {
     #     Leadership, administration, politics, the performing arts, teaching and government service
     #     often suit them. Their growth lies in humility — letting others share the stage, and
     #     finding confidence from within rather than from applause.
-    "simha": "",
+    "simha": "ਸਿੰਘ ਸਥਿਰ ਸੁਭਾਅ ਦੀ ਅਗਨੀ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਸੂਰਜ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਸਿੰਘ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਉਦਾਰ, ਮਾਣਮੱਤੇ, ਆਤਮ-ਵਿਸ਼ਵਾਸੀ ਅਤੇ ਨਿੱਘੇ ਦਿਲ ਵਾਲੇ ਹੁੰਦੇ ਹਨ, ਅਗਵਾਈ ਦੀ ਕੁਦਰਤੀ ਸੂਝ ਅਤੇ ਪਛਾਣ ਮਿਲਣ ਦੀ ਚਾਹਤ ਨਾਲ। ਜੋ ਉਨ੍ਹਾਂ ’ਤੇ ਭਰੋਸਾ ਕਰਦੇ ਹਨ, ਉਨ੍ਹਾਂ ਪ੍ਰਤੀ ਉਹ ਵਫ਼ਾਦਾਰ ਹੁੰਦੇ ਹਨ ਅਤੇ ਪਰਿਵਾਰ ਤੇ ਦੋਸਤਾਂ ਦੀ ਰਾਖੀ ਕਰਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਹ ਸਵੈਮਾਣੀ ਅਤੇ ਖੁੱਲ੍ਹੇ ਦਿਲ ਵਾਲੇ ਹੁੰਦੇ ਹਨ, ਅਤੇ ਕਦਰ ਮਿਲਣ ’ਤੇ ਚਮਕ ਉੱਠਦੇ ਹਨ। ਅਗਵਾਈ, ਪ੍ਰਸ਼ਾਸਨ, ਸਿਆਸਤ, ਪੇਸ਼ਕਾਰੀ ਕਲਾਵਾਂ, ਪੜ੍ਹਾਉਣਾ ਅਤੇ ਸਰਕਾਰੀ ਸੇਵਾ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਨਿਮਰਤਾ ਵਿੱਚ ਹੈ — ਦੂਜਿਆਂ ਨੂੰ ਮੰਚ ਸਾਂਝਾ ਕਰਨ ਦੇਣਾ, ਅਤੇ ਤਾੜੀਆਂ ਦੀ ਥਾਂ ਅੰਦਰੋਂ ਆਤਮ-ਵਿਸ਼ਵਾਸ ਲੱਭਣਾ।",
     # EN: Kanya (Virgo) is a dual earth sign ruled by Mercury. People with the Moon in Kanya are
     #     often practical, analytical, modest and helpful, with an eye for detail and a wish to make
     #     things work properly. They show care through service — fixing, organising and looking
@@ -2225,7 +2225,7 @@ RASHI_TRAITS = {
     #     deeply dependable. Medicine, accounting, research, editing, nutrition, teaching and any
     #     precise craft often suit them. Their growth lies in self-acceptance: being as kind to
     #     their own imperfections as they are patient with other people's needs.
-    "kanya": "",
+    "kanya": "ਕੰਨਿਆ ਦ੍ਵਿਸਵਭਾਵ ਦੀ ਪ੍ਰਿਥਵੀ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਬੁੱਧ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਕੰਨਿਆ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਵਿਹਾਰਕ, ਵਿਸ਼ਲੇਸ਼ਣੀ, ਨਿਮਰ ਅਤੇ ਮਦਦਗਾਰ ਹੁੰਦੇ ਹਨ, ਬਾਰੀਕੀਆਂ ’ਤੇ ਨਜ਼ਰ ਅਤੇ ਚੀਜ਼ਾਂ ਨੂੰ ਠੀਕ ਤਰ੍ਹਾਂ ਚਲਾਉਣ ਦੀ ਇੱਛਾ ਨਾਲ। ਉਹ ਸੇਵਾ ਰਾਹੀਂ ਪਰਵਾਹ ਜਤਾਉਂਦੇ ਹਨ — ਮੁਰੰਮਤ ਕਰਕੇ, ਸਲੀਕਾ ਬਣਾ ਕੇ ਅਤੇ ਉਹ ਛੋਟੀਆਂ ਗੱਲਾਂ ਸੰਭਾਲ ਕੇ ਜੋ ਹੋਰ ਅਣਡਿੱਠ ਕਰ ਦਿੰਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਹ ਸੰਕੋਚੀ ਹੋ ਸਕਦੇ ਹਨ, ਪਰ ਡੂੰਘੀ ਤਰ੍ਹਾਂ ਭਰੋਸੇਯੋਗ ਹੁੰਦੇ ਹਨ। ਦਵਾਈ, ਲੇਖਾਕਾਰੀ, ਖੋਜ, ਸੰਪਾਦਨ, ਪੋਸ਼ਣ, ਪੜ੍ਹਾਉਣਾ ਅਤੇ ਹਰ ਬਾਰੀਕ ਦਸਤਕਾਰੀ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੀ ਹੈ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਆਪਣੇ ਆਪ ਨੂੰ ਕਬੂਲਣ ਵਿੱਚ ਹੈ: ਆਪਣੀਆਂ ਕਮੀਆਂ ਨਾਲ ਓਨੇ ਹੀ ਮਿਹਰਬਾਨ ਹੋਣਾ ਜਿੰਨੇ ਉਹ ਦੂਜਿਆਂ ਦੀਆਂ ਲੋੜਾਂ ਲਈ ਸਬਰ ਵਾਲੇ ਹਨ।",
     # EN: Tula (Libra) is a movable air sign ruled by Venus, symbolised by the scales. People with
     #     the Moon in Tula are often gracious, fair-minded, sociable and diplomatic, with a strong
     #     sense of beauty and justice. They value harmony in relationships and are good at seeing
@@ -2233,7 +2233,7 @@ RASHI_TRAITS = {
     #     things around them are balanced. Law, diplomacy, design, fashion, the arts, counselling
     #     and business partnerships often suit them. Their growth lies in decisiveness — trusting
     #     their own judgement and accepting that a little disagreement can be healthy.
-    "tula": "",
+    "tula": "ਤੁਲਾ ਚਰ ਸੁਭਾਅ ਦੀ ਵਾਯੂ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਸ਼ੁੱਕਰ ਹੈ, ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਤੱਕੜੀ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਤੁਲਾ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਸ਼ਾਲੀਨ, ਨਿਆਂਪਸੰਦ, ਮਿਲਣਸਾਰ ਅਤੇ ਕੂਟਨੀਤਕ ਹੁੰਦੇ ਹਨ, ਸੁੰਦਰਤਾ ਤੇ ਇਨਸਾਫ਼ ਦੀ ਪ੍ਰਬਲ ਸੂਝ ਨਾਲ। ਉਹ ਰਿਸ਼ਤਿਆਂ ਵਿੱਚ ਸਦਭਾਵ ਦੀ ਕਦਰ ਕਰਦੇ ਹਨ ਅਤੇ ਕਿਸੇ ਵੀ ਸਵਾਲ ਦੇ ਦੋਵੇਂ ਪੱਖ ਵੇਖਣ ਵਿੱਚ ਮਾਹਰ ਹੁੰਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਨ੍ਹਾਂ ਨੂੰ ਸਾਂਝੇਦਾਰੀ ਦੀ ਲੋੜ ਹੁੰਦੀ ਹੈ ਅਤੇ ਜਦੋਂ ਆਲੇ-ਦੁਆਲੇ ਸੰਤੁਲਨ ਹੋਵੇ ਤਾਂ ਉਹ ਸਭ ਤੋਂ ਸਹਿਜ ਮਹਿਸੂਸ ਕਰਦੇ ਹਨ। ਕਾਨੂੰਨ, ਕੂਟਨੀਤੀ, ਡਿਜ਼ਾਈਨ, ਫ਼ੈਸ਼ਨ, ਕਲਾਵਾਂ, ਸਲਾਹ-ਮਸ਼ਵਰਾ ਅਤੇ ਕਾਰੋਬਾਰੀ ਸਾਂਝੇਦਾਰੀਆਂ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੀਆਂ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਫ਼ੈਸਲਾਕੁੰਨ ਹੋਣ ਵਿੱਚ ਹੈ — ਆਪਣੀ ਸਮਝ ’ਤੇ ਭਰੋਸਾ ਕਰਨਾ ਅਤੇ ਇਹ ਮੰਨਣਾ ਕਿ ਥੋੜ੍ਹੀ ਅਸਹਿਮਤੀ ਸਿਹਤਮੰਦ ਹੋ ਸਕਦੀ ਹੈ।",
     # EN: Vrishchik (Scorpio) is a fixed water sign ruled by Mars. People with the Moon in Vrishchik
     #     are often intense, perceptive, determined and deeply loyal, with feelings that run far
     #     below the surface. They are not satisfied with appearances and want to understand what is
@@ -2241,7 +2241,7 @@ RASHI_TRAITS = {
     #     Research, investigation, medicine, psychology, finance and crisis work often suit them.
     #     Their growth lies in trust and forgiveness: letting others in, and allowing old feelings
     #     to transform rather than be held.
-    "vrishchik": "",
+    "vrishchik": "ਬ੍ਰਿਸ਼ਚਕ ਸਥਿਰ ਸੁਭਾਅ ਦੀ ਜਲ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਮੰਗਲ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਬ੍ਰਿਸ਼ਚਕ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਤੀਬਰ, ਸੂਝਵਾਨ, ਦ੍ਰਿੜ੍ਹ ਅਤੇ ਡੂੰਘੀ ਤਰ੍ਹਾਂ ਵਫ਼ਾਦਾਰ ਹੁੰਦੇ ਹਨ, ਉਨ੍ਹਾਂ ਦੀਆਂ ਭਾਵਨਾਵਾਂ ਸਤਹ ਤੋਂ ਬਹੁਤ ਹੇਠਾਂ ਵਗਦੀਆਂ ਹਨ। ਉਹ ਦਿਖਾਵੇ ਨਾਲ ਸੰਤੁਸ਼ਟ ਨਹੀਂ ਹੁੰਦੇ ਅਤੇ ਸਮਝਣਾ ਚਾਹੁੰਦੇ ਹਨ ਕਿ ਅਸਲ ਵਿੱਚ ਕੀ ਚੱਲ ਰਿਹਾ ਹੈ। ਇੱਕ ਵਾਰ ਕਿਸੇ ਵਿਅਕਤੀ, ਮਕਸਦ ਜਾਂ ਟੀਚੇ ਪ੍ਰਤੀ ਵਚਨਬੱਧ ਹੋ ਜਾਣ ਤਾਂ ਉਹ ਘੱਟ ਹੀ ਛੱਡਦੇ ਹਨ। ਖੋਜ, ਜਾਂਚ-ਪੜਤਾਲ, ਦਵਾਈ, ਮਨੋਵਿਗਿਆਨ, ਵਿੱਤ ਅਤੇ ਸੰਕਟ ਦਾ ਕੰਮ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਭਰੋਸੇ ਅਤੇ ਮੁਆਫ਼ੀ ਵਿੱਚ ਹੈ: ਦੂਜਿਆਂ ਨੂੰ ਅੰਦਰ ਆਉਣ ਦੇਣਾ, ਅਤੇ ਪੁਰਾਣੀਆਂ ਭਾਵਨਾਵਾਂ ਨੂੰ ਫੜੀ ਰੱਖਣ ਦੀ ਥਾਂ ਬਦਲਣ ਦੇਣਾ।",
     # EN: Dhanu (Sagittarius) is a dual fire sign ruled by Jupiter, symbolised by the archer. People
     #     with the Moon in Dhanu are often optimistic, honest, generous and philosophical, with a
     #     love of learning, travel and freedom. They look for meaning in life and enjoy sharing what
@@ -2249,7 +2249,7 @@ RASHI_TRAITS = {
     #     Teaching, law, religion and philosophy, publishing, travel and sport often suit them.
     #     Their growth lies in following through — giving the same attention to the details of daily
     #     life that they give to big ideas and distant horizons.
-    "dhanu": "",
+    "dhanu": "ਧਨੁ ਦ੍ਵਿਸਵਭਾਵ ਦੀ ਅਗਨੀ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਬ੍ਰਿਹਸਪਤੀ ਹੈ, ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਤੀਰਅੰਦਾਜ਼ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਧਨੁ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਆਸ਼ਾਵਾਦੀ, ਸੱਚੇ, ਉਦਾਰ ਅਤੇ ਦਾਰਸ਼ਨਿਕ ਹੁੰਦੇ ਹਨ, ਪੜ੍ਹਾਈ, ਸਫ਼ਰ ਅਤੇ ਆਜ਼ਾਦੀ ਦੇ ਪ੍ਰੇਮੀ। ਉਹ ਜ਼ਿੰਦਗੀ ਦਾ ਮਤਲਬ ਲੱਭਦੇ ਹਨ ਅਤੇ ਜੋ ਸਿੱਖਿਆ ਹੋਵੇ ਉਹ ਵੰਡਣਾ ਪਸੰਦ ਕਰਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਹ ਖੁੱਲ੍ਹੇ ਅਤੇ ਖ਼ੁਸ਼ਮਿਜ਼ਾਜ ਹੁੰਦੇ ਹਨ, ਅਤੇ ਉਨ੍ਹਾਂ ਨੂੰ ਵਧਣ ਲਈ ਥਾਂ ਚਾਹੀਦੀ ਹੈ। ਪੜ੍ਹਾਉਣਾ, ਕਾਨੂੰਨ, ਧਰਮ ਤੇ ਫ਼ਲਸਫ਼ਾ, ਪ੍ਰਕਾਸ਼ਨ, ਸਫ਼ਰ ਅਤੇ ਖੇਡ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਕੰਮ ਨੂੰ ਪੂਰਾ ਕਰਨ ਵਿੱਚ ਹੈ — ਰੋਜ਼ਾਨਾ ਜ਼ਿੰਦਗੀ ਦੀਆਂ ਬਾਰੀਕੀਆਂ ਨੂੰ ਓਨਾ ਹੀ ਧਿਆਨ ਦੇਣਾ ਜਿੰਨਾ ਉਹ ਵੱਡੇ ਵਿਚਾਰਾਂ ਅਤੇ ਦੂਰ ਦੇ ਦਿਸਹੱਦਿਆਂ ਨੂੰ ਦਿੰਦੇ ਹਨ।",
     # EN: Makar (Capricorn) is a movable earth sign ruled by Saturn. People with the Moon in Makar
     #     are often responsible, disciplined, practical and ambitious in a patient, long-term way.
     #     They take duty seriously, work steadily and earn respect over time. Emotionally they can
@@ -2257,7 +2257,7 @@ RASHI_TRAITS = {
     #     management, engineering, government service, finance and any field that rewards
     #     perseverance often suit them. Their growth lies in warmth and rest — allowing themselves
     #     joy along the way, and remembering that their worth is not measured only by achievement.
-    "makar": "",
+    "makar": "ਮਕਰ ਚਰ ਸੁਭਾਅ ਦੀ ਪ੍ਰਿਥਵੀ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਸ਼ਨੀ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਮਕਰ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਜ਼ਿੰਮੇਵਾਰ, ਅਨੁਸ਼ਾਸਿਤ, ਵਿਹਾਰਕ ਅਤੇ ਸਬਰ ਵਾਲੇ, ਲੰਮੇ ਸਮੇਂ ਦੇ ਢੰਗ ਨਾਲ ਉੱਚ-ਅਕਾਂਖਿਆ ਵਾਲੇ ਹੁੰਦੇ ਹਨ। ਉਹ ਫ਼ਰਜ਼ ਨੂੰ ਗੰਭੀਰਤਾ ਨਾਲ ਲੈਂਦੇ ਹਨ, ਲਗਾਤਾਰ ਕੰਮ ਕਰਦੇ ਹਨ ਅਤੇ ਸਮੇਂ ਨਾਲ ਇੱਜ਼ਤ ਕਮਾਉਂਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਹ ਸੰਕੋਚੀ ਲੱਗ ਸਕਦੇ ਹਨ, ਪਰ ਪਿਆਰ ਭਰੋਸੇਯੋਗਤਾ ਅਤੇ ਚੁੱਪ ਸਹਾਰੇ ਰਾਹੀਂ ਜਤਾਉਂਦੇ ਹਨ। ਪ੍ਰਸ਼ਾਸਨ, ਪ੍ਰਬੰਧ, ਇੰਜੀਨੀਅਰਿੰਗ, ਸਰਕਾਰੀ ਸੇਵਾ, ਵਿੱਤ ਅਤੇ ਲਗਨ ਨੂੰ ਇਨਾਮ ਦੇਣ ਵਾਲਾ ਹਰ ਖੇਤਰ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦਾ ਹੈ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਨਿੱਘ ਅਤੇ ਆਰਾਮ ਵਿੱਚ ਹੈ — ਰਾਹ ਵਿੱਚ ਆਪਣੇ ਆਪ ਨੂੰ ਖ਼ੁਸ਼ੀ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣਾ, ਅਤੇ ਯਾਦ ਰੱਖਣਾ ਕਿ ਉਨ੍ਹਾਂ ਦੀ ਕੀਮਤ ਸਿਰਫ਼ ਪ੍ਰਾਪਤੀ ਨਾਲ ਨਹੀਂ ਮਾਪੀ ਜਾਂਦੀ।",
     # EN: Kumbh (Aquarius) is a fixed air sign ruled by Saturn, symbolised by the water-bearer who
     #     pours knowledge out for all. People with the Moon in Kumbh are often independent,
     #     humanitarian, inventive and loyal to friends and ideals. They think about the wider
@@ -2265,7 +2265,7 @@ RASHI_TRAITS = {
     #     freedom, and they show care through principle and action. Science, technology, social
     #     work, research, education and community organisations often suit them. Their growth lies
     #     in closeness — letting their warmth show to individuals as well as to humanity as a whole.
-    "kumbh": "",
+    "kumbh": "ਕੁੰਭ ਸਥਿਰ ਸੁਭਾਅ ਦੀ ਵਾਯੂ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਸ਼ਨੀ ਹੈ, ਅਤੇ ਇਸ ਦਾ ਚਿੰਨ੍ਹ ਪਾਣੀ ਢੋਣ ਵਾਲਾ ਹੈ ਜੋ ਸਭ ਲਈ ਗਿਆਨ ਵਹਾਉਂਦਾ ਹੈ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਕੁੰਭ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਆਜ਼ਾਦ, ਮਨੁੱਖਤਾਵਾਦੀ, ਕਾਢਕਾਰ ਅਤੇ ਦੋਸਤਾਂ ਤੇ ਆਦਰਸ਼ਾਂ ਪ੍ਰਤੀ ਵਫ਼ਾਦਾਰ ਹੁੰਦੇ ਹਨ। ਉਹ ਵਿਸ਼ਾਲ ਭਾਈਚਾਰੇ ਬਾਰੇ ਸੋਚਦੇ ਹਨ ਅਤੇ ਨਵੇਂ ਵਿਚਾਰਾਂ, ਵਿਗਿਆਨ ਤੇ ਸੁਧਾਰ ਦਾ ਆਨੰਦ ਲੈਂਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਹ ਦੋਸਤੀ ਅਤੇ ਆਜ਼ਾਦੀ ਦੀ ਕਦਰ ਕਰਦੇ ਹਨ, ਅਤੇ ਪਰਵਾਹ ਅਸੂਲਾਂ ਤੇ ਕਰਮ ਰਾਹੀਂ ਜਤਾਉਂਦੇ ਹਨ। ਵਿਗਿਆਨ, ਤਕਨਾਲੋਜੀ, ਸਮਾਜ ਸੇਵਾ, ਖੋਜ, ਸਿੱਖਿਆ ਅਤੇ ਭਾਈਚਾਰਕ ਸੰਸਥਾਵਾਂ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੀਆਂ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਨੇੜਤਾ ਵਿੱਚ ਹੈ — ਆਪਣੀ ਨਿੱਘ ਨੂੰ ਪੂਰੀ ਮਨੁੱਖਤਾ ਦੇ ਨਾਲ-ਨਾਲ ਇੱਕ-ਇੱਕ ਵਿਅਕਤੀ ਲਈ ਵੀ ਦਿਖਾਉਣਾ।",
     # EN: Meen (Pisces) is a dual water sign ruled by Jupiter, the last of the twelve rashis. People
     #     with the Moon in Meen are often compassionate, imaginative, gentle and spiritually
     #     inclined, with a deep sensitivity to the feelings of others. They forgive easily, help
@@ -2274,203 +2274,203 @@ RASHI_TRAITS = {
     #     spiritual work often suit them. Their growth lies in healthy boundaries — caring for
     #     others without losing themselves, and turning their rich imagination into practical
     #     action.
-    "meen": "",
+    "meen": "ਮੀਨ ਦ੍ਵਿਸਵਭਾਵ ਦੀ ਜਲ ਰਾਸ਼ੀ ਹੈ ਜਿਸ ਦਾ ਸੁਆਮੀ ਬ੍ਰਿਹਸਪਤੀ ਹੈ, ਬਾਰਾਂ ਰਾਸ਼ੀਆਂ ਵਿੱਚੋਂ ਆਖ਼ਰੀ। ਜਿਨ੍ਹਾਂ ਦਾ ਚੰਦਰਮਾ ਮੀਨ ਵਿੱਚ ਹੋਵੇ, ਉਹ ਅਕਸਰ ਦਇਆਵਾਨ, ਕਲਪਨਾਸ਼ੀਲ, ਕੋਮਲ ਅਤੇ ਅਧਿਆਤਮਿਕ ਝੁਕਾਅ ਵਾਲੇ ਹੁੰਦੇ ਹਨ, ਦੂਜਿਆਂ ਦੀਆਂ ਭਾਵਨਾਵਾਂ ਪ੍ਰਤੀ ਡੂੰਘੀ ਸੰਵੇਦਨਸ਼ੀਲਤਾ ਨਾਲ। ਉਹ ਆਸਾਨੀ ਨਾਲ ਮੁਆਫ਼ ਕਰ ਦਿੰਦੇ ਹਨ, ਬਿਨਾਂ ਕਹੇ ਮਦਦ ਕਰਦੇ ਹਨ ਅਤੇ ਸੰਗੀਤ, ਕਲਾ ਤੇ ਭਗਤੀ ਤੋਂ ਪ੍ਰਭਾਵਿਤ ਹੁੰਦੇ ਹਨ। ਭਾਵਨਾਤਮਕ ਤੌਰ ’ਤੇ ਉਹ ਖੁੱਲ੍ਹੇ ਦਿਲ ਵਾਲੇ ਅਤੇ ਅੰਤਰ-ਗਿਆਨੀ ਹੁੰਦੇ ਹਨ। ਇਲਾਜ, ਸਲਾਹ-ਮਸ਼ਵਰਾ, ਕਲਾਵਾਂ, ਸੰਗੀਤ, ਦਾਨ, ਪੜ੍ਹਾਉਣਾ ਅਤੇ ਅਧਿਆਤਮਿਕ ਕੰਮ ਅਕਸਰ ਉਨ੍ਹਾਂ ਨੂੰ ਰਾਸ ਆਉਂਦੇ ਹਨ। ਉਨ੍ਹਾਂ ਦਾ ਵਿਕਾਸ ਸਿਹਤਮੰਦ ਹੱਦਾਂ ਵਿੱਚ ਹੈ — ਆਪਣੇ ਆਪ ਨੂੰ ਗੁਆਏ ਬਿਨਾਂ ਦੂਜਿਆਂ ਦੀ ਪਰਵਾਹ ਕਰਨਾ, ਅਤੇ ਆਪਣੀ ਅਮੀਰ ਕਲਪਨਾ ਨੂੰ ਵਿਹਾਰਕ ਕਰਮ ਵਿੱਚ ਬਦਲਣਾ।",
 }
 
 # app/nakshatra_text.py FACTS["pa"] — deity.<slug> and symbol.<slug> of each nakshatra  [54]
 NAKSHATRA_FACTS = {
     # EN: The Ashwini Kumaras, the divine physicians
-    "deity.ashwini": "",
+    "deity.ashwini": "ਅਸ਼ਵਿਨੀ ਕੁਮਾਰ, ਦੇਵਤਿਆਂ ਦੇ ਵੈਦ",
     # EN: A horse's head
-    "symbol.ashwini": "",
+    "symbol.ashwini": "ਘੋੜੇ ਦਾ ਸਿਰ",
     # EN: Yama, lord of dharma
-    "deity.bharani": "",
+    "deity.bharani": "ਯਮ, ਧਰਮ ਦਾ ਸੁਆਮੀ",
     # EN: The yoni (womb)
-    "symbol.bharani": "",
+    "symbol.bharani": "ਯੋਨੀ (ਕੁੱਖ)",
     # EN: Agni, the fire
-    "deity.krittika": "",
+    "deity.krittika": "ਅਗਨੀ, ਅੱਗ",
     # EN: A razor or flame
-    "symbol.krittika": "",
+    "symbol.krittika": "ਉਸਤਰਾ ਜਾਂ ਲਾਟ",
     # EN: Brahma (Prajapati)
-    "deity.rohini": "",
+    "deity.rohini": "ਬ੍ਰਹਮਾ (ਪ੍ਰਜਾਪਤੀ)",
     # EN: A chariot or ox-cart
-    "symbol.rohini": "",
+    "symbol.rohini": "ਰਥ ਜਾਂ ਬਲਦ-ਗੱਡੀ",
     # EN: Soma, the Moon
-    "deity.mrigashira": "",
+    "deity.mrigashira": "ਸੋਮ, ਚੰਦਰਮਾ",
     # EN: A deer's head
-    "symbol.mrigashira": "",
+    "symbol.mrigashira": "ਹਿਰਨ ਦਾ ਸਿਰ",
     # EN: Rudra
-    "deity.ardra": "",
+    "deity.ardra": "ਰੁਦਰ",
     # EN: A teardrop or diamond
-    "symbol.ardra": "",
+    "symbol.ardra": "ਅੱਥਰੂ ਦੀ ਬੂੰਦ ਜਾਂ ਹੀਰਾ",
     # EN: Aditi, mother of the gods
-    "deity.punarvasu": "",
+    "deity.punarvasu": "ਅਦਿਤੀ, ਦੇਵਤਿਆਂ ਦੀ ਮਾਂ",
     # EN: A bow and quiver
-    "symbol.punarvasu": "",
+    "symbol.punarvasu": "ਧਨੁਸ਼ ਅਤੇ ਤਰਕਸ਼",
     # EN: Brihaspati, guru of the gods
-    "deity.pushya": "",
+    "deity.pushya": "ਬ੍ਰਿਹਸਪਤੀ, ਦੇਵਤਿਆਂ ਦਾ ਗੁਰੂ",
     # EN: A cow's udder or lotus
-    "symbol.pushya": "",
+    "symbol.pushya": "ਗਾਂ ਦਾ ਥਣ ਜਾਂ ਕਮਲ",
     # EN: The Nagas (serpent deities)
-    "deity.ashlesha": "",
+    "deity.ashlesha": "ਨਾਗ (ਸੱਪ ਦੇਵਤੇ)",
     # EN: A coiled serpent
-    "symbol.ashlesha": "",
+    "symbol.ashlesha": "ਕੁੰਡਲੀ ਮਾਰਿਆ ਸੱਪ",
     # EN: The Pitris (ancestors)
-    "deity.magha": "",
+    "deity.magha": "ਪਿਤਰ (ਪੁਰਖੇ)",
     # EN: A royal throne
-    "symbol.magha": "",
+    "symbol.magha": "ਸ਼ਾਹੀ ਸਿੰਘਾਸਣ",
     # EN: Bhaga, giver of fortune
-    "deity.purva-phalguni": "",
+    "deity.purva-phalguni": "ਭਗ, ਕਿਸਮਤ ਦੇਣ ਵਾਲਾ",
     # EN: The front legs of a bed
-    "symbol.purva-phalguni": "",
+    "symbol.purva-phalguni": "ਪਲੰਘ ਦੀਆਂ ਅਗਲੀਆਂ ਲੱਤਾਂ",
     # EN: Aryaman, lord of friendship
-    "deity.uttara-phalguni": "",
+    "deity.uttara-phalguni": "ਅਰਿਆਮਾ, ਦੋਸਤੀ ਦਾ ਸੁਆਮੀ",
     # EN: The back legs of a bed
-    "symbol.uttara-phalguni": "",
+    "symbol.uttara-phalguni": "ਪਲੰਘ ਦੀਆਂ ਪਿਛਲੀਆਂ ਲੱਤਾਂ",
     # EN: Savitr, the Sun
-    "deity.hasta": "",
+    "deity.hasta": "ਸਵਿਤ੍ਰ, ਸੂਰਜ",
     # EN: A hand
-    "symbol.hasta": "",
+    "symbol.hasta": "ਹੱਥ",
     # EN: Tvashtr (Vishwakarma), the divine architect
-    "deity.chitra": "",
+    "deity.chitra": "ਤ੍ਵਸ਼ਟਾ (ਵਿਸ਼ਵਕਰਮਾ), ਦੈਵੀ ਵਾਸਤੂਕਾਰ",
     # EN: A bright jewel
-    "symbol.chitra": "",
+    "symbol.chitra": "ਚਮਕਦਾ ਰਤਨ",
     # EN: Vayu, the wind
-    "deity.swati": "",
+    "deity.swati": "ਵਾਯੂ, ਹਵਾ",
     # EN: A young shoot swaying in the wind
-    "symbol.swati": "",
+    "symbol.swati": "ਹਵਾ ਵਿੱਚ ਝੂਲਦਾ ਨਵਾਂ ਫੁੱਟਿਆ ਬੂਟਾ",
     # EN: Indra and Agni (Indragni)
-    "deity.vishakha": "",
+    "deity.vishakha": "ਇੰਦਰ ਅਤੇ ਅਗਨੀ (ਇੰਦਰਾਗਨੀ)",
     # EN: A triumphal arch
-    "symbol.vishakha": "",
+    "symbol.vishakha": "ਜਿੱਤ ਦਾ ਦੁਆਰ",
     # EN: Mitra, lord of friendship
-    "deity.anuradha": "",
+    "deity.anuradha": "ਮਿਤ੍ਰ, ਦੋਸਤੀ ਦਾ ਸੁਆਮੀ",
     # EN: A lotus
-    "symbol.anuradha": "",
+    "symbol.anuradha": "ਕਮਲ",
     # EN: Indra, king of the gods
-    "deity.jyeshtha": "",
+    "deity.jyeshtha": "ਇੰਦਰ, ਦੇਵਤਿਆਂ ਦਾ ਰਾਜਾ",
     # EN: A circular amulet or earring
-    "symbol.jyeshtha": "",
+    "symbol.jyeshtha": "ਗੋਲ ਤਵੀਤ ਜਾਂ ਕੰਨ ਦੀ ਵਾਲੀ",
     # EN: Nirriti
-    "deity.mula": "",
+    "deity.mula": "ਨਿਰ੍ਰਿਤੀ",
     # EN: A bunch of roots
-    "symbol.mula": "",
+    "symbol.mula": "ਜੜ੍ਹਾਂ ਦਾ ਗੁੱਛਾ",
     # EN: Apas, the waters
-    "deity.purva-ashadha": "",
+    "deity.purva-ashadha": "ਆਪਸ, ਜਲ",
     # EN: A winnowing fan or elephant tusk
-    "symbol.purva-ashadha": "",
+    "symbol.purva-ashadha": "ਛੱਜ ਜਾਂ ਹਾਥੀ ਦਾ ਦੰਦ",
     # EN: The Vishvedevas (universal gods)
-    "deity.uttara-ashadha": "",
+    "deity.uttara-ashadha": "ਵਿਸ਼ਵੇਦੇਵ (ਸਰਬ ਦੇਵਤੇ)",
     # EN: An elephant tusk
-    "symbol.uttara-ashadha": "",
+    "symbol.uttara-ashadha": "ਹਾਥੀ ਦਾ ਦੰਦ",
     # EN: Vishnu
-    "deity.shravana": "",
+    "deity.shravana": "ਵਿਸ਼ਨੂੰ",
     # EN: An ear, or three footprints
-    "symbol.shravana": "",
+    "symbol.shravana": "ਕੰਨ, ਜਾਂ ਤਿੰਨ ਪੈੜਾਂ",
     # EN: The eight Vasus
-    "deity.dhanishta": "",
+    "deity.dhanishta": "ਅੱਠ ਵਸੂ",
     # EN: A drum (mridanga)
-    "symbol.dhanishta": "",
+    "symbol.dhanishta": "ਢੋਲ (ਮ੍ਰਿਦੰਗ)",
     # EN: Varuna, lord of the waters
-    "deity.shatabhisha": "",
+    "deity.shatabhisha": "ਵਰੁਣ, ਜਲ ਦਾ ਸੁਆਮੀ",
     # EN: An empty circle
-    "symbol.shatabhisha": "",
+    "symbol.shatabhisha": "ਖ਼ਾਲੀ ਚੱਕਰ",
     # EN: Aja Ekapada
-    "deity.purva-bhadrapada": "",
+    "deity.purva-bhadrapada": "ਅਜ ਏਕਪਾਦ",
     # EN: Swords, or the front legs of a cot
-    "symbol.purva-bhadrapada": "",
+    "symbol.purva-bhadrapada": "ਤਲਵਾਰਾਂ, ਜਾਂ ਮੰਜੇ ਦੀਆਂ ਅਗਲੀਆਂ ਲੱਤਾਂ",
     # EN: Ahir Budhnya, serpent of the deep
-    "deity.uttara-bhadrapada": "",
+    "deity.uttara-bhadrapada": "ਅਹਿਰ ਬੁਧਨਯ, ਡੂੰਘੇ ਜਲ ਦਾ ਸੱਪ",
     # EN: The back legs of a cot, or twins
-    "symbol.uttara-bhadrapada": "",
+    "symbol.uttara-bhadrapada": "ਮੰਜੇ ਦੀਆਂ ਪਿਛਲੀਆਂ ਲੱਤਾਂ, ਜਾਂ ਜੁੜਵਾਂ",
     # EN: Pushan, the nourisher and guide
-    "deity.revati": "",
+    "deity.revati": "ਪੂਸ਼ਨ, ਪਾਲਣਹਾਰ ਅਤੇ ਰਾਹ-ਦਸੇਰਾ",
     # EN: A fish (or a drum)
-    "symbol.revati": "",
+    "symbol.revati": "ਮੱਛੀ (ਜਾਂ ਢੋਲ)",
 }
 
 # app/naam_milan_text.py TEXT["pa"] — page text of /naam-se-kundali-milan  [34]
 NAAM_MILAN_TEXT = {
     # EN: Naam se Kundali Milan — Match 36 Gunas by Name, Free | {brand}
     # keep: {brand}
-    "title": "",
+    "title": "ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ — ਨਾਂ ਨਾਲ 36 ਗੁਣ ਮਿਲਾਓ, ਮੁਫ਼ਤ | {brand}",
     # EN: Kundali milan by name: the first syllable of the boy's and girl's names gives each
     #     nakshatra and rashi, then the full 36-guna Ashtakoot match. Type names in Hindi or English
     #     — free, no sign-up.
-    "desc": "",
+    "desc": "ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ: ਮੁੰਡੇ ਅਤੇ ਕੁੜੀ ਦੇ ਨਾਂ ਦੇ ਪਹਿਲੇ ਅੱਖਰ ਤੋਂ ਨਕਸ਼ਤਰ ਤੇ ਰਾਸ਼ੀ ਨਿਕਲਦੀ ਹੈ, ਫਿਰ ਪੂਰਾ 36 ਗੁਣਾਂ ਦਾ ਅਸ਼ਟਕੂਟ ਮਿਲਾਨ। ਨਾਂ ਹਿੰਦੀ ਜਾਂ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਲਿਖੋ — ਮੁਫ਼ਤ, ਬਿਨਾਂ ਸਾਈਨ ਅੱਪ।",
     # EN: Naam se Kundali Milan
-    "crumb": "",
+    "crumb": "ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ",
     # EN: <h1>Naam se Kundali Milan — Match by Name</h1>
-    "h1": "",
+    "h1": "<h1>ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ — ਨਾਂ ਨਾਲ ਮਿਲਾਨ</h1>",
     # EN: <p class="hi" lang="hi">नाम से कुंडली मिलान</p>
-    "sub": "",
+    "sub": "<p class=\"hi\">ਨਾਂ ਦੇ ਪਹਿਲੇ ਅੱਖਰ ਤੋਂ ਨਕਸ਼ਤਰ, ਰਾਸ਼ੀ ਅਤੇ 36 ਗੁਣ</p>",
     # EN: <p>When birth times are not known, tradition matches a couple by the <strong>first
     #     syllable of their names</strong>. Type both names in Hindi or English: we show the
     #     syllable used, its nakshatra pada and rashi, and the full 36-guna match.</p>
-    "intro": "",
+    "intro": "<p>ਜਦੋਂ ਜਨਮ ਦਾ ਸਮਾਂ ਪਤਾ ਨਾ ਹੋਵੇ, ਰਵਾਇਤ ਅਨੁਸਾਰ ਜੋੜੇ ਦਾ ਮਿਲਾਨ <strong>ਨਾਂ ਦੇ ਪਹਿਲੇ ਅੱਖਰ</strong> ਨਾਲ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਦੋਵੇਂ ਨਾਂ ਹਿੰਦੀ ਜਾਂ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਲਿਖੋ: ਅਸੀਂ ਵਰਤਿਆ ਗਿਆ ਅੱਖਰ, ਉਸ ਦਾ ਨਕਸ਼ਤਰ ਚਰਣ ਅਤੇ ਰਾਸ਼ੀ, ਅਤੇ ਪੂਰਾ 36 ਗੁਣਾਂ ਦਾ ਮਿਲਾਨ ਦਿਖਾਵਾਂਗੇ।</p>",
     # EN: Open birth-chart Kundali Milan
-    "open_milan": "",
+    "open_milan": "ਜਨਮ ਕੁੰਡਲੀ ਵਾਲਾ ਕੁੰਡਲੀ ਮਿਲਾਨ ਖੋਲ੍ਹੋ",
     # EN: Automatic, from the name
-    "auto": "",
+    "auto": "ਆਪਣੇ ਆਪ, ਨਾਂ ਤੋਂ",
     # EN: Other likely syllables for this name
-    "alt_head": "",
+    "alt_head": "ਇਸ ਨਾਂ ਲਈ ਹੋਰ ਸੰਭਵ ਅੱਖਰ",
     # EN: All 108 syllables
-    "all_head": "",
+    "all_head": "ਸਾਰੇ 108 ਅੱਖਰ",
     # EN: Boy's name (groom)
-    "boy_label": "",
+    "boy_label": "ਮੁੰਡੇ (ਲਾੜੇ) ਦਾ ਨਾਂ",
     # EN: Girl's name (bride)
-    "girl_label": "",
+    "girl_label": "ਕੁੜੀ (ਲਾੜੀ) ਦਾ ਨਾਂ",
     # EN: e.g. Ram or राम
-    "boy_ph": "",
+    "boy_ph": "ਜਿਵੇਂ Ram",
     # EN: e.g. Sita or सीता
-    "girl_ph": "",
+    "girl_ph": "ਜਿਵੇਂ Sita",
     # EN: Change the first syllable
-    "pick": "",
+    "pick": "ਪਹਿਲਾ ਅੱਖਰ ਬਦਲੋ",
     # EN: Match the gunas
-    "button": "",
+    "button": "ਗੁਣ ਮਿਲਾਓ",
     # EN: This syllable belongs to Abhijit, the 28th nakshatra; in the 27-nakshatra wheel it is
     #     counted in Uttara Ashadha pada 4.
-    "via.abhijit": "",
+    "via.abhijit": "ਇਹ ਅੱਖਰ ਅਭਿਜੀਤ, ਯਾਨੀ 28ਵੇਂ ਨਕਸ਼ਤਰ, ਦਾ ਹੈ; 27 ਨਕਸ਼ਤਰਾਂ ਦੇ ਚੱਕਰ ਵਿੱਚ ਇਸ ਨੂੰ ਉੱਤਰਾ ਆਸ਼ਾੜ੍ਹਾ ਦੇ ਚੌਥੇ ਚਰਣ ਵਿੱਚ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ।",
     # EN: By the traditional rule, ब is read as व, and श as ष (with the a-vowel) or स.
-    "via.alias": "",
+    "via.alias": "ਰਵਾਇਤੀ ਨਿਯਮ ਮੁਤਾਬਕ ‘ਬ’ ਨੂੰ ‘ਵ’ ਵਜੋਂ, ਅਤੇ ‘ਸ਼’ ਨੂੰ ਮੂਰਧਨੀ ‘ਸ਼’ (ਅ-ਸੁਰ ਸਮੇਤ) ਜਾਂ ‘ਸ’ ਵਜੋਂ ਪੜ੍ਹਿਆ ਗਿਆ ਹੈ।",
     # EN: This exact syllable is not in the 108-syllable list, so the nearest syllable with the same
     #     consonant was used — change it below if you prefer.
-    "via.nearest": "",
+    "via.nearest": "ਇਹ ਹੂਬਹੂ ਅੱਖਰ 108 ਦੀ ਸੂਚੀ ਵਿੱਚ ਨਹੀਂ ਹੈ, ਇਸ ਲਈ ਓਸੇ ਵਿਅੰਜਨ ਵਾਲਾ ਸਭ ਤੋਂ ਨੇੜਲਾ ਅੱਖਰ ਲਿਆ ਗਿਆ ਹੈ — ਚਾਹੋ ਤਾਂ ਹੇਠਾਂ ਬਦਲ ਲਵੋ।",
     # EN: An English spelling cannot settle this syllable (e.g. T = त or ट), so the most common
     #     reading was used — pick another below if needed.
-    "via.latin": "",
+    "via.latin": "ਅੰਗਰੇਜ਼ੀ ਸਪੈਲਿੰਗ ਤੋਂ ਇਹ ਅੱਖਰ ਪੱਕਾ ਨਹੀਂ ਹੋ ਸਕਦਾ (ਜਿਵੇਂ T = ਤ ਜਾਂ ਟ), ਇਸ ਲਈ ਸਭ ਤੋਂ ਆਮ ਉਚਾਰਨ ਲਿਆ ਗਿਆ ਹੈ — ਲੋੜ ਹੋਵੇ ਤਾਂ ਹੇਠਾਂ ਕੋਈ ਹੋਰ ਚੁਣੋ।",
     # EN: You chose this syllable.
-    "via.chosen": "",
+    "via.chosen": "ਇਹ ਅੱਖਰ ਤੁਸੀਂ ਆਪ ਚੁਣਿਆ ਹੈ।",
     # EN: Could not read a first syllable from this name — pick one from the list below.
-    "unreadable": "",
+    "unreadable": "ਇਸ ਨਾਂ ਤੋਂ ਪਹਿਲਾ ਅੱਖਰ ਨਹੀਂ ਪੜ੍ਹਿਆ ਜਾ ਸਕਿਆ — ਹੇਠਾਂ ਦਿੱਤੀ ਸੂਚੀ ਵਿੱਚੋਂ ਇੱਕ ਚੁਣੋ।",
     # EN: pada
-    "pada": "",
+    "pada": "ਚਰਣ",
     # EN: Result
-    "result": "",
+    "result": "ਨਤੀਜਾ",
     # EN: <tr><th></th><th>First syllable</th><th>Nakshatra</th><th>Rashi</th></tr>
-    "res.head": "",
+    "res.head": "<tr><th></th><th>ਪਹਿਲਾ ਅੱਖਰ</th><th>ਨਕਸ਼ਤਰ</th><th>ਰਾਸ਼ੀ</th></tr>",
     # EN: Boy
-    "boy": "",
+    "boy": "ਮੁੰਡਾ",
     # EN: Girl
-    "girl": "",
+    "girl": "ਕੁੜੀ",
     # EN: <tr><th>Koota</th><th>Points</th><th>Why</th></tr>
-    "res.th": "",
+    "res.th": "<tr><th>ਕੂਟ</th><th>ਅੰਕ</th><th>ਕਾਰਨ</th></tr>",
     # EN: Total
-    "total": "",
+    "total": "ਕੁੱਲ",
     # EN: <strong>Mangal dosha: not applicable.</strong> Mangal dosha depends on where Mars stood
     #     from the Lagna, Moon and Venus at birth — a name cannot tell you that. Use birth-chart
     #     matching for it.
-    "mangal": "",
+    "mangal": "<strong>ਮੰਗਲ ਦੋਸ਼: ਲਾਗੂ ਨਹੀਂ।</strong> ਮੰਗਲ ਦੋਸ਼ ਇਸ ਗੱਲ ’ਤੇ ਨਿਰਭਰ ਕਰਦਾ ਹੈ ਕਿ ਜਨਮ ਵੇਲੇ ਮੰਗਲ ਲਗਨ, ਚੰਦਰਮਾ ਅਤੇ ਸ਼ੁੱਕਰ ਤੋਂ ਕਿੱਥੇ ਸੀ — ਨਾਂ ਤੋਂ ਇਹ ਪਤਾ ਨਹੀਂ ਲੱਗ ਸਕਦਾ। ਇਸ ਲਈ ਜਨਮ ਕੁੰਡਲੀ ਵਾਲਾ ਮਿਲਾਨ ਵਰਤੋ।",
     # EN: Match by birth details instead — more accurate, free
-    "res.cta": "",
+    "res.cta": "ਇਸ ਦੀ ਥਾਂ ਜਨਮ ਦੇ ਵੇਰਵੇ ਨਾਲ ਮਿਲਾਓ — ਵੱਧ ਸਹੀ, ਮੁਫ਼ਤ",
     # EN: <div class="box"><p><strong>Please note:</strong> name-based matching is a traditional
     #     shortcut, used when birth details are not known. It assumes each name was chosen from the
     #     syllable of the person's birth nakshatra — which today is often not the case. Matching
     #     from the date, time and place of birth is far more accurate, and is the only way to check
     #     Mangal dosha.</p></div>
-    "caveat": "",
+    "caveat": "<div class=\"box\"><p><strong>ਕਿਰਪਾ ਕਰਕੇ ਧਿਆਨ ਦਿਓ:</strong> ਨਾਂ ਨਾਲ ਮਿਲਾਨ ਇੱਕ ਰਵਾਇਤੀ ਛੋਟਾ ਰਾਹ ਹੈ, ਜੋ ਜਨਮ ਦਾ ਵੇਰਵਾ ਪਤਾ ਨਾ ਹੋਣ ’ਤੇ ਵਰਤਿਆ ਜਾਂਦਾ ਹੈ। ਇਹ ਮੰਨ ਕੇ ਚੱਲਦਾ ਹੈ ਕਿ ਨਾਂ ਵਿਅਕਤੀ ਦੇ ਜਨਮ ਨਕਸ਼ਤਰ ਦੇ ਅੱਖਰ ਤੋਂ ਰੱਖਿਆ ਗਿਆ ਸੀ — ਜੋ ਅੱਜ ਕੱਲ੍ਹ ਅਕਸਰ ਨਹੀਂ ਹੁੰਦਾ। ਜਨਮ ਦੀ ਤਾਰੀਖ਼, ਸਮੇਂ ਅਤੇ ਥਾਂ ਨਾਲ ਕੀਤਾ ਮਿਲਾਨ ਕਿਤੇ ਵੱਧ ਸਹੀ ਹੈ, ਅਤੇ ਮੰਗਲ ਦੋਸ਼ ਜਾਂਚਣ ਦਾ ਇਹੀ ਇੱਕੋ ਇੱਕ ਤਰੀਕਾ ਹੈ।</p></div>",
     # EN: <tr><th>Rashi</th><th>Name syllables</th></tr>
-    "syl.head": "",
+    "syl.head": "<tr><th>ਰਾਸ਼ੀ</th><th>ਨਾਂ ਦੇ ਅੱਖਰ</th></tr>",
     # EN: <h2>How name-based matching works</h2> <p>Each of the 27 nakshatras has four padas, and
     #     each pada has a syllable (namakshar) — 108 in all. The pada whose syllable a name
     #     <strong>begins with</strong> is taken as that person's nakshatra, and its sign as their
@@ -2488,22 +2488,22 @@ NAAM_MILAN_TEXT = {
     #     {syllables} <p>For each nakshatra's syllables, deity, gana and nadi see <a
     #     href="{href}">all 27 nakshatras</a>.</p>
     # keep: {abhijit} {href} {syllables}
-    "explainer": "",
+    "explainer": "<h2>ਨਾਂ ਨਾਲ ਮਿਲਾਨ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ</h2><p>27 ਨਕਸ਼ਤਰਾਂ ਵਿੱਚੋਂ ਹਰ ਇੱਕ ਦੇ ਚਾਰ ਚਰਣ ਹਨ, ਅਤੇ ਹਰ ਚਰਣ ਦਾ ਇੱਕ ਅੱਖਰ (ਨਾਮਾਕਸ਼ਰ) ਹੈ — ਕੁੱਲ 108। ਨਾਂ ਜਿਸ ਚਰਣ ਦੇ ਅੱਖਰ ਨਾਲ <strong>ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ</strong>, ਉਹੀ ਉਸ ਵਿਅਕਤੀ ਦਾ ਨਕਸ਼ਤਰ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਉਸ ਦੀ ਰਾਸ਼ੀ ਉਸ ਦੀ ਚੰਦਰ ਰਾਸ਼ੀ। ਫਿਰ ਇਨ੍ਹਾਂ ਦੋ ਨਕਸ਼ਤਰਾਂ ਤੋਂ ਓਹੀ <strong>ਅਸ਼ਟਕੂਟ (36 ਗੁਣ)</strong> ਮਿਲਾਨ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ ਜੋ ਜਨਮ ਕੁੰਡਲੀਆਂ ਨਾਲ ਹੁੰਦਾ ਹੈ — ਵਰਣ, ਵਸ਼ਯ, ਤਾਰਾ, ਯੋਨੀ, ਗ੍ਰਹਿ ਮੈਤਰੀ, ਗਣ, ਭਕੂਟ ਅਤੇ ਨਾੜੀ — ਸਾਡੇ ਕੁੰਡਲੀ ਮਿਲਾਨ ਟੂਲ ਦੇ ਓਸੇ ਇੰਜਣ ਨਾਲ।</p><h3>ਪਹਿਲਾ ਅੱਖਰ ਕਿਵੇਂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ</h3><ul><li>ਪਹਿਲੇ ਅੱਖਰ ਦਾ ਪਹਿਲਾ ਵਿਅੰਜਨ ਅਤੇ ਉਸ ਦੀ ਸੁਰ: <strong>ਪ੍ਰਿਯਾ → ਪੀ</strong>, <strong>ਕ੍ਸ਼ਿਤਿਜ → ਕੀ</strong>। ਛੋਟੀਆਂ ਤੇ ਵੱਡੀਆਂ ਸੁਰਾਂ ਨੂੰ ਇੱਕੋ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ (ਇ/ਈ, ਉ/ਊ); ਐ ਨੂੰ ਏ ਅਤੇ ਔ ਨੂੰ ਓ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ।</li><li>‘ਬ’ ਨੂੰ ‘ਵ’ ਵਜੋਂ, ਅਤੇ ‘ਸ਼’ ਨੂੰ ਮੂਰਧਨੀ ‘ਸ਼’ (ਅ-ਸੁਰ ਸਮੇਤ) ਜਾਂ ‘ਸ’ ਵਜੋਂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ; ਰਿ-ਸੁਰ ਨੂੰ ਰੀ।</li><li>ਅਭਿਜੀਤ ਦੇ ਅੱਖਰ ({abhijit}) ਉੱਤਰਾ ਆਸ਼ਾੜ੍ਹਾ ਦੇ ਚੌਥੇ ਚਰਣ ਵਿੱਚ ਗਿਣੇ ਜਾਂਦੇ ਹਨ।</li><li>ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਲਿਖੇ ਨਾਂ ਲਿਪੀਅੰਤਰ ਕਰਕੇ ਪੜ੍ਹੇ ਜਾਂਦੇ ਹਨ; T, D, N, Th ਅਤੇ Dh ਵਰਗੇ ਅੱਖਰ ਦੋ ਵੱਖ ਅੱਖਰਾਂ (ਤ/ਟ, ਦ/ਡ) ਦੀ ਥਾਂ ਹੋ ਸਕਦੇ ਹਨ, ਇਸ ਲਈ ਨਤੀਜਾ ਦੱਸਦਾ ਹੈ ਕਿ ਕਿਹੜਾ ਅੱਖਰ ਲਿਆ ਗਿਆ ਅਤੇ ਤੁਹਾਨੂੰ ਹੋਰ ਚੁਣਨ ਦਿੰਦਾ ਹੈ। ਹਿੰਦੀ (ਦੇਵਨਾਗਰੀ) ਵਿੱਚ ਲਿਖਿਆ ਨਾਂ ਹੂਬਹੂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।</li></ul><h3>ਰਾਸ਼ੀ ਮੁਤਾਬਕ ਨਾਂ ਦੇ ਅੱਖਰ</h3>{syllables}<p>ਹਰ ਨਕਸ਼ਤਰ ਦੇ ਅੱਖਰਾਂ, ਦੇਵਤੇ, ਗਣ ਅਤੇ ਨਾੜੀ ਲਈ <a href=\"{href}\">ਸਾਰੇ 27 ਨਕਸ਼ਤਰ</a> ਵੇਖੋ।</p>",
 }
 
 # app/naam_milan_text.py ENGINE["pa"] — score-band notes and the convention note of a naam-milan result  [5]
 NAAM_MILAN_ENGINE = {
     # EN: Below the traditional minimum of 18 gunas.
-    "band_note0": "",
+    "band_note0": "18 ਗੁਣਾਂ ਦੀ ਰਵਾਇਤੀ ਘੱਟੋ-ਘੱਟ ਹੱਦ ਤੋਂ ਹੇਠਾਂ।",
     # EN: In the traditional 18-24 gunas band.
-    "band_note1": "",
+    "band_note1": "ਰਵਾਇਤੀ 18-24 ਗੁਣਾਂ ਦੇ ਦਾਇਰੇ ਵਿੱਚ।",
     # EN: In the traditional 25-32 gunas band.
-    "band_note2": "",
+    "band_note2": "ਰਵਾਇਤੀ 25-32 ਗੁਣਾਂ ਦੇ ਦਾਇਰੇ ਵਿੱਚ।",
     # EN: In the traditional 33-36 gunas band.
-    "band_note3": "",
+    "band_note3": "ਰਵਾਇਤੀ 33-36 ਗੁਣਾਂ ਦੇ ਦਾਇਰੇ ਵਿੱਚ।",
     # EN: The 18/25/33 guna thresholds are a widely used convention, not a measurement. Astrologers
     #     often accept a lower total if the heavily weighted kootas are free of dosha.
-    "convention_note": "",
+    "convention_note": "18/25/33 ਗੁਣਾਂ ਦੀਆਂ ਹੱਦਾਂ ਇੱਕ ਆਮ ਵਰਤੀ ਜਾਂਦੀ ਰਵਾਇਤ ਹਨ, ਕੋਈ ਮਾਪ ਨਹੀਂ। ਜੇ ਭਾਰੀ ਅੰਕਾਂ ਵਾਲੇ ਕੂਟ ਦੋਸ਼ ਤੋਂ ਮੁਕਤ ਹੋਣ ਤਾਂ ਜੋਤਸ਼ੀ ਅਕਸਰ ਘੱਟ ਕੁੱਲ ਅੰਕ ਵੀ ਮੰਨ ਲੈਂਦੇ ਹਨ।",
 }
 
 # ----------------------------------------------------------------------------
