@@ -27,7 +27,7 @@ Regional choices (for a native reviewer):
     Makar Sankranti is written ਮਕਰ ਸੰਕ੍ਰਾਂਤੀ (ਮਾਘੀ) since Maghi falls on the same day in Punjab.
   * Hariyali Teej is ਹਰਿਆਲੀ ਤੀਜ (ਤੀਆਂ), the Punjabi Sawan festival of the same date.
   * Gana in matching: ਦੇਵ / ਮਨੁੱਖ / ਰਾਖਸ਼; Nadi ਆਦਿ / ਮੱਧ / ਅੰਤ; Varna ਖੱਤਰੀ for Kshatriya.
-  * The sentence-ending mark is the danda '।'; digits are ASCII.
+  * Sentence end in the two NOTE_ texts is a full stop '.': tests/test_names_i18n.py does not allow the danda for pa. Page text uses '।'. Digits are ASCII.
 """
 
 from __future__ import annotations
@@ -462,10 +462,10 @@ LIMBS_PA = {
 # EN: The Sun does not both rise and set on this date at this latitude, so the vedic day cannot be
 #     bounded by sunrise. The limbs below are reckoned from local midnight instead, and the sunrise-
 #     based muhurtas are not defined.
-NOTE_POLAR_PA = "ਇਸ ਤਾਰੀਖ਼ ਨੂੰ ਇਸ ਅਕਸ਼ਾਂਸ਼ ’ਤੇ ਸੂਰਜ ਨਾ ਚੜ੍ਹਦਾ ਹੈ ਤੇ ਨਾ ਛਿਪਦਾ ਹੈ, ਇਸ ਲਈ ਵੈਦਿਕ ਦਿਨ ਨੂੰ ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਨਹੀਂ ਗਿਣਿਆ ਜਾ ਸਕਦਾ। ਹੇਠਾਂ ਦਿੱਤੇ ਅੰਗ ਸਥਾਨਕ ਅੱਧੀ ਰਾਤ ਤੋਂ ਗਿਣੇ ਗਏ ਹਨ ਅਤੇ ਸੂਰਜ ਚੜ੍ਹਨ ’ਤੇ ਆਧਾਰਿਤ ਮਹੂਰਤ ਲਾਗੂ ਨਹੀਂ ਹੁੰਦੇ।"
+NOTE_POLAR_PA = "ਇਸ ਤਾਰੀਖ਼ ਨੂੰ ਇਸ ਅਕਸ਼ਾਂਸ਼ ਉੱਤੇ ਸੂਰਜ ਨਾ ਚੜ੍ਹਦਾ ਹੈ ਤੇ ਨਾ ਛਿਪਦਾ ਹੈ, ਇਸ ਲਈ ਵੈਦਿਕ ਦਿਨ ਨੂੰ ਸੂਰਜ ਚੜ੍ਹਨ ਤੋਂ ਨਹੀਂ ਗਿਣਿਆ ਜਾ ਸਕਦਾ. ਹੇਠਾਂ ਦਿੱਤੇ ਅੰਗ ਸਥਾਨਕ ਅੱਧੀ ਰਾਤ ਤੋਂ ਗਿਣੇ ਗਏ ਹਨ ਅਤੇ ਸੂਰਜ ਚੜ੍ਹਨ ਉੱਤੇ ਆਧਾਰਿਤ ਮਹੂਰਤ ਲਾਗੂ ਨਹੀਂ ਹੁੰਦੇ."
 
 # EN: Abhijit muhurta is omitted on Wednesday, whose lord Mercury is held to spoil it.
-NOTE_WEDNESDAY_PA = "ਬੁੱਧਵਾਰ ਨੂੰ ਅਭਿਜੀਤ ਮਹੂਰਤ ਨਹੀਂ ਮੰਨਿਆ ਜਾਂਦਾ, ਕਿਉਂਕਿ ਇਸ ਦਿਨ ਦਾ ਸੁਆਮੀ ਬੁੱਧ ਇਸ ਨੂੰ ਵਿਗਾੜਨ ਵਾਲਾ ਮੰਨਿਆ ਗਿਆ ਹੈ।"
+NOTE_WEDNESDAY_PA = "ਬੁੱਧਵਾਰ ਨੂੰ ਅਭਿਜੀਤ ਮਹੂਰਤ ਨਹੀਂ ਮੰਨਿਆ ਜਾਂਦਾ, ਕਿਉਂਕਿ ਇਸ ਦਿਨ ਦਾ ਸੁਆਮੀ ਬੁੱਧ ਇਸ ਨੂੰ ਵਿਗਾੜਨ ਵਾਲਾ ਮੰਨਿਆ ਗਿਆ ਹੈ."
 
 
 def add_pa(p: dict) -> dict:
