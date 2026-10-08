@@ -911,3 +911,7 @@ TEXT: dict[str, dict[str, str]] = {
 # The nadi's humour, after the nadi ("Adi <small>Vata</small>").
 TEXT["en"].update({f"humour.{h}": h for h in matching.NADI_HUMOUR_HI})
 TEXT["hi"].update({f"humour.{h}": v for h, v in matching.NADI_HUMOUR_HI.items()})
+
+# DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py; overlaid here as if written inline.
+from . import lang_data  # noqa: E402
+lang_data.merge("NAKSHATRA_PAGE_TEXT", TEXT)

@@ -87,3 +87,8 @@ MONTH_VARIANTS: dict[str, dict[int, tuple[str, ...]]] = {
     "bn": {1: ("জানুয়ারী",), 2: ("ফেব্রুয়ারী",), 8: ("আগষ্ট",)},
     "or": {1: ("ଜାନୁଆରି",), 2: ("ଫେବ୍ରୁଆରୀ",), 5: ("ମେ",)},
 }
+
+# DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py; overlaid here as if written inline.
+from . import lang_data  # noqa: E402
+lang_data.merge("ASTRO_TERMS", TERMS)
+lang_data.merge("ASTRO_MONTHS", MONTH_VARIANTS)

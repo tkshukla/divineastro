@@ -45,7 +45,7 @@ from .astro import festivals
 from .legal import BRAND
 from .seo_cities import City
 from .seo_pages import EN, HI, SITE_URL, _e, _long_date, _short_date
-from . import i18n
+from . import i18n, lang_data
 # DIVASTRO-123: every word of these pages is in vrat_text (TEXT, ABOUT, NOTES),
 # per language; names of festivals, timings, tithis, weekdays and months come
 # from app/astro/names_<code>.py (i18n.names).
@@ -56,7 +56,8 @@ from .vrat_text import TEXT
 # /<code>/vrat-tyohar etc. exist for every registry language; one not listed here
 # renders the English text with noindex, no hreflang and no sitemap entry. Add a
 # code here once vrat_text has that language's text.
-TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te", "ta", "ml", "bn", "or"}  # DIVASTRO-123
+# DIVASTRO-143: + every new language whose app/lang_data/<code>.py READY includes "vrat".
+TRANSLATED = lang_data.translated("vrat", i18n.BASE_TRANSLATED, lang_data.LEGACY_CODES)  # DIVASTRO-123/143
 i18n.LOCALIZABLE_ROOTS.update({"vrat-tyohar", "tyohar", "ekadashi-"})
 
 
@@ -196,7 +197,7 @@ def _rule(o: dict, lang: str) -> str:
     if rules.get(f"key.{o.get('key')}"):
         return rules[f"key.{o['key']}"]
     t, tail = o.get("tithi"), rules.get(f"rule.{o.get('rule')}")
-    if not (t and tail):
+    if not (t and tail and rules.get("tithi")):
         return o["rule_en"]
     n = i18n.names(lang)
     words = rules["tithi"].format(paksha=n.PAKSHA.get(t["paksha"], t["paksha"]),

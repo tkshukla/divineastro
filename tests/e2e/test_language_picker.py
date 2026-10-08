@@ -1,4 +1,4 @@
-"""The language picker (DIVASTRO-121): eight languages, one clearly visible switch.
+"""The language picker (DIVASTRO-121): thirteen languages (DIVASTRO-143), one clearly visible switch.
 
 The owner's ask: Kannada, Telugu, Tamil, Malayalam, Bengali and Odia "the same
 way as Hindi and English", with a significantly visible language switcher on
@@ -15,6 +15,12 @@ App (home):
   and stays dismissed;
 * with the production CSP (read from the Caddyfile) enforced, nothing the
   picker or the fonts load is blocked.
+
+DIVASTRO-143: Punjabi, Nepali, Assamese, Marathi and Gujarati join the menu once they have
+something READY; this suite starts the server with ASTRO_LIST_ALL_LANGS=1 so all thirteen are
+offered, and checks the long menu on a 320px phone: it scrolls inside itself, every row is a
+>= 44px target, and the last row can be reached. Choosing a language that is not READY shows
+the English app / an English page with the notice in its own script.
 
 Server pages: see seo_pages_section() at the bottom.
 
@@ -35,9 +41,12 @@ from playwright.sync_api import sync_playwright  # noqa: E402
 from tests.e2e.harness import DESKTOPS, PHONES, PICKER, Checker, Page, enforce_csp, server  # noqa: E402
 
 check = Checker()
-CODES = ["en", "hi", "kn", "te", "ta", "ml", "bn", "or"]
+CODES = ["en", "hi", "kn", "te", "ta", "ml", "bn", "or", "pa", "ne", "as", "mr", "gu"]
 NATIVE = {"en": "English", "hi": "हिन्दी", "kn": "ಕನ್ನಡ", "te": "తెలుగు", "ta": "தமிழ்",
-          "ml": "മലയാളം", "bn": "বাংলা", "or": "ଓଡ଼ିଆ"}
+          "ml": "മലയാളം", "bn": "বাংলা", "or": "ଓଡ଼ିଆ", "pa": "ਪੰਜਾਬੀ", "ne": "नेपाली",
+          "as": "অসমীয়া", "mr": "मराठी", "gu": "ગુજરાતી"}
+IPHONE_390 = {"viewport": {"width": 390, "height": 844}, "is_mobile": True, "has_touch": True,
+              "device_scale_factor": 3}
 SHOTS = os.environ.get("E2E_SCREENSHOTS", "")
 FONT_HOST = "fonts.googleapis.com"
 
@@ -90,7 +99,7 @@ def open_menu(pg: Page, label: str) -> None:
         "els => els.map(a => [a.dataset.lang, a.querySelector('.lp-native').textContent, "
         "a.getBoundingClientRect().height, a.getBoundingClientRect().left, a.getBoundingClientRect().right])")
     vw = pg.page.viewport_size["width"]
-    check(f"{label}: the menu lists all eight languages by their own names",
+    check(f"{label}: the menu lists all {len(CODES)} languages by their own names",
           [l[0] for l in links] == CODES and all(l[1] == NATIVE[l[0]] for l in links), str([l[:2] for l in links]))
     check(f"{label}: every language is a >= 44px target", all(l[2] >= 44 for l in links),
           str([round(l[2]) for l in links]))
@@ -98,11 +107,30 @@ def open_menu(pg: Page, label: str) -> None:
           str([(round(l[3]), round(l[4])) for l in links]))
     focused = pg.page.evaluate("document.activeElement?.dataset?.lang || ''")
     check(f"{label}: opening it moves focus to the current language", focused == "en", focused)
+    # 13 rows of 44px do not fit a short phone: the menu scrolls inside itself, and the last
+    # language is reachable (DIVASTRO-143).
+    box = pg.page.evaluate(f"""() => {{ const m = document.querySelector('{PICKER} .lp-menu');
+        const r = m.getBoundingClientRect();
+        return {{top: r.top, bottom: r.bottom, scroll: m.scrollHeight, client: m.clientHeight,
+                 overflowY: getComputedStyle(m).overflowY}}; }}""")
+    vh = pg.page.viewport_size["height"]
+    check(f"{label}: the open menu stays inside the screen ({round(box['top'])}..{round(box['bottom'])} of {vh})",
+          box["top"] >= 0 and box["bottom"] <= vh + 1, str(box))
+    if box["scroll"] > box["client"] + 1:
+        check(f"{label}: it is taller than the screen, so it scrolls (overflow-y {box['overflowY']})",
+              box["overflowY"] in ("auto", "scroll"), str(box))
+    pg.page.eval_on_selector(f"{PICKER} .lp-menu a[data-lang='{CODES[-1]}']", "a => a.scrollIntoView({block: 'end'})")
+    last = pg.page.evaluate(f"""() => {{ const a = document.querySelector('{PICKER} .lp-menu a[data-lang="{CODES[-1]}"]');
+        const r = a.getBoundingClientRect(); return {{top: r.top, bottom: r.bottom, h: r.height}}; }}""")
+    check(f"{label}: the last language ({NATIVE[CODES[-1]]}) can be scrolled to and tapped",
+          last["top"] >= 0 and last["bottom"] <= vh + 1 and last["h"] >= 44, str(last))
+    pg.page.eval_on_selector(f"{PICKER} .lp-menu", "m => m.scrollTop = 0")
 
 
 def app_section(browser, base: str) -> None:
     for name, profile in (("android_360x640", PHONES["android_360x640"]),
                           ("small_320x568", PHONES["small_320x568"]),
+                          ("iphone_390x844", IPHONE_390),
                           ("desktop_1440x800", DESKTOPS["desktop_1440x800"])):
         print(f"\n[app header picker — {name}]")
         ctx, pg, fonts = new_page(browser, base, profile)
@@ -209,6 +237,40 @@ def app_section(browser, base: str) -> None:
     ctx.close()
 
 
+def new_languages_app(browser, base: str) -> None:
+    """Choosing pa / mr (not READY): the app shows English labels in that language's
+    <html lang>, loads the web font only where one exists, and remembers the choice."""
+    print("\n[switching to Punjabi and Marathi (nothing READY: English labels)]")
+    ctx, pg, fonts = new_page(browser, base, PHONES["small_320x568"])
+    pg.open_home()
+    en_text = dict(pg.page.evaluate(HOME_TEXT))
+    for code, font in (("pa", "Noto+Sans+Gurmukhi"), ("mr", None)):
+        del fonts[:]
+        pg.set_lang(code)
+        pg.page.wait_for_timeout(600)
+        check(f"{code}: <html lang> is {code}", pg.page.evaluate("document.documentElement.lang") == code)
+        check(f"{code}: the picker reads {NATIVE[code]}", pg.page.inner_text(f"{PICKER} .lp-cur").strip() == NATIVE[code])
+        text = dict(pg.page.evaluate(HOME_TEXT))
+        blank = [k for k, v in text.items() if v is not None and not v]
+        check(f"{code}: no home label is blank (empty json -> English per key)", not blank, str(blank))
+        check(f"{code}: the labels are the English ones until the translator fills {code}.json", text == en_text)
+        if font:
+            check(f"{code}: the {font.split('+')[-1]} web font is requested", any(font in u for u in fonts), str(fonts))
+        else:
+            check(f"{code}: system Devanagari fonts, no web font", not fonts, str(fonts))
+        check(f"{code}: the vrat card links to /{code}/vrat-tyohar",
+              pg.page.get_attribute("#open-vrat", "href") == f"/{code}/vrat-tyohar")
+        check(f"{code}: the app registry knows it", pg.page.evaluate(f"LANG_CODES.includes('{code}')"))
+        shot(pg, f"app_{code}_home_320.png")
+    pg.page.reload(wait_until="domcontentloaded")
+    pg.page.wait_for_function("typeof showStage === 'function'")
+    check("the choice (Marathi) survives a reload", pg.page.evaluate("state.lang") == "mr")
+    pg.set_lang("en")
+    check("no CSP violations", not pg.csp_violations(), str(pg.csp_violations()))
+    check("no console errors", not pg.console_errors, "; ".join(pg.console_errors[:3]))
+    ctx.close()
+
+
 # ---------------------------------------------------------------------------
 # SEO pages: the server-rendered picker (app/i18n.py picker()) at the top of
 # every page, its links resolve, untranslated copies say so in their script.
@@ -233,10 +295,11 @@ def seo_pages_section(browser, base: str) -> None:
             "els => els.map(a => [a.dataset.lang, a.getAttribute('href'), "
             "a.getBoundingClientRect().left, a.getBoundingClientRect().right, "
             "a.getBoundingClientRect().height])")
-        check(f"{path}: menu lists all eight", [l[0] for l in links] == CODES, str(links))
+        check(f"{path}: menu lists all {len(CODES)}", [l[0] for l in links] == CODES, str(links))
         check(f"{path}: menu fits a 360px screen, 44px targets",
               all(l[2] >= 0 and l[3] <= 360 and l[4] >= 44 for l in links),
               str([(round(l[2]), round(l[3]), round(l[4])) for l in links]))
+        shot(pg, "seo_" + path.strip("/").replace("/", "_") + "_menu_360.png")
         bad = []
         for code, href, *_ in links:
             resp = pg.page.context.request.get(base + href)
@@ -279,6 +342,28 @@ def seo_pages_section(browser, base: str) -> None:
     check("...and the app opens in Kannada", pg.page.evaluate("state.lang") == "kn")
     ctx.close()
 
+    print("\n[SEO page: choosing Punjabi (not READY): English body, notice in Gurmukhi, noindex]")
+    ctx, pg, fonts = new_page(browser, base, PHONES["small_320x568"])
+    pg.page.goto(base + "/panchang/pune", wait_until="domcontentloaded")
+    pg.page.click(f"{SEO_PICKER} > summary")
+    shot(pg, "seo_panchang_menu_320.png")
+    with pg.page.expect_navigation():
+        pg.page.click(f"{SEO_PICKER} .lp-menu a[data-lang='pa']")
+    pg.page.wait_for_load_state("networkidle")
+    check("lands on /pa/panchang/pune", pg.page.url.endswith("/pa/panchang/pune"), pg.page.url)
+    check("<html lang=pa>", pg.page.evaluate("document.documentElement.lang") == "pa")
+    notice = pg.page.inner_text(".lp-notice") if pg.page.locator(".lp-notice").count() else ""
+    check("the 'translation coming soon' note is shown, in Gurmukhi", "ਅਨੁਵਾਦ ਜਲਦੀ ਆ ਰਿਹਾ ਹੈ" in notice, notice)
+    check("the body is still English", "Today's Panchang in Pune" in pg.page.inner_text("main.seo"))
+    check("noindex while not READY", pg.page.locator('meta[name="robots"][content^="noindex"]').count() == 1)
+    check("the Gurmukhi font, and only it, is requested",
+          any("Noto+Sans+Gurmukhi" in u for u in fonts) and not any("Kannada" in u for u in fonts), str(fonts[:3]))
+    check("the picker says ਪੰਜਾਬੀ", pg.page.inner_text(f"{SEO_PICKER} .lp-cur").strip() == NATIVE["pa"])
+    check("no sideways scroll at 320px", pg.page.evaluate("document.documentElement.scrollWidth - window.innerWidth") <= 1)
+    shot(pg, "seo_pa_panchang_320.png")
+    check("no CSP violations loading the font", not pg.csp_violations(), str(pg.csp_violations()))
+    ctx.close()
+
     print("\n[SEO page: first visit with a Tamil browser]")
     ctx, pg, _fonts = new_page(browser, base, PHONES["android_360x640"], locale="ta-IN")
     pg.page.goto(base + "/rashifal", wait_until="domcontentloaded")
@@ -292,9 +377,10 @@ def seo_pages_section(browser, base: str) -> None:
 
 
 def main() -> int:
-    with server() as base, sync_playwright() as p:
+    with server({"ASTRO_LIST_ALL_LANGS": "1"}) as base, sync_playwright() as p:
         browser = p.chromium.launch()
         app_section(browser, base)
+        new_languages_app(browser, base)
         seo_pages_section(browser, base)
         browser.close()
     return check.finish("language picker")

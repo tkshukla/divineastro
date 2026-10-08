@@ -15,7 +15,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from . import (i18n, learn_pages, muhurat_pages, nakshatra_pages, rashifal_pages, recurring_pages,
+from . import (i18n, lang_data, learn_pages, muhurat_pages, nakshatra_pages, rashifal_pages, recurring_pages,
                seo_cities, seo_pages, vrat_pages)
 from .hub_text import label
 from .seo_pages import EN, HI, _e, _path, _render
@@ -23,13 +23,17 @@ from .seo_pages import EN, HI, _e, _path, _render
 router = APIRouter()
 i18n.LOCALIZABLE_ROOTS.add("sitemap")
 
+# DIVASTRO-143: the hub is indexable in the languages whose section names are written
+# (hub_text.LABELS): the older six, and a new language once its READY includes "hub".
+TRANSLATED = lang_data.translated("hub", i18n.BASE_TRANSLATED, lang_data.LEGACY_CODES)
+
 
 def page_path(lang: str = EN) -> str:
     return i18n.prefix(lang) + "/sitemap"
 
 
 def sitemap_paths() -> list[str]:
-    return [page_path(lang) for lang in i18n.ordered(seo_pages.TRANSLATED)]
+    return [page_path(lang) for lang in i18n.ordered(TRANSLATED)]
 
 
 def _links(items: list[tuple[str, str]]) -> str:
@@ -109,7 +113,7 @@ def _page(lang: str) -> HTMLResponse:
     return _render(
         title=f"{title} | Divine Astro".replace("&amp;", "&"), description=label("intro", lang).replace("&amp;", "&"),
         path=page_path(lang), crumbs=[(name, page_path(lang))], body=_body(lang),
-        lang=lang, alt="twin")
+        lang=lang, alt="twin", translated=TRANSLATED)
 
 
 @router.get("/sitemap", response_class=HTMLResponse)

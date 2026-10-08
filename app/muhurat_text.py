@@ -618,6 +618,11 @@ MUNDAN: dict[str, dict[str, str]] = {
             "ତେଣୁ ଏପରି କିଛି ତାରିଖ ତାଲିକାରେ ଆସେ - ଆପଣଙ୍କ ପରିବାରରେ ସେହି ବାର ନିଷିଦ୍ଧ ହେଲେ ଛାଡ଼ିଦିଅନ୍ତୁ।</li></ul>"),
     },
 }
+# DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py; overlaid here as if written inline.
+from . import lang_data  # noqa: E402
+lang_data.merge("MUHURAT_TEXT", TEXT)
+lang_data.merge("MUHURAT_MUNDAN", MUNDAN)
+
 for _l, _t in MUNDAN.items():
     TEXT[_l].update(_t)
 
@@ -635,3 +640,7 @@ MONTHS: dict[str, tuple[str, ...]] = {
     "hi": ("जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त",
            "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"),
 }
+
+# DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py; overlaid here as if written inline.
+from . import lang_data  # noqa: E402
+lang_data.merge("MUHURAT_MONTHS", MONTHS)

@@ -77,6 +77,12 @@ LANGUAGES = {
     "ml": "Malayalam (മലയാളം, in Malayalam script)",
     "bn": "Bengali (বাংলা, in Bengali script)",
     "or": "Odia (ଓଡ଼ିଆ, in Odia script)",
+    # DIVASTRO-143
+    "pa": "Punjabi (ਪੰਜਾਬੀ, in Gurmukhi script)",
+    "ne": "Nepali (नेपाली, in Devanagari script)",
+    "as": "Assamese (অসমীয়া, in Assamese script, with ৰ and ৱ)",
+    "mr": "Marathi (मराठी, in Devanagari script)",
+    "gu": "Gujarati (ગુજરાતી, in Gujarati script)",
 }
 
 SYSTEM_PROMPT = """You are the writing layer of an astrology application. You are \
@@ -165,7 +171,7 @@ English term with no natural equivalent may stay in English inside brackets."""
 
 # Languages whose answer the engine cannot write itself: it runs in English and
 # the model writes the final answer (main._engine_lang caps the engine to en/hi).
-REGIONAL = ("kn", "te", "ta", "ml", "bn", "or")
+REGIONAL = ("kn", "te", "ta", "ml", "bn", "or", "pa", "ne", "as", "mr", "gu")
 _MONTHS_EN = ("January", "February", "March", "April", "May", "June", "July",
               "August", "September", "October", "November", "December")
 _GRAHA_ORDER = ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu")
@@ -186,6 +192,11 @@ def _glossary(language: str) -> str:
     """
     if language not in REGIONAL:
         return ""
+    from . import lang_data
+    if language in lang_data.NEW_CODES and language not in lang_data.ready("app"):
+        # DIVASTRO-143: the names/terms of a new language are still being written (the
+        # tables fall back to English); a glossary of "Sun=Sun" would only add noise.
+        return ""
     from .astro.names_i18n import names_for
     from .astro_terms import TERMS
     from . import i18n
@@ -202,7 +213,7 @@ def _glossary(language: str) -> str:
         "Planets: " + pairs((p, n.GRAHA.get(p)) for p in _GRAHA_ORDER),
         "Signs: " + pairs((s, n.RASHI.get(s)) for s in _SIGN_ORDER),
         "Nakshatras: " + pairs(n.NAKSHATRAS.items()),
-        "Terms: " + pairs(TERMS[language].items()),
+        "Terms: " + pairs(TERMS.get(language, {}).items()),
         "Timings: " + pairs((en, n.TIMINGS.get(key)) for key, en in _TIMING_EN),
         "Months: " + pairs(zip(_MONTHS_EN, n.MONTHS)),
         f"Write every month and year as the {name} month name from this list "
@@ -583,6 +594,7 @@ def _local_date_res() -> tuple[re.Pattern, re.Pattern, dict[str, str]]:
     """(month-first regex, year-first regex, localized month -> 'Oct'), built once."""
     global _LOCAL_DATE_RES
     if _LOCAL_DATE_RES is None:
+        from . import lang_data
         from .astro.names_i18n import LANGS, names_for
         from .astro_terms import MONTH_VARIANTS
 
@@ -590,6 +602,8 @@ def _local_date_res() -> tuple[re.Pattern, re.Pattern, dict[str, str]]:
         for code in LANGS:
             if code == "en":
                 continue
+            if code in lang_data.NEW_CODES and code not in lang_data.ready("app"):
+                continue            # DIVASTRO-143: its month names are still English
             for i, name in enumerate(names_for(code).MONTHS):
                 month_of[name] = _ABBR[i]
             for number, names in MONTH_VARIANTS.get(code, {}).items():

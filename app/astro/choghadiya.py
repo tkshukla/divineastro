@@ -136,6 +136,11 @@ CHOGHADIYA_INFO = {
     },
 }
 
+# DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py (CHOGHADIYA_DESC); each
+# adds its "description_<code>" to the entry above, as the older languages do inline.
+from .. import lang_data  # noqa: E402
+lang_data.merge("CHOGHADIYA_DESC", CHOGHADIYA_INFO)
+
 # Classical Weekday sequences
 # Day sequence starts with weekday ruler
 DAY_SEQUENCE = {

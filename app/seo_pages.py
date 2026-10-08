@@ -47,7 +47,7 @@ from zoneinfo import ZoneInfo
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 
-from . import i18n, seo_cities
+from . import i18n, lang_data, seo_cities
 from .astro import choghadiya as chog
 from .astro import matching
 from .astro import panchang as panchang_engine
@@ -77,7 +77,8 @@ EN, HI = "en", "hi"
 # not listed here renders the English text with noindex, no hreflang, no
 # sitemap entry and a "translation coming soon" note (see app/i18n.py). A
 # translation agent adds e.g. "kn" here once seo_text.TEXT["kn"] is written.
-TRANSLATED = i18n.BASE_TRANSLATED | {"kn", "te", "ta", "ml", "bn", "or"}  # DIVASTRO-123
+# DIVASTRO-143: + every new language whose app/lang_data/<code>.py READY includes "seo".
+TRANSLATED = lang_data.translated("seo", i18n.BASE_TRANSLATED, lang_data.LEGACY_CODES)  # DIVASTRO-123/143
 # First path segments served in every language by this module.
 i18n.LOCALIZABLE_ROOTS.update({"panchang", "rahu-kaal", "choghadiya", "kundali-milan",
                                "free-kundali"})

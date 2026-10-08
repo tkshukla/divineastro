@@ -15,6 +15,12 @@ Malayalam, Bengali and Odia.
   5. Kundali PDF in each language: renders, embeds the script's Noto font, is
      offered by the app (window.DA_PDF_LANGS) and served by /api/pdf/chart.
 
+  6. DIVASTRO-143 — Punjabi, Nepali, Assamese, Marathi, Gujarati: the AI answers in
+     them from day one (narration names, the "Answer shown in English" note in
+     their script, digits of every script folded for the date auditor); the
+     kundali PDF, the sign-in email and push text have no table for them yet and
+     degrade to English without an error.
+
     python tests/test_regional_languages.py
 """
 
@@ -28,6 +34,7 @@ import re
 import sys
 import tempfile
 import types
+import unicodedata
 import zlib
 from pathlib import Path
 
@@ -42,7 +49,7 @@ os.environ.pop("ANTHROPIC_API_KEY", None)        # never the real API
 
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app import email_auth, i18n, llm, pdf_i18n, pdf_report, push_message  # noqa: E402
+from app import email_auth, i18n, lang_data, llm, pdf_i18n, pdf_report, push_message  # noqa: E402
 from app.astro.names_i18n import names_for  # noqa: E402
 from app.main import app, _fallback_note, _pdf_lang  # noqa: E402
 
@@ -331,6 +338,80 @@ def pdf_checks(client: TestClient, sid: str) -> None:
           and pdf_i18n.translate("12°04' Leo", "kn") == "12°04' " + names_for("kn").RASHI["Leo"])
 
 
+NEW = lang_data.NEW_CODES
+
+
+def _in_own_script(text: str, code: str) -> bool:
+    """Every letter of `text` is in `code`'s Unicode block (spaces, punctuation, ZWJ ok)."""
+    letters = [c for c in text if unicodedata.category(c)[0] in "LM"]
+    return bool(letters) and all(any(lo <= ord(c) <= hi for lo, hi in lang_data.BLOCKS[code])
+                                 for c in letters)
+
+
+def new_language_checks(client: TestClient, sid: str) -> None:
+    print("\n6. pa ne as mr gu: AI narration in the language; PDF, email, push fall back to English")
+    real_mod, real_ollama = sys.modules.get("anthropic"), llm._ollama_models
+    llm._ollama_models = lambda: []
+    try:
+        for code in NEW:
+            L = i18n.get(code)
+            check(f"{code}: llm.LANGUAGES names it and it is a REGIONAL (AI-written) language",
+                  code in llm.LANGUAGES and code in llm.REGIONAL and L.english in llm.LANGUAGES[code],
+                  llm.LANGUAGES.get(code, ""))
+            system = llm._system(code)
+            check(f"{code}: the system prompt asks for {L.english} in its script",
+                  llm.LANGUAGES[code] in system and "Write the entire response in" in system)
+            check(f"{code}: glossary only once names/terms are READY ('app')",
+                  ("GLOSSARY" in system) == (code in lang_data.ready("app")))
+            prompt = llm._build_prompt({"topic_label": "Career", "verdict": "favourable", "score": 0.4,
+                                        "evidence": []}, code, "When will my career grow?")
+            check(f"{code}: the user prompt asks for the language",
+                  f"Write the answer in {llm.LANGUAGES[code]}" in prompt)
+            note = _fallback_note(code)
+            check(f"{code}: 'Answer shown in English' note is the registry's, in its own script",
+                  note == L.english_answer and _in_own_script(note, code), note)
+            check(f"{code}: engine runs in English (main._engine_lang), PDF falls back to English",
+                  _pdf_lang(code) == "en" and code not in pdf_report.pdf_languages())
+            r = client.get(f"/api/pdf/chart/{sid}?lang={code}")
+            check(f"{code}: /api/pdf/chart?lang={code} still returns a PDF (English)",
+                  r.status_code == 200 and r.content[:5] == b"%PDF-", str(r.status_code))
+            text, html = email_auth.compose("482913", code)
+            check(f"{code}: sign-in email is the English + Hindi one, subject unchanged",
+                  "Your Divine Astro sign-in code is" in text and "482913" in html
+                  and email_auth.subject(code) == email_auth.SUBJECT)
+            m = push_message.build(dt.date(2026, 10, 14), 12.9716, 77.5946, "Asia/Kolkata", code,
+                                   city="Bengaluru")
+            check(f"{code}: push text is English with English paths",
+                  m["title"] and not m["path"].startswith(f"/{code}/"), m["path"])
+            folded = "".join(chr({"pa": 0x0A66, "gu": 0x0AE6, "as": 0x09E6, "mr": 0x0966, "ne": 0x0966}[code] + int(c))
+                             for c in "2026")
+            check(f"{code}: the date auditor folds this script's digits (Jul {folded} = Jul 2026)",
+                  llm._dates_in(f"Jul {folded}") == {"Jul 2026"}, str(llm._dates_in(f"Jul {folded}")))
+
+        seen: list = []
+        answer = "ਤੁਹਾਡੀ ਕੁੰਡਲੀ ਕਰੀਅਰ ਬਾਰੇ ਸਾਫ਼ ਦੱਸਦੀ ਹੈ। " * 6
+        r = client.post("/api/ask", json={"session_id": sid, "question": "How is my career?",
+                                          "language": "pa", "provider": "off"})
+        a = r.json()
+        check("pa, narration off: English engine text with the Punjabi note",
+              r.status_code == 200 and a.get("fallback_note") == i18n.get("pa").english_answer
+              and a.get("answer") == a.get("answer_engine"), str(a.get("fallback_note")))
+        sys.modules["anthropic"] = fake_anthropic(answer, seen)
+        for code in NEW:
+            r = client.post("/api/ask", json={"session_id": sid, "question": "How is my career?",
+                                              "language": code, "provider": "anthropic"})
+            a = r.json()
+            check(f"{code}, model answer: passed through, no fallback note, model asked for {i18n.get(code).english}",
+                  r.status_code == 200 and a.get("answer") == answer.strip() and "fallback_note" not in a
+                  and seen and i18n.get(code).english in seen[-1]["system"], str(a.get("llm_error")))
+    finally:
+        llm._ollama_models = real_ollama
+        if real_mod is None:
+            sys.modules.pop("anthropic", None)
+        else:
+            sys.modules["anthropic"] = real_mod
+
+
 def main() -> int:
     prompt_checks()
     auditor_checks()
@@ -348,6 +429,7 @@ def main() -> int:
     sid = r.json()["session_id"]
     e2e_checks(client, sid)
     pdf_checks(client, sid)
+    new_language_checks(client, sid)
 
     print("\n" + "=" * 60)
     if failures:

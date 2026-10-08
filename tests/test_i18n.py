@@ -1,6 +1,8 @@
 """DIVASTRO-121: the language registry and every server-side consequence of it.
 
-Kannada, Telugu, Tamil, Malayalam, Bengali and Odia join English and Hindi.
+Kannada, Telugu, Tamil, Malayalam, Bengali and Odia join English and Hindi
+(DIVASTRO-143: and Punjabi, Nepali, Assamese, Marathi, Gujarati, each switched on
+page module by page module through app/lang_data/<code>.py READY).
 Until a module's pages are translated, its /kn/... copy must render (the
 picker links to it) but must NOT pass for a Kannada page in search: noindex,
 no hreflang, no sitemap entry, a "translation coming soon" note. These checks
@@ -18,6 +20,7 @@ import re
 import sys
 import tempfile
 import unicodedata
+from html import unescape
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -28,8 +31,8 @@ os.environ["ASTRO_DATABASE_URL"] = f"sqlite:///{Path(_tmp).as_posix()}/t.db"
 
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app import (analytics, i18n, katha, muhurat_pages, nakshatra_pages,  # noqa: E402
-                 rashifal_pages, seo_pages, share, vrat_pages)
+from app import (analytics, i18n, katha, lang_data, muhurat_pages, nakshatra_pages,  # noqa: E402
+                 rashifal_pages, recurring_pages, seo_pages, share, site_hub, vrat_pages)
 from app.astro import names as astro_names  # noqa: E402
 from app.astro import names_i18n  # noqa: E402
 from app.main import app  # noqa: E402
@@ -41,7 +44,11 @@ SITE = seo_pages.SITE_URL
 # Script of each language (first letter of the Unicode name), for the
 # "is this string really in that script" checks.
 SCRIPT_WORD = {"hi": "DEVANAGARI", "kn": "KANNADA", "te": "TELUGU", "ta": "TAMIL",
-               "ml": "MALAYALAM", "bn": "BENGALI", "or": "ORIYA"}
+               "ml": "MALAYALAM", "bn": "BENGALI", "or": "ORIYA",
+               "pa": "GURMUKHI", "ne": "DEVANAGARI", "as": "BENGALI", "mr": "DEVANAGARI",
+               "gu": "GUJARATI"}
+LEGACY = set(lang_data.LEGACY_CODES)
+NEW = list(lang_data.NEW_CODES)
 
 # One page per module, English path.
 MODULE_PAGES = {
@@ -55,8 +62,16 @@ MODULE_PAGES = {
 }
 MODULES = {"seo_pages": seo_pages, "rashifal_pages": rashifal_pages, "vrat_pages": vrat_pages,
            "nakshatra_pages": nakshatra_pages, "muhurat_pages": muhurat_pages}
-# What the server-rendered modules are written in today (DIVASTRO-123: + kn, te, ta, ml, bn, or).
-TRANSLATED_NOW = {"en", "hi", "kn", "te", "ta", "ml", "bn", "or"}
+READY_KEY = {"seo_pages": "seo", "rashifal_pages": "rashifal", "vrat_pages": "vrat",
+             "nakshatra_pages": "nakshatra", "muhurat_pages": "muhurat"}
+
+
+def translated_now(name: str) -> set:
+    """What a module is written in: en, hi, kn..or (DIVASTRO-123) + every new language whose
+    app/lang_data/<code>.py READY includes the module (DIVASTRO-143). A translator flipping a
+    module therefore changes no test."""
+    return {"en", "hi"} | LEGACY | {c for c in NEW if READY_KEY[name] in
+                                    getattr(lang_data.load(c), "READY", ())}
 
 
 def check(label: str, ok: bool, detail: str = "") -> None:
@@ -96,26 +111,40 @@ def in_script(text: str, lang: str) -> bool:
 def main() -> int:
     print("\n1. The registry")
     codes = list(i18n.CODES)
-    check("8 languages in order", codes == ["en", "hi", "kn", "te", "ta", "ml", "bn", "or"], str(codes))
+    check("13 languages in order",
+          codes == ["en", "hi", "kn", "te", "ta", "ml", "bn", "or", "pa", "ne", "as", "mr", "gu"], str(codes))
     natives = [L.native for L in i18n.LANGUAGES]
     check("native names", natives == ["English", "हिन्दी", "ಕನ್ನಡ", "తెలుగు", "தமிழ்", "മലയാളം",
-                                      "বাংলা", "ଓଡ଼ିଆ"], str(natives))
+                                      "বাংলা", "ଓଡ଼ିଆ", "ਪੰਜਾਬੀ", "नेपाली", "অসমীয়া", "मराठी",
+                                      "ગુજરાતી"], str(natives))
     check("og:locale", [L.og_locale for L in i18n.LANGUAGES]
-          == ["en_IN", "hi_IN", "kn_IN", "te_IN", "ta_IN", "ml_IN", "bn_IN", "or_IN"])
+          == ["en_IN", "hi_IN", "kn_IN", "te_IN", "ta_IN", "ml_IN", "bn_IN", "or_IN",
+              "pa_IN", "ne_NP", "as_IN", "mr_IN", "gu_IN"])
     check("prefixes", [L.prefix for L in i18n.LANGUAGES]
-          == ["", "/hi", "/kn", "/te", "/ta", "/ml", "/bn", "/or"])
-    check("status: en/hi full, the six beta",
+          == ["", "/hi", "/kn", "/te", "/ta", "/ml", "/bn", "/or", "/pa", "/ne", "/as", "/mr", "/gu"])
+    check("hreflang / BCP-47 / html lang of the five new languages",
+          [(L.hreflang, L.bcp47, L.html_lang) for L in i18n.LANGUAGES[8:]]
+          == [("pa", "pa-IN", "pa"), ("ne", "ne-IN", "ne"), ("as", "as-IN", "as"),
+              ("mr", "mr-IN", "mr"), ("gu", "gu-IN", "gu")])
+    check("fonts: Gurmukhi / Gujarati / Bengali (Assamese) from Google; Marathi and Nepali system fonts",
+          [L.font for L in i18n.LANGUAGES[8:]]
+          == ["Noto Sans Gurmukhi", None, "Noto Sans Bengali", None, "Noto Sans Gujarati"])
+    check("status: en/hi full, the eleven beta",
           {L.code: L.status for L in i18n.LANGUAGES}
           == {"en": "full", "hi": "full", **{c: "beta" for c in i18n.EXTRA_CODES}})
-    check("EXTRA_CODES", i18n.EXTRA_CODES == ("kn", "te", "ta", "ml", "bn", "or"))
+    check("EXTRA_CODES", i18n.EXTRA_CODES == ("kn", "te", "ta", "ml", "bn", "or", "pa", "ne", "as", "mr", "gu"))
+    check("xlang convertor, prefix regex and picker follow the registry",
+          all(i18n.strip_prefix(f"/{c}/panchang") == (c, "/panchang") for c in i18n.EXTRA_CODES)
+          and i18n.strip_prefix("/pax/panchang")[0] == "en"
+          and i18n.localized_path("/panchang", "as") == "/as/panchang")
     for L in i18n.LANGUAGES:
         if L.code == "en":
             continue
         for field in ("native", "choose", "hint", "yes", "not_now", "notice"):
             check(f"{L.code}.{field} is written in its own script", in_script(
                 getattr(L, field).replace("WhatsApp", ""), L.code), getattr(L, field))
-        check(f"{L.code}: Google font only for the six new scripts",
-              (L.font is None) == (L.code == "hi"))
+        check(f"{L.code}: Google font only for scripts the system lacks (not Devanagari)",
+              (L.font is None) == (L.code in ("hi", "mr", "ne")))
     check("get/normalize fall back to English", i18n.get("xx").code == "en"
           and i18n.normalize(None) == "en" and i18n.normalize("KN") == "kn")
     check("pick(): the language's entry, else English",
@@ -157,9 +186,13 @@ def main() -> int:
     check("localize_links is a no-op for en and hi",
           i18n.localize_links(frag, "en") == frag and i18n.localize_links(frag, "hi") == frag)
 
-    print("\n3. Every module: TRANSLATED is TRANSLATED_NOW today")
+    print("\n3. Every module: TRANSLATED = en, hi, kn..or + the new languages READY for it")
     for name, mod in MODULES.items():
-        check(f"{name}.TRANSLATED", set(mod.TRANSLATED) == TRANSLATED_NOW, str(mod.TRANSLATED))
+        check(f"{name}.TRANSLATED", set(mod.TRANSLATED) == translated_now(name), str(mod.TRANSLATED))
+    check("recurring_pages.TRANSLATED", set(recurring_pages.TRANSLATED)
+          == {"en", "hi"} | LEGACY | {c for c in NEW if "recurring" in getattr(lang_data.load(c), "READY", ())})
+    check("site_hub.TRANSLATED", set(site_hub.TRANSLATED)
+          == {"en", "hi"} | LEGACY | {c for c in NEW if "hub" in getattr(lang_data.load(c), "READY", ())})
     check("katha.TRANSLATED (Hindi canonical)", set(katha.TRANSLATED) == {"en", "hi"})
 
     print("\n4. Every module's pages in every language")
@@ -177,13 +210,13 @@ def main() -> int:
                 ok = ok and (("lp-notice" in h) != translated)
                 ok = ok and f'<meta property="og:locale" content="{i18n.get(lang).og_locale}"/>' in h
                 links = picker_links(h)
-                ok = ok and set(links) == set(i18n.CODES)
+                ok = ok and set(links) == set(i18n.listed_codes(lang))
                 ok = ok and links.get(lang) == path
                 if not ok:
                     check(f"{name}: {path}", False,
                           f"status={r.status_code} lang={html_lang(h)} noindex={noindex(h)} "
                           f"alts={alternates(h)} picker={links}")
-            check(f"{name}: {en_path} in all 8 languages", not any(
+            check(f"{name}: {en_path} in all {len(i18n.CODES)} languages", not any(
                 f.startswith(f"{name}: ") and i18n.strip_prefix(f.split(": ", 1)[1])[1] == en_path
                 for f in failures))
 
@@ -193,7 +226,8 @@ def main() -> int:
     if ul is None:
         print("  (every language translated: nothing to check here)")
     else:
-        other = next(c for c in i18n.EXTRA_CODES if c != ul and i18n.get(c).font != i18n.get(ul).font)
+        other = next(c for c in i18n.EXTRA_CODES
+                     if c != ul and i18n.get(c).font and i18n.get(c).font != i18n.get(ul).font)
         h = client.get(f"/{ul}/panchang/pune").text
         check(f"/{ul}/panchang/pune: English body", "Today's Panchang in Pune" in h)
         check(f"/{ul}/panchang/pune: notice in its own script", i18n.get(ul).notice in h)
@@ -238,7 +272,8 @@ def main() -> int:
                     "/muhurat/vivah-2026", "/kundali-milan"):
         links = picker_links(client.get(en_path).text)
         bad = [href for href in links.values() if client.get(href).status_code != 200]
-        check(f"{en_path}: all 8 picker links are 200", len(links) == 8 and not bad, str(bad))
+        check(f"{en_path}: all {len(i18n.listed_codes())} listed picker links are 200",
+              len(links) == len(i18n.listed_codes()) and not bad, str(bad))
 
     print("\n7. Sitemap and beacon")
     sm = client.get("/sitemap.xml").text
@@ -327,8 +362,11 @@ def main() -> int:
     astro_names.add_names(q2, "zz")
     check("add_names: an unknown code leaves the row alone", q2 == {"tithi": [dict(row)]})
     p = client.get(f"/api/panchang?{q}").json()
-    check("/api/panchang carries name_<code> for every regional language",
-          all(f"name_{c}" in r for c in i18n.EXTRA_CODES for r in p["tithi"]))
+    check("/api/panchang carries name_<code> for kn..or and every new language READY for 'app'",
+          all(f"name_{c}" in r for c in names_i18n.available() for r in p["tithi"])
+          and set(names_i18n.available()) == LEGACY | set(lang_data.ready("app")))
+    check("... and nothing for a new language that is not READY",
+          not any(f"name_{c}" in r for c in NEW if c not in lang_data.ready("app") for r in p["tithi"]))
 
     print("\n11. Fonts and CSP")
     css = (ROOT / "app/static/styles.css").read_text(encoding="utf-8")
@@ -344,6 +382,88 @@ def main() -> int:
         if L.font:
             check(f"{L.code}: font URL uses display=swap",
                   "display=swap" in i18n.font_url(L.code) and L.font.replace(" ", "+") in i18n.font_url(L.code))
+
+    print("\n12. DIVASTRO-143: pa, ne, as, mr, gu — English body, noindex, no hreflang, no sitemap until READY")
+    sm = client.get("/sitemap.xml").text
+    families = {
+        "seo": ("/{c}/panchang", "/{c}/rahu-kaal/pune", "/{c}/choghadiya", "/{c}/kundali-milan", "/{c}/free-kundali"),
+        "rashifal": ("/{c}/rashifal", "/{c}/rashifal/mesh"),
+        "vrat": ("/{c}/vrat-tyohar", "/{c}/vrat-tyohar/2026", "/{c}/ekadashi-2026", "/{c}/tyohar/diwali-2026"),
+        "nakshatra": ("/{c}/nakshatra", "/{c}/nakshatra/ashwini", "/{c}/rashi/mesh", "/{c}/naam-se-kundali-milan"),
+        "muhurat": ("/{c}/muhurat/vivah-2026",),
+        "recurring": ("/{c}/amavasya-2026", "/{c}/purnima-2026"),
+        "hub": ("/{c}/sitemap",),
+    }
+    for c in NEW:
+        mod = lang_data.load(c)
+        ready = set(getattr(mod, "READY", ()))
+        L = i18n.get(c)
+        for key, paths in families.items():
+            for tpl in paths:
+                path = tpl.format(c=c)
+                r = client.get(path)
+                h = r.text
+                live = key in ready
+                ok = (r.status_code == 200 and html_lang(h).split("-")[0] == c
+                      and noindex(h) != live and bool(alternates(h)) == live
+                      and ("lp-notice" in h) != live
+                      and (f"<loc>{SITE}{path}</loc>" in sm) == live
+                      and (not live or f'hreflang="{L.hreflang}"' in h))
+                if not live:
+                    # the notice is in the language's own script, and is the registry's string
+                    ok = ok and L.notice in unescape(h)
+                check(f"{path}: {'READY' if live else 'not READY'} behaves as such", ok,
+                      f"status={r.status_code} noindex={noindex(h)} alts={len(alternates(h))}")
+        # the English body shows wherever the language has no text yet
+        if "seo" not in ready and not lang_data.filled(c, "SEO_TEXT"):
+            h = client.get(f"/{c}/panchang/pune").text
+            check(f"/{c}/panchang/pune: English body", "Today's Panchang in Pune" in h)
+        if "rashifal" not in ready and not lang_data.filled(c, "RASHIFAL_TEXT"):
+            check(f"/{c}/rashifal: English body", "Daily Rashifal" in client.get(f"/{c}/rashifal").text
+                  or "Rashifal" in client.get(f"/{c}/rashifal").text)
+        # city pages (vrat x city) exist for every language and are never indexable
+        r = client.get(f"/{c}/tyohar/diwali-2026/mumbai")
+        check(f"/{c}/tyohar/diwali-2026/mumbai: renders, noindex, no hreflang",
+              r.status_code == 200 and noindex(r.text) and not alternates(r.text))
+        check(f"/{c}/panchang/atlantis stays 404", client.get(f"/{c}/panchang/atlantis").status_code == 404)
+        check(f"/{c}/katha is a 404 like /kn/katha", client.get(f"/{c}/katha").status_code == 404)
+        check(f"the picker on /{c}/panchang names {L.native}, lists the listed languages and itself",
+              picker_links(client.get(f"/{c}/panchang").text).get(c) == f"/{c}/panchang"
+              and f'<span class="lp-cur" lang="{L.html_lang}">{L.native}</span>' in client.get(f"/{c}/panchang").text)
+        check(f"beacon accepts /{c}/panchang and rejects /{c}/terms",
+              analytics.is_public_page(f"/{c}/panchang") and not analytics.is_public_page(f"/{c}/terms"))
+        check(f"{c}: the web font is {L.font or 'none (system fonts)'}",
+              (L.font.replace(" ", "+") in client.get(f"/{c}/panchang").text) if L.font
+              else "fonts.googleapis" not in client.get(f"/{c}/panchang").text)
+        r = client.get(f"/api/panchang?latitude=12.97&longitude=77.59&timezone=Asia/Kolkata&language={c}")
+        check(f"/api/panchang language={c} is 200", r.status_code == 200)
+        r = client.get(f"/?lang={c}")
+        check(f"/?lang={c} serves the app; the registry lists {c} only once it is listed",
+              r.status_code == 200 and "DA_LANGS" in r.text
+              and (re.search(rf'"code":\s*"{c}"', r.text) is not None) == lang_data.listed(c))
+        check(f"/static/i18n/{c}.json is served", client.get(f"/static/i18n/{c}.json").status_code == 200)
+
+    print("\n13. DIVASTRO-143: the picker offers a new language once it has something READY (or on request)")
+    en_links, hi_links = picker_links(client.get("/panchang").text), picker_links(client.get("/hi/panchang").text)
+    want = [c for c in i18n.CODES if c not in NEW or lang_data.listed(c)]
+    check("en and hi pages list exactly the listed languages", list(en_links) == want == list(hi_links),
+          str(list(en_links)))
+    check("a new language with nothing READY is not in the English picker (snapshots stay identical)",
+          all(c not in en_links for c in NEW if not getattr(lang_data.load(c), "READY", ())))
+    saved_env = os.environ.get("ASTRO_LIST_ALL_LANGS")
+    os.environ["ASTRO_LIST_ALL_LANGS"] = "1"
+    try:
+        links = picker_links(client.get("/panchang").text)
+        check("ASTRO_LIST_ALL_LANGS=1 lists all 13 in registry order", list(links) == list(i18n.CODES),
+              str(list(links)))
+        reg = re.search(r"window\.DA_LANGS=(\[.*?\]);window\.DA_I18N=", client.get("/").text, re.S)
+        check("... and the app's registry carries all 13",
+              reg is not None and len(__import__("json").loads(reg.group(1))) == 13)
+    finally:
+        if saved_env is None:
+            os.environ.pop("ASTRO_LIST_ALL_LANGS", None)
+        else:
+            os.environ["ASTRO_LIST_ALL_LANGS"] = saved_env
 
     print("\n" + "=" * 60)
     if failures:

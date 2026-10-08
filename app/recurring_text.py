@@ -943,6 +943,10 @@ TEXT: dict[str, dict[str, str]] = {
     },
 }
 
+# DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py; overlaid here as if written inline.
+from . import lang_data  # noqa: E402
+lang_data.merge("RECURRING_TEXT", TEXT)
+
 # Generic pieces the vrat & festival pages already have in every language
 # (day label, timing line, tithi line, "timings vary by city", the FAQ's timings
 # answer, headings, the 404 heading): reused as they are, never copied.

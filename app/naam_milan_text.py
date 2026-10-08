@@ -677,3 +677,8 @@ ENGINE: dict[str, dict[str, str]] = {
                             "ମଧ୍ୟ ଗ୍ରହଣ କରନ୍ତି।"),
     },
 }
+
+# DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py; overlaid here as if written inline.
+from . import lang_data  # noqa: E402
+lang_data.merge("NAAM_MILAN_TEXT", TEXT)
+lang_data.merge("NAAM_MILAN_ENGINE", ENGINE)

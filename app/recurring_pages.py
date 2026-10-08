@@ -34,7 +34,7 @@ from dataclasses import dataclass
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from . import i18n, seo_cities, seo_pages, vrat_pages, vrat_text
+from . import i18n, lang_data, seo_cities, seo_pages, vrat_pages, vrat_text
 from .astro import festivals
 from .recurring_text import TEXT
 from .seo_pages import EN, HI, SITE_URL, _e, _long_date, _short_date
@@ -68,8 +68,10 @@ _NAME_EN = {"purnima": "Purnima"}
 
 # DIVASTRO-121/123: the languages these pages are really written in. One not
 # listed renders English text with noindex, no hreflang and no sitemap entry.
-TRANSLATED = i18n.BASE_TRANSLATED | {c for c in i18n.EXTRA_CODES
-                                     if i18n.has("about.purnima", c, TEXT)}
+# DIVASTRO-143: the older languages keep this "has its text" rule; a new language is
+# translated exactly when app/lang_data/<code>.py READY includes "recurring".
+TRANSLATED = i18n.BASE_TRANSLATED | {c for c in lang_data.LEGACY_CODES
+                                     if i18n.has("about.purnima", c, TEXT)} | lang_data.ready("recurring")
 # localize_links() keys on the first hyphen-separated word of the root.
 i18n.LOCALIZABLE_ROOTS.update({f"{s.slug.split('-')[0]}-" for s in SPECS})
 

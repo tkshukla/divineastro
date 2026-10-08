@@ -45,7 +45,11 @@ from app.main import app  # noqa: E402
 client = TestClient(app, raise_server_exceptions=False)
 failures: list[str] = []
 SITE = seo_pages.SITE_URL
-LANGS = ["en", "hi", *i18n.EXTRA_CODES]
+# The languages these pages are written in: en, hi, kn..or and (DIVASTRO-143) every new
+# language whose app/lang_data/<code>.py READY includes "recurring" (a translator flips it
+# in their own file and this follows).
+LANGS = i18n.ordered(rp.TRANSLATED)
+MLANGS = i18n.ordered(muhurat_pages.TRANSLATED)          # the mundan pages live in muhurat_pages
 
 
 def check(label: str, ok: bool, detail: str = "") -> None:
@@ -98,7 +102,7 @@ def main() -> int:
 def _run() -> int:
     paths = rp.page_paths()
     print("1. Every page renders")
-    check("6 observances x 2 years x 8 languages", len(paths) == 6 * 2 * 8 == len(set(paths)),
+    check(f"6 observances x 2 years x {len(LANGS)} languages", len(paths) == 6 * 2 * len(LANGS) == len(set(paths)),
           str(len(paths)))
     check("the URL families", all(p in paths for p in (
         "/purnima-2026", "/amavasya-2027", "/pradosh-vrat-2026", "/sankashti-chaturthi-2027",
@@ -360,7 +364,7 @@ def _run() -> int:
           r.headers.get("cache-control") == "no-store" and "/amavasya-2026" in r.text)
     sm = client.get("/sitemap.xml").text
     missing = [p for p in paths if f"<loc>{SITE}{p}</loc>" not in sm]
-    check("all 96 pages are in sitemap.xml", not missing, str(missing[:3]))
+    check(f"all {len(paths)} pages are in sitemap.xml", not missing, str(missing[:3]))
     check("seo_pages.sitemap_paths() lists each once",
           all(seo_pages.sitemap_paths().count(p) == 1 for p in paths))
     check("beacon accepts every page", all(analytics.is_public_page(p) for p in paths))
@@ -379,9 +383,9 @@ def _run() -> int:
 
     print("9. Mundan muhurat")
     mp = muhurat_pages.page_paths()
-    want = [muhurat_pages.page_path("mundan", y, l) for y in muhurat_pages.YEARS for l in LANGS]
+    want = [muhurat_pages.page_path("mundan", y, l) for y in muhurat_pages.YEARS for l in MLANGS]
     check("/muhurat/mundan-2026, -2027 in every language are in muhurat_pages.page_paths()",
-          all(p in mp for p in want) and len(mp) == 3 * 2 * 8, str(len(mp)))
+          all(p in mp for p in want) and len(mp) == 3 * 2 * len(MLANGS), str(len(mp)))
     check("the engine's mundan rule is the page's source",
           muhurat_pages.KINDS["mundan"].event == "mundan" and "mundan" in muhurat.EVENT_RULES)
     rule = muhurat.EVENT_RULES["mundan"]
@@ -431,14 +435,14 @@ def _run() -> int:
           "मुंडन मुहूर्त 2027" in hht
           and "वर्जित तिथियां: चतुर्थी, नवमी, चतुर्दशी, पूर्णिमा, अमावस्या" in hht
           and "मुंडन (चूड़ाकरण)" in hht)
-    for lang in i18n.EXTRA_CODES:
+    for lang in [c for c in MLANGS if c not in ("en", "hi")]:
         mh = mpages[f"/{lang}/muhurat/mundan-2026"]
         if "{" in re.sub(r"<style.*?</style>|<script.*?</script>", "", mh, flags=re.S) or "rules.body" in mh:
             check(f"{lang} mundan page: no unformatted placeholders", False)
             break
     else:
         check("every regional mundan page: rules block present, no stray placeholders",
-              all("<ul>" in mpages[f"/{l}/muhurat/mundan-2026"] for l in i18n.EXTRA_CODES))
+              all("<ul>" in mpages[f"/{l}/muhurat/mundan-2026"] for l in MLANGS if l not in ("en", "hi")))
     check("share button on a mundan page", 'class="share-wa"' in h)
     check("404 for an unknown kind/year", client.get("/muhurat/mundan-2031").status_code == 404
           and client.get("/muhurat/namkaran-2026").status_code == 404)

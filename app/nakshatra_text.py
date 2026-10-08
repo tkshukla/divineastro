@@ -868,3 +868,9 @@ FACTS: dict[str, dict[str, str]] = {
         "symbol.revati": "ମାଛ (ବା ମୃଦଙ୍ଗ)",
     },
 }
+
+# DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py; overlaid here as if written inline.
+from . import lang_data  # noqa: E402
+lang_data.merge("NAKSHATRA_TRAITS", NAKSHATRA_TRAITS)
+lang_data.merge("RASHI_TRAITS", RASHI_TRAITS)
+lang_data.merge("NAKSHATRA_FACTS", FACTS)

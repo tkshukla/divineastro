@@ -207,7 +207,8 @@ def city_name(city: City, lang: str) -> str:
 
 def state_name(state: str, lang: str) -> str:
     """A state in `lang` (a `STATE_<CODE>` table here), else the English name."""
-    return (globals().get(f"STATE_{lang.upper()}") or {}).get(state, state)
+    table = globals().get(f"STATE_{lang.upper()}") or _names.STATES.get(lang) or {}   # DIVASTRO-143: pa, ne ...
+    return table.get(state, state)
 
 
 def place(city: City, lang: str) -> str:

@@ -99,6 +99,10 @@ LABELS: dict[str, dict[str, str]] = {
 }
 
 
+# DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py; overlaid here as if written inline.
+from . import lang_data  # noqa: E402
+lang_data.merge("HUB_LABELS", LABELS)
+
 def label(key: str, lang: str) -> str:
     """The section name in `lang` (HTML-safe: '&amp;' is already escaped), English fallback."""
     return LABELS.get(lang, LABELS["en"]).get(key) or LABELS["en"][key]

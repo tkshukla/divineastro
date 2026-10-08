@@ -1,4 +1,4 @@
-"""Name tables for the eight site languages (DIVASTRO-123).
+"""Name tables for the site languages (DIVASTRO-123; pa ne as mr gu DIVASTRO-143).
 
 app/astro/names_i18n.names_for(lang) gives one interface over names_hi.py,
 festivals.py, matching.py (en/hi) and names_{kn,te,ta,ml,bn,or}.py. This
@@ -19,6 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from app import lang_data  # noqa: E402
 from app.astro import festivals as F  # noqa: E402
 from app.astro import matching as M  # noqa: E402
 from app.astro import names_hi  # noqa: E402
@@ -39,12 +40,24 @@ SCRIPT = {
     "ml": (0x0D00, 0x0D7F),
     "bn": (0x0980, 0x09FF),
     "or": (0x0B00, 0x0B7F),
+    "pa": (0x0A00, 0x0A7F),
+    "gu": (0x0A80, 0x0AFF),
+    "as": (0x0980, 0x09FF),          # Assamese is written in the Bengali block (ৰ ৱ included)
+    "mr": (0x0900, 0x097F),
+    "ne": (0x0900, 0x097F),
 }
 DEVANAGARI = (0x0900, 0x097F)
 DANDA = {"।", "॥"}          # shared by Bengali and Odia
 JOINERS = {"‌", "‍"}
 # Punctuation used in the tables besides ASCII.
 EXTRA_PUNCT = {"—", "–", "·"}
+
+# DIVASTRO-143: a new language's names_<code>.py is filled by a translator; what it leaves
+# out is English (names_i18n._over_english). The own-script checks apply to the languages
+# whose tables are complete: the six older ones, and a new one once READY includes "app".
+COMPLETE = tuple(c for c in REGIONAL_LANGS
+                 if c in lang_data.LEGACY_CODES or c in lang_data.ready("app"))
+DEVANAGARI_LANGS = ("hi", "mr", "ne")
 
 # Tables whose keys may differ from English (empty for some languages, or with
 # optional extra keys).
@@ -74,7 +87,7 @@ def _bad_chars(code: str, text: str) -> list[str]:
             continue
         if cp < 0x80 and not ch.isalpha():       # ASCII digits and punctuation
             continue
-        if ch in DANDA and code in ("bn", "or", "hi"):
+        if ch in DANDA and code in ("bn", "or", "hi", "as", "mr", "ne"):
             continue
         bad.append(f"{ch} U+{cp:04X} {unicodedata.name(ch, '?')}")
     return bad
@@ -153,7 +166,7 @@ class TestShape(unittest.TestCase):
 
 class TestScript(unittest.TestCase):
     def test_regional_values_in_own_script(self):
-        for code in REGIONAL_LANGS + ("hi",):
+        for code in COMPLETE + ("hi",):
             n = names_for(code)
             lo, hi = SCRIPT[code]
             for name, v in _strings(n):
@@ -162,7 +175,9 @@ class TestScript(unittest.TestCase):
                     self.assertTrue(any(lo <= ord(c) <= hi for c in v))
 
     def test_no_devanagari_in_regional_tables(self):
-        for code in REGIONAL_LANGS:
+        for code in COMPLETE:
+            if code in DEVANAGARI_LANGS:
+                continue
             for name, v in _strings(names_for(code)):
                 leaked = [c for c in v if DEVANAGARI[0] <= ord(c) <= DEVANAGARI[1]
                           and c not in DANDA]
@@ -236,7 +251,10 @@ class TestFestivals(unittest.TestCase):
             for o in obs:
                 name = n.festival_name(o)
                 with self.subTest(lang=code, key=o["key"], name_en=o["name_en"]):
-                    self.assertTrue(any(lo <= ord(c) <= hi for c in name), name)
+                    if code in COMPLETE:       # a new language is English until its names are written
+                        self.assertTrue(any(lo <= ord(c) <= hi for c in name), name)
+                    else:
+                        self.assertTrue(name)
                     for t in o["timings"]:
                         self.assertIn(t["key"], n.FESTIVAL_TIMINGS)
             # the generic word for an unnamed Ekadashi
@@ -281,6 +299,44 @@ class TestInterface(unittest.TestCase):
                 for base in public_hi:
                     self.assertTrue(hasattr(mod, f"{base}_{suffix}"), f"{base}_{suffix}")
                 self.assertTrue(callable(getattr(mod, f"add_{code}")))
+
+
+class TestNewLanguageFallback(unittest.TestCase):
+    """DIVASTRO-143: pa ne as mr gu start as English with holes filled in key by key."""
+
+    def test_an_unfilled_new_language_is_english_never_a_keyerror(self):
+        en = names_for("en")
+        for code in lang_data.NEW_CODES:
+            if code in lang_data.ready("app"):
+                continue
+            n = names_for(code)
+            with self.subTest(lang=code):
+                self.assertEqual(n.code, code)
+                self.assertEqual(n.TITHI, en.TITHI)
+                self.assertEqual(n.MONTHS, en.MONTHS)
+                self.assertEqual(n.TIMINGS["rahu_kaal"], "Rahu Kaal")
+                self.assertEqual(n.clock_word(7), en.CLOCK["morning"])
+
+    def test_a_filled_value_wins_and_a_hole_stays_english(self):
+        from app.astro import names_i18n
+        mod = type("M", (), {})()
+        for name in TABLES + TEXTS:
+            setattr(mod, f"{name}_ZZ", {} if name not in ("MONTHS",) else ["", "फ़रवरी"])
+        mod.TITHI_ZZ = {"Ashtami": "अष्टमी", "Navami": ""}
+        mod.NOTE_POLAR_ZZ = ""
+        values = {name: getattr(mod, f"{name}_ZZ") for name in TABLES + TEXTS}
+        got = names_i18n._over_english(values)
+        en = names_for("en")
+        self.assertEqual(got["TITHI"]["Ashtami"], "अष्टमी")
+        self.assertEqual(got["TITHI"]["Navami"], "Navami")
+        self.assertEqual(got["MONTHS"][1], "फ़रवरी")
+        self.assertEqual(got["MONTHS"][0], en.MONTHS[0])
+        self.assertEqual(len(got["MONTHS"]), 12)
+        self.assertEqual(got["NOTE_POLAR"], en.NOTE_POLAR)
+
+    def test_the_script_block_table_matches_the_registry_of_blocks(self):
+        for code, rng in SCRIPT.items():
+            self.assertEqual(((rng[0], rng[1]),), lang_data.BLOCKS[code], code)
 
 
 class TestAddNames(unittest.TestCase):
