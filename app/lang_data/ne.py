@@ -883,7 +883,7 @@ RASHIFAL_TEXT = {
     # keep: {house}
     "house_short": "{house} भाव",
     # EN: (retrograde)
-    "rx": "(वक्री)",
+    "rx": " (वक्री)",
     # EN: Moon
     "planet.Moon": "चन्द्रमा",
     # EN: Saturn
@@ -1283,14 +1283,14 @@ VRAT_TEXT = {
     #     the date does too. Dates follow Drik Panchang's Smarta (default) reckoning. Check the
     #     Panchang for your own city.</p></div>
     # keep: {city}
-    "city_note": "<div class=\"box\"><p><strong>समय शहरअनुसार फरक पर्छ।</strong> यहाँ दिइएका सबै समय {city} को सूर्योदय, सूर्यास्त र चन्द्रोदयअनुसारका हुन्; अर्को शहरमा ती केही मिनेट फरक पर्छन् र कहिलेकाहीँ मिति पनि फरक पर्न सक्छ। मिति दृक पञ्चाङ्गको स्मार्त (सामान्य) गणनाअनुसार हो। आफ्नै शहरको पञ्चाङ्ग हेर्नुहोस्।</p></div>",
+    "city_note": "<div class=\"box\"><p><strong>समय सहरअनुसार फरक पर्छ।</strong> यहाँ दिइएका सबै समय {city} को सूर्योदय, सूर्यास्त र चन्द्रोदयअनुसारका हुन्; अर्को सहरमा ती केही मिनेट फरक पर्छन् र कहिलेकाहीँ मिति पनि फरक पर्न सक्छ। मिति दृक पञ्चाङ्गको स्मार्त (सामान्य) गणनाअनुसार हो। आफ्नै सहरको पञ्चाङ्ग हेर्नुहोस्।</p></div>",
     # EN: <p class="note"><small>For most observances the date is the same across India, but puja
     #     muhurat, parana and moonrise times differ from city to city - every time here is for
     #     <strong>{city}</strong>. Regional traditions may vary.</small></p>
     # keep: {city}
-    "top_note": "<p class=\"note\"><small>प्रायः सबै पर्वको मिति भारतभर एउटै हुन्छ, तर पूजा मुहूर्त, पारण र चन्द्रोदयको समय शहरअनुसार फरक पर्छ — यहाँ दिइएका सबै समय <strong>{city}</strong> का लागि हुन्। क्षेत्रीय परम्परा फरक हुन सक्छ।</small></p>",
+    "top_note": "<p class=\"note\"><small>प्रायः सबै पर्वको मिति भारतभर एउटै हुन्छ, तर पूजा मुहूर्त, पारण र चन्द्रोदयको समय सहरअनुसार फरक पर्छ — यहाँ दिइएका सबै समय <strong>{city}</strong> का लागि हुन्। क्षेत्रीय परम्परा फरक हुन सक्छ।</small></p>",
     # EN: Vrat & festivals in your city
-    "cities.heading": "तपाईंको शहरका व्रत र चाडपर्व",
+    "cities.heading": "तपाईंको सहरका व्रत र चाडपर्व",
     # EN: Today's Panchang in {city}
     # keep: {city}
     "tools.panchang": "{city} को आजको पञ्चाङ्ग",
@@ -1302,7 +1302,7 @@ VRAT_TEXT = {
     # keep: {city}
     "tools.heading": "{city} का लागि थप",
     # EN: See the Panchang for your city — free
-    "cta": "आफ्नो शहरको पञ्चाङ्ग हेर्नुहोस् — निःशुल्क",
+    "cta": "आफ्नो सहरको पञ्चाङ्ग हेर्नुहोस् — निःशुल्क",
     # EN: Today's vrat & festivals
     "more.today": "आजका व्रत र चाडपर्व",
     # EN: Festival calendar {year}
@@ -1326,7 +1326,7 @@ VRAT_TEXT = {
     "today.none": "आज कुनै प्रमुख व्रत वा चाड छैन।",
     # EN: Next: <strong>{name}</strong> on {day}.
     # keep: {day} {name}
-    "today.next": "अर्को: <strong>{name}</strong>, {day} मा।",
+    "today.next": " अर्को: <strong>{name}</strong>, {day} मा।",
     # EN: Vrat &amp; Festivals today
     "block.heading": "आजका व्रत र चाडपर्व",
     # EN: Page not found
@@ -1344,10 +1344,10 @@ VRAT_TEXT = {
     "hub.h1_city": "{city} मा आजका व्रत र चाडपर्व",
     # EN: Today, {date}: {names}.
     # keep: {date} {names}
-    "hub.desc_today": "आज, {date}: {names}।",
+    "hub.desc_today": "आज, {date}: {names}। ",
     # EN: {date}: no major vrat today.
     # keep: {date}
-    "hub.desc_none": "{date}: आज कुनै प्रमुख व्रत छैन।",
+    "hub.desc_none": "{date}: आज कुनै प्रमुख व्रत छैन। ",
     # EN: Upcoming fasts and festivals for 30 days with Ekadashi parana, Pradosh and Sankashti
     #     moonrise times - {city}.
     # keep: {city}
@@ -1409,7 +1409,7 @@ VRAT_TEXT = {
     "fest.h1": "{name} {year}: मिति र मुहूर्त",
     # EN: {text}.
     # keep: {text}
-    "fest.main": "{text}।",
+    "fest.main": "{text}। ",
     # EN: {name} {year} is on {weekday}, {date}. {main}Puja timings for New Delhi.
     # keep: {date} {main} {name} {weekday} {year}
     "fest.desc": "{name} {year} {weekday}, {date} मा पर्छ। {main}नयाँ दिल्लीको पूजा समय।",
@@ -1442,7 +1442,7 @@ VRAT_TEXT = {
     # EN: For New Delhi - {timings}. Timings vary by city by a few minutes; check the Panchang for
     #     your city.
     # keep: {timings}
-    "faq.timings_a": "नयाँ दिल्लीका लागि - {timings}। समय शहरअनुसार केही मिनेट फरक पर्छ; आफ्नो शहरको पञ्चाङ्ग हेर्नुहोस्।",
+    "faq.timings_a": "नयाँ दिल्लीका लागि - {timings}। समय सहरअनुसार केही मिनेट फरक पर्छ; आफ्नो सहरको पञ्चाङ्ग हेर्नुहोस्।",
     # EN: Why is {name} {year} observed on {short}?
     # keep: {name} {short} {year}
     "faq.why_q": "{name} {year} किन {short} मा मनाइन्छ?",
@@ -1589,7 +1589,7 @@ VRAT_ABOUT = {
     # EN: Ganga Dussehra, Jyeshtha Shukla Dashami, celebrates the descent of the Ganga to earth
     #     through Bhagiratha's penance. Devotees bathe in the Ganga, offer lamps and give in
     #     charity; the bath is held to wash away ten kinds of sin.
-    "ganga-dussehra": "गङ्गा दशहरा, जेष्ठ शुक्ल दशमी, मा भगीरथको तपस्याले गङ्गा पृथ्वीमा अवतरण भएको उत्सव मनाइन्छ। भक्तहरू गङ्गामा स्नान गर्छन्, दीप चढाउँछन् र दान दिन्छन्; यो स्नानले दस प्रकारका पाप धुन्छ भन्ने मान्यता छ।",
+    "ganga-dussehra": "गङ्गा दसहरा, जेष्ठ शुक्ल दशमी, मा भगीरथको तपस्याले गङ्गा पृथ्वीमा अवतरण भएको उत्सव मनाइन्छ। भक्तहरू गङ्गामा स्नान गर्छन्, दीप चढाउँछन् र दान दिन्छन्; यो स्नानले दस प्रकारका पाप धुन्छ भन्ने मान्यता छ।",
     # EN: Hariyali Teej, Shravana Shukla Tritiya, celebrates the reunion of Shiva and Parvati in the
     #     monsoon. Women wear green, apply mehndi, swing on decorated jhoolas, sing Sawan songs and
     #     many keep a fast for their husbands.
@@ -1673,7 +1673,7 @@ VRAT_NOTES = {
     "vat-purnima": "दुई परम्परा छन्: यो महाराष्ट्र, गुजरात र दक्षिणको पूर्णिमा (अमान्त) मिति हो; उत्तर भारतमा वट सावित्री पन्ध्र दिन अघि औंसीमा मनाइन्छ।",
     # EN: When Jyeshtha is doubled (an adhika month, as in 2026), Drik Panchang keeps Ganga Dussehra
     #     in the adhika Jyeshtha; some almanacs give the nija Jyeshtha date a month later.
-    "ganga-dussehra": "जब जेष्ठ दोहोरिन्छ (अधिक मास, जस्तै 2026 मा), दृक पञ्चाङ्गले गङ्गा दशहरा अधिक जेष्ठमा राख्छ; केही पञ्चाङ्गले निज जेष्ठको मिति एक महिना पछि दिन्छन्।",
+    "ganga-dussehra": "जब जेष्ठ दोहोरिन्छ (अधिक मास, जस्तै 2026 मा), दृक पञ्चाङ्गले गङ्गा दसहरा अधिक जेष्ठमा राख्छ; केही पञ्चाङ्गले निज जेष्ठको मिति एक महिना पछि दिन्छन्।",
     # EN: Drik Panchang counts Pitru Paksha from the Pratipada shraddha; Purnima shraddha is on the
     #     day before, and many calendars start the fortnight there.
     "pitru-paksha": "दृक पञ्चाङ्गले पितृ पक्ष प्रतिपदा श्राद्धबाट गणना गर्छ; पूर्णिमा श्राद्ध अघिल्लो दिन पर्छ, र धेरै पात्रोले पक्ष त्यहीँबाट सुरु गर्छन्।",
@@ -1689,10 +1689,10 @@ VRAT_NOTES = {
 VRAT_RULES = {
     # EN: {month} (amanta)
     # keep: {month}
-    "head": "{month} (अमान्त)",
+    "head": "{month} (अमान्त) ",
     # EN: {paksha} {tithi}:
     # keep: {paksha} {tithi}
-    "tithi": "{paksha} {tithi}:",
+    "tithi": "{paksha} {tithi}: ",
     # EN: tithi prevailing at sunrise
     "rule.udaya": "सूर्योदयमा रहेको तिथि",
     # EN: tithi prevailing in Pratahkala (first fifth of the day)
@@ -1765,7 +1765,7 @@ NAKSHATRA_PAGE_TEXT = {
     "today.other": "आजको नक्षत्र <a href=\"{href}\"><strong>{name}</strong></a> हो (नयाँ दिल्लीमा सूर्योदयको समयमा)।",
     # EN: Its end time, the tithi and Rahu Kaal are on <a href="{pan}">today's Panchang</a>.
     # keep: {pan}
-    "today.tail": "यसको समाप्ति समय, तिथि र राहुकाल <a href=\"{pan}\">आजको पञ्चाङ्ग</a>मा हेर्नुहोस्।",
+    "today.tail": " यसको समाप्ति समय, तिथि र राहुकाल <a href=\"{pan}\">आजको पञ्चाङ्ग</a>मा हेर्नुहोस्।",
     # EN: Nakshatras
     "crumb.naks": "नक्षत्र",
     # EN: Rashis
@@ -2693,10 +2693,10 @@ RECURRING_TEXT = {
     "desc.about.kalashtami": "हरेक महिना कृष्ण अष्टमीमा कालभैरवको पूजा।",
     # EN: Includes {label}.
     # keep: {label}
-    "desc.key": "{label} समावेश छ।",
+    "desc.key": " {label} समावेश छ।",
     # EN: Next: {date}.
     # keep: {date}
-    "desc.next": "अर्को: {date}।",
+    "desc.next": " अर्को: {date}।",
     # EN: The next {name} is on <strong>{when}</strong> ({details}).
     # keep: {details} {name} {when}
     "ans.next": "अर्को {name} <strong>{when}</strong> मा पर्छ ({details})।",
@@ -2710,7 +2710,7 @@ RECURRING_TEXT = {
     "ans.past": "{year} का सबै {count} {name} मिति तल सूचीबद्ध छन्; अन्तिम <strong>{when}</strong> मा थियो।",
     # EN: Dates for {year}: {link}.
     # keep: {link} {year}
-    "ans.more": "{year} का मितिहरू: {link}।",
+    "ans.more": " {year} का मितिहरू: {link}।",
     # EN: {name} {year}: all dates
     # keep: {name} {year}
     "table.h2": "{name} {year}: सबै मितिहरू",
@@ -2724,7 +2724,7 @@ RECURRING_TEXT = {
     # keep: {month}
     "adhika": "अधिक {month}",
     # EN: Also:
-    "also": "साथै:",
+    "also": "साथै: ",
     # EN: <p class="note"><small>Months are amanta (a month ends on Amavasya, as in South and West
     #     India). North Indian purnimanta calendars name the dark fortnight one month
     #     later.</small></p>
