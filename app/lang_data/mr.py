@@ -20,7 +20,7 @@ from __future__ import annotations
 
 # Page modules that are complete for this language (the table groups below):
 #   "seo" "rashifal" "vrat" "nakshatra" "muhurat" "recurring" "hub" "app"
-READY = frozenset()
+READY = frozenset({"seo", "rashifal", "vrat", "nakshatra", "muhurat", "recurring", "hub", "app"})
 
 # Latin-script words the mr text may keep besides the defaults (WhatsApp, UPI, PDF ...).
 ALLOW_LATIN = frozenset()
@@ -1731,228 +1731,228 @@ VRAT_RULES = {
 # app/nakshatra_page_text.py TEXT["mr"] — page text of /nakshatra /rashi (nakshatra_pages.py)  [88]
 NAKSHATRA_PAGE_TEXT = {
     # EN: Get your free kundali — find your exact birth nakshatra and Moon sign
-    "kundali_cta": "",
+    "kundali_cta": "तुमची मोफत कुंडली मिळवा — तुमचे अचूक जन्मनक्षत्र आणि चंद्र रास शोधा",
     # EN: More free tools
-    "more.heading": "",
+    "more.heading": "आणखी मोफत साधने",
     # EN: All 27 nakshatras
-    "more.naks": "",
+    "more.naks": "सर्व 27 नक्षत्रे",
     # EN: All 12 rashis
-    "more.rashis": "",
+    "more.rashis": "सर्व 12 राशी",
     # EN: Naam se Kundali Milan
-    "more.milan": "",
+    "more.milan": "नावावरून कुंडली मिलन",
     # EN: Kundali Milan (36 guna)
-    "more.kundali_milan": "",
+    "more.kundali_milan": "कुंडली मिलन (36 गुण)",
     # EN: Today's Rashifal
-    "more.rashifal": "",
+    "more.rashifal": "आजचे राशिभविष्य",
     # EN: Today's Panchang
-    "more.panchang": "",
+    "more.panchang": "आजचे पंचांग",
     # EN: All 27 nakshatras
-    "list.naks": "",
+    "list.naks": "सर्व 27 नक्षत्रे",
     # EN: All 12 rashis
-    "list.rashis": "",
+    "list.rashis": "सर्व 12 राशी",
     # EN: {name} ({english})
     # keep: {name}
-    "sign": "",
+    "sign": "{name}",
     # EN: {name} · {english}
     # keep: {name}
-    "sign.pill": "",
+    "sign.pill": "{name}",
     # EN: <strong>Today the Moon is in {name} (at sunrise in New Delhi).</strong>
     # keep: {name}
-    "today.same": "",
+    "today.same": "<strong>आज (नवी दिल्लीत सूर्योदयाच्या वेळी) चंद्र {name} मध्ये आहे.</strong>",
     # EN: Today's nakshatra is <a href="{href}"><strong>{name}</strong></a> (at sunrise in New
     #     Delhi).
     # keep: {href} {name}
-    "today.other": "",
+    "today.other": "आजचे नक्षत्र <a href=\"{href}\"><strong>{name}</strong></a> आहे (नवी दिल्लीत सूर्योदयाच्या वेळी).",
     # EN: Its end time, the tithi and Rahu Kaal are on <a href="{pan}">today's Panchang</a>.
     # keep: {pan}
-    "today.tail": "",
+    "today.tail": "त्याची समाप्तीची वेळ, तिथी आणि राहुकाळ <a href=\"{pan}\">आजच्या पंचांगात</a> पाहा.",
     # EN: Nakshatras
-    "crumb.naks": "",
+    "crumb.naks": "नक्षत्रे",
     # EN: Rashis
-    "crumb.rashis": "",
+    "crumb.rashis": "राशी",
     # EN: Nakshatra not found
-    "nf.nak": "",
+    "nf.nak": "नक्षत्र सापडले नाही",
     # EN: Rashi not found
-    "nf.rashi": "",
+    "nf.rashi": "रास सापडली नाही",
     # EN: Nature and traits
-    "trait_head": "",
+    "trait_head": "स्वभाव आणि वैशिष्ट्ये",
     # EN: male
-    "gender.male": "",
+    "gender.male": "पुरुष",
     # EN: female
-    "gender.female": "",
+    "gender.female": "स्त्री",
     # EN: Fire
-    "element.Fire": "",
+    "element.Fire": "अग्नी",
     # EN: Earth
-    "element.Earth": "",
+    "element.Earth": "पृथ्वी",
     # EN: Air
-    "element.Air": "",
+    "element.Air": "वायू",
     # EN: Water
-    "element.Water": "",
+    "element.Water": "जल",
     # EN: Movable (Chara)
-    "quality.Cardinal": "",
+    "quality.Cardinal": "चर",
     # EN: Fixed (Sthira)
-    "quality.Fixed": "",
+    "quality.Fixed": "स्थिर",
     # EN: Dual (Dwiswabhava)
-    "quality.Mutable": "",
+    "quality.Mutable": "द्विस्वभाव",
     # EN: {name} Nakshatra — Deity, Lord, Gana, Yoni, Nadi & Name Letters ({lat}) | {brand}
     # keep: {brand} {name}
-    "nak.title": "",
+    "nak.title": "{name} नक्षत्र — देवता, स्वामी, गण, योनी, नाडी आणि नामाक्षरे | {brand}",
     # EN: {name} nakshatra ({name_hi}): {span}, ruled by {lord}, deity {deity_short}, {gana} gana,
     #     {nadi} nadi, {yoni} yoni. Name syllables {lat} and traits.
     # keep: {gana} {lord} {nadi} {name} {span} {yoni}
     # may also use: {name_en}
-    "nak.desc": "",
+    "nak.desc": "{name} नक्षत्र: {span}, स्वामी {lord}, {gana} गण, {nadi} नाडी, {yoni} योनी. चरणांनुसार नामाक्षरे आणि स्वभाव.",
     # EN: <h1>{name} Nakshatra</h1>
     # keep: {name}
-    "nak.h1": "",
+    "nak.h1": "<h1>{name} नक्षत्र</h1>",
     # EN: <p class="hi" lang="hi">{name_hi} नक्षत्र</p>
     # may also use: {name_en} {name}
-    "nak.sub": "",
+    "nak.sub": "<p class=\"hi\">नक्षत्र · चरण आणि नामाक्षरे</p>",
     # EN: <p class="note">These are traditional tendencies, not verdicts. Your full kundali —
     #     ascendant, planets and dasha — gives the personal picture.</p>
-    "nak.trait_note": "",
+    "nak.trait_note": "<p class=\"note\">हे परंपरेतील कल आहेत, निकाल नाहीत. वैयक्तिक चित्र तुमच्या संपूर्ण कुंडलीतून — लग्न, ग्रह आणि दशा — मिळते.</p>",
     # EN: Number
-    "f.number": "",
+    "f.number": "क्रमांक",
     # EN: {n} of 27
     # keep: {n}
-    "f.number_v": "",
+    "f.number_v": "27 पैकी {n}",
     # EN: Span (sidereal)
-    "f.span": "",
+    "f.span": "विस्तार (निरयन)",
     # EN: Rashi
-    "f.rashi": "",
+    "f.rashi": "रास",
     # EN: Ruling planet (Vimshottari lord)
-    "f.lord": "",
+    "f.lord": "स्वामी ग्रह (विंशोत्तरी स्वामी)",
     # EN: {lord} <small>{years}-year mahadasha</small>
     # keep: {lord} {years}
-    "f.lord_v": "",
+    "f.lord_v": "{lord} <small>{years} वर्षांची महादशा</small>",
     # EN: Deity
-    "f.deity": "",
+    "f.deity": "देवता",
     # EN: Symbol
-    "f.symbol": "",
+    "f.symbol": "प्रतीक",
     # EN: Gana
-    "f.gana": "",
+    "f.gana": "गण",
     # EN: {gana} <small lang="hi">{gana_hi}</small>
     # keep: {gana}
-    "f.gana_v": "",
+    "f.gana_v": "{gana}",
     # EN: Yoni (animal)
-    "f.yoni": "",
+    "f.yoni": "योनी (प्राणी)",
     # EN: Nadi
-    "f.nadi": "",
+    "f.nadi": "नाडी",
     # EN: Varna (from its rashi, as used in Guna Milan)
-    "f.varna": "",
+    "f.varna": "वर्ण (राशीवरून, गुण मिलनात वापरला जाणारा)",
     # EN: Name syllables (namakshar)
-    "f.syl": "",
+    "f.syl": "नामाक्षरे",
     # EN: <span class="syl" lang="hi">{syl}</span> <small>{lat}</small>
     # keep: {syl}
-    "f.syl_v": "",
+    "f.syl_v": "<span class=\"syl\">{syl}</span>",
     # EN: The four padas and their name syllables
-    "pada.title": "",
+    "pada.title": "चार चरण आणि त्यांची नामाक्षरे",
     # EN: <tr><th>Pada</th><th>Span</th><th>Rashi</th><th>Name syllable</th></tr>
-    "pada.head": "",
+    "pada.head": "<tr><th>चरण</th><th>विस्तार</th><th>रास</th><th>नामाक्षर</th></tr>",
     # EN: <p class="note">Traditionally a child's name begins with the syllable of the pada the Moon
     #     occupied at birth (namakshar). Syllables follow the 108-pada Swar Siddhanta list (the
     #     Avakahada Chakra) as published by Drik Panchang.</p>
-    "pada.note": "",
+    "pada.note": "<p class=\"note\">परंपरेनुसार मुलाचे नाव जन्माच्या वेळी चंद्र ज्या चरणात होता त्या चरणाच्या अक्षराने (नामाक्षर) सुरू होते. अक्षरे दृक पंचांगाने प्रकाशित केलेल्या 108-चरणांच्या स्वर सिद्धांत यादीनुसार (अवकहडा चक्र) आहेत.</p>",
     # EN: Related
-    "rel.heading": "",
+    "rel.heading": "संबंधित",
     # EN: Today's {name} Rashifal
     # keep: {name}
-    "rel.rashifal": "",
+    "rel.rashifal": "आजचे {name} राशिभविष्य",
     # EN: The 27 Nakshatras — Lords, Deities, Gana & Name Syllables | {brand}
     # keep: {brand}
-    "ni.title": "",
+    "ni.title": "27 नक्षत्रे — स्वामी, देवता, गण आणि नामाक्षरे | {brand}",
     # EN: All 27 nakshatras from Ashwini to Revati: span, rashi, ruling planet, deity, gana, yoni,
     #     nadi and the name syllables of all four padas — consistent with our Kundali Milan tables.
-    "ni.desc": "",
+    "ni.desc": "अश्विनीपासून रेवतीपर्यंत सर्व 27 नक्षत्रे: विस्तार, रास, स्वामी ग्रह, देवता, गण, योनी, नाडी आणि चारही चरणांची नामाक्षरे — आमच्या कुंडली मिलनाच्या तक्त्यांशी सुसंगत.",
     # EN: <h1>The 27 Nakshatras</h1>
-    "ni.h1": "",
+    "ni.h1": "<h1>27 नक्षत्रे</h1>",
     # EN: <p class="hi" lang="hi">27 नक्षत्र</p>
-    "ni.sub": "",
+    "ni.sub": "<p class=\"hi\">अश्विनी ते रेवती</p>",
     # EN: <p>Vedic astrology divides the zodiac into 27 nakshatras (lunar mansions) of 13°20′ each,
     #     and each nakshatra into four padas of 3°20′. The 108 padas fall exactly nine to a sign
     #     across the 12 rashis. Your birth nakshatra is the one the Moon occupied when you were
     #     born: it starts your Vimshottari dasha and drives the Tara, Yoni, Gana and Nadi kootas of
     #     Kundali Milan.</p>
-    "ni.intro": "",
+    "ni.intro": "<p>वैदिक ज्योतिष राशिचक्राला प्रत्येकी 13°20′ च्या 27 नक्षत्रांत विभागते, आणि प्रत्येक नक्षत्राला 3°20′ च्या चार चरणांत. 108 चरण 12 राशींमध्ये अगदी नऊ प्रति रास असे बसतात. तुमचे जन्मनक्षत्र म्हणजे तुमच्या जन्माच्या वेळी चंद्र ज्यात होता ते: त्यावरून तुमची विंशोत्तरी दशा सुरू होते आणि कुंडली मिलनातील तारा, योनी, गण आणि नाडी हे कूट ठरतात.</p>",
     # EN: <tr><th>#</th><th>Nakshatra</th><th>Rashi</th><th>Lord</th><th>Gana</th><th>Name
     #     syllables</th></tr>
-    "ni.head": "",
+    "ni.head": "<tr><th>#</th><th>नक्षत्र</th><th>रास</th><th>स्वामी</th><th>गण</th><th>नामाक्षरे</th></tr>",
     # EN: {name} Rashi ({english}) — Lord, Element, Nakshatras & Name Letters | {brand}
     # keep: {brand} {name}
     # may also use: {english}
-    "rs.title": "",
+    "rs.title": "{name} रास — स्वामी, तत्त्व, नक्षत्रे आणि नामाक्षरे | {brand}",
     # EN: {name} rashi ({english} Moon sign, {name_hi}): ruled by {lord}, {element_lower} element,
     #     {quality_lower} quality. Its 9 nakshatra padas, name syllables ({lat}) and traits.
     # keep: {lord} {name}
     # may also use: {element_lower} {element} {english} {name_en} {quality_lower} {quality}
-    "rs.desc": "",
+    "rs.desc": "{name} रास (चंद्र रास): स्वामी {lord}, {element_lower} तत्त्व, {quality_lower} स्वभाव. तिचे 9 नक्षत्र चरण, नामाक्षरे आणि स्वभाव.",
     # EN: <h1>{name} Rashi — {english} Moon Sign</h1>
     # keep: {name}
     # may also use: {english}
-    "rs.h1": "",
+    "rs.h1": "<h1>{name} रास — चंद्र रास</h1>",
     # EN: <p class="hi" lang="hi">{name_hi} राशि</p>
     # may also use: {english} {name_en} {name}
-    "rs.sub": "",
+    "rs.sub": "<p class=\"hi\">रास · स्वभाव आणि नक्षत्रे</p>",
     # EN: Read today's {name} Rashifal
     # keep: {name}
-    "rs.today": "",
+    "rs.today": "आजचे {name} राशिभविष्य वाचा",
     # EN: <p class="note">In Vedic astrology "rashi" usually means the Moon sign — the sign the Moon
     #     occupied at birth, in the sidereal zodiac. It is often different from a Western sun
     #     sign.</p>
-    "rs.note": "",
+    "rs.note": "<p class=\"note\">वैदिक ज्योतिषात “रास” म्हणजे सहसा चंद्र रास — निरयन राशिचक्रात जन्माच्या वेळी चंद्र ज्या राशीत होता ती. ती अनेकदा पाश्चात्य सूर्य राशीपेक्षा वेगळी असते.</p>",
     # EN: Number
-    "r.number": "",
+    "r.number": "क्रमांक",
     # EN: {n} of 12
     # keep: {n}
-    "r.number_v": "",
+    "r.number_v": "12 पैकी {n}",
     # EN: Span (sidereal zodiac)
-    "r.span": "",
+    "r.span": "विस्तार (निरयन राशिचक्र)",
     # EN: Sign lord
-    "r.lord": "",
+    "r.lord": "राशी स्वामी",
     # EN: Element
-    "r.element": "",
+    "r.element": "तत्त्व",
     # EN: Quality
-    "r.quality": "",
+    "r.quality": "स्वभाव",
     # EN: Varna (used in Guna Milan)
-    "r.varna": "",
+    "r.varna": "वर्ण (गुण मिलनात वापरला जाणारा)",
     # EN: Nakshatras
-    "r.naks": "",
+    "r.naks": "नक्षत्रे",
     # EN: Name syllables (namakshar)
-    "r.syl": "",
+    "r.syl": "नामाक्षरे",
     # EN: <span class="syl" lang="hi">{syl}</span>
     # keep: {syl}
-    "r.syl_v": "",
+    "r.syl_v": "<span class=\"syl\">{syl}</span>",
     # EN: The nine nakshatra padas in this sign
-    "rp.title": "",
+    "rp.title": "या राशीतील नऊ नक्षत्र चरण",
     # EN: <tr><th>Nakshatra</th><th>Pada</th><th>Degrees in sign</th><th>Syllable</th></tr>
-    "rp.head": "",
+    "rp.head": "<tr><th>नक्षत्र</th><th>चरण</th><th>राशीतील अंश</th><th>अक्षर</th></tr>",
     # EN: The 12 Rashis — Lords, Elements, Nakshatras & Name Letters | {brand}
     # keep: {brand}
-    "ri.title": "",
+    "ri.title": "12 राशी — स्वामी, तत्त्वे, नक्षत्रे आणि नामाक्षरे | {brand}",
     # EN: All 12 rashis (Vedic Moon signs) from Mesh to Meen: sign lord, element, quality, the nine
     #     nakshatra padas in each and their name syllables (namakshar).
-    "ri.desc": "",
+    "ri.desc": "मेषेपासून मीनेपर्यंत सर्व 12 राशी (वैदिक चंद्र राशी): राशी स्वामी, तत्त्व, स्वभाव, प्रत्येकातील नऊ नक्षत्र चरण आणि त्यांची नामाक्षरे.",
     # EN: <h1>The 12 Rashis (Moon Signs)</h1>
-    "ri.h1": "",
+    "ri.h1": "<h1>12 राशी (चंद्र राशी)</h1>",
     # EN: <p class="hi" lang="hi">12 राशियाँ</p>
-    "ri.sub": "",
+    "ri.sub": "<p class=\"hi\">मेष ते मीन</p>",
     # EN: <p>Each rashi spans 30° of the sidereal zodiac and holds exactly nine nakshatra padas.
     #     Your rashi is your Moon sign — the sign the Moon occupied at birth — and it is what
     #     rashifal, Sade Sati and Kundali Milan are read from.</p>
-    "ri.intro": "",
+    "ri.intro": "<p>प्रत्येक रास निरयन राशिचक्राचे 30° व्यापते आणि तिच्यात अगदी नऊ नक्षत्र चरण असतात. तुमची रास म्हणजे तुमची चंद्र रास — जन्माच्या वेळी चंद्र ज्या राशीत होता ती — आणि राशिभविष्य, साडेसाती व कुंडली मिलन तिच्यावरूनच पाहिले जाते.</p>",
     # EN: <tr><th>Rashi</th><th>Lord</th><th>Element</th><th>Nakshatras</th><th>Name
     #     syllables</th></tr>
-    "ri.head": "",
+    "ri.head": "<tr><th>रास</th><th>स्वामी</th><th>तत्त्व</th><th>नक्षत्रे</th><th>नामाक्षरे</th></tr>",
     # EN: {name} <small>{english}</small>
     # keep: {name}
     # may also use: {english}
-    "ri.name": "",
+    "ri.name": "{name}",
     # EN: Vata
-    "humour.Vata": "",
+    "humour.Vata": "वात",
     # EN: Pitta
-    "humour.Pitta": "",
+    "humour.Pitta": "पित्त",
     # EN: Kapha
-    "humour.Kapha": "",
+    "humour.Kapha": "कफ",
 }
 
 # app/nakshatra_text.py NAKSHATRA_TRAITS["mr"] — character paragraph of each of the 27 nakshatras (key = slug)  [27]
@@ -1964,7 +1964,7 @@ NAKSHATRA_TRAITS = {
     #     medicine, sport, travel or any work that needs swift, practical action. The gift of this
     #     nakshatra is initiative and a youthful optimism; the lesson is patience, finishing what
     #     was started with the same enthusiasm with which it began.
-    "ashwini": "",
+    "ashwini": "अश्विनी हे पहिले नक्षत्र आहे, ज्याचे स्वामी देवांचे जुळे वैद्य अश्विनीकुमार आहेत, आणि त्याचे प्रतीक घोड्याचे डोके आहे. ज्यांचा चंद्र इथे असतो ते लोक अनेकदा चपळ, उत्साही आणि गोष्टी सुरू करण्यास उत्सुक असतात — मदतीला सर्वात आधी धावणारे, नवीन काही करून पाहणारे सर्वात पहिले. परंपरा अश्विनीला उपचार, वेग आणि नव्या सुरुवातींशी जोडते, म्हणून अनेकांना वैद्यकीय क्षेत्र, खेळ, प्रवास किंवा झटपट, व्यावहारिक कृती लागणाऱ्या कामाकडे ओढ वाटते. या नक्षत्राची देणगी म्हणजे पुढाकार आणि तारुण्यसुलभ आशावाद; शिकवण म्हणजे संयम — जे सुरू केले ते तेवढ्याच उत्साहाने पूर्ण करणे.",
     # EN: Bharani is ruled by Yama, the lord of dharma, and its symbol is the yoni, the womb that
     #     carries and protects new life. People with the Moon here often have strong will, deep
     #     feelings and a serious sense of responsibility. They tend to carry their commitments
@@ -1972,7 +1972,7 @@ NAKSHATRA_TRAITS = {
     #     bearing and nurturing — holding something until it is ready to be born — so creativity,
     #     family, art and work that asks for endurance suit it well. Its strength is steadfastness;
     #     its lesson is balancing desire with restraint and kindness.
-    "bharani": "",
+    "bharani": "भरणीचा स्वामी धर्माचा अधिपती यम आहे, आणि त्याचे प्रतीक योनी आहे, नवे जीवन धारण करून त्याचे रक्षण करणारे गर्भाशय. ज्यांचा चंद्र इथे असतो त्यांच्यात अनेकदा प्रबळ इच्छाशक्ती, खोल भावना आणि जबाबदारीची गंभीर जाणीव असते. ते आपल्या वचनबद्धता शेवटपर्यंत नेतात आणि सहज प्रभावित होत नाहीत. परंपरा भरणीला धारण आणि पोषणाचे नक्षत्र मानते — एखादी गोष्ट जन्माला येण्यास तयार होईपर्यंत तिला जपणे — म्हणून सर्जनशीलता, कुटुंब, कला आणि सहनशक्ती लागणारे काम त्याला चांगले जुळते. त्याचे बळ म्हणजे दृढता; शिकवण म्हणजे इच्छेचा समतोल संयम आणि दयाळूपणाशी साधणे.",
     # EN: Krittika is ruled by Agni, the sacred fire, and symbolised by a razor or a flame. Fire
     #     purifies and cuts through confusion, and people with the Moon here are often direct,
     #     principled and sharp in judgement. They can be protective of those they love and are
@@ -1980,7 +1980,7 @@ NAKSHATRA_TRAITS = {
     #     who nursed Kartikeya, so beneath the sharpness there is real warmth and care. Teaching,
     #     cooking, leadership and any work that needs clarity suit it. Its lesson is to let the fire
     #     warm and guide rather than burn.
-    "krittika": "",
+    "krittika": "कृत्तिकेचा स्वामी पवित्र अग्नी आहे, आणि त्याचे प्रतीक वस्तरा किंवा ज्योत आहे. अग्नी शुद्ध करतो आणि गोंधळ कापून काढतो, आणि ज्यांचा चंद्र इथे असतो ते अनेकदा सरळ, तत्त्वनिष्ठ आणि निर्णयात तीक्ष्ण असतात. ते प्रिय व्यक्तींचे रक्षण करणारे असू शकतात आणि जे बोलायला हवे ते बोलायला तयार असतात. कृत्तिका हे कार्तिकेयाला पाळणाऱ्या सहा मातांचेही नक्षत्र आहे, म्हणून तीक्ष्णतेखाली खरी ऊब आणि काळजी असते. शिकवणे, स्वयंपाक, नेतृत्व आणि स्पष्टता लागणारे कोणतेही काम त्याला जुळते. शिकवण म्हणजे अग्नीने जाळण्याऐवजी ऊब द्यावी आणि मार्ग दाखवावा.",
     # EN: Rohini is ruled by Brahma, the creator, and symbolised by a chariot or ox-cart. It is said
     #     to be the Moon's favourite nakshatra, and people with the Moon here are often warm,
     #     attractive, artistic and fond of comfort and beauty. They have a gift for making things
@@ -1988,7 +1988,7 @@ NAKSHATRA_TRAITS = {
     #     fertility, abundance and steady progress, so agriculture, the arts, design, food and
     #     hospitality suit it well. Its nature is gentle and settled; its lesson is to enjoy what is
     #     beautiful without holding on too tightly to it.
-    "rohini": "",
+    "rohini": "रोहिणीचा स्वामी सृष्टिकर्ता ब्रह्मा आहे, आणि त्याचे प्रतीक रथ किंवा बैलगाडी आहे. हे चंद्राचे आवडते नक्षत्र असल्याचे सांगितले जाते, आणि ज्यांचा चंद्र इथे असतो ते अनेकदा उबदार, आकर्षक, कलात्मक आणि सुखसोयी व सौंदर्याची आवड असलेले असतात. गोष्टी वाढवण्याची त्यांच्यात देणगी असते — बागा, घरे, व्यवसाय आणि नाती. परंपरा रोहिणीला सुपीकता, समृद्धी आणि स्थिर प्रगतीशी जोडते, म्हणून शेती, कला, रचना, अन्न आणि आतिथ्य त्याला चांगले जुळते. त्याचा स्वभाव सौम्य आणि स्थिर आहे; शिकवण म्हणजे जे सुंदर आहे त्याचा आनंद घ्यावा, पण त्याला फार घट्ट धरून बसू नये.",
     # EN: Mrigashira is ruled by Soma, the Moon, and its symbol is a deer's head — the deer that is
     #     always alert, curious and searching. People with the Moon here are often gentle,
     #     inquisitive and fond of learning, travel and conversation. They enjoy exploring ideas and
@@ -1996,7 +1996,7 @@ NAKSHATRA_TRAITS = {
     #     nakshatra, which suits research, writing, teaching, trade and any work that rewards
     #     curiosity. Its charm is a light, friendly mind; its lesson is to settle on what has been
     #     found, so that the search leads somewhere rather than becoming restlessness.
-    "mrigashira": "",
+    "mrigashira": "मृगशीर्षाचा स्वामी चंद्र (सोम) आहे, आणि त्याचे प्रतीक हरणाचे डोके आहे — सतत सावध, जिज्ञासू आणि शोध घेणारे हरीण. ज्यांचा चंद्र इथे असतो ते अनेकदा सौम्य, जिज्ञासू आणि शिकणे, प्रवास व संवाद आवडणारे असतात. त्यांना कल्पना आणि ठिकाणे शोधणे आवडते आणि ते क्वचितच प्रश्न विचारणे थांबवतात. परंपरा मृगशीर्षाला शोधकाचे नक्षत्र मानते, जे संशोधन, लेखन, शिकवणे, व्यापार आणि जिज्ञासेला बक्षीस देणाऱ्या कोणत्याही कामाला जुळते. त्याचे आकर्षण म्हणजे हलके, मैत्रीपूर्ण मन; शिकवण म्हणजे जे सापडले त्यावर स्थिर व्हावे, म्हणजे शोध कुठेतरी पोहोचतो, अस्वस्थतेत बदलत नाही.",
     # EN: Ardra is ruled by Rudra, the storm form of Shiva, and symbolised by a teardrop or a
     #     diamond. As a storm clears the air and brings rain, people with the Moon here often have a
     #     strong, searching intellect and the ability to see through things to the truth. They can
@@ -2004,7 +2004,7 @@ NAKSHATRA_TRAITS = {
     #     difficulty, so research, technology, writing, counselling and problem-solving suit it
     #     well. Its gift is honesty and a sharp mind; its lesson is to let feelings pass like the
     #     rain, leaving the ground greener.
-    "ardra": "",
+    "ardra": "आर्द्राचा स्वामी शिवाचे वादळी रूप रुद्र आहे, आणि त्याचे प्रतीक अश्रू किंवा हिरा आहे. वादळ जसे हवा स्वच्छ करते आणि पाऊस आणते, तसे ज्यांचा चंद्र इथे असतो त्यांच्यात अनेकदा प्रबळ, शोधक बुद्धी आणि गोष्टींच्या आरपार सत्य पाहण्याची क्षमता असते. ते खोलवर अनुभवू शकतात आणि बदलाला घाबरत नाहीत. परंपरा आर्द्राला अडचणीनंतरच्या नवनिर्मितीशी जोडते, म्हणून संशोधन, तंत्रज्ञान, लेखन, समुपदेशन आणि समस्या सोडवणे त्याला चांगले जुळते. त्याची देणगी म्हणजे प्रामाणिकपणा आणि तीक्ष्ण मन; शिकवण म्हणजे भावना पावसासारख्या जाऊ द्याव्यात, जमीन अधिक हिरवी करून.",
     # EN: Punarvasu is ruled by Aditi, the boundless mother of the gods, and symbolised by a bow and
     #     quiver. Its name means "return of the light", and people with the Moon here are often
     #     optimistic, generous and able to begin again after any setback. They tend to be content
@@ -2012,7 +2012,7 @@ NAKSHATRA_TRAITS = {
     #     Punarvasu as a nakshatra of renewal and homecoming, suited to teaching, counselling,
     #     writing, travel and caring work. Its blessing is a hopeful, forgiving heart; its lesson is
     #     to aim the arrow — to choose a direction and stay with it.
-    "punarvasu": "",
+    "punarvasu": "पुनर्वसूची स्वामिनी देवांची अमर्याद माता अदिती आहे, आणि त्याचे प्रतीक धनुष्य व भाता आहे. त्याच्या नावाचा अर्थ “प्रकाशाचे पुनरागमन” आहे, आणि ज्यांचा चंद्र इथे असतो ते अनेकदा आशावादी, उदार आणि कोणत्याही धक्क्यानंतर पुन्हा सुरुवात करू शकणारे असतात. ते साध्या गोष्टींत समाधानी, विनोदी आणि कुटुंब व पाहुण्यांची काळजी घेणारे असतात. परंपरा पुनर्वसूला नवनिर्मिती आणि घरवापसीचे नक्षत्र मानते, जे शिकवणे, समुपदेशन, लेखन, प्रवास आणि काळजी घेणाऱ्या कामाला जुळते. त्याचा आशीर्वाद म्हणजे आशावादी, क्षमाशील हृदय; शिकवण म्हणजे बाण नेम धरून सोडावा — दिशा निवडून तिला धरून राहावे.",
     # EN: Pushya is ruled by Brihaspati, the guru of the gods, and symbolised by a cow's udder or a
     #     lotus — images of nourishment. It is counted among the most auspicious nakshatras, and
     #     people with the Moon here are often caring, dependable, devoted and generous with their
@@ -2020,7 +2020,7 @@ NAKSHATRA_TRAITS = {
     #     links Pushya with nourishment and wisdom, so teaching, counselling, food, social service,
     #     finance and spiritual work suit it well. Its gift is a steady, protective kindness; its
     #     lesson is to nourish oneself as faithfully as one nourishes others.
-    "pushya": "",
+    "pushya": "पुष्याचा स्वामी देवांचा गुरू बृहस्पती आहे, आणि त्याचे प्रतीक गायीचे कास किंवा कमळ आहे — पोषणाची प्रतिमा. हे सर्वात शुभ नक्षत्रांपैकी मानले जाते, आणि ज्यांचा चंद्र इथे असतो ते अनेकदा काळजी घेणारे, विश्वासू, निष्ठावान आणि वेळ देण्यात उदार असतात. त्यांना इतरांना आधार द्यायला, परंपरा जपायला आणि कायमस्वरूपी काहीतरी उभे करायला आवडते. परंपरा पुष्याला पोषण आणि ज्ञानाशी जोडते, म्हणून शिकवणे, समुपदेशन, अन्न, समाजसेवा, वित्त आणि आध्यात्मिक कार्य त्याला चांगले जुळते. त्याची देणगी म्हणजे स्थिर, रक्षण करणारी दयाळूपणा; शिकवण म्हणजे जितक्या निष्ठेने इतरांचे पोषण करतो तितक्याच निष्ठेने स्वतःचेही करावे.",
     # EN: Ashlesha is ruled by the Nagas, the serpent deities, and symbolised by a coiled serpent —
     #     an image of kundalini, hidden energy and deep wisdom. People with the Moon here are often
     #     perceptive, intelligent and good at understanding what others leave unsaid. They can be
@@ -2028,7 +2028,7 @@ NAKSHATRA_TRAITS = {
     #     Ashlesha with insight and with the healing knowledge of herbs, so psychology, research,
     #     medicine, writing and negotiation suit it well. Its gift is penetrating understanding; its
     #     lesson is to use that insight to embrace and heal, the way the serpent's coil protects.
-    "ashlesha": "",
+    "ashlesha": "आश्लेषाचे स्वामी नाग, म्हणजे सर्पदेवता आहेत, आणि त्याचे प्रतीक वेटोळे घातलेला साप आहे — कुंडलिनी, गुप्त ऊर्जा आणि खोल ज्ञानाची प्रतिमा. ज्यांचा चंद्र इथे असतो ते अनेकदा चाणाक्ष, बुद्धिमान आणि इतरांनी न बोललेले समजून घेण्यात कुशल असतात. ते पटवून देणारे आणि डावपेच आखणारे असू शकतात, आत्मरक्षणाची तीव्र सहजप्रवृत्ती असलेले. परंपरा आश्लेषाला अंतर्दृष्टी आणि वनौषधींच्या उपचारज्ञानाशी जोडते, म्हणून मानसशास्त्र, संशोधन, वैद्यकीय क्षेत्र, लेखन आणि वाटाघाटी त्याला चांगल्या जुळतात. त्याची देणगी म्हणजे आरपार समज; शिकवण म्हणजे ती अंतर्दृष्टी आलिंगन देण्यासाठी आणि बरे करण्यासाठी वापरावी, सापाच्या वेटोळ्याप्रमाणे जे रक्षण करते.",
     # EN: Magha is ruled by the Pitris, the ancestors, and symbolised by a royal throne. People with
     #     the Moon here often carry a natural dignity, a respect for family and tradition, and a
     #     wish to live up to the name they were given. They can be generous leaders who take
@@ -2036,7 +2036,7 @@ NAKSHATRA_TRAITS = {
     #     so leadership, administration, history, law and work that preserves heritage suit it well.
     #     Its gift is nobility of heart; its lesson is to wear the crown lightly — to lead through
     #     service and to honour the ancestors through good deeds.
-    "magha": "",
+    "magha": "मघाचे स्वामी पितर, म्हणजे पूर्वज आहेत, आणि त्याचे प्रतीक राजसिंहासन आहे. ज्यांचा चंद्र इथे असतो त्यांच्यात अनेकदा सहज प्रतिष्ठा, कुटुंब आणि परंपरेबद्दल आदर, आणि आपल्याला मिळालेल्या नावाला जागण्याची इच्छा असते. ते आपल्या माणसांची जबाबदारी घेणारे उदार नेते असू शकतात. परंपरा मघाला वंश, सन्मान आणि अधिकाराशी जोडते, म्हणून नेतृत्व, प्रशासन, इतिहास, कायदा आणि वारसा जपणारे काम त्याला चांगले जुळते. त्याची देणगी म्हणजे मनाचे मोठेपण; शिकवण म्हणजे मुकुट हलकेपणाने धारण करावा — सेवेतून नेतृत्व करावे आणि चांगल्या कर्मांतून पूर्वजांचा सन्मान करावा.",
     # EN: Purva Phalguni is ruled by Bhaga, the god of fortune and marital happiness, and symbolised
     #     by the front legs of a bed — an image of rest and enjoyment. People with the Moon here are
     #     often warm, charming, creative and fond of celebration, music and good company. They bring
@@ -2044,7 +2044,7 @@ NAKSHATRA_TRAITS = {
     #     Purva Phalguni with love, the arts and leisure, so entertainment, design, hospitality and
     #     relationship-centred work suit it well. Its gift is joy that is easily shared; its lesson
     #     is balance between pleasure and duty.
-    "purva-phalguni": "",
+    "purva-phalguni": "पूर्वा फाल्गुनीचा स्वामी सौभाग्य आणि वैवाहिक सुखाचा देव भग आहे, आणि त्याचे प्रतीक पलंगाचे पुढचे पाय आहे — विश्रांती आणि उपभोगाची प्रतिमा. ज्यांचा चंद्र इथे असतो ते अनेकदा उबदार, आकर्षक, सर्जनशील आणि उत्सव, संगीत व चांगली संगत आवडणारे असतात. ते लोकांना एकत्र आणतात आणि मिळवलेल्याचा आनंद कसा घ्यावा हे जाणतात. परंपरा पूर्वा फाल्गुनीला प्रेम, कला आणि फुरसतीशी जोडते, म्हणून मनोरंजन, रचना, आतिथ्य आणि नात्यांवर केंद्रित काम त्याला चांगले जुळते. त्याची देणगी म्हणजे सहज वाटून घेता येणारा आनंद; शिकवण म्हणजे सुख आणि कर्तव्य यांचा समतोल.",
     # EN: Uttara Phalguni is ruled by Aryaman, the god of friendship, contracts and marriage vows,
     #     and symbolised by the back legs of a bed. Where its twin Purva Phalguni enjoys, Uttara
     #     Phalguni commits. People with the Moon here are often reliable, helpful, fair-minded and
@@ -2052,7 +2052,7 @@ NAKSHATRA_TRAITS = {
     #     Tradition links this nakshatra with patronage and lasting partnerships, so management,
     #     public service, counselling, law and charitable work suit it well. Its gift is dependable
     #     kindness; its lesson is to accept help as gracefully as it is given.
-    "uttara-phalguni": "",
+    "uttara-phalguni": "उत्तरा फाल्गुनीचा स्वामी मैत्री, करार आणि विवाह-शपथांचा देव अर्यमा आहे, आणि त्याचे प्रतीक पलंगाचे मागचे पाय आहे. जिथे त्याची जोडीदार पूर्वा फाल्गुनी उपभोग घेते, तिथे उत्तरा फाल्गुनी वचनबद्ध होते. ज्यांचा चंद्र इथे असतो ते अनेकदा विश्वासार्ह, उपयोगी पडणारे, न्यायी आणि मित्र व जोडीदारांशी निष्ठावान असतात. ते दिलेला शब्द पाळतात आणि इतरांच्या खरोखर उपयोगी पडायला आवडतात. परंपरा या नक्षत्राला आश्रय देणे आणि टिकणाऱ्या भागीदारीशी जोडते, म्हणून व्यवस्थापन, लोकसेवा, समुपदेशन, कायदा आणि धर्मादाय कार्य त्याला चांगले जुळते. त्याची देणगी म्हणजे भरवशाची दयाळूपणा; शिकवण म्हणजे मदत जितक्या कृपेने दिली जाते तितक्याच कृपेने स्वीकारावी.",
     # EN: Hasta is ruled by Savitr, the radiant Sun, and symbolised by a hand. People with the Moon
     #     here are often skilful, practical, witty and clever with their hands as well as their
     #     minds. They like to get things done and can turn an idea into something real. Tradition
@@ -2060,7 +2060,7 @@ NAKSHATRA_TRAITS = {
     #     surgery, massage, writing, trade and any skilled trade suit it well. Its gift is the
     #     ability to make and to mend; its lesson is to hold things with an open hand, trusting that
     #     effort brings its own rewards.
-    "hasta": "",
+    "hasta": "हस्ताचा स्वामी तेजस्वी सूर्य सवितृ आहे, आणि त्याचे प्रतीक हात आहे. ज्यांचा चंद्र इथे असतो ते अनेकदा कुशल, व्यवहारी, विनोदी आणि मनाइतकेच हातांनीही हुशार असतात. त्यांना कामे पूर्ण करायला आवडते आणि कल्पनेला प्रत्यक्ष रूप देता येते. परंपरा हस्ताला कारागिरी, उपचारक स्पर्श आणि कल्पकतेशी जोडते, म्हणून हस्तकला, कला, शस्त्रक्रिया, मालिश, लेखन, व्यापार आणि कोणताही कौशल्याचा व्यवसाय त्याला चांगला जुळतो. त्याची देणगी म्हणजे घडवण्याची आणि दुरुस्त करण्याची क्षमता; शिकवण म्हणजे गोष्टी मोकळ्या हाताने धराव्यात, प्रयत्नांना स्वतःचे फळ मिळते यावर विश्वास ठेवून.",
     # EN: Chitra is ruled by Tvashtr, also known as Vishwakarma, the divine architect, and
     #     symbolised by a bright jewel. Its name means "brilliant" or "picture", and people with the
     #     Moon here often have a strong sense of beauty, design and form. They enjoy creating things
@@ -2068,7 +2068,7 @@ NAKSHATRA_TRAITS = {
     #     architecture, the arts and craftsmanship, so design, engineering, fashion, jewellery,
     #     photography and planning suit it well. Its gift is the eye of an artist and the hand of a
     #     builder; its lesson is to value inner beauty as much as outer polish.
-    "chitra": "",
+    "chitra": "चित्राचा स्वामी विश्वकर्मा म्हणूनही ओळखला जाणारा, दिव्य शिल्पकार त्वष्टा आहे, आणि त्याचे प्रतीक तेजस्वी रत्न आहे. त्याच्या नावाचा अर्थ “तेजस्वी” किंवा “चित्र” आहे, आणि ज्यांचा चंद्र इथे असतो त्यांच्यात अनेकदा सौंदर्य, रचना आणि आकाराची तीव्र जाण असते. उपयुक्त आणि आकर्षक अशा गोष्टी घडवायला त्यांना आवडते, आणि त्यांचे तपशिलाकडे लक्ष असते. परंपरा चित्राला वास्तुकला, कला आणि कारागिरीशी जोडते, म्हणून रचना, अभियांत्रिकी, फॅशन, दागिने, छायाचित्रण आणि नियोजन त्याला चांगले जुळते. त्याची देणगी म्हणजे कलाकाराची नजर आणि बांधकाम करणाऱ्याचा हात; शिकवण म्हणजे बाह्य झळाळीइतकेच अंतरंगाच्या सौंदर्यालाही महत्त्व द्यावे.",
     # EN: Swati is ruled by Vayu, the wind, and symbolised by a young shoot swaying in the breeze —
     #     flexible, independent and able to bend without breaking. People with the Moon here often
     #     value freedom, fairness and their own way of doing things. They are usually diplomatic,
@@ -2076,7 +2076,7 @@ NAKSHATRA_TRAITS = {
     #     and self-reliance, so commerce, law, diplomacy, communication and independent work suit it
     #     well. Its gift is adaptability and a gentle, balanced manner; its lesson is to put down
     #     roots, so that the young shoot can grow into a strong tree.
-    "swati": "",
+    "swati": "स्वातीचा स्वामी वारा, म्हणजे वायू आहे, आणि त्याचे प्रतीक झुळकेत डोलणारा कोवळा अंकुर आहे — लवचिक, स्वतंत्र आणि न तुटता वाकू शकणारा. ज्यांचा चंद्र इथे असतो ते अनेकदा स्वातंत्र्य, न्याय आणि स्वतःची काम करण्याची पद्धत यांना महत्त्व देतात. ते सहसा मुत्सद्दी, सभ्य आणि व्यवसाय व वाटाघाटीत कुशल असतात. परंपरा स्वातीला व्यापार, प्रवास आणि स्वावलंबनाशी जोडते, म्हणून वाणिज्य, कायदा, मुत्सद्देगिरी, संवाद आणि स्वतंत्र काम त्याला चांगले जुळते. त्याची देणगी म्हणजे अनुकूलन आणि सौम्य, संतुलित वागणूक; शिकवण म्हणजे मुळे रुजवावीत, म्हणजे कोवळा अंकुर मजबूत वृक्ष होऊ शकेल.",
     # EN: Vishakha is ruled by Indra and Agni together, and symbolised by a triumphal arch decorated
     #     with leaves. People with the Moon here are often purposeful, ambitious and determined to
     #     reach the goal they have set. They have energy, conviction and the patience to keep going
@@ -2084,7 +2084,7 @@ NAKSHATRA_TRAITS = {
     #     research, politics, sales, teaching and any long-term mission suit it well. Its gift is
     #     focus and the ability to inspire others towards a shared aim; its lesson is to enjoy the
     #     journey, not only the arch at its end.
-    "vishakha": "",
+    "vishakha": "विशाखाचे स्वामी इंद्र आणि अग्नी दोघे मिळून आहेत, आणि त्याचे प्रतीक पानांनी सजवलेले विजयतोरण आहे. ज्यांचा चंद्र इथे असतो ते अनेकदा ध्येयनिष्ठ, महत्त्वाकांक्षी आणि ठरवलेले ध्येय गाठण्याचा निश्चय असलेले असतात. त्यांच्यात ऊर्जा, ठाम विश्वास आणि लांबच्या वाटेवर चालत राहण्याचा संयम असतो. परंपरा विशाखाला उद्देशाचे नक्षत्र म्हणते, म्हणून नेतृत्व, संशोधन, राजकारण, विक्री, शिकवणे आणि कोणतीही दीर्घकालीन मोहीम त्याला चांगली जुळते. त्याची देणगी म्हणजे एकाग्रता आणि इतरांना समान ध्येयाकडे प्रेरित करण्याची क्षमता; शिकवण म्हणजे प्रवासाचाही आनंद घ्यावा, केवळ त्याच्या शेवटच्या तोरणाचा नाही.",
     # EN: Anuradha is ruled by Mitra, the god of friendship and cooperation, and symbolised by a
     #     lotus that blooms out of muddy water. People with the Moon here are often loyal friends,
     #     devoted to their ideals and able to keep going with quiet faith in difficult places. They
@@ -2092,7 +2092,7 @@ NAKSHATRA_TRAITS = {
     #     with friendship, devotion and success away from home, so teamwork, organisation,
     #     counselling, travel and spiritual practice suit it well. Its gift is the ability to
     #     blossom anywhere; its lesson is to be as gentle with oneself as with friends.
-    "anuradha": "",
+    "anuradha": "अनुराधाचा स्वामी मैत्री आणि सहकार्याचा देव मित्र आहे, आणि त्याचे प्रतीक चिखलाच्या पाण्यातून फुलणारे कमळ आहे. ज्यांचा चंद्र इथे असतो ते अनेकदा निष्ठावान मित्र, आपल्या आदर्शांना समर्पित आणि कठीण ठिकाणीही शांत श्रद्धेने पुढे चालत राहणारे असतात. गट आणि संस्थांमध्ये लोकांना एकत्र आणण्यात ते कुशल असतात. परंपरा अनुराधाला मैत्री, भक्ती आणि घरापासून दूर मिळणाऱ्या यशाशी जोडते, म्हणून सांघिक काम, संघटन, समुपदेशन, प्रवास आणि आध्यात्मिक साधना त्याला चांगली जुळते. त्याची देणगी म्हणजे कुठेही फुलण्याची क्षमता; शिकवण म्हणजे मित्रांशी जितके सौम्य वागतो तितकेच स्वतःशीही वागावे.",
     # EN: Jyeshtha is ruled by Indra, king of the gods, and symbolised by a circular amulet or
     #     earring. Its name means "the eldest", and people with the Moon here often take on
     #     responsibility early, protect those around them and carry a quiet authority. They are
@@ -2100,7 +2100,7 @@ NAKSHATRA_TRAITS = {
     #     seniority and protection, so leadership, management, administration, security and any role
     #     that looks after others suit it well. Its gift is courage and capability; its lesson is to
     #     lead with humility and to let others share the load rather than carrying everything alone.
-    "jyeshtha": "",
+    "jyeshtha": "ज्येष्ठाचा स्वामी देवांचा राजा इंद्र आहे, आणि त्याचे प्रतीक गोलाकार ताईत किंवा कर्णभूषण आहे. त्याच्या नावाचा अर्थ “सर्वात मोठा” आहे, आणि ज्यांचा चंद्र इथे असतो ते अनेकदा लहान वयातच जबाबदारी घेतात, आसपासच्यांचे रक्षण करतात आणि शांत अधिकार बाळगतात. ते कल्पक, चाणाक्ष आणि दबावाखाली सक्षम असतात. परंपरा ज्येष्ठाला ज्येष्ठत्व आणि संरक्षणाशी जोडते, म्हणून नेतृत्व, व्यवस्थापन, प्रशासन, सुरक्षा आणि इतरांची काळजी घेणारी कोणतीही भूमिका त्याला चांगली जुळते. त्याची देणगी म्हणजे धैर्य आणि सामर्थ्य; शिकवण म्हणजे नम्रतेने नेतृत्व करावे आणि सर्व काही एकट्याने वाहण्याऐवजी इतरांनाही भार वाटून घेऊ द्यावा.",
     # EN: Mula is ruled by Nirriti and symbolised by a bunch of roots. Its name means "the root",
     #     and people with the Moon here are often drawn to get to the bottom of things — to find the
     #     origin of a question, an idea or a tradition. They can be independent, philosophical and
@@ -2108,7 +2108,7 @@ NAKSHATRA_TRAITS = {
     #     with letting go of what is no longer needed, so research, medicine, philosophy, botany and
     #     spiritual inquiry suit it well. Its gift is depth; its lesson is that clearing old ground
     #     makes room for new growth.
-    "mula": "",
+    "mula": "मूळाचा स्वामी निर्ऋती आहे, आणि त्याचे प्रतीक मुळांचा गुच्छ आहे. त्याच्या नावाचा अर्थ “मूळ” आहे, आणि ज्यांचा चंद्र इथे असतो त्यांना अनेकदा गोष्टींच्या तळाशी जाण्याची ओढ असते — एखाद्या प्रश्नाचे, कल्पनेचे किंवा परंपरेचे उगमस्थान शोधण्याची. ते स्वतंत्र, तत्त्वचिंतक आणि मूलभूत तत्त्वांपासून पुन्हा सुरुवात करायला न घाबरणारे असू शकतात. परंपरा मूळाला अन्वेषण आणि जे आता नको आहे ते सोडून देण्याशी जोडते, म्हणून संशोधन, वैद्यकीय क्षेत्र, तत्त्वज्ञान, वनस्पतिशास्त्र आणि आध्यात्मिक शोध त्याला चांगले जुळतात. त्याची देणगी म्हणजे खोली; शिकवण म्हणजे जुनी जमीन साफ केल्याने नव्या वाढीला जागा होते.",
     # EN: Purva Ashadha is ruled by Apas, the cosmic waters, and symbolised by a winnowing fan or an
     #     elephant tusk. Its name means "the early invincible", and people with the Moon here are
     #     often confident, persuasive and full of conviction. Like water, they can be gentle and yet
@@ -2116,7 +2116,7 @@ NAKSHATRA_TRAITS = {
     #     victory won through persistence, so teaching, law, debate, the arts, shipping and anything
     #     to do with water suit it well. Its gift is optimism and inner strength; its lesson is to
     #     stay open to other views while holding firm to its own.
-    "purva-ashadha": "",
+    "purva-ashadha": "पूर्वाषाढाचा स्वामी विश्वातील जल, म्हणजे आपस आहे, आणि त्याचे प्रतीक सूप किंवा हत्तीचा सुळा आहे. त्याच्या नावाचा अर्थ “आधीचा अजिंक्य” आहे, आणि ज्यांचा चंद्र इथे असतो ते अनेकदा आत्मविश्वासू, पटवून देणारे आणि ठाम विश्वासाने भरलेले असतात. पाण्याप्रमाणे ते सौम्य असूनही कालांतराने कोणत्याही अडथळ्याला झिजवू शकतात. परंपरा पूर्वाषाढाला शुद्धीकरण आणि चिकाटीने मिळवलेल्या विजयाशी जोडते, म्हणून शिकवणे, कायदा, वादविवाद, कला, जलवाहतूक आणि पाण्याशी संबंधित प्रत्येक गोष्ट त्याला चांगली जुळते. त्याची देणगी म्हणजे आशावाद आणि आंतरिक बळ; शिकवण म्हणजे स्वतःच्या मतावर ठाम राहूनही इतरांच्या मतांसाठी खुले राहावे.",
     # EN: Uttara Ashadha is ruled by the Vishvedevas, the universal gods, and symbolised by an
     #     elephant tusk. Its name means "the later invincible" — the victory that lasts because it
     #     was earned honestly. People with the Moon here are often principled, patient, responsible
@@ -2124,7 +2124,7 @@ NAKSHATRA_TRAITS = {
     #     Tradition links Uttara Ashadha with righteous leadership, so government, management, law,
     #     teaching and social causes suit it well. Its gift is steady, ethical strength; its lesson
     #     is to keep a little lightness and warmth alongside the seriousness of duty.
-    "uttara-ashadha": "",
+    "uttara-ashadha": "उत्तराषाढाचे स्वामी विश्वदेव, म्हणजे विश्वातील देवता आहेत, आणि त्याचे प्रतीक हत्तीचा सुळा आहे. त्याच्या नावाचा अर्थ “नंतरचा अजिंक्य” आहे — प्रामाणिकपणे कमावल्यामुळे टिकणारा विजय. ज्यांचा चंद्र इथे असतो ते अनेकदा तत्त्वनिष्ठ, संयमी, जबाबदार आणि सचोटीबद्दल आदरणीय असतात. ते दूरचा विचार करतात आणि हाती घेतलेले पूर्ण करतात. परंपरा उत्तराषाढाला धर्मनिष्ठ नेतृत्वाशी जोडते, म्हणून सरकारी सेवा, व्यवस्थापन, कायदा, शिकवणे आणि सामाजिक कार्य त्याला चांगले जुळते. त्याची देणगी म्हणजे स्थिर, नैतिक बळ; शिकवण म्हणजे कर्तव्याच्या गांभीर्यासोबत थोडा हलकेपणा आणि उबदारपणा जपावा.",
     # EN: Shravana is ruled by Vishnu, the preserver, and symbolised by an ear or three footprints.
     #     Its name means "hearing", and people with the Moon here are often good listeners, eager
     #     learners and keepers of knowledge and tradition. They learn by listening and pass on what
@@ -2132,7 +2132,7 @@ NAKSHATRA_TRAITS = {
     #     connecting people, so teaching, counselling, media, languages, music and travel suit it
     #     well. Its gift is attentive understanding and a wish to be useful; its lesson is to listen
     #     to one's own inner voice as carefully as to others.
-    "shravana": "",
+    "shravana": "श्रवणाचा स्वामी पालनकर्ता विष्णू आहे, आणि त्याचे प्रतीक कान किंवा तीन पदचिन्हे आहे. त्याच्या नावाचा अर्थ “ऐकणे” आहे, आणि ज्यांचा चंद्र इथे असतो ते अनेकदा चांगले श्रोते, शिकण्यास उत्सुक आणि ज्ञान व परंपरा जपणारे असतात. ते ऐकून शिकतात आणि शिकलेले पुढे देतात. परंपरा श्रवणाला अभ्यासातून मिळणारे ज्ञान आणि लोकांना जोडण्याशी जोडते, म्हणून शिकवणे, समुपदेशन, माध्यमे, भाषा, संगीत आणि प्रवास त्याला चांगले जुळतात. त्याची देणगी म्हणजे लक्षपूर्वक समजून घेणे आणि उपयोगी पडण्याची इच्छा; शिकवण म्हणजे इतरांचे जितके काळजीपूर्वक ऐकतो तितकेच स्वतःच्या अंतर्मनाचा आवाजही ऐकावा.",
     # EN: Dhanishta is ruled by the eight Vasus, gods of abundance, and symbolised by a drum. Its
     #     name means "the wealthiest", and people with the Moon here often have rhythm, energy and a
     #     talent for music, dance or teamwork. They are generous, sociable and able to keep a group
@@ -2140,7 +2140,7 @@ NAKSHATRA_TRAITS = {
     #     performance, sport, property, finance and community work suit it well. Its gift is the
     #     ability to set the beat that others follow; its lesson is to listen as well as play,
     #     leaving space for others' rhythms.
-    "dhanishta": "",
+    "dhanishta": "धनिष्ठाचे स्वामी समृद्धीचे देव, आठ वसू आहेत, आणि त्याचे प्रतीक ढोल आहे. त्याच्या नावाचा अर्थ “सर्वात धनवान” आहे, आणि ज्यांचा चंद्र इथे असतो त्यांच्यात अनेकदा लय, ऊर्जा आणि संगीत, नृत्य किंवा सांघिक कामाची प्रतिभा असते. ते उदार, मिलनसार आणि गटाला एकत्र पुढे नेण्यास सक्षम असतात. परंपरा धनिष्ठाला समृद्धी आणि नादाशी जोडते, म्हणून संगीत, सादरीकरण, खेळ, मालमत्ता, वित्त आणि समाजकार्य त्याला चांगले जुळते. त्याची देणगी म्हणजे इतर ज्याचे अनुसरण करतात तो ठेका धरण्याची क्षमता; शिकवण म्हणजे वाजवण्याबरोबर ऐकावेही, इतरांच्या लयीला जागा सोडून.",
     # EN: Shatabhisha is ruled by Varuna, lord of the cosmic waters and of truth, and symbolised by
     #     an empty circle. Its name means "a hundred healers", and people with the Moon here are
     #     often independent thinkers, private, truthful and drawn to understanding how things really
@@ -2148,7 +2148,7 @@ NAKSHATRA_TRAITS = {
     #     the search for hidden truth, so medicine, research, science, technology, astronomy and
     #     alternative healing suit it well. Its gift is clear, original insight; its lesson is to
     #     let others into the circle, sharing what is understood with warmth.
-    "shatabhisha": "",
+    "shatabhisha": "शततारकेचा स्वामी विश्वातील जल आणि सत्याचा अधिपती वरुण आहे, आणि त्याचे प्रतीक रिकामे वर्तुळ आहे. त्याच्या नावाचा अर्थ “शंभर वैद्य” आहे, आणि ज्यांचा चंद्र इथे असतो ते अनेकदा स्वतंत्र विचारवंत, खाजगी स्वभावाचे, सत्यवादी आणि गोष्टी प्रत्यक्षात कशा चालतात हे समजून घेण्याची ओढ असलेले असतात. इतरांना न दिसणारे नमुने ते पाहू शकतात. परंपरा शततारकेला उपचार आणि दडलेल्या सत्याच्या शोधाशी जोडते, म्हणून वैद्यकीय क्षेत्र, संशोधन, विज्ञान, तंत्रज्ञान, खगोलशास्त्र आणि पर्यायी उपचार त्याला चांगले जुळतात. त्याची देणगी म्हणजे स्पष्ट, मौलिक अंतर्दृष्टी; शिकवण म्हणजे इतरांना वर्तुळात येऊ द्यावे, जे समजले ते उबदारपणे वाटून घ्यावे.",
     # EN: Purva Bhadrapada is ruled by Aja Ekapada, the one-footed form of Shiva, and symbolised by
     #     swords or the front legs of a cot. People with the Moon here are often idealistic, intense
     #     and willing to give themselves fully to a cause they believe in. They can be eloquent,
@@ -2156,7 +2156,7 @@ NAKSHATRA_TRAITS = {
     #     with the fire of tapas — sincere effort for a higher aim — so social reform, philosophy,
     #     writing, research and spiritual life suit it well. Its gift is passionate commitment; its
     #     lesson is to temper intensity with patience and calm.
-    "purva-bhadrapada": "",
+    "purva-bhadrapada": "पूर्वा भाद्रपदेचा स्वामी शिवाचे एकपाद रूप अज एकपाद आहे, आणि त्याचे प्रतीक तलवारी किंवा खाटेचे पुढचे पाय आहे. ज्यांचा चंद्र इथे असतो ते अनेकदा आदर्शवादी, तीव्र आणि आपल्या श्रद्धेच्या कार्यासाठी स्वतःला पूर्णपणे झोकून देण्यास तयार असतात. ते वक्तृत्ववान, उदार आणि खोलवर आध्यात्मिक असू शकतात. परंपरा पूर्वा भाद्रपदेला परिवर्तन आणि तपाच्या अग्नीशी — उच्च ध्येयासाठीच्या प्रामाणिक प्रयत्नाशी — जोडते, म्हणून समाजसुधारणा, तत्त्वज्ञान, लेखन, संशोधन आणि आध्यात्मिक जीवन त्याला चांगले जुळते. त्याची देणगी म्हणजे उत्कट वचनबद्धता; शिकवण म्हणजे तीव्रतेला संयम आणि शांततेची जोड द्यावी.",
     # EN: Uttara Bhadrapada is ruled by Ahir Budhnya, the serpent of the deep waters, and symbolised
     #     by the back legs of a cot or twins. Where Purva Bhadrapada burns, Uttara Bhadrapada
     #     settles into calm depth. People with the Moon here are often wise, patient, composed and
@@ -2165,7 +2165,7 @@ NAKSHATRA_TRAITS = {
     #     renunciation and kindness, so counselling, charity, teaching, research and spiritual
     #     practice suit it well. Its gift is serene wisdom; its lesson is to share it actively, not
     #     only privately.
-    "uttara-bhadrapada": "",
+    "uttara-bhadrapada": "उत्तरा भाद्रपदेचा स्वामी खोल पाण्यातील सर्प अहिर्बुध्न्य आहे, आणि त्याचे प्रतीक खाटेचे मागचे पाय किंवा जुळे आहे. जिथे पूर्वा भाद्रपदा जळते, तिथे उत्तरा भाद्रपदा शांत खोलीत स्थिरावते. ज्यांचा चंद्र इथे असतो ते अनेकदा ज्ञानी, संयमी, शांत आणि करुणामय असतात, आत्मसंयम आणि सल्ला देण्याची देणगी असलेले. ते बोलण्यापूर्वी विचार करतात आणि कठीण काळात स्थिर राहतात. परंपरा या नक्षत्राला खोली, त्याग आणि दयाळूपणाशी जोडते, म्हणून समुपदेशन, दानधर्म, शिकवणे, संशोधन आणि आध्यात्मिक साधना त्याला चांगली जुळते. त्याची देणगी म्हणजे शांत ज्ञान; शिकवण म्हणजे ते केवळ एकांतात न ठेवता सक्रियपणे वाटावे.",
     # EN: Revati, the last nakshatra, is ruled by Pushan, the nourisher who guides travellers and
     #     protects herds on their way, and symbolised by a fish. People with the Moon here are often
     #     gentle, kind, imaginative and protective of the weak, with a love of animals, art and
@@ -2173,7 +2173,7 @@ NAKSHATRA_TRAITS = {
     #     safely. Tradition links Revati with safe journeys, prosperity and completion, so caring
     #     work, the arts, travel, hospitality and spiritual life suit it well. Its gift is
     #     compassion and faith; its lesson is to care for oneself while caring for everyone else.
-    "revati": "",
+    "revati": "रेवती, शेवटचे नक्षत्र, याचा स्वामी प्रवाशांना मार्ग दाखवणारा आणि गुरांचे वाटेवर रक्षण करणारा पोषणकर्ता पूषा आहे, आणि त्याचे प्रतीक मासा आहे. ज्यांचा चंद्र इथे असतो ते अनेकदा सौम्य, दयाळू, कल्पक आणि दुर्बलांचे रक्षण करणारे असतात, प्राणी, कला आणि संगीताची आवड असलेले. ते कोणत्याही प्रवासात चांगले सोबती ठरतात आणि इतरांना सुरक्षित ठिकाणी पोहोचण्यास मदत करतात. परंपरा रेवतीला सुरक्षित प्रवास, समृद्धी आणि पूर्णतेशी जोडते, म्हणून काळजी घेणारे काम, कला, प्रवास, आतिथ्य आणि आध्यात्मिक जीवन त्याला चांगले जुळते. त्याची देणगी म्हणजे करुणा आणि श्रद्धा; शिकवण म्हणजे इतर सर्वांची काळजी घेताना स्वतःचीही काळजी घ्यावी.",
 }
 
 # app/nakshatra_text.py RASHI_TRAITS["mr"] — character paragraph of each of the 12 rashis (key = slug)  [12]
@@ -2185,7 +2185,7 @@ RASHI_TRAITS = {
     #     bring enthusiasm wherever they go. Work that rewards initiative — sport, the armed forces,
     #     engineering, entrepreneurship, surgery — often suits them. Their growth lies in patience
     #     and in listening before acting, so that their courage is matched by care for others.
-    "mesh": "",
+    "mesh": "मेष ही पहिली रास आहे, मंगळ स्वामी असलेली चर अग्नितत्त्वाची रास. मेषेत चंद्र असलेले लोक अनेकदा उत्साही, सरळ, धाडसी आणि पटकन कृती करणारे असतात — जन्मजात सुरुवात करणारे, ज्यांना आव्हान आवडते आणि जे पुढे राहून नेतृत्व करतात. ते आपल्या भावनांबद्दल प्रामाणिक असतात आणि धक्क्यांतून लवकर सावरतात. त्यांचे भावनिक जीवन उबदार आणि उत्स्फूर्त असते, आणि ते जिथे जातात तिथे उत्साह घेऊन जातात. पुढाकाराला बक्षीस देणारे काम — खेळ, सैन्यदल, अभियांत्रिकी, उद्योजकता, शस्त्रक्रिया — त्यांना अनेकदा जुळते. त्यांची वाढ संयमात आणि कृतीपूर्वी ऐकण्यात आहे, म्हणजे त्यांच्या धैर्याला इतरांच्या काळजीची जोड मिळेल.",
     # EN: Vrishabh (Taurus) is a fixed earth sign ruled by Venus, and the Moon is exalted here.
     #     People with the Moon in Vrishabh are often calm, patient, loyal and steady, with a love of
     #     comfort, good food, music and beautiful things. They build slowly and surely, and what
@@ -2193,7 +2193,7 @@ RASHI_TRAITS = {
     #     security to drama. Finance, agriculture, the arts, food, design and any work that rewards
     #     persistence often suit them. Their growth lies in flexibility — welcoming change when it
     #     comes, and holding possessions and opinions a little more lightly.
-    "vrishabh": "",
+    "vrishabh": "वृषभ ही शुक्र स्वामी असलेली स्थिर पृथ्वीतत्त्वाची रास आहे, आणि चंद्र येथे उच्चीचा असतो. वृषभेत चंद्र असलेले लोक अनेकदा शांत, संयमी, निष्ठावान आणि स्थिर असतात, सुखसोयी, चांगले जेवण, संगीत आणि सुंदर वस्तूंची आवड असलेले. ते हळूहळू पण खात्रीने उभारणी करतात आणि जे उभारतात ते टिकते. भावनिकदृष्ट्या ते भरवशाचे आणि प्रेमळ असतात, नाट्यापेक्षा सुरक्षिततेला प्राधान्य देणारे. वित्त, शेती, कला, अन्न, रचना आणि चिकाटीला बक्षीस देणारे कोणतेही काम त्यांना अनेकदा जुळते. त्यांची वाढ लवचिकतेत आहे — बदल आला की त्याचे स्वागत करणे, आणि वस्तू व मते थोडी हलकेपणाने धरणे.",
     # EN: Mithun (Gemini) is a dual air sign ruled by Mercury. People with the Moon in Mithun are
     #     often curious, witty, talkative and quick to learn, with many interests and a gift for
     #     connecting ideas and people. They enjoy conversation, reading, travel and anything that
@@ -2201,7 +2201,7 @@ RASHI_TRAITS = {
     #     can talk to. Writing, teaching, media, sales, technology and trade often suit them. Their
     #     growth lies in depth and focus — choosing a few things and seeing them through — and in
     #     giving their own feelings the attention they give to ideas.
-    "mithun": "",
+    "mithun": "मिथुन ही बुध स्वामी असलेली द्विस्वभाव वायुतत्त्वाची रास आहे. मिथुनेत चंद्र असलेले लोक अनेकदा जिज्ञासू, विनोदी, बोलके आणि पटकन शिकणारे असतात, अनेक आवडी आणि कल्पना व माणसे जोडण्याची देणगी असलेले. त्यांना संभाषण, वाचन, प्रवास आणि मन व्यग्र ठेवणारी प्रत्येक गोष्ट आवडते. भावनिकदृष्ट्या त्यांना वैविध्य हवे असते आणि असा जोडीदार हवा जो मित्र असेल आणि ज्याच्याशी ते बोलू शकतील. लेखन, शिकवणे, माध्यमे, विक्री, तंत्रज्ञान आणि व्यापार त्यांना अनेकदा जुळतात. त्यांची वाढ खोलीत आणि एकाग्रतेत आहे — थोड्या गोष्टी निवडून त्या पूर्ण करणे — आणि कल्पनांना देतात तेवढेच लक्ष स्वतःच्या भावनांना देणे.",
     # EN: Kark (Cancer) is a movable water sign ruled by the Moon itself, so the Moon is at home
     #     here. People with the Moon in Kark are often caring, sensitive, intuitive and devoted to
     #     family and home. They remember kindness, protect those they love and create warmth
@@ -2209,7 +2209,7 @@ RASHI_TRAITS = {
     #     Nursing, teaching, hospitality, food, real estate, counselling and public service often
     #     suit them. Their growth lies in trusting their own strength, letting go of old hurts and
     #     allowing others to care for them in return.
-    "kark": "",
+    "kark": "कर्क ही स्वतः चंद्र स्वामी असलेली चर जलतत्त्वाची रास आहे, म्हणून चंद्र येथे स्वगृही असतो. कर्केत चंद्र असलेले लोक अनेकदा काळजी घेणारे, संवेदनशील, अंतर्ज्ञानी आणि कुटुंब व घराला समर्पित असतात. ते दयाळूपणा लक्षात ठेवतात, प्रिय व्यक्तींचे रक्षण करतात आणि जिथे राहतात तिथे ऊब निर्माण करतात. त्यांची मनःस्थिती भरती-ओहोटीसारखी बदलू शकते, पण त्यांची निष्ठा खोलवर असते. परिचर्या, शिकवणे, आतिथ्य, अन्न, स्थावर मालमत्ता, समुपदेशन आणि लोकसेवा त्यांना अनेकदा जुळतात. त्यांची वाढ स्वतःच्या बळावर विश्वास ठेवण्यात, जुन्या दुखावलेपणाला सोडण्यात आणि बदल्यात इतरांना आपली काळजी घेऊ देण्यात आहे.",
     # EN: Simha (Leo) is a fixed fire sign ruled by the Sun. People with the Moon in Simha are often
     #     generous, dignified, confident and warm-hearted, with a natural sense of leadership and a
     #     love of recognition. They are loyal to those who trust them and protective of their family
@@ -2217,7 +2217,7 @@ RASHI_TRAITS = {
     #     Leadership, administration, politics, the performing arts, teaching and government service
     #     often suit them. Their growth lies in humility — letting others share the stage, and
     #     finding confidence from within rather than from applause.
-    "simha": "",
+    "simha": "सिंह ही सूर्य स्वामी असलेली स्थिर अग्नितत्त्वाची रास आहे. सिंहेत चंद्र असलेले लोक अनेकदा उदार, प्रतिष्ठित, आत्मविश्वासू आणि मनमोकळे असतात, नेतृत्वाची जन्मजात जाण आणि कौतुकाची आवड असलेले. जे त्यांच्यावर विश्वास ठेवतात त्यांच्याशी ते निष्ठावान असतात आणि कुटुंब व मित्रांचे रक्षण करतात. भावनिकदृष्ट्या ते स्वाभिमानी आणि मोकळ्या मनाचे असतात, आणि कौतुक झाल्यावर ते चमकतात. नेतृत्व, प्रशासन, राजकारण, रंगमंचीय कला, शिकवणे आणि सरकारी सेवा त्यांना अनेकदा जुळतात. त्यांची वाढ नम्रतेत आहे — इतरांनाही मंचावर जागा देणे, आणि टाळ्यांऐवजी आतून आत्मविश्वास शोधणे.",
     # EN: Kanya (Virgo) is a dual earth sign ruled by Mercury. People with the Moon in Kanya are
     #     often practical, analytical, modest and helpful, with an eye for detail and a wish to make
     #     things work properly. They show care through service — fixing, organising and looking
@@ -2225,7 +2225,7 @@ RASHI_TRAITS = {
     #     deeply dependable. Medicine, accounting, research, editing, nutrition, teaching and any
     #     precise craft often suit them. Their growth lies in self-acceptance: being as kind to
     #     their own imperfections as they are patient with other people's needs.
-    "kanya": "",
+    "kanya": "कन्या ही बुध स्वामी असलेली द्विस्वभाव पृथ्वीतत्त्वाची रास आहे. कन्येत चंद्र असलेले लोक अनेकदा व्यवहारी, विश्लेषक, विनम्र आणि मदतीला तत्पर असतात, तपशिलाकडे लक्ष देणारे आणि गोष्टी नीट चालाव्यात अशी इच्छा असलेले. ते सेवेतून काळजी व्यक्त करतात — दुरुस्ती करणे, व्यवस्था लावणे आणि इतरांच्या नजरेतून सुटणाऱ्या लहान गोष्टींकडे लक्ष देणे. भावनिकदृष्ट्या ते राखीव असू शकतात, पण खोलवर भरवशाचे असतात. वैद्यकीय क्षेत्र, लेखा, संशोधन, संपादन, आहारशास्त्र, शिकवणे आणि कोणतीही काटेकोर कला त्यांना अनेकदा जुळते. त्यांची वाढ स्वतःला स्वीकारण्यात आहे: इतरांच्या गरजांबाबत जितके संयमी असतात तितकेच स्वतःच्या उणिवांबाबतही दयाळू राहणे.",
     # EN: Tula (Libra) is a movable air sign ruled by Venus, symbolised by the scales. People with
     #     the Moon in Tula are often gracious, fair-minded, sociable and diplomatic, with a strong
     #     sense of beauty and justice. They value harmony in relationships and are good at seeing
@@ -2233,7 +2233,7 @@ RASHI_TRAITS = {
     #     things around them are balanced. Law, diplomacy, design, fashion, the arts, counselling
     #     and business partnerships often suit them. Their growth lies in decisiveness — trusting
     #     their own judgement and accepting that a little disagreement can be healthy.
-    "tula": "",
+    "tula": "तूळ ही शुक्र स्वामी असलेली चर वायुतत्त्वाची रास आहे, ज्याचे प्रतीक तराजू आहे. तुळेत चंद्र असलेले लोक अनेकदा सुसंस्कृत, न्यायी, मिलनसार आणि मुत्सद्दी असतात, सौंदर्य आणि न्यायाची तीव्र जाण असलेले. त्यांना नात्यांतील सलोखा महत्त्वाचा वाटतो आणि प्रश्नाच्या दोन्ही बाजू पाहण्यात ते कुशल असतात. भावनिकदृष्ट्या त्यांना जोडीदार हवा असतो आणि आसपास समतोल असला की त्यांना सर्वात सहज वाटते. कायदा, मुत्सद्देगिरी, रचना, फॅशन, कला, समुपदेशन आणि व्यावसायिक भागीदारी त्यांना अनेकदा जुळतात. त्यांची वाढ निर्णायकतेत आहे — स्वतःच्या निर्णयावर विश्वास ठेवणे आणि थोडा मतभेद निरोगी असू शकतो हे स्वीकारणे.",
     # EN: Vrishchik (Scorpio) is a fixed water sign ruled by Mars. People with the Moon in Vrishchik
     #     are often intense, perceptive, determined and deeply loyal, with feelings that run far
     #     below the surface. They are not satisfied with appearances and want to understand what is
@@ -2241,7 +2241,7 @@ RASHI_TRAITS = {
     #     Research, investigation, medicine, psychology, finance and crisis work often suit them.
     #     Their growth lies in trust and forgiveness: letting others in, and allowing old feelings
     #     to transform rather than be held.
-    "vrishchik": "",
+    "vrishchik": "वृश्चिक ही मंगळ स्वामी असलेली स्थिर जलतत्त्वाची रास आहे. वृश्चिकेत चंद्र असलेले लोक अनेकदा तीव्र, चाणाक्ष, निश्चयी आणि खोलवर निष्ठावान असतात, ज्यांच्या भावना पृष्ठभागाच्या खूप खाली वाहतात. ते दिखाव्याने समाधानी होत नाहीत आणि प्रत्यक्षात काय चालले आहे ते समजून घ्यायचे असते. एकदा त्यांनी बांधिलकी स्वीकारली — एखादी व्यक्ती, ध्येय किंवा उद्देश — की ते क्वचितच सोडतात. संशोधन, तपास, वैद्यकीय क्षेत्र, मानसशास्त्र, वित्त आणि संकटकालीन काम त्यांना अनेकदा जुळते. त्यांची वाढ विश्वास आणि क्षमेत आहे: इतरांना आत येऊ देणे, आणि जुन्या भावना धरून ठेवण्याऐवजी त्यांचे रूपांतर होऊ देणे.",
     # EN: Dhanu (Sagittarius) is a dual fire sign ruled by Jupiter, symbolised by the archer. People
     #     with the Moon in Dhanu are often optimistic, honest, generous and philosophical, with a
     #     love of learning, travel and freedom. They look for meaning in life and enjoy sharing what
@@ -2249,7 +2249,7 @@ RASHI_TRAITS = {
     #     Teaching, law, religion and philosophy, publishing, travel and sport often suit them.
     #     Their growth lies in following through — giving the same attention to the details of daily
     #     life that they give to big ideas and distant horizons.
-    "dhanu": "",
+    "dhanu": "धनु ही गुरू स्वामी असलेली द्विस्वभाव अग्नितत्त्वाची रास आहे, ज्याचे प्रतीक धनुर्धारी आहे. धनूत चंद्र असलेले लोक अनेकदा आशावादी, प्रामाणिक, उदार आणि तत्त्वचिंतक असतात, शिकणे, प्रवास आणि स्वातंत्र्याची आवड असलेले. ते जीवनाचा अर्थ शोधतात आणि जे शिकले ते वाटून घेणे त्यांना आवडते. भावनिकदृष्ट्या ते खुले आणि आनंदी असतात, आणि त्यांना वाढण्यासाठी जागा हवी असते. शिकवणे, कायदा, धर्म आणि तत्त्वज्ञान, प्रकाशन, प्रवास आणि खेळ त्यांना अनेकदा जुळतात. त्यांची वाढ पाठपुराव्यात आहे — मोठ्या कल्पना आणि दूरच्या क्षितिजांना देतात तेवढेच लक्ष रोजच्या जीवनाच्या तपशिलांनाही देणे.",
     # EN: Makar (Capricorn) is a movable earth sign ruled by Saturn. People with the Moon in Makar
     #     are often responsible, disciplined, practical and ambitious in a patient, long-term way.
     #     They take duty seriously, work steadily and earn respect over time. Emotionally they can
@@ -2257,7 +2257,7 @@ RASHI_TRAITS = {
     #     management, engineering, government service, finance and any field that rewards
     #     perseverance often suit them. Their growth lies in warmth and rest — allowing themselves
     #     joy along the way, and remembering that their worth is not measured only by achievement.
-    "makar": "",
+    "makar": "मकर ही शनी स्वामी असलेली चर पृथ्वीतत्त्वाची रास आहे. मकरेत चंद्र असलेले लोक अनेकदा जबाबदार, शिस्तप्रिय, व्यवहारी आणि संयमी, दीर्घकालीन पद्धतीने महत्त्वाकांक्षी असतात. ते कर्तव्य गांभीर्याने घेतात, स्थिरपणे काम करतात आणि कालांतराने आदर मिळवतात. भावनिकदृष्ट्या ते राखीव वाटू शकतात, पण विश्वासार्हता आणि शांत आधाराद्वारे प्रेम व्यक्त करतात. प्रशासन, व्यवस्थापन, अभियांत्रिकी, सरकारी सेवा, वित्त आणि चिकाटीला बक्षीस देणारे कोणतेही क्षेत्र त्यांना अनेकदा जुळते. त्यांची वाढ ऊब आणि विश्रांतीत आहे — वाटेत स्वतःला आनंद घेऊ देणे, आणि आपली किंमत केवळ यशावरून मोजली जात नाही हे लक्षात ठेवणे.",
     # EN: Kumbh (Aquarius) is a fixed air sign ruled by Saturn, symbolised by the water-bearer who
     #     pours knowledge out for all. People with the Moon in Kumbh are often independent,
     #     humanitarian, inventive and loyal to friends and ideals. They think about the wider
@@ -2265,7 +2265,7 @@ RASHI_TRAITS = {
     #     freedom, and they show care through principle and action. Science, technology, social
     #     work, research, education and community organisations often suit them. Their growth lies
     #     in closeness — letting their warmth show to individuals as well as to humanity as a whole.
-    "kumbh": "",
+    "kumbh": "कुंभ ही शनी स्वामी असलेली स्थिर वायुतत्त्वाची रास आहे, ज्याचे प्रतीक सर्वांसाठी ज्ञान ओतणारा जलवाहक आहे. कुंभेत चंद्र असलेले लोक अनेकदा स्वतंत्र, मानवतावादी, संशोधक वृत्तीचे आणि मित्र व आदर्शांशी निष्ठावान असतात. ते व्यापक समाजाचा विचार करतात आणि नवीन कल्पना, विज्ञान व सुधारणा त्यांना आवडतात. भावनिकदृष्ट्या ते मैत्री आणि स्वातंत्र्याला महत्त्व देतात, आणि तत्त्व व कृतीतून काळजी व्यक्त करतात. विज्ञान, तंत्रज्ञान, समाजकार्य, संशोधन, शिक्षण आणि सामुदायिक संस्था त्यांना अनेकदा जुळतात. त्यांची वाढ जवळिकीत आहे — त्यांची ऊब संपूर्ण मानवतेसोबत व्यक्तींनाही दिसू देणे.",
     # EN: Meen (Pisces) is a dual water sign ruled by Jupiter, the last of the twelve rashis. People
     #     with the Moon in Meen are often compassionate, imaginative, gentle and spiritually
     #     inclined, with a deep sensitivity to the feelings of others. They forgive easily, help
@@ -2274,203 +2274,203 @@ RASHI_TRAITS = {
     #     spiritual work often suit them. Their growth lies in healthy boundaries — caring for
     #     others without losing themselves, and turning their rich imagination into practical
     #     action.
-    "meen": "",
+    "meen": "मीन ही गुरू स्वामी असलेली द्विस्वभाव जलतत्त्वाची रास आहे, बारा राशींपैकी शेवटची. मीनेत चंद्र असलेले लोक अनेकदा करुणामय, कल्पक, सौम्य आणि आध्यात्मिक कल असलेले असतात, इतरांच्या भावनांबद्दल खोल संवेदनशीलता असलेले. ते सहज क्षमा करतात, न मागता मदत करतात आणि संगीत, कला व भक्तीने हेलावतात. भावनिकदृष्ट्या ते मोकळ्या मनाचे आणि अंतर्ज्ञानी असतात. उपचार, समुपदेशन, कला, संगीत, दानधर्म, शिकवणे आणि आध्यात्मिक कार्य त्यांना अनेकदा जुळते. त्यांची वाढ निरोगी सीमांमध्ये आहे — स्वतःला न गमावता इतरांची काळजी घेणे, आणि आपल्या समृद्ध कल्पनाशक्तीचे व्यावहारिक कृतीत रूपांतर करणे.",
 }
 
 # app/nakshatra_text.py FACTS["mr"] — deity.<slug> and symbol.<slug> of each nakshatra  [54]
 NAKSHATRA_FACTS = {
     # EN: The Ashwini Kumaras, the divine physicians
-    "deity.ashwini": "",
+    "deity.ashwini": "अश्विनीकुमार, दिव्य वैद्य",
     # EN: A horse's head
-    "symbol.ashwini": "",
+    "symbol.ashwini": "घोड्याचे डोके",
     # EN: Yama, lord of dharma
-    "deity.bharani": "",
+    "deity.bharani": "यम, धर्माचा अधिपती",
     # EN: The yoni (womb)
-    "symbol.bharani": "",
+    "symbol.bharani": "योनी (गर्भाशय)",
     # EN: Agni, the fire
-    "deity.krittika": "",
+    "deity.krittika": "अग्नी",
     # EN: A razor or flame
-    "symbol.krittika": "",
+    "symbol.krittika": "वस्तरा किंवा ज्योत",
     # EN: Brahma (Prajapati)
-    "deity.rohini": "",
+    "deity.rohini": "ब्रह्मा (प्रजापती)",
     # EN: A chariot or ox-cart
-    "symbol.rohini": "",
+    "symbol.rohini": "रथ किंवा बैलगाडी",
     # EN: Soma, the Moon
-    "deity.mrigashira": "",
+    "deity.mrigashira": "सोम, चंद्र",
     # EN: A deer's head
-    "symbol.mrigashira": "",
+    "symbol.mrigashira": "हरणाचे डोके",
     # EN: Rudra
-    "deity.ardra": "",
+    "deity.ardra": "रुद्र",
     # EN: A teardrop or diamond
-    "symbol.ardra": "",
+    "symbol.ardra": "अश्रू किंवा हिरा",
     # EN: Aditi, mother of the gods
-    "deity.punarvasu": "",
+    "deity.punarvasu": "अदिती, देवांची माता",
     # EN: A bow and quiver
-    "symbol.punarvasu": "",
+    "symbol.punarvasu": "धनुष्य आणि भाता",
     # EN: Brihaspati, guru of the gods
-    "deity.pushya": "",
+    "deity.pushya": "बृहस्पती, देवांचा गुरू",
     # EN: A cow's udder or lotus
-    "symbol.pushya": "",
+    "symbol.pushya": "गायीचे कास किंवा कमळ",
     # EN: The Nagas (serpent deities)
-    "deity.ashlesha": "",
+    "deity.ashlesha": "नाग (सर्पदेवता)",
     # EN: A coiled serpent
-    "symbol.ashlesha": "",
+    "symbol.ashlesha": "वेटोळे घातलेला साप",
     # EN: The Pitris (ancestors)
-    "deity.magha": "",
+    "deity.magha": "पितर (पूर्वज)",
     # EN: A royal throne
-    "symbol.magha": "",
+    "symbol.magha": "राजसिंहासन",
     # EN: Bhaga, giver of fortune
-    "deity.purva-phalguni": "",
+    "deity.purva-phalguni": "भग, सौभाग्य देणारा",
     # EN: The front legs of a bed
-    "symbol.purva-phalguni": "",
+    "symbol.purva-phalguni": "पलंगाचे पुढचे पाय",
     # EN: Aryaman, lord of friendship
-    "deity.uttara-phalguni": "",
+    "deity.uttara-phalguni": "अर्यमा, मैत्रीचा अधिपती",
     # EN: The back legs of a bed
-    "symbol.uttara-phalguni": "",
+    "symbol.uttara-phalguni": "पलंगाचे मागचे पाय",
     # EN: Savitr, the Sun
-    "deity.hasta": "",
+    "deity.hasta": "सवितृ, सूर्य",
     # EN: A hand
-    "symbol.hasta": "",
+    "symbol.hasta": "हात",
     # EN: Tvashtr (Vishwakarma), the divine architect
-    "deity.chitra": "",
+    "deity.chitra": "त्वष्टा (विश्वकर्मा), दिव्य शिल्पकार",
     # EN: A bright jewel
-    "symbol.chitra": "",
+    "symbol.chitra": "तेजस्वी रत्न",
     # EN: Vayu, the wind
-    "deity.swati": "",
+    "deity.swati": "वायू, वारा",
     # EN: A young shoot swaying in the wind
-    "symbol.swati": "",
+    "symbol.swati": "वाऱ्यात डोलणारा कोवळा अंकुर",
     # EN: Indra and Agni (Indragni)
-    "deity.vishakha": "",
+    "deity.vishakha": "इंद्र आणि अग्नी (इंद्राग्नी)",
     # EN: A triumphal arch
-    "symbol.vishakha": "",
+    "symbol.vishakha": "विजयतोरण",
     # EN: Mitra, lord of friendship
-    "deity.anuradha": "",
+    "deity.anuradha": "मित्र, मैत्रीचा अधिपती",
     # EN: A lotus
-    "symbol.anuradha": "",
+    "symbol.anuradha": "कमळ",
     # EN: Indra, king of the gods
-    "deity.jyeshtha": "",
+    "deity.jyeshtha": "इंद्र, देवांचा राजा",
     # EN: A circular amulet or earring
-    "symbol.jyeshtha": "",
+    "symbol.jyeshtha": "गोलाकार ताईत किंवा कर्णभूषण",
     # EN: Nirriti
-    "deity.mula": "",
+    "deity.mula": "निर्ऋती",
     # EN: A bunch of roots
-    "symbol.mula": "",
+    "symbol.mula": "मुळांचा गुच्छ",
     # EN: Apas, the waters
-    "deity.purva-ashadha": "",
+    "deity.purva-ashadha": "आपस, जल",
     # EN: A winnowing fan or elephant tusk
-    "symbol.purva-ashadha": "",
+    "symbol.purva-ashadha": "सूप किंवा हत्तीचा सुळा",
     # EN: The Vishvedevas (universal gods)
-    "deity.uttara-ashadha": "",
+    "deity.uttara-ashadha": "विश्वदेव (विश्वातील देवता)",
     # EN: An elephant tusk
-    "symbol.uttara-ashadha": "",
+    "symbol.uttara-ashadha": "हत्तीचा सुळा",
     # EN: Vishnu
-    "deity.shravana": "",
+    "deity.shravana": "विष्णू",
     # EN: An ear, or three footprints
-    "symbol.shravana": "",
+    "symbol.shravana": "कान, किंवा तीन पदचिन्हे",
     # EN: The eight Vasus
-    "deity.dhanishta": "",
+    "deity.dhanishta": "अष्टवसू",
     # EN: A drum (mridanga)
-    "symbol.dhanishta": "",
+    "symbol.dhanishta": "ढोल (मृदंग)",
     # EN: Varuna, lord of the waters
-    "deity.shatabhisha": "",
+    "deity.shatabhisha": "वरुण, जलाचा अधिपती",
     # EN: An empty circle
-    "symbol.shatabhisha": "",
+    "symbol.shatabhisha": "रिकामे वर्तुळ",
     # EN: Aja Ekapada
-    "deity.purva-bhadrapada": "",
+    "deity.purva-bhadrapada": "अज एकपाद",
     # EN: Swords, or the front legs of a cot
-    "symbol.purva-bhadrapada": "",
+    "symbol.purva-bhadrapada": "तलवारी, किंवा खाटेचे पुढचे पाय",
     # EN: Ahir Budhnya, serpent of the deep
-    "deity.uttara-bhadrapada": "",
+    "deity.uttara-bhadrapada": "अहिर्बुध्न्य, खोल जलातील सर्प",
     # EN: The back legs of a cot, or twins
-    "symbol.uttara-bhadrapada": "",
+    "symbol.uttara-bhadrapada": "खाटेचे मागचे पाय, किंवा जुळे",
     # EN: Pushan, the nourisher and guide
-    "deity.revati": "",
+    "deity.revati": "पूषा, पोषणकर्ता आणि मार्गदर्शक",
     # EN: A fish (or a drum)
-    "symbol.revati": "",
+    "symbol.revati": "मासा (किंवा ढोल)",
 }
 
 # app/naam_milan_text.py TEXT["mr"] — page text of /naam-se-kundali-milan  [34]
 NAAM_MILAN_TEXT = {
     # EN: Naam se Kundali Milan — Match 36 Gunas by Name, Free | {brand}
     # keep: {brand}
-    "title": "",
+    "title": "नावावरून कुंडली मिलन — नामाक्षरावरून 36 गुण जुळवा, मोफत | {brand}",
     # EN: Kundali milan by name: the first syllable of the boy's and girl's names gives each
     #     nakshatra and rashi, then the full 36-guna Ashtakoot match. Type names in Hindi or English
     #     — free, no sign-up.
-    "desc": "",
+    "desc": "नावावरून कुंडली मिलन: वराच्या आणि वधूच्या नावाच्या पहिल्या अक्षरावरून नक्षत्र आणि रास काढून संपूर्ण 36 गुणांचे अष्टकूट जुळवणे. नावे मराठी, हिंदी किंवा इंग्रजीत टाइप करा — मोफत, साइन-अप न करता.",
     # EN: Naam se Kundali Milan
-    "crumb": "",
+    "crumb": "नावावरून कुंडली मिलन",
     # EN: <h1>Naam se Kundali Milan — Match by Name</h1>
-    "h1": "",
+    "h1": "<h1>नावावरून कुंडली मिलन — नावानुसार जुळवणी</h1>",
     # EN: <p class="hi" lang="hi">नाम से कुंडली मिलान</p>
-    "sub": "",
+    "sub": "<p class=\"hi\">नावाच्या पहिल्या अक्षरावरून नक्षत्र, रास आणि 36 गुण</p>",
     # EN: <p>When birth times are not known, tradition matches a couple by the <strong>first
     #     syllable of their names</strong>. Type both names in Hindi or English: we show the
     #     syllable used, its nakshatra pada and rashi, and the full 36-guna match.</p>
-    "intro": "",
+    "intro": "<p>जन्मवेळ माहीत नसते तेव्हा परंपरेनुसार जोडप्याची जुळवणी त्यांच्या <strong>नावाच्या पहिल्या अक्षरावरून</strong> केली जाते. दोन्ही नावे मराठी, हिंदी किंवा इंग्रजीत टाइप करा: वापरलेले अक्षर, त्याचे नक्षत्र चरण आणि रास, आणि संपूर्ण 36 गुणांची जुळवणी आम्ही दाखवतो.</p>",
     # EN: Open birth-chart Kundali Milan
-    "open_milan": "",
+    "open_milan": "जन्मकुंडलीवरून कुंडली मिलन उघडा",
     # EN: Automatic, from the name
-    "auto": "",
+    "auto": "नावावरून आपोआप",
     # EN: Other likely syllables for this name
-    "alt_head": "",
+    "alt_head": "या नावासाठी इतर संभाव्य अक्षरे",
     # EN: All 108 syllables
-    "all_head": "",
+    "all_head": "सर्व 108 अक्षरे",
     # EN: Boy's name (groom)
-    "boy_label": "",
+    "boy_label": "वराचे नाव",
     # EN: Girl's name (bride)
-    "girl_label": "",
+    "girl_label": "वधूचे नाव",
     # EN: e.g. Ram or राम
-    "boy_ph": "",
+    "boy_ph": "उदा. राम",
     # EN: e.g. Sita or सीता
-    "girl_ph": "",
+    "girl_ph": "उदा. सीता",
     # EN: Change the first syllable
-    "pick": "",
+    "pick": "पहिले अक्षर बदला",
     # EN: Match the gunas
-    "button": "",
+    "button": "गुण जुळवा",
     # EN: This syllable belongs to Abhijit, the 28th nakshatra; in the 27-nakshatra wheel it is
     #     counted in Uttara Ashadha pada 4.
-    "via.abhijit": "",
+    "via.abhijit": "हे अक्षर अभिजित, म्हणजे 28 व्या नक्षत्राचे आहे; 27 नक्षत्रांच्या चक्रात ते उत्तराषाढा चरण 4 मध्ये गणले जाते.",
     # EN: By the traditional rule, ब is read as व, and श as ष (with the a-vowel) or स.
-    "via.alias": "",
+    "via.alias": "पारंपरिक नियमानुसार ब हा व म्हणून वाचला आहे, आणि श हा ष (अ-स्वरासह) किंवा स म्हणून.",
     # EN: This exact syllable is not in the 108-syllable list, so the nearest syllable with the same
     #     consonant was used — change it below if you prefer.
-    "via.nearest": "",
+    "via.nearest": "हे अचूक अक्षर 108 अक्षरांच्या यादीत नाही, म्हणून त्याच व्यंजनाचे सर्वात जवळचे अक्षर वापरले आहे — हवे असल्यास खाली बदला.",
     # EN: An English spelling cannot settle this syllable (e.g. T = त or ट), so the most common
     #     reading was used — pick another below if needed.
-    "via.latin": "",
+    "via.latin": "इंग्रजी स्पेलिंगवरून हे अक्षर निश्चित करता येत नाही (उदा. त की ट), म्हणून सर्वात प्रचलित वाचन घेतले आहे — गरज असल्यास खाली दुसरे निवडा.",
     # EN: You chose this syllable.
-    "via.chosen": "",
+    "via.chosen": "हे अक्षर तुम्ही निवडले आहे.",
     # EN: Could not read a first syllable from this name — pick one from the list below.
-    "unreadable": "",
+    "unreadable": "या नावावरून पहिले अक्षर वाचता आले नाही — खालील यादीतून एक निवडा.",
     # EN: pada
-    "pada": "",
+    "pada": "चरण",
     # EN: Result
-    "result": "",
+    "result": "निकाल",
     # EN: <tr><th></th><th>First syllable</th><th>Nakshatra</th><th>Rashi</th></tr>
-    "res.head": "",
+    "res.head": "<tr><th></th><th>पहिले अक्षर</th><th>नक्षत्र</th><th>रास</th></tr>",
     # EN: Boy
-    "boy": "",
+    "boy": "वर",
     # EN: Girl
-    "girl": "",
+    "girl": "वधू",
     # EN: <tr><th>Koota</th><th>Points</th><th>Why</th></tr>
-    "res.th": "",
+    "res.th": "<tr><th>कूट</th><th>गुण</th><th>कारण</th></tr>",
     # EN: Total
-    "total": "",
+    "total": "एकूण",
     # EN: <strong>Mangal dosha: not applicable.</strong> Mangal dosha depends on where Mars stood
     #     from the Lagna, Moon and Venus at birth — a name cannot tell you that. Use birth-chart
     #     matching for it.
-    "mangal": "",
+    "mangal": "<strong>मंगळ दोष: लागू नाही.</strong> मंगळ दोष जन्माच्या वेळी मंगळ लग्न, चंद्र आणि शुक्र यांपासून कुठे होता यावर अवलंबून असतो — नावावरून तो कळत नाही. त्यासाठी जन्मकुंडलीवरून जुळवणी करा.",
     # EN: Match by birth details instead — more accurate, free
-    "res.cta": "",
+    "res.cta": "त्याऐवजी जन्मतपशिलावरून जुळवा — अधिक अचूक, मोफत",
     # EN: <div class="box"><p><strong>Please note:</strong> name-based matching is a traditional
     #     shortcut, used when birth details are not known. It assumes each name was chosen from the
     #     syllable of the person's birth nakshatra — which today is often not the case. Matching
     #     from the date, time and place of birth is far more accurate, and is the only way to check
     #     Mangal dosha.</p></div>
-    "caveat": "",
+    "caveat": "<div class=\"box\"><p><strong>कृपया लक्षात घ्या:</strong> नावावरून जुळवणी हा परंपरागत शॉर्टकट आहे, जो जन्मतपशील माहीत नसताना वापरला जातो. त्यात असे गृहीत धरले जाते की प्रत्येकाचे नाव त्याच्या जन्मनक्षत्राच्या अक्षरावरून ठेवले होते — जे आज बहुतेकदा खरे नसते. जन्मतारीख, वेळ आणि ठिकाणावरून केलेली जुळवणी अधिक अचूक असते, आणि मंगळ दोष तपासण्याचा तोच एकमेव मार्ग आहे.</p></div>",
     # EN: <tr><th>Rashi</th><th>Name syllables</th></tr>
-    "syl.head": "",
+    "syl.head": "<tr><th>रास</th><th>नामाक्षरे</th></tr>",
     # EN: <h2>How name-based matching works</h2> <p>Each of the 27 nakshatras has four padas, and
     #     each pada has a syllable (namakshar) — 108 in all. The pada whose syllable a name
     #     <strong>begins with</strong> is taken as that person's nakshatra, and its sign as their
@@ -2488,22 +2488,22 @@ NAAM_MILAN_TEXT = {
     #     {syllables} <p>For each nakshatra's syllables, deity, gana and nadi see <a
     #     href="{href}">all 27 nakshatras</a>.</p>
     # keep: {abhijit} {href} {syllables}
-    "explainer": "",
+    "explainer": "<h2>नावावरून जुळवणी कशी चालते</h2> <p>27 नक्षत्रांपैकी प्रत्येकाला चार चरण असतात, आणि प्रत्येक चरणाला एक अक्षर (नामाक्षर) असते — एकूण 108. ज्या चरणाच्या अक्षराने नावाची <strong>सुरुवात</strong> होते तो चरण त्या व्यक्तीचे नक्षत्र म्हणून घेतला जातो, आणि त्याची रास तिची चंद्र रास. जन्मकुंडलीसाठी वापरली जाणारी तीच <strong>अष्टकूट (36 गुण)</strong> जुळवणी — वर्ण, वश्य, तारा, योनी, ग्रहमैत्री, गण, भकूट आणि नाडी — त्या दोन नक्षत्रांवरून काढली जाते, आमच्या कुंडली मिलन साधनामागील त्याच इंजिनद्वारे.</p> <h3>पहिले अक्षर कसे वाचले जाते</h3> <ul> <li>पहिल्या अक्षरातील पहिले व्यंजन आणि त्याचा स्वर: <strong>प्रिया → पी</strong>, <strong>क्षितिज → की</strong>. ह्रस्व आणि दीर्घ स्वर सारखेच मानले जातात (इ/ई, उ/ऊ); ऐ हा ए आणि औ हा ओ मानला जातो.</li> <li>ब हा व म्हणून वाचला जातो, आणि श हा ष (अ-स्वरासह) किंवा स म्हणून; ऋ हा री म्हणून.</li> <li>अभिजितची अक्षरे ({abhijit}) उत्तराषाढा चरण 4 मध्ये गणली जातात.</li> <li>इंग्रजीत टाइप केलेल्या नावांचे लिप्यंतर केले जाते; काही इंग्रजी अक्षरे दोन देवनागरी अक्षरांसाठी येऊ शकतात (उदा. त/ट, द/ड), म्हणून निकालात कोणते अक्षर वापरले ते दाखवले जाते आणि तुम्हाला दुसरे निवडू देते. मराठी/हिंदी (देवनागरी) लेखन जसे आहे तसे वाचले जाते.</li> </ul> <h3>राशीनुसार नामाक्षरे</h3> {syllables} <p>प्रत्येक नक्षत्राची अक्षरे, देवता, गण आणि नाडी पाहण्यासाठी <a href=\"{href}\">सर्व 27 नक्षत्रे</a> पाहा.</p>",
 }
 
 # app/naam_milan_text.py ENGINE["mr"] — score-band notes and the convention note of a naam-milan result  [5]
 NAAM_MILAN_ENGINE = {
     # EN: Below the traditional minimum of 18 gunas.
-    "band_note0": "",
+    "band_note0": "पारंपरिक किमान 18 गुणांपेक्षा कमी.",
     # EN: In the traditional 18-24 gunas band.
-    "band_note1": "",
+    "band_note1": "पारंपरिक 18-24 गुणांच्या श्रेणीत.",
     # EN: In the traditional 25-32 gunas band.
-    "band_note2": "",
+    "band_note2": "पारंपरिक 25-32 गुणांच्या श्रेणीत.",
     # EN: In the traditional 33-36 gunas band.
-    "band_note3": "",
+    "band_note3": "पारंपरिक 33-36 गुणांच्या श्रेणीत.",
     # EN: The 18/25/33 guna thresholds are a widely used convention, not a measurement. Astrologers
     #     often accept a lower total if the heavily weighted kootas are free of dosha.
-    "convention_note": "",
+    "convention_note": "18/25/33 गुणांच्या मर्यादा हा व्यापक वापरातील संकेत आहे, मोजमाप नाही. जास्त गुण असलेले कूट दोषमुक्त असतील तर ज्योतिषी अनेकदा कमी एकूण गुणही स्वीकारतात.",
 }
 
 # ----------------------------------------------------------------------------
@@ -2513,126 +2513,126 @@ NAAM_MILAN_ENGINE = {
 # app/muhurat_text.py TEXT["mr"] — page text of /muhurat/<kind>-<year> (the mundan-only keys are MUHURAT_MUNDAN)  [37]
 MUHURAT_TEXT = {
     # EN: Vivah Muhurat
-    "kind.vivah": "",
+    "kind.vivah": "विवाह मुहूर्त",
     # EN: Griha Pravesh Muhurat
-    "kind.griha-pravesh": "",
+    "kind.griha-pravesh": "गृहप्रवेश मुहूर्त",
     # EN: wedding
-    "noun.vivah": "",
+    "noun.vivah": "विवाह",
     # EN: house-warming
-    "noun.griha-pravesh": "",
+    "noun.griha-pravesh": "गृहप्रवेश",
     # EN: {name} {year}: Auspicious {noun_title} Dates (New Delhi) | {brand}
     # keep: {brand} {year}
     # may also use: {name} {noun_title} {noun}
-    "title": "",
+    "title": "{name} {year}: शुभ {noun} तारखा (नवी दिल्ली) | {brand}",
     # EN: {name} {year}: auspicious {noun} dates
     # keep: {year}
     # may also use: {name} {noun}
-    "h1": "",
+    "h1": "{name} {year}: शुभ {noun} तारखा",
     # EN: {name} {year} for New Delhi — month-by-month auspicious {noun} dates with tithi and
     #     nakshatra. {count} dates; Chaturmas, Kharmas, Adhik Maas, Pitru Paksha and Guru/Shukra
     #     asta explained.
     # keep: {count} {year}
     # may also use: {name} {noun}
-    "desc": "",
+    "desc": "{name} {year}, नवी दिल्लीसाठी — तिथी आणि नक्षत्रासह महिन्यानुसार शुभ {noun} तारखा. एकूण {count} तारखा; चातुर्मास, खरमास, अधिक मास, पितृपक्ष आणि गुरू/शुक्र अस्त यांचे स्पष्टीकरण.",
     # EN: <p class="hi" lang="hi">{name_hi} {year}</p>
     # keep: {year}
     # may also use: {name} {noun}
-    "sub": "",
+    "sub": "<p class=\"hi\">{name} {year} · शुभ तारखा</p>",
     # EN: {label} · IST
     # keep: {label}
-    "place": "",
+    "place": "{label} · भारतीय वेळ",
     # EN: <p>By the panchang there are <strong>{count}</strong> {name_lower} dates in {year} for New
     #     Delhi, in {months}. Each date passes the classical checks on the sunrise tithi, nakshatra,
     #     weekday, yoga and Bhadra, and falls outside Chaturmas, Kharmas, Adhik Maas, Pitru Paksha
     #     and the combustion (asta) of Jupiter and Venus.</p>
     # keep: {count} {months} {year}
     # may also use: {name_lower} {name} {noun}
-    "intro": "",
+    "intro": "<p>पंचांगानुसार नवी दिल्लीसाठी {year} मध्ये {months} मध्ये {name_lower} च्या <strong>{count}</strong> तारखा आहेत. प्रत्येक तारीख सूर्योदयाची तिथी, नक्षत्र, वार, योग आणि भद्रा यांच्या शास्त्रीय तपासण्यांतून पार पडते, आणि चातुर्मास, खरमास, अधिक मास, पितृपक्ष तसेच गुरू व शुक्र यांच्या अस्तकाळाच्या बाहेर येते.</p>",
     # EN: <p><strong>Timings vary by city.</strong> These dates are reckoned from New Delhi's
     #     sunrise; elsewhere a tithi or nakshatra can change on a different day. The exact muhurat
     #     (lagna) for a wedding or griha pravesh should be fixed by your family priest. Check your
     #     own city in the Muhurat Finder.</p>
-    "note": "",
+    "note": "<p><strong>वेळा शहरानुसार बदलतात.</strong> या तारखा नवी दिल्लीच्या सूर्योदयानुसार मोजल्या आहेत; इतरत्र एखादी तिथी किंवा नक्षत्र वेगळ्या दिवशी बदलू शकते. विवाह किंवा गृहप्रवेशाचा नेमका मुहूर्त (लग्न) तुमच्या कुलपुरोहितांनी ठरवावा. तुमच्या शहरासाठी मुहूर्त शोधकात पाहा.</p>",
     # EN: Find muhurat for your city — free
-    "cta": "",
+    "cta": "तुमच्या शहरासाठी मुहूर्त शोधा — मोफत",
     # EN: {name} {year}
     # keep: {name} {year}
-    "crumb": "",
+    "crumb": "{name} {year}",
     # EN: More muhurat dates
-    "more": "",
+    "more": "आणखी मुहूर्त तारखा",
     # EN: {name} {year}
     # keep: {name} {year}
-    "link.kind": "",
+    "link.kind": "{name} {year}",
     # EN: Today's Panchang
-    "link.panchang": "",
+    "link.panchang": "आजचे पंचांग",
     # EN: Kundali Milan
-    "link.milan": "",
+    "link.milan": "कुंडली मिलन",
     # EN: When there is no {name_lower} in {year}
     # keep: {year}
     # may also use: {name_lower} {name} {noun}
-    "periods.h2": "",
+    "periods.h2": "{year} मध्ये {name_lower} कधी नसतो",
     # EN: No {name_lower} is given during these periods. The dates are computed from the panchang
     #     (New Delhi, sunrise):
     # may also use: {name_lower} {name} {noun}
-    "periods.intro": "",
+    "periods.intro": "या कालखंडांत {name_lower} दिला जात नाही. तारखा पंचांगावरून (नवी दिल्ली, सूर्योदय) काढल्या आहेत:",
     # EN: <li><strong>{period}</strong>, {range} — {about}.</li>
     # keep: {about} {period} {range}
-    "periods.item": "",
+    "periods.item": "<li><strong>{period}</strong>, {range} — {about}.</li>",
     # EN: No {name_lower} in {month} — {periods}.
     # keep: {month} {periods}
     # may also use: {name_lower} {name} {noun}
-    "none.periods": "",
+    "none.periods": "{month} मध्ये {name_lower} नाही — {periods}.",
     # EN: No {name_lower} in {month} — no day this month passes the tithi, nakshatra, weekday and
     #     yoga checks.
     # keep: {month}
     # may also use: {name_lower} {name} {noun}
-    "none.plain": "",
+    "none.plain": "{month} मध्ये {name_lower} नाही — या महिन्यातील एकही दिवस तिथी, नक्षत्र, वार आणि योगाच्या तपासण्यांत बसत नाही.",
     # EN: <tr><th>Date</th><th>Day</th><th>Tithi</th><th>Nakshatra</th></tr>
-    "th": "",
+    "th": "<tr><th>तारीख</th><th>वार</th><th>तिथी</th><th>नक्षत्र</th></tr>",
     # EN: Muhurat page not found
-    "nf.title": "",
+    "nf.title": "मुहूर्त पान सापडले नाही",
     # EN: Open the Muhurat Finder
-    "nf.open": "",
+    "nf.open": "मुहूर्त शोधक उघडा",
     # EN: Chaturmas
-    "period.chaturmas": "",
+    "period.chaturmas": "चातुर्मास",
     # EN: Devshayani Ekadashi to Devuthani Ekadashi, when Lord Vishnu is in yoga-nidra
-    "period_about.chaturmas": "",
+    "period_about.chaturmas": "देवशयनी एकादशीपासून देवउठनी एकादशीपर्यंत, जेव्हा भगवान विष्णू योगनिद्रेत असतात",
     # EN: Kharmas
-    "period.kharmas": "",
+    "period.kharmas": "खरमास",
     # EN: the Sun in Dhanu (Sagittarius) or Meena (Pisces)
-    "period_about.kharmas": "",
+    "period_about.kharmas": "सूर्य धनु किंवा मीन राशीत असतो",
     # EN: Adhik Maas
-    "period.adhik_maas": "",
+    "period.adhik_maas": "अधिक मास",
     # EN: an intercalary lunar month with no solar ingress
-    "period_about.adhik_maas": "",
+    "period_about.adhik_maas": "सूर्याचे राशी संक्रमण नसलेला अतिरिक्त चांद्र महिना",
     # EN: Pitru Paksha
-    "period.pitru_paksha": "",
+    "period.pitru_paksha": "पितृपक्ष",
     # EN: Bhadrapada Purnima to Sarva Pitru Amavasya, the fortnight of shraddha
-    "period_about.pitru_paksha": "",
+    "period_about.pitru_paksha": "भाद्रपद पौर्णिमेपासून सर्वपित्री अमावस्येपर्यंत, श्राद्धाचा पंधरवडा",
     # EN: Shukra Asta
-    "period.shukra_asta": "",
+    "period.shukra_asta": "शुक्र अस्त",
     # EN: Venus combust (too close to the Sun to be seen), with 3 days either side
-    "period_about.shukra_asta": "",
+    "period_about.shukra_asta": "शुक्र सूर्याच्या अगदी जवळ येऊन दिसेनासा होणे (अस्त), दोन्ही बाजूंच्या 3 दिवसांसह",
     # EN: Guru Asta
-    "period.guru_asta": "",
+    "period.guru_asta": "गुरू अस्त",
     # EN: Jupiter combust (too close to the Sun to be seen), with 3 days either side
-    "period_about.guru_asta": "",
+    "period_about.guru_asta": "गुरू सूर्याच्या अगदी जवळ येऊन दिसेनासा होणे (अस्त), दोन्ही बाजूंच्या 3 दिवसांसह",
 }
 
 # app/muhurat_text.py MUNDAN["mr"] — the mundan (first haircut) muhurat's own wording  [5]
 MUHURAT_MUNDAN = {
     # EN: Mundan Muhurat
-    "kind.mundan": "",
+    "kind.mundan": "मुंडन मुहूर्त",
     # EN: mundan
-    "noun.mundan": "",
+    "noun.mundan": "मुंडन (जावळ)",
     # EN: <p><strong>Timings vary by city.</strong> These dates are reckoned from New Delhi's
     #     sunrise; elsewhere a tithi or nakshatra can change on a different day. The exact muhurat
     #     for the mundan (chudakarma) should be fixed by your family priest. Check your own city in
     #     the Muhurat Finder.</p>
-    "note.mundan": "",
+    "note.mundan": "<p><strong>वेळा शहरानुसार बदलतात.</strong> या तारखा नवी दिल्लीच्या सूर्योदयानुसार मोजल्या आहेत; इतरत्र एखादी तिथी किंवा नक्षत्र वेगळ्या दिवशी बदलू शकते. मुंडनाचा (चूडाकर्म, जावळ) नेमका मुहूर्त तुमच्या कुलपुरोहितांनी ठरवावा. तुमच्या शहरासाठी मुहूर्त शोधकात पाहा.</p>",
     # EN: {name} {year}: the rules these dates follow
     # keep: {name} {year}
-    "rules.h2": "",
+    "rules.h2": "{name} {year}: या तारखा ज्या नियमांनुसार आहेत",
     # EN: <p>Mundan (chudakarma, the first haircut) is judged by its own rules, not a wedding's. A
     #     day is listed only when none of the barred items below applies and it falls in a
     #     favourable nakshatra:</p><ul><li><strong>Barred tithis:</strong>
@@ -2644,7 +2644,7 @@ MUHURAT_MUNDAN = {
     #     against a day without ruling it out, so a few such dates appear - skip them if your family
     #     avoids those days.</li></ul>
     # keep: {nak_bad} {nak_good} {tithi_bad} {tithi_good} {vara_bad} {vara_good} {yoga_bad}
-    "rules.body": "",
+    "rules.body": "<p>मुंडन (चूडाकर्म, पहिले केस कापणे) विवाहाच्या नव्हे, तर स्वतःच्या नियमांनुसार तपासले जाते. खालील वर्ज्य गोष्टींपैकी काहीही लागू नसेल आणि दिवस शुभ नक्षत्रात असेल तेव्हाच तो यादीत येतो:</p><ul><li><strong>वर्ज्य तिथी:</strong> {tithi_bad}.</li><li><strong>शुभ तिथी</strong> (कोणत्याही पक्षात): {tithi_good}; इतर सामान्य.</li><li><strong>शुभ नक्षत्रे</strong> (खालील प्रत्येक तारीख यापैकी एकात येते): {nak_good}.</li><li><strong>वर्ज्य नक्षत्रे:</strong> {nak_bad}.</li><li><strong>वर्ज्य योग आणि करण:</strong> {yoga_bad}, आणि भद्रा (विष्टी).</li><li><strong>वार:</strong> {vara_good} शुभ मानले जातात; {vara_bad} दिवसाला नाकारत नाहीत पण त्याच्या विरोधात गणले जातात, म्हणून अशा काही तारखा दिसतात — तुमचे कुटुंब ते वार टाळत असेल तर त्या वगळा.</li></ul>",
 }
 
 # app/muhurat_text.py MONTHS["mr"] — only if this page must spell the months differently from names_<code>.MONTHS; else leave ()  [12]
@@ -2658,99 +2658,99 @@ MUHURAT_MONTHS = ()   # or 12 month names, January first
 # app/recurring_text.py TEXT["mr"] — page text of /purnima-<year>, /amavasya-<year>, /pradosh-vrat-<year> ... (the keys it shares with VRAT_TEXT are taken from there)  [60]
 RECURRING_TEXT = {
     # EN: Full Moon Dates and Tithi Time
-    "what.purnima": "",
+    "what.purnima": "पौर्णिमेच्या तारखा आणि तिथीची वेळ",
     # EN: New Moon Dates and Tithi Time
-    "what.amavasya": "",
+    "what.amavasya": "अमावस्येच्या तारखा आणि तिथीची वेळ",
     # EN: All Dates and Pradosh Puja Time
-    "what.pradosh": "",
+    "what.pradosh": "सर्व तारखा आणि प्रदोष पूजेची वेळ",
     # EN: All Dates and Moonrise Time
-    "what.sankashti": "",
+    "what.sankashti": "सर्व तारखा आणि चंद्रोदयाची वेळ",
     # EN: All Dates and Nishita Puja Time
-    "what.masik_shivratri": "",
+    "what.masik_shivratri": "सर्व तारखा आणि निशीथ पूजेची वेळ",
     # EN: All Dates and Kala Bhairav Puja
-    "what.kalashtami": "",
+    "what.kalashtami": "सर्व तारखा आणि कालभैरव पूजा",
     # EN: {name} {year}: {what} (New Delhi)
     # keep: {name} {what} {year}
-    "title": "",
+    "title": "{name} {year}: {what} (नवी दिल्ली)",
     # EN: {name} {year}: {what}
     # keep: {name} {what} {year}
-    "h1": "",
+    "h1": "{name} {year}: {what}",
     # EN: All {count} {name} dates in {year} with weekday, Hindu month and tithi start and end for
     #     New Delhi. {about}{keytime}{next}
     # keep: {about} {count} {keytime} {name} {next} {year}
-    "desc": "",
+    "desc": "{year} मधील {name} च्या सर्व {count} तारखा — वार, हिंदू महिना आणि तिथीची सुरुवात व समाप्ती, नवी दिल्लीसाठी. {about}{keytime}{next}",
     # EN: Full-moon vrat days for Satyanarayan puja, bathing and charity.
-    "desc.about.purnima": "",
+    "desc.about.purnima": "सत्यनारायण पूजा, स्नान आणि दानासाठी पौर्णिमेच्या व्रताचे दिवस.",
     # EN: New-moon days for shraddha and tarpan, with Somvati and Shani Amavasya.
-    "desc.about.amavasya": "",
+    "desc.about.amavasya": "श्राद्ध आणि तर्पणासाठी अमावस्येचे दिवस, सोमवती आणि शनी अमावस्येसह.",
     # EN: Lord Shiva's twilight fast on Trayodashi, with the puja window.
-    "desc.about.pradosh": "",
+    "desc.about.pradosh": "त्रयोदशीला भगवान शंकराचे संध्याकाळचे व्रत, पूजेच्या वेळेसह.",
     # EN: Lord Ganesha's fast on Krishna Chaturthi, broken after moonrise.
-    "desc.about.sankashti": "",
+    "desc.about.sankashti": "कृष्ण चतुर्थीला भगवान गणेशाचे व्रत, चंद्रोदयानंतर सोडले जाणारे.",
     # EN: The monthly night of Shiva on Krishna Chaturdashi, with the midnight puja.
-    "desc.about.masik_shivratri": "",
+    "desc.about.masik_shivratri": "कृष्ण चतुर्दशीला येणारी शिवाची मासिक रात्र, मध्यरात्रीच्या पूजेसह.",
     # EN: Kala Bhairava worship on Krishna Ashtami, every month.
-    "desc.about.kalashtami": "",
+    "desc.about.kalashtami": "दर महिन्याच्या कृष्ण अष्टमीला कालभैरवाची उपासना.",
     # EN: Includes {label}.
     # keep: {label}
-    "desc.key": "",
+    "desc.key": " यात {label} समाविष्ट आहे.",
     # EN: Next: {date}.
     # keep: {date}
-    "desc.next": "",
+    "desc.next": " पुढील: {date}.",
     # EN: The next {name} is on <strong>{when}</strong> ({details}).
     # keep: {details} {name} {when}
-    "ans.next": "",
+    "ans.next": "पुढील {name} <strong>{when}</strong> रोजी आहे ({details}).",
     # EN: The first {name} of {year} is on <strong>{when}</strong> ({details}). All {count} dates
     #     for {year} are listed below.
     # keep: {count} {details} {name} {when} {year}
-    "ans.first": "",
+    "ans.first": "{year} मधील पहिले {name} <strong>{when}</strong> रोजी आहे ({details}). {year} च्या सर्व {count} तारखा खाली दिल्या आहेत.",
     # EN: All {count} {name} dates for {year} are listed below; the last was on
     #     <strong>{when}</strong>.
     # keep: {count} {name} {when} {year}
-    "ans.past": "",
+    "ans.past": "{year} च्या {name} च्या सर्व {count} तारखा खाली दिल्या आहेत; शेवटची <strong>{when}</strong> रोजी होती.",
     # EN: Dates for {year}: {link}.
     # keep: {link} {year}
-    "ans.more": "",
+    "ans.more": "{year} च्या तारखा: {link}.",
     # EN: {name} {year}: all dates
     # keep: {name} {year}
-    "table.h2": "",
+    "table.h2": "{name} {year}: सर्व तारखा",
     # EN: Date
-    "th.date": "",
+    "th.date": "तारीख",
     # EN: Hindu month
-    "th.month": "",
+    "th.month": "हिंदू महिना",
     # EN: Tithi
-    "th.tithi": "",
+    "th.tithi": "तिथी",
     # EN: Adhik {month}
     # keep: {month}
-    "adhika": "",
+    "adhika": "अधिक {month}",
     # EN: Also:
-    "also": "",
+    "also": "तसेच: ",
     # EN: <p class="note"><small>Months are amanta (a month ends on Amavasya, as in South and West
     #     India). North Indian purnimanta calendars name the dark fortnight one month
     #     later.</small></p>
-    "months.note": "",
+    "months.note": "<p class=\"note\"><small>महिने अमांत आहेत (महिना अमावस्येला संपतो, जसा दक्षिण आणि पश्चिम भारतात). उत्तर भारतीय पौर्णिमांत पंचांगांत कृष्ण पक्षाला एक महिना पुढचे नाव दिले जाते.</small></p>",
     # EN: Som Pradosh
-    "variant.pradosh.0": "",
+    "variant.pradosh.0": "सोम प्रदोष",
     # EN: Bhauma Pradosh
-    "variant.pradosh.1": "",
+    "variant.pradosh.1": "भौम प्रदोष",
     # EN: Shani Pradosh
-    "variant.pradosh.5": "",
+    "variant.pradosh.5": "शनी प्रदोष",
     # EN: Angarki Chaturthi
-    "variant.sankashti.1": "",
+    "variant.sankashti.1": "अंगारकी चतुर्थी",
     # EN: Somvati Amavasya
-    "variant.amavasya.0": "",
+    "variant.amavasya.0": "सोमवती अमावस्या",
     # EN: Shani Amavasya
-    "variant.amavasya.5": "",
+    "variant.amavasya.5": "शनी अमावस्या",
     # EN: What {name} is and how it is observed
     # keep: {name}
-    "about.h2": "",
+    "about.h2": "{name} म्हणजे काय आणि ते कसे पाळले जाते",
     # EN: Panchang for your city
-    "city.h2": "",
+    "city.h2": "तुमच्या शहराचे पंचांग",
     # EN: Related dates and calendars
-    "related.h2": "",
+    "related.h2": "संबंधित तारखा आणि दिनदर्शिका",
     # EN: {name} {year}
     # keep: {name} {year}
-    "crumb.page": "",
+    "crumb.page": "{name} {year}",
     # EN: <p>Purnima is the full-moon tithi, the last (15th) tithi of the bright fortnight (Shukla
     #     paksha), when the Moon stands opposite the Sun and shines full. Devotees keep a fast,
     #     bathe at dawn (in a river or tirtha where they can), worship Lord Vishnu - Satyanarayan
@@ -2758,7 +2758,7 @@ RECURRING_TEXT = {
     #     (daan) of food, clothes or money on this day is said to bring multiplied merit.</p><p>Some
     #     Purnimas are festivals in their own right: Guru Purnima, Sharad Purnima, Kartik Purnima
     #     and Buddha Purnima, and Holika Dahan is kept on the Purnima of Phalguna.</p>
-    "about.purnima": "",
+    "about.purnima": "<p>पौर्णिमा ही चंद्राची पूर्ण तिथी आहे, शुक्ल पक्षाची शेवटची (15 वी) तिथी, जेव्हा चंद्र सूर्याच्या समोर असतो आणि पूर्ण तेजाने चमकतो. भाविक उपवास करतात, पहाटे स्नान करतात (शक्य तिथे नदीत किंवा तीर्थात), भगवान विष्णूंची पूजा करतात — सत्यनारायण कथा ही पौर्णिमेची नेहमीची पूजा आहे — आणि संध्याकाळी चंद्राला अर्घ्य देतात. या दिवशी अन्न, वस्त्र किंवा पैशांचे दान केल्याने अनेकपट पुण्य मिळते असे सांगितले जाते.</p><p>काही पौर्णिमा स्वतःच सण आहेत: गुरुपौर्णिमा, शरद पौर्णिमा, कार्तिक पौर्णिमा आणि बुद्ध पौर्णिमा, आणि होलिका दहन फाल्गुनाच्या पौर्णिमेला होते.</p>",
     # EN: <p>Amavasya is the new-moon tithi, the 30th and last tithi of the dark fortnight (Krishna
     #     paksha), when the Moon is in conjunction with the Sun and cannot be seen. It is the day of
     #     the ancestors (pitru): families offer tarpan and shraddha, feed Brahmins and the poor,
@@ -2766,7 +2766,7 @@ RECURRING_TEXT = {
     #     new.</p><p>An Amavasya on a Monday is called Somvati Amavasya and one on a Saturday Shani
     #     Amavasya, both given extra weight. The great Amavasyas are Mauni Amavasya, Sarva Pitru
     #     Amavasya (the end of Pitru Paksha) and the Amavasya of Diwali.</p>
-    "about.amavasya": "",
+    "about.amavasya": "<p>अमावस्या ही नवचंद्राची तिथी आहे, कृष्ण पक्षाची 30 वी आणि शेवटची तिथी, जेव्हा चंद्र सूर्यासोबत युतीत असतो आणि दिसत नाही. हा पितरांचा (पितृ) दिवस आहे: कुटुंबे तर्पण आणि श्राद्ध करतात, ब्राह्मणांना आणि गरिबांना जेवू घालतात, दान देतात आणि पवित्र पाण्यात स्नान करतात. अनेकजण उपवास करतात आणि काहीही नवीन सुरू करणे टाळतात.</p><p>सोमवारी येणाऱ्या अमावस्येला सोमवती अमावस्या आणि शनिवारी येणाऱ्या अमावस्येला शनी अमावस्या म्हणतात; दोन्हींना अधिक महत्त्व दिले जाते. मोठ्या अमावस्या म्हणजे मौनी अमावस्या, सर्वपित्री अमावस्या (पितृपक्षाची सांगता) आणि दिवाळीची अमावस्या.</p>",
     # EN: <p>Pradosh Vrat is the fast of Lord Shiva kept on Trayodashi, the 13th tithi, of both
     #     fortnights - so twice a month. Pradosh kaal is the twilight window just after sunset, when
     #     Shiva is believed to be most pleased. Devotees fast through the day, bathe, and do Shiva
@@ -2774,7 +2774,7 @@ RECURRING_TEXT = {
     #     the Pradosh stotra or Shiva Chalisa. The fast is broken after the puja.</p><p>A Pradosh on
     #     Monday is Som Pradosh, on Tuesday Bhauma Pradosh and on Saturday Shani Pradosh; the
     #     Saturday one is considered especially powerful.</p>
-    "about.pradosh": "",
+    "about.pradosh": "<p>प्रदोष व्रत हे भगवान शंकराचे व्रत आहे, जे दोन्ही पक्षांच्या त्रयोदशीला, म्हणजे 13 व्या तिथीला केले जाते — म्हणजे महिन्यातून दोनदा. प्रदोषकाळ म्हणजे सूर्यास्तानंतरचा लगेचचा संध्याकाळचा कालावधी, ज्यात शिव सर्वाधिक प्रसन्न असतात असे मानले जाते. भाविक दिवसभर उपवास करतात, स्नान करतात आणि प्रदोषकाळात शिवपूजा करतात: पाणी, दूध आणि बेलपत्रांचा अभिषेक, दीप, आणि प्रदोष स्तोत्र किंवा शिव चालीसा. पूजेनंतर उपवास सोडला जातो.</p><p>सोमवारचा प्रदोष सोम प्रदोष, मंगळवारचा भौम प्रदोष आणि शनिवारचा शनी प्रदोष; शनिवारचा विशेष प्रभावी मानला जातो.</p>",
     # EN: <p>Sankashti Chaturthi (Sankat Hara Chaturthi) is the monthly fast of Lord Ganesha on
     #     Chaturthi, the 4th tithi, of the dark fortnight (Krishna paksha); "sankashti" means
     #     deliverance from trouble. Devotees fast through the day, worship Ganesha in the evening
@@ -2782,86 +2782,86 @@ RECURRING_TEXT = {
     #     moonrise is the key time on this page.</p><p>A Sankashti on a Tuesday is Angarki Sankashti
     #     Chaturthi, believed to be especially fruitful. The Sankashti of Magha (purnimanta) is kept
     #     in North India as Sakat Chauth.</p>
-    "about.sankashti": "",
+    "about.sankashti": "<p>संकष्टी चतुर्थी (संकटहर चतुर्थी) हे भगवान गणेशाचे मासिक व्रत आहे, जे कृष्ण पक्षाच्या चतुर्थीला, म्हणजे 4 थ्या तिथीला केले जाते; “संकष्टी” म्हणजे संकटांतून मुक्ती. भाविक दिवसभर उपवास करतात, संध्याकाळी गणेशाची पूजा करतात आणि चंद्र पाहून त्याला अर्घ्य दिल्यानंतरच उपवास सोडतात, म्हणूनच या पानावर चंद्रोदय ही मुख्य वेळ आहे.</p><p>मंगळवारी येणारी संकष्टी अंगारकी संकष्टी चतुर्थी, जी विशेष फलदायी मानली जाते. माघ (पौर्णिमांत) महिन्याची संकष्टी उत्तर भारतात सकट चौथ म्हणून पाळली जाते.</p>",
     # EN: <p>Masik Shivratri (monthly Shivratri) is the night of Lord Shiva kept on Chaturdashi, the
     #     14th tithi, of the dark fortnight (Krishna paksha) every month. Devotees fast and keep
     #     vigil through the night, bathing the Shiva linga with water, milk, honey and bilva leaves
     #     and chanting "Om Namah Shivaya". The best time for the puja is Nishita kaal, the midnight
     #     window.</p><p>Maha Shivratri, which falls on Krishna Chaturdashi of Phalguna (Magha in the
     #     amanta calendar), is the greatest of the twelve.</p>
-    "about.masik_shivratri": "",
+    "about.masik_shivratri": "<p>मासिक शिवरात्री ही भगवान शंकराची रात्र आहे, जी दर महिन्याला कृष्ण पक्षाच्या चतुर्दशीला, म्हणजे 14 व्या तिथीला पाळली जाते. भाविक उपवास करतात आणि रात्रभर जागरण करतात, शिवलिंगाला पाणी, दूध, मध आणि बेलपत्रांनी स्नान घालतात आणि “ओम नमः शिवाय”चा जप करतात. पूजेसाठी सर्वोत्तम वेळ निशीथ काळ, म्हणजे मध्यरात्रीचा कालावधी.</p><p>महाशिवरात्री, जी फाल्गुनाच्या कृष्ण चतुर्दशीला येते (अमांत पंचांगात माघ), ही बारा शिवरात्रींपैकी सर्वात मोठी आहे.</p>",
     # EN: <p>Kalashtami (Kala Ashtami) is the monthly day of Lord Kala Bhairava, the fierce form of
     #     Shiva who guards time, kept on Ashtami, the 8th tithi, of the dark fortnight (Krishna
     #     paksha). Devotees fast, worship Bhairava at night with a mustard-oil lamp and offerings
     #     such as black sesame, and feed dogs, which are associated with him.</p><p>The Kalashtami
     #     of Margashirsha in the purnimanta calendar (Kartika in the amanta calendar) is
     #     Kalabhairava Jayanti, his appearance day and the most important of the year.</p>
-    "about.kalashtami": "",
+    "about.kalashtami": "<p>कालाष्टमी (काल अष्टमी) हा काळाचे रक्षण करणाऱ्या शिवाच्या उग्र रूपाचा, भगवान कालभैरवाचा मासिक दिवस आहे, जो कृष्ण पक्षाच्या अष्टमीला, म्हणजे 8 व्या तिथीला पाळला जातो. भाविक उपवास करतात, रात्री मोहरीच्या तेलाचा दीप लावून भैरवाची पूजा करतात, काळ्या तिळासारखे नैवेद्य अर्पण करतात आणि त्याच्याशी जोडलेल्या कुत्र्यांना अन्न देतात.</p><p>पौर्णिमांत पंचांगातील मार्गशीर्षाची कालाष्टमी (अमांत पंचांगात कार्तिक) म्हणजे कालभैरव जयंती, त्याचा प्रकटदिन आणि वर्षातील सर्वात महत्त्वाचा.</p>",
     # EN: Purnima can begin one evening and end the next afternoon, so the day the tithi starts and
     #     the day of the vrat can differ. The rule settles it: the vrat goes to the day on which the
     #     tithi covers Madhyahna (the middle fifth of the daytime); if it covers Madhyahna on both
     #     days, the earlier day is taken. Some traditions use the sunrise tithi for the holy bath
     #     and charity instead; the table gives the start and end of the tithi so you can check.
-    "note.purnima": "",
+    "note.purnima": "पौर्णिमा एका संध्याकाळी सुरू होऊन दुसऱ्या दुपारी संपू शकते, म्हणून तिथी सुरू होण्याचा दिवस आणि व्रताचा दिवस वेगळा असू शकतो. नियम हे ठरवतो: ज्या दिवशी तिथी मध्याह्न (दिवसाचा मधला पंचमांश) व्यापते त्या दिवशी व्रत केले जाते; ती दोन्ही दिवशी मध्याह्न व्यापत असेल तर आधीचा दिवस घेतला जातो. काही परंपरा पवित्र स्नान आणि दानासाठी त्याऐवजी सूर्योदयाची तिथी वापरतात; तुम्हाला तपासता यावे म्हणून तक्त्यात तिथीची सुरुवात आणि समाप्ती दिली आहे.",
     # EN: Amavasya is a daytime observance (shraddha and tarpan are done in the day), so the date is
     #     the day on which the Amavasya tithi is running at sunrise. The tithi often starts the
     #     evening before, so the times in the table can begin on the previous date. Festival
     #     Amavasyas follow their own rules - Diwali is fixed by Pradosh, Sarva Pitru Amavasya by
     #     Aparahna - and can fall a day away from the date here.
-    "note.amavasya": "",
+    "note.amavasya": "अमावस्या हा दिवसाचा विधी आहे (श्राद्ध आणि तर्पण दिवसा केले जातात), म्हणून तारीख म्हणजे सूर्योदयाला अमावस्या तिथी चालू असलेला दिवस. तिथी अनेकदा आदल्या संध्याकाळी सुरू होते, म्हणून तक्त्यातील वेळा आधीच्या तारखेपासून सुरू होऊ शकतात. सणांच्या अमावस्या आपल्या स्वतःच्या नियमांनुसार असतात — दिवाळी प्रदोषाने, सर्वपित्री अमावस्या अपराह्नाने ठरते — आणि येथील तारखेपासून एक दिवस दूर येऊ शकतात.",
     # EN: The date is decided in the evening, not at sunrise: the vrat goes to the day on which
     #     Trayodashi is running in Pradosh kaal after sunset, so a Trayodashi that starts at noon
     #     and ends the next afternoon is kept on the first day. If the tithi touches Pradosh kaal on
     #     two evenings, the earlier evening is taken. The puja window in the table starts at sunset
     #     in New Delhi, so it moves through the year and from city to city.
-    "note.pradosh": "",
+    "note.pradosh": "तारीख सूर्योदयाला नव्हे, तर संध्याकाळी ठरते: ज्या दिवशी सूर्यास्तानंतरच्या प्रदोषकाळात त्रयोदशी चालू असते त्या दिवशी व्रत केले जाते, म्हणून दुपारी सुरू होऊन दुसऱ्या दुपारी संपणारी त्रयोदशी पहिल्या दिवशी पाळली जाते. तिथी दोन संध्याकाळी प्रदोषकाळाला स्पर्श करत असेल तर आधीची संध्याकाळ घेतली जाते. तक्त्यातील पूजेची वेळ नवी दिल्लीतील सूर्यास्ताला सुरू होते, म्हणून ती वर्षभर आणि शहरानुसार बदलते.",
     # EN: Sankashti is decided by the Moon, not the Sun: the vrat goes to the evening on which
     #     Chaturthi is running at moonrise, since that is when the fast is broken. The date can
     #     therefore differ from the Chaturthi date of a Panchang that goes by sunrise. Moonrise is
     #     roughly 50 minutes later each day and differs by several minutes between cities, so check
     #     it for your own city.
-    "note.sankashti": "",
+    "note.sankashti": "संकष्टी चंद्रावरून ठरते, सूर्यावरून नाही: ज्या संध्याकाळी चंद्रोदयाला चतुर्थी चालू असते त्या संध्याकाळी व्रत केले जाते, कारण तेव्हाच उपवास सोडला जातो. म्हणून तारीख सूर्योदयावरून चालणाऱ्या पंचांगातील चतुर्थीच्या तारखेपेक्षा वेगळी असू शकते. चंद्रोदय रोज साधारण 50 मिनिटे उशिरा होतो आणि शहरानुसार काही मिनिटांनी वेगळा असतो, म्हणून तुमच्या स्वतःच्या शहरासाठी तो तपासा.",
     # EN: This is a midnight observance, so the date is the day on which Chaturdashi is running at
     #     Nishita kaal (the 8th of the 15 muhurtas of the night, around midnight). Nishita can fall
     #     just after 12 o'clock, in which case the puja is done in the early hours of the next date
     #     and the time shown carries that date. If the tithi touches Nishita on two nights, the
     #     earlier night is taken.
-    "note.masik_shivratri": "",
+    "note.masik_shivratri": "हा मध्यरात्रीचा विधी आहे, म्हणून तारीख म्हणजे निशीथ काळी (रात्रीच्या 15 मुहूर्तांपैकी 8 वा, मध्यरात्रीच्या सुमारास) चतुर्दशी चालू असलेला दिवस. निशीथ 12 वाजल्यानंतर लगेच येऊ शकतो, अशा वेळी पूजा पुढच्या तारखेच्या पहाटे केली जाते आणि दाखवलेल्या वेळेसोबत ती तारीख असते. तिथी दोन रात्री निशीथाला स्पर्श करत असेल तर आधीची रात्र घेतली जाते.",
     # EN: Kalashtami is a night worship, so the date is the day on which Ashtami is running in
     #     Pradosh kaal (the evening window after sunset); the tithi may begin the previous morning
     #     or end during the night, so check its start and end times in the table. If it touches
     #     Pradosh kaal on two evenings, the earlier evening is taken. Some traditions go by the
     #     midnight tithi instead, which can occasionally differ by a day.
-    "note.kalashtami": "",
+    "note.kalashtami": "कालाष्टमी ही रात्रीची उपासना आहे, म्हणून तारीख म्हणजे प्रदोषकाळी (सूर्यास्तानंतरचा संध्याकाळचा कालावधी) अष्टमी चालू असलेला दिवस; तिथी आदल्या सकाळी सुरू होऊ शकते किंवा रात्री संपू शकते, म्हणून तक्त्यात तिची सुरुवात आणि समाप्तीची वेळ तपासा. ती दोन संध्याकाळी प्रदोषकाळाला स्पर्श करत असेल तर आधीची संध्याकाळ घेतली जाते. काही परंपरा त्याऐवजी मध्यरात्रीची तिथी पाहतात, जी कधीकधी एका दिवसाने वेगळी असू शकते.",
     # EN: What are the {name} dates in {year}?
     # keep: {name} {year}
-    "faq.all_q": "",
+    "faq.all_q": "{year} मध्ये {name} च्या तारखा कोणत्या?",
     # EN: There are {count} {name} dates in {year} (New Delhi): {dates}.
     # keep: {count} {dates} {name} {year}
-    "faq.all_a": "",
+    "faq.all_a": "{year} मध्ये (नवी दिल्ली) {name} च्या {count} तारखा आहेत: {dates}.",
     # EN: When is the next {name}?
     # keep: {name}
-    "faq.next_q": "",
+    "faq.next_q": "पुढील {name} केव्हा आहे?",
     # EN: When is the first {name} of {year}?
     # keep: {name} {year}
-    "faq.first_q": "",
+    "faq.first_q": "{year} मधील पहिले {name} केव्हा आहे?",
     # EN: {name} is on {when} ({details}).
     # keep: {details} {name} {when}
-    "faq.on_a": "",
+    "faq.on_a": "{name} {when} रोजी आहे ({details}).",
     # EN: What is the {label} on {name} {short}?
     # keep: {label} {name} {short}
-    "faq.key_q": "",
+    "faq.key_q": "{name} {short} रोजी {label} काय आहे?",
     # EN: At what time does the {name} tithi start and end on {short}?
     # keep: {name} {short}
-    "faq.tithi_q": "",
+    "faq.tithi_q": "{short} रोजी {name} तिथी किती वाजता सुरू होते आणि संपते?",
     # EN: How is the {name} date decided?
     # keep: {name}
-    "faq.why_q": "",
+    "faq.why_q": "{name} ची तारीख कशी ठरते?",
     # EN: The date follows the rule: {rule}. In {year} this gives {count} dates (New Delhi).
     # keep: {count} {rule} {year}
-    "faq.why_a": "",
+    "faq.why_a": "तारीख या नियमानुसार ठरते: {rule}. {year} मध्ये यानुसार {count} तारखा येतात (नवी दिल्ली).",
     # EN: Monthly vrat dates
-    "hub.h2": "",
+    "hub.h2": "मासिक व्रताच्या तारखा",
 }
 
 # ----------------------------------------------------------------------------
@@ -2871,45 +2871,45 @@ RECURRING_TEXT = {
 # app/hub_text.py LABELS["mr"] — section names of the crawlable /sitemap page and the footer link block  [19]
 HUB_LABELS = {
     # EN: Site map
-    "sitemap": "",
+    "sitemap": "साइट मॅप",
     # EN: Panchang
-    "panchang": "",
+    "panchang": "पंचांग",
     # EN: Rashifal (daily horoscope)
-    "rashifal": "",
+    "rashifal": "राशिभविष्य (दैनिक)",
     # EN: Vrat &amp; festivals
-    "vrat": "",
+    "vrat": "व्रते आणि सण",
     # EN: Shubh muhurat
-    "muhurat": "",
+    "muhurat": "शुभ मुहूर्त",
     # EN: Nakshatra
-    "nakshatra": "",
+    "nakshatra": "नक्षत्र",
     # EN: Rashi (zodiac signs)
-    "rashi": "",
+    "rashi": "रास (राशिचक्र)",
     # EN: Kathas
-    "katha": "",
+    "katha": "कथा",
     # EN: Free tools
-    "tools": "",
+    "tools": "मोफत साधने",
     # EN: Kundali Milan
-    "milan": "",
+    "milan": "कुंडली मिलन",
     # EN: Free Kundali
-    "kundali": "",
+    "kundali": "मोफत कुंडली",
     # EN: Rahu Kaal
-    "rahu": "",
+    "rahu": "राहुकाळ",
     # EN: Choghadiya
-    "choghadiya": "",
+    "choghadiya": "चौघडिया",
     # EN: Naam se Kundali Milan
-    "naam": "",
+    "naam": "नावावरून कुंडली मिलन",
     # EN: Today's Panchang by city
-    "cities": "",
+    "cities": "शहरानुसार आजचे पंचांग",
     # EN: Rashifal by sign
-    "signs": "",
+    "signs": "राशीनुसार राशिभविष्य",
     # EN: Vrat and festival calendars
-    "years": "",
+    "years": "व्रत आणि सण दिनदर्शिका",
     # EN: Ekadashi
-    "ekadashi": "",
+    "ekadashi": "एकादशी",
     # EN: Every section of Divine Astro in one place: daily Panchang for Indian cities, Rashifal,
     #     vrat and festival dates, shubh muhurat, nakshatra and rashi guides, kathas and the free
     #     tools.
-    "intro": "",
+    "intro": "Divine Astro चे सर्व विभाग एकाच ठिकाणी: भारतीय शहरांचे दैनिक पंचांग, राशिभविष्य, व्रत आणि सणांच्या तारखा, शुभ मुहूर्त, नक्षत्र व रास मार्गदर्शिका, कथा आणि मोफत साधने.",
 }
 
 # ----------------------------------------------------------------------------
@@ -2919,39 +2919,39 @@ HUB_LABELS = {
 # app/astro_terms.py TERMS["mr"] — house / dasha / sign vocabulary for the AI narration and the chart labels  [16]
 ASTRO_TERMS = {
     # EN: house
-    "house": "",
+    "house": "भाव",
     # EN: sign
-    "sign": "",
+    "sign": "रास",
     # EN: lord
-    "lord": "",
+    "lord": "स्वामी",
     # EN: dasha
-    "dasha": "",
+    "dasha": "दशा",
     # EN: mahadasha
-    "mahadasha": "",
+    "mahadasha": "महादशा",
     # EN: antardasha
-    "antardasha": "",
+    "antardasha": "अंतर्दशा",
     # EN: ascendant
-    "ascendant": "",
+    "ascendant": "लग्न",
     # EN: transit
-    "transit": "",
+    "transit": "गोचर",
     # EN: retrograde
-    "retrograde": "",
+    "retrograde": "वक्री",
     # EN: exalted
-    "exalted": "",
+    "exalted": "उच्च",
     # EN: debilitated
-    "debilitated": "",
+    "debilitated": "नीच",
     # EN: own sign
-    "own sign": "",
+    "own sign": "स्वराशी",
     # EN: Sade Sati
-    "Sade Sati": "",
+    "Sade Sati": "साडेसाती",
     # EN: Navamsa
-    "Navamsa": "",
+    "Navamsa": "नवांश",
     # EN: yoga
-    "yoga": "",
+    "yoga": "योग",
     # EN: remedy
-    "remedy": "",
+    "remedy": "उपाय",
 }
 
 # app/astro_terms.py MONTH_VARIANTS["mr"] — other spellings of a Gregorian month the AI may write (month number -> spellings)
 # (optional: may stay empty)
-ASTRO_MONTHS = {}   # {month number: (other spellings,)}, e.g. {2: ("...",)}
+ASTRO_MONTHS = {2: ("फेब्रूवारी",), 4: ("एप्रील",), 8: ("ऑगष्ट",), 10: ("ऑक्टोंबर",), 11: ("नोव्हेम्बर",)}   # {month number: (other spellings,)}

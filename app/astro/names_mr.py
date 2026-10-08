@@ -7,6 +7,26 @@ app.lang_data check mr` lists what is left. Use the names Marathi panchang and j
 tradition uses, in this language's script, not a transliteration of the English. Document
 choices a native reviewer should confirm in this docstring (see names_bn.py).
 
+Regional choices (for a native reviewer):
+  * Months: Maharashtra follows the AMANTA system (a month ends on Amavasya) and the Shaka
+    era, so the engine's amanta festival rules fit; MASA gives the Marathi panchang spellings
+    (चैत्र ... फाल्गुन). Gudi Padwa (Chaitra Shukla Pratipada) is the new year. No solar-month
+    table is needed (SOLAR_MASA is empty).
+  * Anusvara is written before a consonant of its class throughout (पंचमी, संक्रांत, कुंभ,
+    यमगंड, अनंत), as in Marathi newspapers and panchangs; ळ in मूळ, राहुकाळ, काळ.
+  * Nakshatras in the Marathi panchang forms: मृगशीर्ष, पुनर्वसू, पुष्य, आश्लेषा, मघा,
+    पूर्वा/उत्तरा फाल्गुनी, मूळ, पूर्वाषाढा/उत्तराषाढा, शततारका, पूर्वा/उत्तरा भाद्रपदा.
+  * राहुकाळ, यमगंड, गुलिक काळ, अभिजित मुहूर्त, चौघडिया; Varjyam is वर्ज्य.
+  * Tithi 15 is पौर्णिमा (not पूर्णिमा), the Marathi spelling; the Dhaiya of Saturn is
+    called पनवती in the rashifal text.
+  * Rashi: the Marathi ones (तूळ, वृषभ, कुंभ); sign word is रास (not राशि).
+  * Festivals as Marathi speakers say them: गुढीपाडवा, दसरा, दिवाळी, धनत्रयोदशी, भाऊबीज,
+    वटपौर्णिमा, गुरुपौर्णिमा, नागपंचमी, रामनवमी, मकर संक्रांत, धुळवड for the colour day
+    of Holi (होळी is the fire, Holika Dahan); Govardhan Puja carries "दिवाळी पाडवा" as its
+    Marathi name; Devshayani/Devutthana Ekadashi carry आषाढी / कार्तिकी.
+  * Gana: देव / मनुष्य / राक्षस; Nadi: आद्य / मध्य / अंत्य.
+  * Weekday short forms are the planet names (रवि सोम मंगळ बुध गुरू शुक्र शनी).
+
 Tables: TITHI(16) NAKSHATRAS(27) VARA(7) YOGA(27) KARANA(11) PAKSHA(2) MASA(12 lunar months)
 SOLAR_MASA(optional: only if the calendar is solar) RASHI(12) GRAHA(9) CHOGHADIYA(7)
 CHOGHADIYA_QUALITY(3) TIMINGS FESTIVAL_TIMINGS FESTIVALS EKADASHI REGIONAL_NOTE(optional)
