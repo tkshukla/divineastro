@@ -238,9 +238,10 @@ def app_section(browser, base: str) -> None:
 
 
 def new_languages_app(browser, base: str) -> None:
-    """Choosing pa / mr (not READY): the app shows English labels in that language's
-    <html lang>, loads the web font only where one exists, and remembers the choice."""
-    print("\n[switching to Punjabi and Marathi (nothing READY: English labels)]")
+    """Choosing pa / mr: the app shows that language's own labels (both are READY for 'app'
+    since DIVASTRO-144/147; an unfilled language shows English per key), sets <html lang>,
+    loads the web font only where one exists, and remembers the choice."""
+    print("\n[switching to Punjabi and Marathi: their own labels]")
     ctx, pg, fonts = new_page(browser, base, PHONES["small_320x568"])
     pg.open_home()
     en_text = dict(pg.page.evaluate(HOME_TEXT))
@@ -253,7 +254,8 @@ def new_languages_app(browser, base: str) -> None:
         text = dict(pg.page.evaluate(HOME_TEXT))
         blank = [k for k, v in text.items() if v is not None and not v]
         check(f"{code}: no home label is blank (empty json -> English per key)", not blank, str(blank))
-        check(f"{code}: the labels are the English ones until the translator fills {code}.json", text == en_text)
+        check(f"{code}: the home labels are in {code}'s own script, not English",
+              text != en_text and any(v and v != en_text.get(k) for k, v in text.items()))
         if font:
             check(f"{code}: the {font.split('+')[-1]} web font is requested", any(font in u for u in fonts), str(fonts))
         else:
@@ -342,7 +344,7 @@ def seo_pages_section(browser, base: str) -> None:
     check("...and the app opens in Kannada", pg.page.evaluate("state.lang") == "kn")
     ctx.close()
 
-    print("\n[SEO page: choosing Punjabi (not READY): English body, notice in Gurmukhi, noindex]")
+    print("\n[SEO page: choosing Punjabi: a real Gurmukhi page, indexable, with reciprocal hreflang]")
     ctx, pg, fonts = new_page(browser, base, PHONES["small_320x568"])
     pg.page.goto(base + "/panchang/pune", wait_until="domcontentloaded")
     pg.page.click(f"{SEO_PICKER} > summary")
@@ -352,10 +354,11 @@ def seo_pages_section(browser, base: str) -> None:
     pg.page.wait_for_load_state("networkidle")
     check("lands on /pa/panchang/pune", pg.page.url.endswith("/pa/panchang/pune"), pg.page.url)
     check("<html lang=pa>", pg.page.evaluate("document.documentElement.lang") == "pa")
-    notice = pg.page.inner_text(".lp-notice") if pg.page.locator(".lp-notice").count() else ""
-    check("the 'translation coming soon' note is shown, in Gurmukhi", "ਅਨੁਵਾਦ ਜਲਦੀ ਆ ਰਿਹਾ ਹੈ" in notice, notice)
-    check("the body is still English", "Today's Panchang in Pune" in pg.page.inner_text("main.seo"))
-    check("noindex while not READY", pg.page.locator('meta[name="robots"][content^="noindex"]').count() == 1)
+    check("no 'translation coming soon' note: the page is translated", pg.page.locator(".lp-notice").count() == 0)
+    check("the body is Punjabi, not English", "Today's Panchang in Pune" not in pg.page.inner_text("main.seo")
+          and re.search(r"[\u0A00-\u0A7F]", pg.page.inner_text("main.seo")) is not None)
+    check("indexable (no noindex) once READY", pg.page.locator('meta[name="robots"][content^="noindex"]').count() == 0)
+    check("hreflang alternates are present", pg.page.locator('link[rel="alternate"][hreflang="pa"]').count() == 1)
     check("the Gurmukhi font, and only it, is requested",
           any("Noto+Sans+Gurmukhi" in u for u in fonts) and not any("Kannada" in u for u in fonts), str(fonts[:3]))
     check("the picker says ਪੰਜਾਬੀ", pg.page.inner_text(f"{SEO_PICKER} .lp-cur").strip() == NATIVE["pa"])
