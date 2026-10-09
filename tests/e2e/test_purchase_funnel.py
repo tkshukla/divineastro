@@ -104,6 +104,26 @@ def plans_signed_out(browser, base: str) -> None:
         pg.page.wait_for_timeout(800)
         check(f"[{name}] 'pricing_view home' is reported once the section is on screen",
               any(e.get("name") == "pricing_view" and e.get("detail") == "home" for e in events), str(events))
+        low = min(p["rupees"] for p in products.values() if p["kind"] == "kundali")
+        hw = pg.page.locator("#plans a.plan-hw")
+        hw_text = hw.inner_text()
+        check(f"[{name}] hand-written strip shows the lowest k* price ({money(low)})",
+              money(low) in hw_text and "Ravan Samhita, Lal Kitab and Jataka Parijata" in hw_text
+              and "hand" in hw_text.lower(), hw_text)
+        check(f"[{name}] the strip links to /pricing#handwritten",
+              hw.get_attribute("href") == "/pricing#handwritten")
+        box = hw.bounding_box()
+        check(f"[{name}] the strip is a tap target of at least 44px", box and box["height"] >= 44, str(box))
+        check(f"[{name}] the strip does not overflow", box and box["x"] >= 0 and box["x"] + box["width"] <= ctxargs["viewport"]["width"] + 1, str(box))
+        hw.click()
+        pg.page.wait_for_url("**/pricing#handwritten")
+        check(f"[{name}] the strip opens the hand-written section of /pricing",
+              pg.page.locator("h2#handwritten").count() == 1 and
+              "Ravan Samhita" in pg.page.locator("h2#handwritten ~ p").first.inner_text() + pg.page.locator("h2#handwritten ~ p").nth(1).inner_text())
+        check(f"[{name}] 'plans_click handwritten' is reported",
+              any(e.get("name") == "plans_click" and e.get("detail") == "handwritten" for e in events), str(events))
+        pg.page.go_back()
+        pg.page.wait_for_selector("#plans:not([hidden]) .plan", timeout=10000)
         pg.page.click("#plans .plans-all")
         pg.page.wait_for_url("**/pricing")
         check(f"[{name}] 'See all plans' opens the pricing page", "Divine Astro prices" in pg.page.inner_text("h1"))

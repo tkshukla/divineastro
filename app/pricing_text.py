@@ -40,6 +40,8 @@ TEXT: dict[str, dict[str, str]] = {
         "kundali.p": ("Written by hand by {astrologer} and delivered as a scanned PDF, expected in "
                       "about {days} days."),
         "kundali.p0": "Written by hand by our astrologer and delivered as a scanned PDF.",
+        "kundali.texts": ("Hand-written kundali readings are prepared from the knowledge of Ravan "
+                          "Samhita, Lal Kitab and Jataka Parijata."),
         "th.product": "Product",
         "th.price": "Price",
         "per_q": "₹{value} per question",
@@ -100,6 +102,8 @@ TEXT: dict[str, dict[str, str]] = {
         "kundali.p": ("{astrologer} द्वारा हाथ से लिखी और स्कैन की गई PDF के रूप में भेजी जाती है, "
                       "लगभग {days} दिन में अपेक्षित।"),
         "kundali.p0": "हमारे ज्योतिषी द्वारा हाथ से लिखी और स्कैन की गई PDF के रूप में भेजी जाती है।",
+        "kundali.texts": ("हस्तलिखित कुंडली रावण संहिता, लाल किताब और जातक पारिजात के ज्ञान के आधार पर "
+                          "तैयार की जाती है।"),
         "th.product": "उत्पाद",
         "th.price": "कीमत",
         "per_q": "₹{value} प्रति प्रश्न",
