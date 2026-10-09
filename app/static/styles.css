@@ -2765,19 +2765,20 @@ s.was {
 @media (max-width: 700px) {
   /* The store sheet on a phone: the banner is one block (pill, then the sentence), and the price
      column holds "struck regular price + price" on one line with the badge under it. */
-  .modal.store .offer-banner { display: block; padding: 7px 11px; font-size: 12.5px; margin-bottom: 8px; }
-  .modal.store .offer-banner .offer-pill { margin-right: 6px; padding: 0 8px; font-size: 11.5px; }
+  .modal.store .offer-banner { display: block; padding: 6px 11px; font-size: 12.5px; margin-bottom: 6px; }
+  .modal.store .offer-banner .offer-pill { margin-right: 6px; padding: 0 8px; font-size: 12px; }
   .modal.store .pack.has-offer { grid-template-columns: minmax(0, 1fr) 108px; }
   /* A little tighter on a phone, so the banner costs the sheet next to nothing in height. */
   .modal.store .test-banner { margin-bottom: 6px; padding: 6px 11px; }
   .modal.store .store-trust { margin-bottom: 8px; }
-  .modal.store .store-sec > summary.store-h { padding-top: 8px; padding-bottom: 4px; }
+  .modal.store .store-sec > summary.store-h { padding-top: 0; padding-bottom: 0; min-height: 44px; display: flex; align-items: center; }
   .modal.store .packs { gap: 10px; }
-  .modal.store .pack { padding-top: 10px; padding-bottom: 10px; }
+  .modal.store .pack { padding-top: 9px; padding-bottom: 9px; }
+  .modal.store .store-sec { padding: 2px 0 4px; }
   .modal.store .pack-price { display: flex; flex-direction: column; align-items: flex-end; }
   .modal.store .pack-price .pp-line { white-space: nowrap; }
   .modal.store .pack-price s.was { font-size: 13px; margin-right: 6px; }
-  .modal.store .pack-price .save-badge { align-self: flex-end; margin: 2px 0 0; font-size: 11.5px; padding: 0 7px; }
+  .modal.store .pack-price .save-badge { align-self: flex-end; margin: 2px 0 0; font-size: 12px; padding: 0 7px; }
 }
 .plan-price { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0; }
 .plan-price s.was { font-size: 14px; margin-right: 8px; }
