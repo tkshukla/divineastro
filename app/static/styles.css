@@ -2749,7 +2749,7 @@ s.was {
   background: rgba(var(--gold-rgb), 0.16); color: var(--gold-soft);
   font: 600 12px/1.5 var(--sans); letter-spacing: 0; white-space: nowrap;
 }
-.pack-price .save-badge { display: block; margin-top: 4px; }
+.pack-price .save-badge { display: block; margin: 4px 0 8px; }
 .offer-pill {
   display: inline-block; padding: 1px 9px; border-radius: 999px; white-space: nowrap;
   border: 1px solid rgba(var(--gold-rgb), 0.6); color: var(--gold-soft);
@@ -2777,7 +2777,7 @@ s.was {
   .modal.store .pack-price { display: flex; flex-direction: column; align-items: flex-end; }
   .modal.store .pack-price .pp-line { white-space: nowrap; }
   .modal.store .pack-price s.was { font-size: 13px; margin-right: 6px; }
-  .modal.store .pack-price .save-badge { align-self: flex-end; margin-top: 2px; font-size: 11.5px; padding: 0 7px; }
+  .modal.store .pack-price .save-badge { align-self: flex-end; margin: 2px 0 0; font-size: 11.5px; padding: 0 7px; }
 }
 .plan-price { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0; }
 .plan-price s.was { font-size: 14px; margin-right: 8px; }
