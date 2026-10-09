@@ -14,5 +14,7 @@
   document.addEventListener('click', (e) => {
     const el = e.target.closest('[data-plans]');
     if (el) track('plans_click', el.dataset.plans);
+    const sample = e.target.closest('a[data-sample]');      // DIVASTRO-151
+    if (sample) track('sample_view', sample.dataset.sample);
   });
 })();

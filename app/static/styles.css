@@ -2710,5 +2710,13 @@ html[lang="ne"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetic
 .plans-all { display: inline-block; margin-top: 10px; padding: 8px 2px; font-size: 14px;
              color: var(--gold-soft); text-decoration: none; }
 .plans-all:hover { text-decoration: underline; }
+/* DIVASTRO-151: the "Sample" link sits on the card's bottom edge; the card is a link too, so it is a sibling. */
+.plan-cell { position: relative; display: flex; }
+.plan-cell > .plan { flex: 1; }
+.plan.has-sample { padding-bottom: 34px; }
+.plan-sample { position: absolute; right: 12px; bottom: 8px; padding: 2px 4px; font-size: 12.5px;
+               color: var(--gold-soft); text-decoration: underline; }
+.pack-sample { display: block; margin-top: 8px; padding: 4px 2px; text-align: center; font-size: 13px;
+               color: var(--gold-soft); }
 @media (max-width: 700px) { .plans-grid { grid-template-columns: 1fr 1fr; } }
 [data-theme="light"] .plan { background: rgba(20, 30, 80, 0.045); }

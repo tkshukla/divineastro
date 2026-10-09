@@ -591,6 +591,12 @@ const money = (r) => `₹${Number(r).toLocaleString("en-IN")}`;
 /* Per-question price with two decimals: ₹11.10, ₹7.02, ₹6.51. */
 const perQuestion = (p) => `₹${Number(p.per_question).toFixed(2)}`;
 
+/* DIVASTRO-151: the four reports that are written by the engine have a free sample PDF
+   (/samples/<sku>.pdf, Hindi with ?lang=hi). The hand-written kundali products do not,
+   and are not listed here: no automatic sample can exist for them. */
+const SAMPLE_SKUS = new Set(["sq_career", "sq_marriage_timing", "sq_wealth_business", "life_book"]);
+const sampleHref = (sku) => `/samples/${sku}.pdf${state.lang === "hi" ? "?lang=hi" : ""}`;
+
 function packCard(p) {
   const cp = couponFor(p.sku);
   const applied = !!acct.coupon;
@@ -625,6 +631,8 @@ function packCard(p) {
     ${unit}
     <p class="pack-blurb">${escapeHtml(loc(p, "blurb"))}</p>
     <button class="primary buy-btn" data-sku="${p.sku}">${label}</button>
+    ${SAMPLE_SKUS.has(p.sku) ? `<a class="pack-sample" href="${sampleHref(p.sku)}" target="_blank" rel="noopener"
+      data-sample="${p.sku}" title="${escapeHtml(at("sampleNote"))}">${escapeHtml(at("sampleView"))}</a>` : ""}
   </div>`;
 }
 
@@ -1620,12 +1628,16 @@ function renderPlans() {
     <h2 class="plans-title" id="plans-title">${escapeHtml(at("plansTitle"))}</h2>
     ${acct.freeKnown ? `<p class="plans-free">${escapeHtml(at("plansFree").replace("{n}", acct.freeQuestions))}</p>` : ""}
     <div class="plans-grid">${picks.map((p) => `
-      <a class="plan${p.sku === "q50" ? " featured" : ""}" href="${page}#${p.sku}" data-plans="${p.sku}">
+      <div class="plan-cell">
+      <a class="plan${p.sku === "q50" ? " featured" : ""}${SAMPLE_SKUS.has(p.sku) ? " has-sample" : ""}" href="${page}#${p.sku}" data-plans="${p.sku}">
         ${p.sku === "q50" ? `<span class="plan-flag">${escapeHtml(at("popular"))}</span>` : ""}
         <span class="plan-name">${escapeHtml(loc(p, "title"))}</span>
         <span class="plan-price">${money(p.rupees)}</span>
         <span class="plan-line">${escapeHtml(line(p))}</span>
-      </a>`).join("")}
+      </a>${SAMPLE_SKUS.has(p.sku) ? `
+      <a class="plan-sample" href="${sampleHref(p.sku)}" target="_blank" rel="noopener" data-sample="${p.sku}"
+         title="${escapeHtml(at("sampleNote"))}">${escapeHtml(at("sampleShort"))}</a>` : ""}
+      </div>`).join("")}
     </div>
     <a class="plans-all" href="${page}" data-plans="all">${escapeHtml(at("plansAll"))} &rsaquo;</a>`;
   box.hidden = false;
@@ -1649,6 +1661,13 @@ function renderPlans() {
     }
   }
 }
+
+/* A tap on any "sample" link is counted (sample_view, detail = the sku). One listener for the
+   home Plans section and the store; the link itself opens the PDF in a new tab. */
+document.addEventListener("click", (e) => {
+  const a = e.target.closest?.("a[data-sample]");
+  if (a) window.daTrack?.("sample_view", a.dataset.sample);
+});
 
 /* ---------- toast ---------- */
 function toast(message, bad = false) {

@@ -228,6 +228,25 @@ for p in catalogue:
     check(f"{p['sku']}: no page-count or turnaround promise in the blurb",
           not re.search(r"\b(\d+\+?[- ]?page|2-page|35\+|5-year|full year|personally)", text, re.I), p["blurb"])
 
+print("\n9. Sample reports (DIVASTRO-151)")
+SAMPLED = ("sq_career", "sq_marriage_timing", "sq_wealth_business", "life_book")
+for path, lang in (("/pricing", ""), ("/hi/pricing", "?lang=hi")):
+    page = get(path).text
+    rows = {m.group(1): m.group(0) for m in re.finditer(r'<tr id="([a-z0-9_]+)".*?</tr>', page, re.S)}
+    for sku in SAMPLED:
+        row = rows[sku]
+        link = re.search(r'<a href="([^"]+)" target="_blank" rel="noopener" data-sample="' + sku + '">', row)
+        check(f"{path}: {sku} has a sample link in a new tab, rel noopener",
+              bool(link) and link.group(1) == f"/samples/{sku}.pdf{lang}", row[-260:])
+        check(f"{path}: {sku} says the sample is for a fictional chart",
+              ("fictional chart; yours is cast from your own birth details" in row) if not lang
+              else ("काल्पनिक कुंडली" in row))
+    for sku in (p["sku"] for p in catalogue if p["sku"] not in SAMPLED):
+        check(f"{path}: {sku} says nothing about a sample (no automatic sample exists)",
+              "sample" not in rows[sku].lower() and "नमूना" not in rows[sku])
+check("a regional copy links the English sample", 'href="/samples/life_book.pdf"' in get("/kn/pricing").text)
+check("pricing.js reports sample_view through daTrack", "'sample_view'" in js and "data-sample" in js)
+
 print()
 if failures:
     print(f"{len(failures)} FAILED")
