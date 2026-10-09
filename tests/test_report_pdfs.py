@@ -85,6 +85,13 @@ def _build(label: str, session, lang: str) -> Captured:
     return Captured(pdf_report.single_question_pdf, session, label, language=lang, when=WHEN)
 
 
+# Hindi reports need a Devanagari font on the machine. Production's image guarantees one (the
+# Dockerfile fails the build without it); a bare CI runner may not have one, and then the builder
+# deliberately prints English and says so (covered by test_hindi_without_a_devanagari_font...).
+HAS_DEVA = pdf_report.devanagari_font() is not None
+LANGS = ("en", "hi") if HAS_DEVA else ("en",)
+
+
 @unittest.skipIf(chart_service.ChartBuilder is None, "stellium ephemeris engine not available")
 class ReportPdfs(unittest.TestCase):
     @classmethod
@@ -115,7 +122,7 @@ class ReportPdfs(unittest.TestCase):
 
     def test_every_report_builds_in_english_and_hindi_without_a_model(self):
         for label, minimum in MIN_PAGES.items():
-            for lang in ("en", "hi"):
+            for lang in LANGS:
                 with self.subTest(report=label, lang=lang):
                     out = self.get(label, lang)
                     self.assertTrue(out.pdf.startswith(b"%PDF-"), "not a PDF")
@@ -125,7 +132,7 @@ class ReportPdfs(unittest.TestCase):
 
     def test_chart_drawings_are_embedded(self):
         for label in MIN_PAGES:
-            for lang in ("en", "hi"):
+            for lang in LANGS:
                 with self.subTest(report=label, lang=lang):
                     out = self.get(label, lang)
                     for key in ("d1_north", "d1_south", "d9_north", "d9_south"):
@@ -138,13 +145,13 @@ class ReportPdfs(unittest.TestCase):
 
     def test_no_error_or_placeholder_text(self):
         for label in MIN_PAGES:
-            for lang in ("en", "hi"):
+            for lang in LANGS:
                 with self.subTest(report=label, lang=lang):
                     for text in _strings(self.get(label, lang).data):
                         self.assertIsNone(BAD_WORDS.search(text), text[:160])
 
     def test_life_book_sections_are_present_without_a_model(self):
-        for lang in ("en", "hi"):
+        for lang in LANGS:
             with self.subTest(lang=lang):
                 d = self.get("life_book", lang).data
                 self.assertTrue(d["houses_detailed"], "house readings vanished")
@@ -234,6 +241,7 @@ class ReportPdfs(unittest.TestCase):
         self.assertIn("Hindi font", " ".join(_strings(life.data["omitted"])))
         self.assertIn("Hindi font", " ".join(_strings(sq.data["about"])))
 
+    @unittest.skipUnless(HAS_DEVA, "no Devanagari font on this machine")
     def test_hindi_reports_are_in_devanagari(self):
         for label in MIN_PAGES:
             with self.subTest(report=label):
