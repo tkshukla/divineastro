@@ -33,6 +33,11 @@ def check(label: str, ok: bool, detail: str = "") -> None:
         failures.append(label)
 
 
+def free_questions() -> int:
+    """The welcome gift, as the server states it (DIVASTRO-154: 3, was 10)."""
+    return requests.get(f"{BASE}/api/me", timeout=30).json()["free_questions"]
+
+
 def sign_in(email: str | None = None) -> tuple[requests.Session, str]:
     s = requests.Session()
     email = email or f"man{random.randint(100000, 999999)}@example.com"
@@ -84,7 +89,7 @@ def main() -> int:
     check("credits come from the pack", o["credits"] == 10, str(o["credits"]))
     check("fulfilment not applicable for questions", o["fulfilment"] == "not_applicable")
     check("welcome gift + pack credits both on the balance",
-          d["customer"]["credits"] == 10 + 10,
+          d["customer"]["credits"] == free_questions() + 10,
           str(d["customer"]["credits"]))
     check("note records method and reference",
           "cash" in o["note"] and "receipt 42" in o["note"], o["note"])
@@ -92,7 +97,7 @@ def main() -> int:
 
     print("\n3. The customer signing in later gets that same account and credits")
     cust, _ = sign_in(email)
-    check("purchase is waiting on their account", credits(cust) == 20, str(credits(cust)))
+    check("purchase is waiting on their account", credits(cust) == free_questions() + 10, str(credits(cust)))
     mine = cust.get(f"{BASE}/api/orders", timeout=20).json()["orders"]
     check("it shows in their order history",
           any(x["id"] == o["id"] and x["status"] == "paid" for x in mine))
@@ -100,10 +105,10 @@ def main() -> int:
     print("\n4. A repeat click is caught, an intentional repeat is allowed")
     dup = admin_s.post(url, json={"email": email, "sku": "q10"}, timeout=30)
     check("identical order within 2 minutes -> 409", dup.status_code == 409, dup.text[:160])
-    check("balance untouched by the refused duplicate", credits(cust) == 20, str(credits(cust)))
+    check("balance untouched by the refused duplicate", credits(cust) == free_questions() + 10, str(credits(cust)))
     again = admin_s.post(url, json={"email": email, "sku": "q10", "force": True}, timeout=30)
     check("force records it", again.status_code == 200, again.text[:160])
-    check("second sale's credits landed", credits(cust) == 30, str(credits(cust)))
+    check("second sale's credits landed", credits(cust) == free_questions() + 20, str(credits(cust)))
     check("existing customer is not re-created", again.json()["customer"]["created"] is False)
 
     print("\n5. Kundali with birth details reaches the astrologer's queue")
@@ -162,7 +167,7 @@ def main() -> int:
         check(f"{label} -> 400", r.status_code == 400, f"{r.status_code} {r.text[:100]}")
     probe, _ = sign_in(ghost)
     check("a refused order did not leave a customer with credits behind",
-          credits(probe) == 10, str(credits(probe)))   # only the ordinary sign-up gift
+          credits(probe) == free_questions(), str(credits(probe)))   # only the ordinary sign-up gift
 
     print("\n9. Phone-only customer")
     phone = f"9{random.randint(100000000, 999999999)}"

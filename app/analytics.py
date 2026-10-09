@@ -43,6 +43,12 @@ people ask. Only the question text is stored (500 characters at most), under the
 day-scoped hash, with the same exclusions, a per-visitor-day cap, and a line in the
 privacy policy. Birth details are never part of it.
 
+The one free answer a signed-out visitor may get (DIVASTRO-154, app/guest.py) is
+recorded in `guest_answers` under the same day-scoped hash: question, the answer
+shown, language and time, never the IP or birth details. It is the allowance record,
+so unlike the rows above it is written for Do-Not-Track / GPC visitors too, but for
+them only the time and the hash. Purged with everything else here.
+
 Known limits (also shown in the admin panel): a full page load is one visit, and
 in-app actions are the fixed event list above, not every click; and because the visitor hash rotates
 daily, a multi-day "visitors" total is a sum of daily uniques, not lifetime
@@ -69,8 +75,8 @@ from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
 from . import auth, i18n, rashifal_pages, seo_cities
-from .db import (BirthProfile, Event, Order, OrderStatus, QuestionLog, UnregQuestion, User,
-                 Visit, session as db_session, utcnow)
+from .db import (BirthProfile, Event, GuestAnswer, Order, OrderStatus, QuestionLog,
+                 UnregQuestion, User, Visit, session as db_session, utcnow)
 
 log = logging.getLogger(__name__)
 
@@ -550,10 +556,20 @@ def unregistered_questions(db: Session, start_utc: dt.datetime, limit: int = 60,
                ).where(UnregQuestion.ts >= start_utc)
     if end_utc is not None:
         q = q.where(UnregQuestion.ts < end_utc)
-    rows = db.execute(q.order_by(UnregQuestion.ts.desc()).limit(limit)).all()
+    rows = [(*r, False) for r in db.execute(q.order_by(UnregQuestion.ts.desc()).limit(limit)).all()]
+    # DIVASTRO-154: a signed-out visitor's FIRST question is now answered (guest_answers),
+    # so it never reaches unreg_questions; list it here too, marked, so the operator still
+    # sees everything signed-out visitors ask. A DNT/GPC guest's row has no question.
+    gq = select(GuestAnswer.ts, GuestAnswer.question, GuestAnswer.language, GuestAnswer.visitor
+                ).where(GuestAnswer.ts >= start_utc, GuestAnswer.question != "")
+    if end_utc is not None:
+        gq = gq.where(GuestAnswer.ts < end_utc)
+    rows += [(ts, gtext, lang, v, "", "", True) for ts, gtext, lang, v
+             in db.execute(gq.order_by(GuestAnswer.ts.desc()).limit(limit)).all()]
+    rows.sort(key=lambda r: r[0], reverse=True)
     return [{"when": ts.astimezone(IST).strftime("%d %b %H:%M"), "question": q, "language": lang,
-             "visitor": v[:6], "source": src or "direct", "campaign": camp}
-            for ts, q, lang, v, src, camp in rows]
+             "visitor": v[:6], "source": src or "direct", "campaign": camp, "answered": answered}
+            for ts, q, lang, v, src, camp, answered in rows[:limit]]
 
 
 def purge_old(db: Session) -> int:
@@ -562,6 +578,7 @@ def purge_old(db: Session) -> int:
     n = db.execute(delete(Visit).where(Visit.ts < cutoff)).rowcount or 0
     db.execute(delete(Event).where(Event.ts < cutoff))
     db.execute(delete(UnregQuestion).where(UnregQuestion.ts < cutoff))
+    db.execute(delete(GuestAnswer).where(GuestAnswer.ts < cutoff))     # DIVASTRO-154
     db.commit()
     return n
 

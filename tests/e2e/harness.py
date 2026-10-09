@@ -155,14 +155,38 @@ class Page:
         self.page.goto(self.base + "/", wait_until="domcontentloaded")
         self.page.wait_for_function("typeof showStage === 'function'")
 
-    def open_chat(self, email: str = "e2e@example.com", name: str = "E2E Tester") -> None:
+    def top_up(self, at_least: int) -> None:
+        """Bring the signed-in account's balance up to `at_least` through the admin
+        credit adjustment (as an operator would). A new account starts with only
+        billing.FREE_QUESTIONS (3 since DIVASTRO-154); suites that ask more than that
+        on one account, or that need offers other than the low-credit nudge, say so."""
+        me = self.page.context.request.get(f"{self.base}/api/me").json()["user"]
+        need = at_least - me["credits"]
+        if need <= 0:
+            return
+        ctx = self.page.context.browser.new_context()
+        try:
+            r = ctx.request.post(f"{self.base}/api/auth/dev", data={"email": "admin@e2e.test", "name": "Admin"})
+            assert r.ok, f"admin sign-in failed: {r.status}"
+            r = ctx.request.post(f"{self.base}/api/admin/users/{me['id']}/credits",
+                                 data={"delta": need, "note": "e2e top-up"})
+            assert r.ok, r.text()
+        finally:
+            ctx.close()
+
+    def open_chat(self, email: str = "e2e@example.com", name: str = "E2E Tester",
+                  credits: int | None = 10) -> None:
         """Signed in, chart cast, on the chat screen with the opening reading.
 
         Pass a distinct email for any test that needs its own credit balance
         (e.g. a paywall test) rather than sharing the default account with
-        every other test run against the same server().
+        every other test run against the same server(). `credits`: the balance
+        topped up to first (10, what a new account had before DIVASTRO-154);
+        None leaves a new account's own free questions.
         """
         self.sign_in(email=email, name=name)
+        if credits is not None:
+            self.top_up(credits)
         self.open_home()
         self.page.evaluate("async (b) => { await castChart(b); showStage('stage-chat'); }", BIRTH)
         self.page.wait_for_selector("#thread .msg.bot", timeout=30000)

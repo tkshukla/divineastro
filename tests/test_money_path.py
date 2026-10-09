@@ -1,6 +1,6 @@
 """End-to-end test of the paid path.
 
-register -> 10 free questions -> paywall at zero -> buy a pack -> ask again.
+register -> 3 free questions (DIVASTRO-154; was 10) -> paywall at zero -> buy a pack -> ask again.
 Also asserts the two properties that protect real money:
 
   * a failed answer must not consume a credit
@@ -48,7 +48,11 @@ def main() -> int:
     user = signed.json()["user"]
     start_credits = user["credits"]
     print(f"     credits after signup: {start_credits}")
-    check("signup grants free questions", start_credits == 10, str(start_credits))
+    # DIVASTRO-154: new accounts get 3 (the server's ASTRO_FREE_QUESTIONS, as /api/me says).
+    free = s.get(f"{BASE}/api/me").json()["free_questions"]
+    check("signup grants the free questions /api/me states", start_credits == free, f"{start_credits} vs {free}")
+    if not os.environ.get("ASTRO_FREE_QUESTIONS"):
+        check("...which is 3 by default", free == 3, str(free))
 
     print("\n2. Session persists")
     me = s.get(f"{BASE}/api/me").json()["user"]
@@ -69,9 +73,9 @@ def main() -> int:
     check("chart built", chart.status_code == 200, chart.text[:120])
     sid = chart.json()["session_id"]
 
-    print("\n4. Spend all ten free questions")
+    print(f"\n4. Spend all {start_credits} free questions")
     left = None
-    for i in range(10):
+    for i in range(start_credits):
         r = s.post(f"{BASE}/api/ask", json={
             "session_id": sid, "question": f"How is my career, take {i}?",
             "language": "en", "provider": "off"})
@@ -79,14 +83,14 @@ def main() -> int:
             check(f"question {i+1}", False, f"HTTP {r.status_code} {r.text[:80]}")
             break
         left = r.json().get("credits")
-        if i in (0, 9):
+        if i in (0, start_credits - 1):
             print(f"     after Q{i+1}: {left} credits left")
-    check("all ten answered, balance zero", left == 0, str(left))
+    check(f"all {start_credits} answered, balance zero", left == 0, str(left))
 
     print("\n5. Paywall")
     blocked = s.post(f"{BASE}/api/ask", json={
         "session_id": sid, "question": "One more?", "provider": "off"})
-    check("11th question blocked with 402", blocked.status_code == 402, str(blocked.status_code))
+    check("the next question is blocked with 402", blocked.status_code == 402, str(blocked.status_code))
     detail = blocked.json().get("detail", {})
     check("paywall payload names the reason", detail.get("error") == "no_credits", str(detail))
 
@@ -124,7 +128,7 @@ def main() -> int:
 
     print("\n10. History and ledger")
     hist = s.get(f"{BASE}/api/history").json()["questions"]
-    check("questions logged", len(hist) == 11, f"{len(hist)} rows")
+    check("questions logged (the free ones + 1 paid)", len(hist) == start_credits + 1, f"{len(hist)} rows")
     check("answers stored", all(q["answer"] for q in hist))
     ledger = s.get(f"{BASE}/api/ledger").json()
     check("ledger balances", ledger["balance"] == after, f"{ledger['balance']} vs {after}")

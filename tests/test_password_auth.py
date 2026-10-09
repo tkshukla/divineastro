@@ -27,6 +27,7 @@ os.environ["ASTRO_GATEWAY"] = "test"
 from fastapi.testclient import TestClient  # noqa: E402
 
 from app.main import app  # noqa: E402
+from app.billing import FREE_QUESTIONS as FREE  # noqa: E402  (DIVASTRO-154: 3, was 10)
 
 failures: list[str] = []
 
@@ -51,7 +52,7 @@ def main() -> int:
     check("no email is attached to the account", data["user"]["email"] == "", str(data["user"]))
     check("the account displays by its chosen username, not a generic placeholder",
           data["user"]["name"] == username, data["user"]["name"])
-    check("the signup bonus was granted", data["user"]["credits"] == 10, str(data["user"]["credits"]))
+    check("the signup bonus was granted", data["user"]["credits"] == FREE, str(data["user"]["credits"]))
     check("a session cookie was actually issued", "gd_session" in client.cookies, str(client.cookies))
 
     print("\n2. The same username cannot be registered twice")
@@ -117,7 +118,7 @@ def main() -> int:
     second_login = TestClient(app).post(
         "/api/auth/login", json={"username": username, "password": "correcthorse123"})
     check("credits are unchanged by a second login",
-          second_login.json()["user"]["credits"] == 10, str(second_login.json()["user"]))
+          second_login.json()["user"]["credits"] == FREE, str(second_login.json()["user"]))
 
     print("\n" + "=" * 60)
     if failures:

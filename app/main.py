@@ -25,7 +25,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from . import analytics, auth, billing, geo, llm, pdf_report
+from . import analytics, auth, billing, geo, guest, llm, pdf_report
 from . import i18n as i18n  # DIVASTRO-121: language registry (index.html picker + inline strings)
 from .api_account import router as account_router
 from .api_feedback import router as feedback_router
@@ -427,35 +427,62 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
     # Auth, then ownership, then the credit check — all before any work. The
     # debit happens after the analysis succeeds, so a failure never costs the
     # customer a question.
+    user_id = None
+    denied: HTTPException | None = None
+    history: list[dict] = []
     with db_session() as db:
         try:
             user = auth.require_user(request, db)
         except HTTPException as exc:
-            if exc.status_code == 401:       # DIVASTRO-131: keep what signed-out visitors ask
-                analytics.record_unregistered_question(request, question, req.language)
-            raise
-        credits = balance(db, user.id)
-        if credits <= 0:
-            raise InsufficientCredits(credits)
-        user_id = user.id
+            if exc.status_code != 401:
+                raise
+            user, denied = None, exc
+        if user is not None:
+            credits = balance(db, user.id)
+            if credits <= 0:
+                raise InsufficientCredits(credits)
+            user_id = user.id
 
-        # Retrieve last 5 questions for context
-        hist_stmt = select(QuestionLog).where(QuestionLog.user_id == user.id)
-        if req.birth_id:
-            hist_stmt = hist_stmt.where(QuestionLog.birth_id == req.birth_id)
-        history_rows = db.execute(
-            hist_stmt.order_by(QuestionLog.created_at.desc()).limit(5)
-        ).scalars().all()
-        history = [{"question": r.question, "answer": r.answer} for r in reversed(history_rows)]
+            # Retrieve last 5 questions for context
+            hist_stmt = select(QuestionLog).where(QuestionLog.user_id == user.id)
+            if req.birth_id:
+                hist_stmt = hist_stmt.where(QuestionLog.birth_id == req.birth_id)
+            history_rows = db.execute(
+                hist_stmt.order_by(QuestionLog.created_at.desc()).limit(5)
+            ).scalars().all()
+            history = [{"question": r.question, "answer": r.answer} for r in reversed(history_rows)]
 
-    session = _session(req.session_id, request)
-    result = analyse(session, question, when, language=_engine_lang(req.language)).to_dict()
-    # Every real chat answer goes through this endpoint (the frontend only
-    # ever calls /api/ask/stream, never /api/ask), so without this the
-    # narration prompt's _vedic_block() is always empty — no yogas, dashas,
-    # sade sati, vargottama — despite /api/ask setting it correctly. See
-    # _vedic_block()'s own docstring for why that content matters.
-    result["vedic"] = _vedic_context(session)
+    # DIVASTRO-154: signed out. One real answer per guest (app/guest.py: signed cookie +
+    # day-scoped visitor hash + per-address and global caps; never for bots or cloud
+    # addresses), then 401 as before, which opens the sign-in sheet. Nothing is charged.
+    claim = None
+    if user_id is None:
+        try:
+            if not guest.answers_left(request):
+                raise denied
+            # Only a chart this guest cast (and that still exists) is answered; anything
+            # else stays the 401 it always was. Checked before the allowance is taken.
+            session = _session(req.session_id, request)
+        except HTTPException:
+            analytics.record_unregistered_question(request, question, req.language)  # DIVASTRO-131
+            raise denied from None
+        claim = guest.claim(request, question, req.language)
+        if claim is None:                              # lost a race, or a cap was just reached
+            analytics.record_unregistered_question(request, question, req.language)
+            raise denied
+    else:
+        session = _session(req.session_id, request)
+    try:
+        result = analyse(session, question, when, language=_engine_lang(req.language)).to_dict()
+        # Every real chat answer goes through this endpoint (the frontend only
+        # ever calls /api/ask/stream, never /api/ask), so without this the
+        # narration prompt's _vedic_block() is always empty — no yogas, dashas,
+        # sade sati, vargottama — despite /api/ask setting it correctly. See
+        # _vedic_block()'s own docstring for why that content matters.
+        result["vedic"] = _vedic_context(session)
+    except Exception:
+        guest.release(claim)            # no answer was produced: the allowance is not spent
+        raise
     result["answer_engine"] = result["answer"]
     result["language"] = req.language
     # Shown by the app only while the engine's English is what is on screen
@@ -465,10 +492,23 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
         result["fallback_note"] = note
 
     log_ids: list[int] = []
-    with db_session() as db:
-        result["credits"] = _charge_and_log(
-            db, db.get(User, user_id), question, result, req.birth_id, log_ids=log_ids)
+    if claim is None:
+        with db_session() as db:
+            result["credits"] = _charge_and_log(
+                db, db.get(User, user_id), question, result, req.birth_id, log_ids=log_ids)
+    else:
+        # A guest's answer: no credit moves, no QuestionLog row (there is no account).
+        # The app reads these to say "sign up to ask N more free questions".
+        result["guest"] = True
+        result["free_questions"] = billing.FREE_QUESTIONS
+        guest.record_answer(claim, result["answer"])
     log_id = log_ids[0] if log_ids else None
+
+    def keep_polished(text: str) -> None:
+        if claim is None:
+            _record_polished(log_id, text)
+        else:
+            guest.record_answer(claim, text)
 
     provider = req.provider if req.provider is not None else llm.default_provider()
 
@@ -493,7 +533,7 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
             else:
                 # The customer read the rewrite, so that is what the log keeps
                 # (the same threshold the UI uses to accept it).
-                _record_polished(log_id, "".join(parts))
+                keep_polished("".join(parts))
                 if meta.get("truncated"):
                     yield "event: truncated\ndata: {}\n\n"
         except Exception as exc:
@@ -501,11 +541,14 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
                    + json.dumps({"error": f"{type(exc).__name__}: {exc}"}) + "\n\n")
         yield "event: done\ndata: {}\n\n"
 
-    return StreamingResponse(
+    resp = StreamingResponse(
         events(),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+    if claim is not None:
+        guest.set_cookie(resp, request)     # this browser's guest answer is spent
+    return resp
 
 
 def _vedic_context(session) -> dict:
@@ -1039,6 +1082,9 @@ def _page(name: str) -> HTMLResponse:
     html = (STATIC / name).read_text(encoding="utf-8")
     html = _ASSET_REF.sub(rf"\1?v={version}", html)
     html = _lang_inline(html, version)
+    # DIVASTRO-154: the free allowance in a page's static text (index.html's
+    # og:description) is the setting, never a number typed into the file.
+    html = html.replace("__FREE_QUESTIONS__", str(billing.FREE_QUESTIONS))
     return HTMLResponse(html, headers={"Cache-Control": "no-store"})
 
 

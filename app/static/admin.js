@@ -1321,7 +1321,7 @@ function renderDayReport(r) {
   r.questions.forEach((q) => {
     const row = el('div', 'tr-unreg-row');
     row.appendChild(el('div', 'tr-unreg-meta',
-      `${q.when} · ${q.source}${q.campaign ? ' · ' + q.campaign : ''} · ${q.language || '?'} · #${q.visitor}`));
+      `${q.when} · ${q.answered ? 'answered free (guest)' : q.source}${q.campaign ? ' · ' + q.campaign : ''} · ${q.language || '?'} · #${q.visitor}`));
     row.appendChild(el('div', 'tr-unreg-q', q.question));
     qs.appendChild(row);
   });
@@ -1365,7 +1365,7 @@ function renderInApp(d) {
   qs.forEach((q) => {
     const row = el('div', 'tr-unreg-row');
     row.appendChild(el('div', 'tr-unreg-meta',
-      `${q.when} · ${q.source}${q.campaign ? ' · ' + q.campaign : ''} · ${q.language || '?'} · #${q.visitor}`));
+      `${q.when} · ${q.answered ? 'answered free (guest)' : q.source}${q.campaign ? ' · ' + q.campaign : ''} · ${q.language || '?'} · #${q.visitor}`));
     row.appendChild(el('div', 'tr-unreg-q', q.question));
     uq.appendChild(row);
   });

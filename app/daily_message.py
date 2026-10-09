@@ -163,7 +163,16 @@ def _promos(lang: str) -> list[tuple[str, str]]:
     P = billing.PRODUCTS
     free = billing.FREE_QUESTIONS
     out: list[tuple[str, str]] = []
-    if free > 0:
+    from . import guest                       # DIVASTRO-154: one answer without signing in
+    if free > 0 and guest.GUEST_ANSWERS > 0:
+        out.append((
+            f"🎁 अपनी कुंडली से जुड़ा कोई भी सवाल पूछें: करियर, विवाह, स्वास्थ्य या सही समय। "
+            f"पहला प्रश्न बिना साइन-इन के मुफ़्त, फिर मुफ़्त खाते पर {free} प्रश्न और, कोई कार्ड नहीं चाहिए।"
+            if hi else
+            f"🎁 Ask anything about your own kundali: career, marriage, health or timing. "
+            f"Your first question is free without signing in, and a free account gives you "
+            f"{free} more, no card needed.", "/"))
+    elif free > 0:
         out.append((
             f"🎁 अपनी कुंडली से जुड़ा कोई भी सवाल पूछें: करियर, विवाह, स्वास्थ्य या सही समय। "
             f"पहले {free} प्रश्न बिल्कुल मुफ़्त, कोई कार्ड नहीं चाहिए।" if hi else

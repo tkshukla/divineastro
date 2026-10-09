@@ -254,6 +254,30 @@ class UnregQuestion(Base):
     campaign: Mapped[str] = mapped_column(String(80), default="")
 
 
+class GuestAnswer(Base):
+    """The one free answer a visitor who is not signed in may get (DIVASTRO-154).
+
+    The row IS the allowance record: one per day-scoped `visitor` hash (the same
+    HMAC of date + IP + browser as `Visit`; the IP itself is never stored), counted
+    for the per-visitor limit and the global hourly/daily caps (app/guest.py).
+    `question` and `answer` are what was asked and shown, kept so the operator can
+    see what guests ask, like `UnregQuestion`; for a Do-Not-Track / GPC visitor they
+    stay empty and only `ts` + `visitor` are written, which is all the limit needs.
+    No user id, no birth details, no IP. Deleted with the other statistics
+    (analytics.purge_old).
+    """
+
+    __tablename__ = "guest_answers"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    ts: Mapped[dt.datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, index=True)
+    visitor: Mapped[str] = mapped_column(String(16), default="", index=True)
+    question: Mapped[str] = mapped_column(String(500), default="")
+    answer: Mapped[str] = mapped_column(Text, default="")
+    language: Mapped[str] = mapped_column(String(8), default="")
+
+
 FEEDBACK_CATEGORIES = ("general", "bug", "answers", "payments", "idea", "other")
 FEEDBACK_STATUSES = ("new", "read", "resolved")
 

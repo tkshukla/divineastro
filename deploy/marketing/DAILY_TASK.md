@@ -114,7 +114,7 @@ stop and report it rather than guessing a platform.
 ## Topic bank (rotate through; add to this file if you find better angles)
 
 **Free-questions / feature pillar**
-- First 10 questions free, no card, sign in and ask
+- First question answered free with no sign-in, then 3 more free with a free account (no card); the number is ASTRO_FREE_QUESTIONS, check divineastro.org/pricing before posting
 - "N questions left" reminder for people who signed up but haven't asked
 - AI astrologer answers career/love/health/timing questions grounded in the
   real chart, not a generic sun-sign horoscope

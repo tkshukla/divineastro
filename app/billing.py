@@ -31,7 +31,12 @@ from .db import (
 
 log = logging.getLogger("astro.billing")
 
-FREE_QUESTIONS = int(os.environ.get("ASTRO_FREE_QUESTIONS", "10"))
+# The free questions a NEW account is given (DIVASTRO-154: 3, was 10). The one value
+# every grant (auth, email_auth, phone_auth, the admin's manual customer) and every
+# display (/api/me, /api/products, /pricing, the daily posts, the app's strings via
+# {n}) reads. Changing it only affects accounts created afterwards: credits already
+# granted are ledger rows (credit_entries) and are never touched.
+FREE_QUESTIONS = int(os.environ.get("ASTRO_FREE_QUESTIONS", "3"))
 
 # Fulfilment promise shown to the customer at checkout and on the order.
 ASTROLOGER = os.environ.get("ASTRO_ASTROLOGER", "Pandit Shukla")

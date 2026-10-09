@@ -119,8 +119,24 @@ def test_promos() -> None:
     texts = " ".join(t for t, _ in D._promos("en"))
     check("prices come from billing (50 for ₹351, ₹111 kundali)",
           f"₹{billing.PRODUCTS['q50'].rupees}" in texts and f"₹{billing.PRODUCTS['k3'].rupees}" in texts, texts[:200])
-    check(f"free-question count from billing ({billing.FREE_QUESTIONS})",
-          f"first {billing.FREE_QUESTIONS} questions" in texts)
+    # DIVASTRO-154: one answer without signing in, then billing.FREE_QUESTIONS (3) with an account.
+    from app import guest
+    check(f"free-question count from billing ({billing.FREE_QUESTIONS}) and the guest answer",
+          billing.FREE_QUESTIONS == 3 and guest.GUEST_ANSWERS == 1
+          and f"free account gives you {billing.FREE_QUESTIONS} more" in texts
+          and "first question is free without signing in" in texts, texts[:300])
+    hi_texts = " ".join(t for t, _ in D._promos("hi"))
+    check("Hindi promo says the same", f"मुफ़्त खाते पर {billing.FREE_QUESTIONS} प्रश्न और" in hi_texts
+          and "बिना साइन-इन" in hi_texts)
+    check("no promo states 10 free questions", not re.search(r"\b10\b[^₹]{0,40}(free|मुफ़्त)", texts + hi_texts))
+    saved = guest.GUEST_ANSWERS
+    guest.GUEST_ANSWERS = 0
+    try:
+        off = " ".join(t for t, _ in D._promos("en"))
+        check("with the guest answer switched off, the promo does not offer it",
+              f"first {billing.FREE_QUESTIONS} questions" in off and "without signing in" not in off)
+    finally:
+        guest.GUEST_ANSWERS = saved
 
 
 def test_links() -> None:

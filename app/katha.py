@@ -308,7 +308,7 @@ _UI = {
          "title_suffix": " की कथा", "nf": "कथा नहीं मिली", "nf_desc": "यह कथा उपलब्ध नहीं है।",
          "all": "सभी कथाएँ देखें",
          "cta_h": "कथा पढ़ ली — अब अपनी कुंडली देखें",
-         "cta_p": "जन्म तिथि, समय और स्थान से मुफ़्त कुंडली, दशा और ग्रह स्थिति। AI ज्योतिषी से पहले 10 सवाल फ्री — कोई कार्ड नहीं चाहिए।",
+         "cta_p": "जन्म तिथि, समय और स्थान से मुफ़्त कुंडली, दशा और ग्रह स्थिति। AI ज्योतिषी से पहले {free} सवाल फ्री — कोई कार्ड नहीं चाहिए।",
          "cta_kundali": "मुफ़्त कुंडली बनाएँ", "cta_panchang": "आज का पंचांग देखें"},
     EN: {"index": "Stories from the Puranas", "crumb": "Kathas", "source": "Source",
          "lesson": "What this story teaches", "next": "Read next", "more": "More stories",
@@ -320,9 +320,16 @@ _UI = {
          "nf_desc": "This story is not available.", "all": "See all stories",
          "cta_h": "You have read the story — now see your own chart",
          "cta_p": "A free kundali with your dashas and planetary positions from your birth date, time and place. "
-                  "Your first 10 questions to the AI astrologer are free — no card needed.",
+                  "Your first {free} questions to the AI astrologer are free — no card needed.",
          "cta_kundali": "Make my free kundali", "cta_panchang": "See today's Panchang"},
 }
+
+
+def _free_line(text: str) -> str:
+    """DIVASTRO-154: the free allowance in the call to action is the setting
+    (billing.FREE_QUESTIONS), never a number typed into the sentence."""
+    from . import billing                     # lazy: billing pulls in the DB layer
+    return text.replace("{free}", str(billing.FREE_QUESTIONS))
 
 
 def _index(lang: str) -> HTMLResponse:
@@ -364,7 +371,7 @@ def _story(slug: str, lang: str) -> HTMLResponse:
             f"{paras}"
             f"<h2>{_e(ui['lesson'])}</h2><p>{_html(t.message)}</p>"
             + (f"<p>{_html(t.note)}</p>" if t.note else "")
-            + f"<h2>{_e(ui['cta_h'])}</h2><p>{_e(ui['cta_p'])}</p>"
+            + f"<h2>{_e(ui['cta_h'])}</h2><p>{_e(_free_line(ui['cta_p']))}</p>"
             + seo_pages._cta("free-kundali", ui["cta_kundali"], lang, big=True)
             + f'<p><a href="{_e(i18n.prefix(lang))}/panchang">{_e(ui["cta_panchang"])}</a></p>'
             + (f'<h2>{_e(ui["next"])}</h2><ul class="links">{links}'

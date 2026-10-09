@@ -88,8 +88,8 @@ def user_grant_and_block(p, browser, base: str) -> None:
     managed = pg.page.context.request.get(f"{base}/api/admin/users?q=e2e-managed").json()
     user_id = managed["users"][0]["id"]
     detail = pg.page.context.request.get(f"{base}/api/admin/users/{user_id}").json()
-    check("the grant actually landed server-side (15 = 10 free + 5 granted)",
-          detail["balance"] == 15, str(detail))
+    check("the grant actually landed server-side (8 = 3 free + 5 granted; DIVASTRO-154)",
+          detail["balance"] == 8, str(detail))
 
     pg.page.fill("#um-reason", "e2e block test")
     pg.page.click("#um-block")

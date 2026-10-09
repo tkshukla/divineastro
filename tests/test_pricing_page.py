@@ -113,6 +113,20 @@ for p in packs:
     check(f"price per question {each} shown for {p['sku']}", each in en.text)
 check("the free allowance is billing.FREE_QUESTIONS",
       f"{billing.FREE_QUESTIONS} free questions" in en.text, str(billing.FREE_QUESTIONS))
+# DIVASTRO-154: one answer without signing in, then 3 with a free account.
+check("new accounts get 3 by default, and the page says so",
+      billing.FREE_QUESTIONS == 3 and "3 free questions with a free account" in en.text)
+check("the page states the free answer without signing in",
+      "1 free answer without signing in" in en.text and "बिना साइन-इन 1 मुफ़्त उत्तर" in hi.text)
+faq = [n for n in graph(en.text) if n.get("@type") == "FAQPage"]
+faq_text = json.dumps(faq, ensure_ascii=False)
+check("the FAQ JSON-LD says 1 free answer without signing in, 3 with an account",
+      "1 free answer without signing in, 3 free questions with a free account" in faq_text, faq_text[:300])
+hi_faq = json.dumps([n for n in graph(hi.text) if n.get("@type") == "FAQPage"], ensure_ascii=False)
+check("...and the Hindi FAQ JSON-LD too", "बिना साइन-इन 1 मुफ़्त उत्तर, मुफ़्त खाते पर 3 मुफ़्त प्रश्न" in hi_faq)
+for label, page in (("en", en.text), ("hi", hi.text)):
+    stray = re.findall(r"\b10 (?:free|मुफ़्त)|(?:first|पहले) 10\b", page)
+    check(f"[{label}] no stray '10 free' anywhere on the page", not stray, str(stray))
 check("the page links the refund policy and the terms",
       'href="/refund"' in en.text and 'href="/terms"' in en.text)
 check("the call to action goes to the app's free kundali",

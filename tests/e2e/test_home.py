@@ -391,10 +391,10 @@ def main() -> int:
     with sync_playwright() as p:
         browser = p.chromium.launch()
         try:
-            # Default server: the server says 10.
+            # Default server: the server says 3 (DIVASTRO-154; it was 10).
             with server() as base:
                 for name, args in phones.items():
-                    run_profile(p, browser, base, name, args, expect_n=10)
+                    run_profile(p, browser, base, name, args, expect_n=3)
                 never_wrong(p, browser, base)
                 tappable(p, browser, base)
                 festival_lights(p, browser, base)

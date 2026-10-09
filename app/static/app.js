@@ -1193,6 +1193,10 @@ async function resumeAfterSignIn() {
   const question = takeParkedQuestion();
   if (!(state.births || []).length) { showStage("stage-birth"); return; }
   await goToChat();
+  // DIVASTRO-154: a guest's free answer stays on screen across a full-page sign-in.
+  if (typeof restoreGuestAnswer === "function" && $("#stage-chat").classList.contains("active")) {
+    restoreGuestAnswer();
+  }
   if (question && state.sessionId && $("#stage-chat").classList.contains("active")) {
     qBox.value = question;
     autosizeQ();
@@ -2219,9 +2223,13 @@ $("#ask-form").addEventListener("submit", async (e) => {
       bubble.insertAdjacentHTML("beforeend",
         `<p class="incomplete-note">${escapeHtml(t("responseTruncated"))}</p>`);
     }
-    // DIVASTRO-149: a quiet offer under the finished answer (account.js decides
-    // whether one is due: signed in, questions left, not shown before this session).
-    if (answerEl && result && typeof maybeOfferAfterAnswer === "function") {
+    // DIVASTRO-154: a signed-out visitor's one free answer. Under it, the way to the
+    // next free questions (account.js); never a paid offer to someone with no account.
+    if (result && result.guest && typeof guestAfterAnswer === "function") {
+      guestAfterAnswer(result, answerEl, question, polished || result.answer_engine || "");
+    } else if (answerEl && result && typeof maybeOfferAfterAnswer === "function") {
+      // DIVASTRO-149: a quiet offer under the finished answer (account.js decides
+      // whether one is due: signed in, questions left, not shown before this session).
       maybeOfferAfterAnswer(result, answerEl);
     }
   } catch (ex) {

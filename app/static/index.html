@@ -9,7 +9,7 @@
 <link rel="canonical" href="https://divineastro.org/" />
 <meta property="og:url" content="https://divineastro.org" />
 <meta property="og:type" content="website" />
-<meta property="og:description" content="आज का पंचांग, व्रत-त्योहार, शुभ मुहूर्त, राशिफल और आपकी कुंडली — AI ज्योतिषी से 10 सवाल फ्री।" />
+<meta property="og:description" content="आज का पंचांग, व्रत-त्योहार, शुभ मुहूर्त, राशिफल और आपकी कुंडली — AI ज्योतिषी से __FREE_QUESTIONS__ सवाल फ्री।" />
 <meta property="og:image" content="https://divineastro.org/static/og-card.jpg" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
@@ -747,6 +747,9 @@
       <div id="thread" class="thread"></div>
       <button type="button" id="jump-latest" class="jump-latest" hidden>&#8595; <span id="jump-latest-label">Latest</span></button>
       <div id="starters" class="starters"></div>
+      <!-- DIVASTRO-154: shown to a signed-out visitor who can still have their one
+           answer without an account (/api/me guest_answers). Text: i18n guestAskFree. -->
+      <p id="guest-line" class="guest-line" hidden></p>
       <form id="ask-form" class="composer">
         <!-- A textarea that grows with the question (see autosizeQ in app.js). A
              single-line input hid everything but the last few words of a long

@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from . import analytics, auth, billing, coupons, email_auth, i18n, mail, phone_auth
+from . import analytics, auth, billing, coupons, email_auth, guest, i18n, mail, phone_auth
 from .db import (
     BirthProfile, Coupon, CouponKind, CouponRedemption, CreditEntry, EntryKind,
     Feedback, FulfilStatus, Order, OrderStatus, QuestionLog, User, balance, grant,
@@ -294,8 +294,13 @@ def whoami(request: Request, db: Session = Depends(get_db)) -> dict:
     # the "first N questions free" promise straight away. It was missing here, so the
     # home page's badge stayed blank after signing out until the next reload.
     if user is None:
-        return {"user": None, "free_questions": billing.FREE_QUESTIONS}
-    return {"user": _user_dict(db, user), "free_questions": billing.FREE_QUESTIONS}
+        # DIVASTRO-154: guest_answers is how many answers this signed-out browser can
+        # still get without an account (0 or 1), so the chat only offers what the
+        # server will actually give.
+        return {"user": None, "free_questions": billing.FREE_QUESTIONS,
+                "guest_free": guest.GUEST_ANSWERS, "guest_answers": guest.answers_left(request)}
+    return {"user": _user_dict(db, user), "free_questions": billing.FREE_QUESTIONS,
+            "guest_free": guest.GUEST_ANSWERS}
 
 
 @router.post("/me")

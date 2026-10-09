@@ -6,7 +6,11 @@
 const acct = {
   user: null,
   products: [],
-  freeQuestions: 10,
+  // The free allowance comes from the server (/api/me free_questions) and nothing is
+  // shown until it has answered (freeKnown), so this is never a number on screen.
+  freeQuestions: 0,
+  guestFree: 0,            // DIVASTRO-154: answers a signed-out visitor may get (server setting)
+  guestLeft: 0,            // ...and how many THIS browser can still get (0 or 1)
   live: false,
   keyId: "",
   pendingQuestion: null,   // re-fired after a successful purchase
@@ -62,6 +66,8 @@ async function loadAccount() {
     acct.user = data.user;
     acct.freeQuestions = data.free_questions ?? acct.freeQuestions;
     acct.freeKnown = typeof data.free_questions === "number";
+    acct.guestFree = data.guest_free || 0;
+    acct.guestLeft = data.user ? 0 : (data.guest_answers || 0);
   } catch { acct.user = null; }
 
   try {
@@ -170,6 +176,7 @@ function renderAccountBar() {
   if (!bar) return;
   document.body.classList.toggle("signed-in", !!acct.user);
   if (typeof renderFreeBadge === "function") renderFreeBadge();
+  renderGuestLine();
   if (!acct.user) {
     bar.innerHTML = `<button class="ghost-btn" id="btn-signin">${escapeHtml(at("signIn"))}</button>`;
     bar.querySelector("#btn-signin").onclick = () => openSignIn();
@@ -280,14 +287,19 @@ function openSignIn(onDone, ctx) {
     </button>`).join("");
   const phoneOn = provs.some((p) => p.key === "phone");
   const emailOn = provs.some((p) => p.key === "email");
-  const freeLine = acct.freeKnown && acct.freeQuestions > 0
-    ? ` <b>${escapeHtml(at("signInFree").replace("{n}", acct.freeQuestions))}</b>` : "";
-
   const asking = ctx === "ask";
+  // DIVASTRO-154: the question after a guest's free answer. The title then says what
+  // signing in gets them ("Sign in to keep asking — N more questions free").
+  const keepAsking = asking && guestAnswerUsed() && acct.freeKnown && acct.freeQuestions > 0;
+  const freeLine = acct.freeKnown && acct.freeQuestions > 0 && !keepAsking
+    ? ` <b>${escapeHtml(at("signInFree").replace("{n}", acct.freeQuestions))}</b>` : "";
+  const title = keepAsking ? at("signInKeepTitle").replace("{n}", acct.freeQuestions)
+    : at(asking ? "signInAskTitle" : "signInTitle");
+
   const emailBtn = emailOn ? `<button type="button" class="oauth-btn${asking ? " primary-choice" : ""}" id="email-open">
             ${PROVIDER_MARK.email}<span>${escapeHtml(at("emailContinue"))}</span></button>` : "";
   const back = modal(`
-    <h2 class="modal-title">${escapeHtml(at(asking ? "signInAskTitle" : "signInTitle"))}</h2>
+    <h2 class="modal-title">${escapeHtml(title)}</h2>
     <p class="modal-sub">${escapeHtml(at(asking ? "signInAskSub" : "signInSub"))}${freeLine}</p>
     <div id="signin-choices">
       <div class="oauth-list" id="oauth-list">
@@ -1738,7 +1750,7 @@ function renderPlans() {
   box.innerHTML = `
     <h2 class="plans-title" id="plans-title">${escapeHtml(at("plansTitle"))}</h2>
     ${offerBanner()}
-    ${acct.freeKnown ? `<p class="plans-free">${escapeHtml(at("plansFree").replace("{n}", acct.freeQuestions))}</p>` : ""}
+    ${acct.freeKnown ? `<p class="plans-free">${escapeHtml(at(acct.guestFree > 0 ? "plansFreeGuest" : "plansFree").replace("{n}", acct.freeQuestions))}</p>` : ""}
     <div class="plans-grid">${picks.map((p) => `
       <div class="plan-cell">
       <a class="plan${p.sku === "q50" ? " featured" : ""}${SAMPLE_SKUS.has(p.sku) ? " has-sample" : ""}" href="${page}#${p.sku}" data-plans="${p.sku}">
@@ -1796,6 +1808,72 @@ function toast(message, bad = false) {
   document.body.append(el);
   setTimeout(() => el.classList.add("in"), 10);
   setTimeout(() => { el.classList.remove("in"); setTimeout(() => el.remove(), 300); }, 4200);
+}
+
+/* ---------- DIVASTRO-154: one answer without signing in ----------
+   The server decides (app/guest.py) and says so in /api/me (guest_answers) and on the
+   answer itself (result.guest). Nothing here grants anything; it only words it. */
+const GUEST_USED = "astro.guestUsed";
+const GUEST_ANSWER = "astro.guestAnswer";      // sessionStorage: survives the OAuth round trip
+const GUEST_ANSWER_TTL_MS = 2 * 60 * 60 * 1000;
+
+function guestAnswerUsed() {
+  if (acct.guestUsed) return true;
+  try { return localStorage.getItem(GUEST_USED) === "1"; } catch { return false; }
+}
+
+/* "Ask your first question free — no sign-in needed", above the question box. */
+function renderGuestLine() {
+  const el = document.getElementById("guest-line");
+  if (!el) return;
+  const show = !acct.user && acct.guestLeft > 0;
+  el.textContent = show ? t("guestAskFree") : "";
+  el.hidden = !show;
+}
+
+/* Under the guest's answer: "Sign up to ask N more free questions". Called by app.js
+   once the answer has finished; `text` is what the guest read, kept (this tab only)
+   so it is still on screen after a sign-in that leaves the page (Google). */
+function guestAfterAnswer(result, bubble, question, text) {
+  acct.guestUsed = true;
+  acct.guestLeft = 0;
+  try { localStorage.setItem(GUEST_USED, "1"); } catch { /* private mode */ }
+  try {
+    const keep = { q: question, text, at: Date.now(), result: {
+      verdict: result.verdict, topic: result.topic, topic_label: result.topic_label, intent: result.intent,
+      score: result.score, evidence: result.evidence || [] } };
+    sessionStorage.setItem(GUEST_ANSWER, JSON.stringify(keep));
+  } catch { /* storage full or blocked: the answer just is not restored */ }
+  renderGuestLine();
+  const n = result.free_questions ?? acct.freeQuestions;
+  if (!bubble || !(n > 0)) return;
+  const msg = bubble.closest(".msg") || bubble;
+  const el = document.createElement("div");
+  el.className = "offer-card guest-cta";
+  el.setAttribute("role", "note");
+  el.innerHTML = `<p class="offer-text">${escapeHtml(at("guestMore").replace("{n}", n))}</p>
+    <button type="button" class="offer-go">${escapeHtml(at("guestSignUp"))}</button>`;
+  el.querySelector(".offer-go").onclick = () => openSignIn(null, "guest");
+  msg.after(el);
+  if (typeof scrollThread === "function") scrollThread();
+}
+
+/* After signing in: the guest's answer, if it is no longer on screen (a full-page
+   sign-in reloaded the app). One shot, and only within a couple of hours. */
+function restoreGuestAnswer() {
+  let v = null;
+  try {
+    v = JSON.parse(sessionStorage.getItem(GUEST_ANSWER) || "null");
+    sessionStorage.removeItem(GUEST_ANSWER);
+  } catch { return; }
+  if (!v || typeof v.q !== "string" || typeof v.text !== "string"
+      || !(Date.now() - Number(v.at) < GUEST_ANSWER_TTL_MS)) return;
+  const shown = [...document.querySelectorAll("#thread .msg.user .bubble")].some((b) => b.textContent === v.q);
+  if (shown || typeof addUser !== "function") return;
+  try {
+    addUser(v.q);
+    addBot(v.text, v.result || null);
+  } catch (ex) { console.warn("guest answer:", ex); }   // never in the way of the parked question
 }
 
 /* Called by app.js when /api/ask returns 401 or 402. */
