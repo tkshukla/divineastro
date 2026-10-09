@@ -1756,7 +1756,11 @@ def get_shodashvarga_data(chart: object, lang: str = "en") -> dict:
         meta = _VARGA_META_HI.get(code, {"name": code, "name_hi": code, "purpose": "", "purpose_hi": ""})
         title = meta["name_hi"] if is_hi else meta["name"]
         purpose = meta["purpose_hi"] if is_hi else meta["purpose"]
-        asc_sign = v_data["lagna"]
+        # divisional_chart() returns the varga lagna as {"sign", "lord", "rashi_lagna"}; this used to
+        # treat the whole dict as the sign, which raised "unhashable type: 'dict'" for Hindi (16 server
+        # errors on 9 Oct 2026) and put a dict where English callers expect a sign name.
+        lagna = v_data["lagna"]
+        asc_sign = lagna["sign"] if isinstance(lagna, dict) else lagna
         asc_label = _SIGNS_HI.get(asc_sign, asc_sign) if is_hi else asc_sign
 
         placements = []
