@@ -147,7 +147,7 @@ def paywall_after_free_questions(p, browser, base: str) -> None:
     # A dedicated account: the default e2e@example.com is shared by every
     # other sub-test in this file and would already be a few questions into
     # its free balance by the time this one runs.
-    pg.open_chat(email="e2e-paywall@example.com", name="Paywall Tester")
+    pg.open_chat(email="e2e-paywall@example.com", name="Paywall Tester", credits=None)
 
     me = pg.page.context.request.get(f"{base}/api/me").json()
     # DIVASTRO-154: new accounts get 3 (ASTRO_FREE_QUESTIONS), down from 10.

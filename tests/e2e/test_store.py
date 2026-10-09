@@ -158,7 +158,7 @@ def upi_manual_claim_ui(p, browser, base: str) -> None:
 
     pending = pg.page.context.request.get(f"{base}/api/admin/upi/pending")
     check("submitting the claim does not itself grant credit (admin must verify)",
-          pg.page.context.request.get(f"{base}/api/me").json()["user"]["credits"] == 10,
+          pg.page.context.request.get(f"{base}/api/me").json()["user"]["credits"] == 3,   # the welcome gift only (DIVASTRO-154: 3)
           "credits moved before admin approval")
 
     check("no console errors", not pg.console_errors, "; ".join(pg.console_errors[:3]))

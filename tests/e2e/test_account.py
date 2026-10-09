@@ -214,7 +214,7 @@ def email_code_sign_in(p, browser, base: str) -> None:
     me = pg.page.context.request.get(f"{base}/api/me").json()["user"]
     check("signed in as an email account on that address",
           me["provider"] == "email" and me["email"] == addr, str(me)[:160])
-    check("with the welcome bonus", me["credits"] == 10, str(me["credits"]))
+    check("with the welcome bonus (3 since DIVASTRO-154)", me["credits"] == 3, str(me["credits"]))
     label = pg.page.inner_text("#btn-acct")
     check("the account button shows the address's name part only",
           "e2e.email" in label and "@" not in label, label)
