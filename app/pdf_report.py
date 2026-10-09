@@ -452,7 +452,17 @@ _PRELUDE = r"""
     text(size: if d.lang != "en" { 10.5pt } else { 8.8pt }, weight: "semibold", fill: MUTED, upper(h)))),
   ..t.rows.flatten().map(c => text(size: if d.lang != "en" { 10.5pt } else { 9.2pt }, c)))
 
-#let cover(subtitle) = page(margin: (x: 62pt, y: 96pt), header: none, footer: none)[
+// DIVASTRO-151: sample mode. Only when the builder passes `d.sample` (a dict with `mark` and
+// `footer`) do the pages get a diagonal watermark and a footer line; a paid report has neither.
+#let SAMPLE = d.at("sample", default: none)
+#let SAMPLE_FG = if SAMPLE == none { none } else {
+  rotate(-35deg, text(size: 118pt, weight: "bold", fill: rgb(138, 106, 47, 46), SAMPLE.mark))
+}
+#let SAMPLE_FOOT = if SAMPLE == none { none } else {
+  align(center, text(size: 7.8pt, fill: MUTED, SAMPLE.footer))
+}
+
+#let cover(subtitle) = page(margin: (x: 62pt, y: 96pt), header: none, footer: SAMPLE_FOOT, foreground: SAMPLE_FG)[
   #align(center)[
     #text(font: DISP, size: 21pt, weight: "semibold", tracking: 2pt, d.brand)
     #v(4pt)
@@ -522,7 +532,7 @@ _REMEDIES_BODY = """
 _SINGLE_QUESTION_BODY = """
 #cover(d.subject)
 #counter(page).update(1)
-#set page(paper: "a4", margin: (x: 54pt, top: 64pt, bottom: 58pt), header: running)
+#set page(paper: "a4", margin: (x: 54pt, top: 64pt, bottom: 58pt), header: running, footer: SAMPLE_FOOT, foreground: SAMPLE_FG)
 
 #let section(title) = block(above: 14pt, below: 6pt, {
   text(font: DISP, size: 12pt, fill: ACC, title)
@@ -616,7 +626,7 @@ _SINGLE_QUESTION_BODY = """
 _LIFE_BOOK_BODY = """
 #cover(d.subject)
 #counter(page).update(1)
-#set page(paper: "a4", margin: (x: 52pt, top: 60pt, bottom: 56pt), header: running)
+#set page(paper: "a4", margin: (x: 52pt, top: 60pt, bottom: 56pt), header: running, footer: SAMPLE_FOOT, foreground: SAMPLE_FG)
 
 #let section(title) = block(above: 16pt, below: 8pt, {
   text(font: DISP, size: 13pt, fill: ACC, title)
@@ -2377,6 +2387,7 @@ def single_question_pdf(
     site: dict | None = None,
     language: str = "en",
     when: dt.datetime | None = None,
+    sample: bool = False,
 ) -> bytes:
     """A single-topic report (career, marriage, wealth) from the customer's own chart.
 
@@ -2523,8 +2534,24 @@ def single_question_pdf(
         "remedies": markdown_blocks(remedies_md),
         "about": markdown_blocks(T["about"] + (("\n\n" + "\n".join(f"* {o}" for o in omitted)) if omitted else "")),
         "texts": T,
+        "sample": _sample_block(sample, language),
     }
     return _compile(_SINGLE_QUESTION_BODY, data, files)
+
+
+SAMPLE_TEXTS = {
+    "en": {"mark": "SAMPLE",
+           "footer": "Sample for illustration, cast for a fictional chart. "
+                     "Your report is cast from your own birth details."},
+    "hi": {"mark": "नमूना",
+           "footer": "उदाहरण के लिए नमूना, एक काल्पनिक कुंडली पर बना। "
+                     "आपकी रिपोर्ट आपके अपने जन्म विवरण से बनती है।"},
+}
+
+
+def _sample_block(sample: bool, language: str) -> dict | None:
+    """The watermark and footer for a sample PDF (None for a paid report)."""
+    return SAMPLE_TEXTS.get(language, SAMPLE_TEXTS["en"]) if sample else None
 
 
 def _report_language(language: str, notes: list[str]) -> str:
@@ -2646,7 +2673,8 @@ def life_book_pdf(
     brand: str = "Divine Astro",
     site: str = "divineastro.org",
     when: dt.datetime | None = None,
-    language: str = "en"
+    language: str = "en",
+    sample: bool = False,
 ) -> bytes:
     """The Vedic Life Book: a long PDF horoscope from the customer's own chart.
 
@@ -2828,6 +2856,7 @@ def life_book_pdf(
         "remedies_detailed": markdown_blocks(remedies_md),
         "omitted": markdown_blocks("\n".join(f"* {o}" for o in omitted)) if omitted else [],
         "texts": texts,
+        "sample": _sample_block(sample, language),
     }
     return _compile(_LIFE_BOOK_BODY, data, files=files)
 

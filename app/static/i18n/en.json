@@ -536,5 +536,8 @@
  "acct.rptNetwork": "Could not reach the server. Check your connection and try again.",
  "acct.rptCastFailed": "Could not open that chart. Please try again.",
  "acct.rptYours": "Your reports",
- "acct.orderHandNote": "Written by hand by our astrologer. Status: {status}"
+ "acct.orderHandNote": "Written by hand by our astrologer. Status: {status}",
+ "acct.sampleShort": "Sample",
+ "acct.sampleView": "View sample",
+ "acct.sampleNote": "Sample for a fictional chart; yours is cast from your own birth details"
 }

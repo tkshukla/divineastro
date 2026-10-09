@@ -29,7 +29,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from . import billing, gateways, i18n, seo_pages
+from . import billing, gateways, i18n, sample_reports, seo_pages
 from .pricing_text import TEXT
 from .seo_pages import BRAND, EN, HI, SITE_URL, _e, _render
 
@@ -140,10 +140,16 @@ def _table(items: list[dict], lang: str) -> str:
         flag = ""
         if p["kind"] == "questions" and p.get("highlight"):
             flag = f' <span class="pr-flag">{_e(_tx("popular", lang))}</span>'
+        sample = ""
+        if p["sku"] in sample_reports.SKUS:       # DIVASTRO-151: only products with an automatic sample
+            href = f"/samples/{p['sku']}.pdf" + ("?lang=hi" if lang == HI else "")
+            sample = (f'<span class="pr-sample"><a href="{_e(href)}" target="_blank" rel="noopener" '
+                      f'data-sample="{_e(p["sku"])}">{_e(_tx("sample.link", lang))}</a> '
+                      f'<small>{_e(_tx("sample.note", lang))}</small></span>')
         rows.append(
             f'<tr id="{_e(p["sku"])}" data-sku="{_e(p["sku"])}">'
             f'<td class="pr-name">{_e(_title(p, lang))}{flag}'
-            f'<span class="pr-what">{_e(_blurb(p, lang))}</span></td>'
+            f'<span class="pr-what">{_e(_blurb(p, lang))}</span>{sample}</td>'
             f'<td class="pr-price"><b>{_e(_money(p["rupees"]))}</b>{extra}</td></tr>')
     head = f"<tr><th>{_e(_tx('th.product', lang))}</th><th>{_e(_tx('th.price', lang))}</th></tr>"
     return f'<div class="scroll"><table class="pr-table">{head}{"".join(rows)}</table></div>'
@@ -180,6 +186,8 @@ _CSS = """<style>
 .seo .pr-table td.pr-price { white-space: nowrap; text-align: right; width: 1%; }
 .seo .pr-table th:last-child { text-align: right; }
 .seo .pr-table td.pr-price b { color: var(--gold-soft); font-size: 17px; }
+.seo .pr-table .pr-sample { display: block; margin-top: 5px; font-weight: 400; font-size: 14px; }
+.seo .pr-table .pr-sample small { color: var(--ink-dim); font-size: 13px; }
 .seo .pr-flag { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px;
                 border: 1px solid var(--gold); color: var(--gold); font-size: 11.5px;
                 font-weight: 500; white-space: nowrap; }
