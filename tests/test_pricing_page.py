@@ -127,7 +127,7 @@ check("no claim about page counts for the reports or the book",
 print("\n3. The page follows the catalogue and the settings")
 saved_products, saved_free = dict(billing.PRODUCTS), billing.FREE_QUESTIONS
 try:
-    billing.PRODUCTS["q10"] = dataclasses.replace(billing.PRODUCTS["q10"], amount_paise=12300)
+    billing.PRODUCTS["q10"] = dataclasses.replace(billing.PRODUCTS["q10"], offer_paise=12300)
     billing.FREE_QUESTIONS = 7
     h = get("/pricing").text
     check("a changed catalogue price shows on the page", rows(h)["q10"] == "₹123", rows(h).get("q10"))
