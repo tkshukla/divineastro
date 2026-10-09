@@ -1422,7 +1422,7 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
     lang_key = "hi" if language == "hi" else "en"
     # `written_in` tells the PDF which language the text really is: a regional
     # report whose model call failed gets the English text, and says so.
-    default_res = dict(fallbacks[lang_key], written_in=lang_key)
+    default_res = dict(fallbacks[lang_key], written_in=lang_key, source="fallback")
 
     if provider == "off":
         return default_res
@@ -1509,6 +1509,7 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
             "key_periods": parsed.get("key_periods", default_res["key_periods"]),
             "house_summary": parsed.get("house_summary", default_res["house_summary"]),
             "written_in": language,
+            "source": "model",
         }
     except Exception as exc:
         # Never let a narration failure break the PDF, but never let it
@@ -1602,7 +1603,7 @@ def generate_kundali_interpretations(analysis: dict, language: str = "en") -> di
     lang_key = "hi" if language == "hi" else "en"
     # `written_in` tells the PDF which language the text really is: a regional
     # report whose model call failed gets the English text, and says so.
-    default_res = dict(fallbacks[lang_key], written_in=lang_key)
+    default_res = dict(fallbacks[lang_key], written_in=lang_key, source="fallback")
 
     if provider == "off":
         return default_res
@@ -1683,6 +1684,7 @@ def generate_kundali_interpretations(analysis: dict, language: str = "en") -> di
             "planets_detailed": parsed.get("planets_detailed", default_res["planets_detailed"]),
             "yogas_remedies_detailed": parsed.get("yogas_remedies_detailed", default_res["yogas_remedies_detailed"]),
             "written_in": language,
+            "source": "model",
         }
     except Exception as exc:
         # Never let a narration failure break the PDF, but never let it
