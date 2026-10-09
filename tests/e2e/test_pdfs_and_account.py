@@ -1,7 +1,9 @@
 """PDF exports beyond the Kundali PDF (already covered in
-test_dashboard_widgets.py): remedies, and the three routes with no UI at all
-(questions-history export, single-question, life book — tested directly
-against the API, confirming the 402-before-purchase gate). Plus orders,
+test_dashboard_widgets.py): remedies, and the PDF routes that need no button of
+their own here (questions-history export; the single-question and life-book
+routes' 402-before-purchase gate, tested directly against the API — their
+download UI after a purchase is tests/e2e/test_report_delivery.py,
+DIVASTRO-150). Plus orders,
 question history, and the credit ledger (DIVASTRO-72, flows 10 and 11).
 
     C:\\Astro\\.venv\\Scripts\\python.exe -m tests.e2e.test_pdfs_and_account
@@ -42,9 +44,10 @@ def remedies_pdf(p, browser, base: str) -> None:
     ctx.close()
 
 
-def unwired_pdf_routes_gate_correctly(p, browser, base: str) -> None:
-    print("\n[questions-export, single-question and life-book PDFs: no UI yet, "
-          "but the routes themselves are correct — tested directly]")
+def pdf_routes_gate_correctly(p, browser, base: str) -> None:
+    print("\n[questions-export, single-question and life-book PDFs: the routes are "
+          "correct before purchase — tested directly. After a purchase the "
+          "download UI is covered by test_report_delivery]")
     ctx = browser.new_context(**DESKTOPS["desktop_1440x800"])
     pg = Page(ctx.new_page(), base)
     pg.sign_in()
@@ -122,10 +125,10 @@ def main() -> int:
     with server() as base, sync_playwright() as p:
         browser = p.chromium.launch()
         remedies_pdf(p, browser, base)
-        unwired_pdf_routes_gate_correctly(p, browser, base)
+        pdf_routes_gate_correctly(p, browser, base)
         orders_history_and_ledger(p, browser, base)
         browser.close()
-    return check.finish("PDFs (remedies + unwired routes), orders/history/ledger")
+    return check.finish("PDFs (remedies + purchase gate), orders/history/ledger")
 
 
 if __name__ == "__main__":

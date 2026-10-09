@@ -841,6 +841,7 @@ function applyLanguage() {
   renderLangPicker();                    // its aria-label is t("hdrLang") + the native name
   if (typeof renderAccountBar === "function") renderAccountBar();
   if (typeof renderPlans === "function") renderPlans();      // DIVASTRO-149: the home Plans section
+  if (typeof renderDashReports === "function") renderDashReports();   // DIVASTRO-150
 
   if (state.sessionId) {
     loadAndShowDashboard();
@@ -2418,6 +2419,7 @@ async function loadAndShowDashboard() {
       });
     }
     if (typeof offerDashboard === "function") offerDashboard();     // DIVASTRO-149
+    if (typeof renderDashReports === "function") renderDashReports();   // DIVASTRO-150
   } catch (ex) {
     console.error("Failed to load dashboard:", ex);
   }

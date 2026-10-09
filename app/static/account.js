@@ -139,6 +139,7 @@ async function resumePayuReturn() {
   const params = new URLSearchParams(location.search);
   if (!params.has("payu")) return;
   const ok = params.get("payu") === "ok";
+  const orderId = Number(params.get("order") || 0);
 
   params.delete("payu"); params.delete("order");
   history.replaceState({}, "", location.pathname +
@@ -151,6 +152,17 @@ async function resumePayuReturn() {
     if (fresh.user) { acct.user = fresh.user; renderAccountBar(); }
   } catch { /* the credit will still show on the next normal load */ }
   toast(`${at("paid")} ✓`);
+
+  // The page was reloaded by PayU's redirect: no chart is open any more, so the
+  // ready screen offers the saved ones.
+  acct.paid = null;
+  if (orderId) {
+    try {
+      const { orders } = await (await fetch("/api/orders")).json();
+      const o = (orders || []).find((x) => x.id === orderId);
+      if (o && o.status === "paid" && isReportSku(o.sku)) showReportReady(o);
+    } catch { /* the order is in My orders either way */ }
+  }
 }
 
 function renderAccountBar() {
@@ -954,6 +966,13 @@ async function confirmPayment(orderId, payload) {
   acct.paid = null;          // re-read the paid orders before offering a report again
   if (!data.pending) window.daTrack?.("paid", acct.checkoutSku || "");
 
+  if (data.pending && data.order && isReportSku(data.order.sku)) {
+    toast(data.message || "Payment is being confirmed…");
+    const settled = await waitForReportOrder(data.order.id);
+    if (settled) { toast(`${at("paid")} ✓`); showReportReady(settled); renderDashReports(); }
+    return;
+  }
+
   if (data.pending) {
     toast(data.message || "Payment is being confirmed…");
     // The webhook grants a moment later; poll briefly so the balance updates.
@@ -972,6 +991,12 @@ async function confirmPayment(orderId, payload) {
   const added = data.order?.credits || 0;
   toast(`${at("paid")} ${added ? `${added} ${at("added")}` : "✓"}`);
 
+  // A report or the Life Book is delivered here and now, not just listed.
+  if (data.order && data.order.status === "paid" && isReportSku(data.order.sku)) {
+    showReportReady(data.order);
+    renderDashReports();
+  }
+
   // If the customer hit the paywall mid-question, ask it for them now.
   if (acct.pendingQuestion && added) {
     const q = acct.pendingQuestion;
@@ -979,6 +1004,240 @@ async function confirmPayment(orderId, payload) {
     const box = document.querySelector("#q");
     if (box) { box.value = q; document.querySelector("#ask-form").requestSubmit(); }
   }
+}
+
+/* ---------- DIVASTRO-150: delivering what was bought ----------
+   A report or the Life Book is a PDF written from one chart, on demand:
+   /api/pdf/single-question/<session>?sku=&lang=  and  /api/pdf/life-book/<session>?lang=
+   (both answer 402 until the account has paid). Everything here fetches that URL
+   itself, rather than navigating to it, so a 402 or a 500 becomes a message the
+   person can read and a Try again button, never a blank JSON page. */
+
+const REPORT_SKUS = ["sq_career", "sq_marriage_timing", "sq_wealth_business", "life_book"];
+const isReportSku = (sku) => REPORT_SKUS.includes(sku);
+/* The server prints reports in English or Hindi; any other app language gets the
+   English one, and the panel says so. */
+const reportLangFor = (lang) => (lang === "hi" ? "hi" : "en");
+
+function reportUrl(sku, sid, lang) {
+  const q = `lang=${encodeURIComponent(lang)}`;
+  return sku === "life_book"
+    ? `/api/pdf/life-book/${encodeURIComponent(sid)}?${q}`
+    : `/api/pdf/single-question/${encodeURIComponent(sid)}?sku=${encodeURIComponent(sku)}&${q}`;
+}
+
+function sameBirth(a, b) {
+  return !!a && !!b && a.date === b.date && a.time === b.time &&
+    Math.abs(a.latitude - b.latitude) < 1e-4 && Math.abs(a.longitude - b.longitude) < 1e-4;
+}
+
+/* The charts a report could be written for: the one on screen first, then the
+   saved ones (minus the one already on screen). */
+function reportCharts() {
+  const out = [];
+  const open = state.sessionId ? state.currentBirthData : null;
+  if (state.sessionId) {
+    const meta = state.chart?.meta || {};
+    out.push({ open: true, label: meta.name || open?.name || at("rptThisChart"),
+               sub: meta.local_time || "", sid: state.sessionId });
+  }
+  for (const b of state.births || []) {
+    if (open && sameBirth(b, open)) continue;
+    out.push({ open: false, label: b.label || b.name || b.place,
+               sub: `${b.date}${b.time_known ? " · " + b.time : ""}`, birth: b });
+  }
+  return out;
+}
+
+function reportErrorText(status) {
+  if (status === 402) return at("rptNotPaid");
+  if (status === 401) return at("rptSignIn");
+  if (status === 404) return at("rptChartGone");
+  if (status >= 500) return at("rptFailed");
+  return at("rptFailed");
+}
+
+function saveBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; a.hidden = true;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+/* Fetch one report and hand it to the browser. Resolves to {ok: true} or
+   {ok: false, message}. A chart that is not the open one is cast first, through
+   the same castChart the saved-charts list uses. */
+async function downloadReport(sku, chart, lang) {
+  let sid = chart.sid;
+  if (!chart.open) {
+    const b = chart.birth;
+    try {
+      await castChart({
+        name: b.name, date: b.date, time: b.time, place: b.place,
+        latitude: b.latitude, longitude: b.longitude, timezone: b.timezone,
+        zodiac: b.zodiac, ayanamsa: b.ayanamsa, house_system: b.house_system,
+        time_known: b.time_known, gender: b.gender || "",
+      });
+      sid = state.sessionId;
+    } catch { return { ok: false, message: at("rptCastFailed") }; }
+  }
+  let res;
+  try { res = await fetch(reportUrl(sku, sid, lang)); }
+  catch { return { ok: false, message: at("rptNetwork") }; }
+  if (!res.ok) {
+    window.daTrack?.("report_download_failed", `${sku}:${res.status}`);
+    return { ok: false, status: res.status, message: reportErrorText(res.status) };
+  }
+  const blob = await res.blob();
+  const cd = res.headers.get("Content-Disposition") || "";
+  const m = /filename="?([^";]+)"?/i.exec(cd);
+  saveBlob(blob, m ? m[1] : `${sku}.pdf`);
+  window.daTrack?.("report_downloaded", sku);
+  return { ok: true };
+}
+
+/* The download panel for one report: a language choice, one row per chart with a
+   Download PDF button, and a status line that always says what happened.
+   `autostart` downloads at once when there is exactly one chart to use. */
+function mountReportDownload(host, sku, { autostart = false } = {}) {
+  const charts = reportCharts();
+  let lang = reportLangFor(state.lang);
+  host.classList.add("rpt-panel");
+  host.dataset.sku = sku;
+
+  const paint = () => {
+    const note = !["en", "hi"].includes(state.lang)
+      ? `<p class="rpt-note">${escapeHtml(at("rptOnlyEnHi"))}</p>` : "";
+    const langs = `<div class="rpt-langs" role="group" aria-label="${escapeHtml(at("rptLangLabel"))}">
+        ${["en", "hi"].map((c) => `<button type="button" class="ghost-btn rpt-lang" data-lang="${c}"
+          aria-pressed="${c === lang}" lang="${c}">${c === "en" ? "English" : "हिन्दी"}</button>`).join("")}
+      </div>`;
+    let rows;
+    if (!charts.length) {
+      rows = `<p class="rpt-msg rpt-guide">${escapeHtml(at("rptNoChart"))}</p>
+        <button type="button" class="offer-go rpt-new">${escapeHtml(at("rptNewChart"))}</button>`;
+    } else {
+      rows = `${charts.length > 1 ? `<p class="rpt-pick">${escapeHtml(at("rptPick"))}</p>` : ""}
+        ${charts.map((c, i) => `<div class="rpt-row">
+          <span class="rpt-chart"><b>${escapeHtml(c.label)}</b>${c.sub ? ` <small>${escapeHtml(c.sub)}</small>` : ""}${
+            c.open && charts.length > 1 ? ` <small class="rpt-open">· ${escapeHtml(at("rptOpenNow"))}</small>` : ""}</span>
+          <button type="button" class="offer-go rpt-dl" data-i="${i}">${escapeHtml(at("rptDownload"))}</button>
+        </div>`).join("")}`;
+    }
+    host.innerHTML = `${note}${charts.length ? langs : ""}${rows}
+      <p class="rpt-msg" role="status" aria-live="polite" hidden></p>`;
+
+    host.querySelectorAll(".rpt-lang").forEach((b) => {
+      b.onclick = () => { lang = b.dataset.lang; host.querySelectorAll(".rpt-lang").forEach(
+        (x) => x.setAttribute("aria-pressed", String(x === b))); };
+    });
+    host.querySelector(".rpt-new")?.addEventListener("click", () => {
+      closeModal();
+      if (typeof showStage === "function") showStage("stage-birth");
+    });
+    host.querySelectorAll(".rpt-dl").forEach((b) => { b.onclick = () => run(Number(b.dataset.i), b); });
+  };
+
+  const say = (text, bad = false) => {
+    const el = host.querySelector(".rpt-msg:not(.rpt-guide)");
+    if (!el) return;
+    el.hidden = !text; el.textContent = text || "";
+    el.classList.toggle("rpt-bad", bad);
+  };
+
+  async function run(i, btn) {
+    const all = [...host.querySelectorAll(".rpt-dl")];
+    all.forEach((b) => { b.disabled = true; });
+    say(at("rptWorking"));
+    const out = await downloadReport(sku, charts[i], lang);
+    all.forEach((b) => { b.disabled = false; });
+    if (out.ok) {
+      say(at("rptDone"));
+    } else {
+      say(out.message, true);
+      if (btn) btn.textContent = at("rptRetry");
+      else all[0] && (all[0].textContent = at("rptRetry"));
+    }
+  }
+
+  paint();
+  if (autostart && charts.length === 1) run(0, host.querySelector(".rpt-dl"));
+}
+
+/* Right after a purchase of a report or the Life Book. */
+async function showReportReady(order) {
+  if (!order || !isReportSku(order.sku)) return;
+  if (acct.user && !(state.births || []).length) { try { await loadSavedCharts(); } catch { /* none saved */ } }
+  const p = productBySku(order.sku);
+  const title = p ? loc(p, "title") : order.title;
+  const back = modal(`<div class="rpt-ready" data-sku="${escapeHtml(order.sku)}">
+      <h2 class="modal-title rpt-ready-title">${escapeHtml(at("rptReadyTitle").replace("{title}", title))}</h2>
+      <p class="modal-sub">${escapeHtml(state.sessionId ? at("rptReadyLead") : at("rptReadyNoChart"))}</p>
+      <div class="rpt-host"></div>
+      <p class="rpt-orders"><button type="button" class="ghost-btn rpt-orders-link">${escapeHtml(at("orders"))}</button></p>
+    </div>`);
+  window.daTrack?.("report_ready", order.sku);
+  mountReportDownload(back.querySelector(".rpt-host"), order.sku);
+  back.querySelector(".rpt-orders-link").onclick = () => { closeModal(); openOrders(); };
+}
+
+/* The reports the signed-in person owns (paid orders), in catalogue order. */
+async function ownedReports() {
+  const paid = await paidSkus();
+  return REPORT_SKUS.filter((s) => paid.has(s));
+}
+
+/* Dashboard row: "Your reports" with a Download PDF per report owned. Hidden when
+   there are none. The dashboard only shows with a chart open, so each button
+   downloads for that chart. */
+async function renderDashReports() {
+  const row = document.getElementById("dash-reports");
+  if (!row) return;
+  let owned = [];
+  try { owned = acct.user ? await ownedReports() : []; } catch { owned = []; }
+  if (!owned.length || !state.sessionId) { row.hidden = true; row.innerHTML = ""; return; }
+  row.innerHTML = `<h3 class="rpt-yours">${escapeHtml(at("rptYours"))}</h3>
+    <div class="rpt-chips">${owned.map((sku) => {
+      const p = productBySku(sku);
+      return `<button type="button" class="ghost-btn rpt-chip" data-sku="${sku}"
+        aria-label="${escapeHtml(`${at("rptDownload")}: ${p ? loc(p, "title") : sku}`)}">
+        <span class="rpt-chip-title">${escapeHtml(p ? loc(p, "title") : sku)}</span>
+        <span class="rpt-chip-go">${escapeHtml(at("rptDownload"))}</span></button>`;
+    }).join("")}</div>
+    <p class="rpt-msg" role="status" aria-live="polite" hidden></p>`;
+  row.hidden = false;
+  row.setAttribute("aria-label", at("rptYours"));
+  const msg = row.querySelector(".rpt-msg");
+  row.querySelectorAll(".rpt-chip").forEach((b) => {
+    b.onclick = async () => {
+      const chart = reportCharts().find((c) => c.open);
+      if (!chart) return;
+      b.disabled = true; msg.hidden = false; msg.classList.remove("rpt-bad"); msg.textContent = at("rptWorking");
+      const out = await downloadReport(b.dataset.sku, chart, reportLangFor(state.lang));
+      b.disabled = false;
+      msg.classList.toggle("rpt-bad", !out.ok);
+      msg.textContent = out.ok ? at("rptDone") : out.message;
+      if (!out.ok) b.querySelector(".rpt-chip-go").textContent = at("rptRetry");
+    };
+  });
+}
+
+/* A paid report order that was not confirmed in the browser (the gateway's
+   webhook settles it later): poll the orders list a few times, then show the
+   ready state. */
+async function waitForReportOrder(orderId) {
+  for (let i = 0; i < 10; i++) {
+    await new Promise((r) => setTimeout(r, 3000));
+    try {
+      const { orders } = await (await fetch("/api/orders")).json();
+      const o = (orders || []).find((x) => x.id === orderId);
+      if (o && o.status === "paid") { acct.paid = null; return o; }
+    } catch { /* keep trying */ }
+  }
+  return null;
 }
 
 /* ---------- history & orders ---------- */
@@ -994,13 +1253,38 @@ async function openHistory() {
 
 async function openOrders() {
   const { orders } = await (await fetch("/api/orders")).json();
-  modal(`<h2 class="modal-title">${escapeHtml(at("orders"))}</h2>
-    <div class="hist">${orders.length ? orders.map((o) => `
-      <div class="hist-row">
-        <div class="hist-q">${escapeHtml(o.title)} — ₹${o.amount}</div>
-        <div class="hist-meta">${escapeHtml(o.created_at)} · ${escapeHtml(statusText(o.status))}${
-          o.fulfilment !== "not_applicable" ? " · " + escapeHtml(statusText(o.fulfilment)) : ""}</div>
-      </div>`).join("") : "<p class='modal-sub'>—</p>"}</div>`);
+  if (acct.user && !(state.births || []).length) { try { await loadSavedCharts(); } catch { /* none saved */ } }
+  const rowHtml = (o) => {
+    const p = productBySku(o.sku);
+    const title = p ? loc(p, "title") : o.title;
+    const paid = o.status === "paid";
+    const hand = o.fulfilment !== "not_applicable";      // a hand-written kundali: an astrologer fulfils it
+    const meta = [escapeHtml(o.created_at), escapeHtml(statusText(o.status))];
+    let extra = "";
+    if (paid && hand) {
+      extra = `<div class="hist-meta ord-hand">${escapeHtml(at("orderHandNote").replace("{status}", statusText(o.fulfilment)))}</div>`;
+    } else if (paid && isReportSku(o.sku)) {
+      extra = `<button type="button" class="offer-go ord-dl">${escapeHtml(at("rptDownload"))}</button>
+        <div class="ord-host"></div>`;
+    }
+    return `<div class="hist-row ord-row" data-order="${o.id}" data-sku="${escapeHtml(o.sku)}" data-status="${escapeHtml(o.status)}">
+        <div class="hist-q">${escapeHtml(title)} — ₹${o.amount}</div>
+        <div class="hist-meta">${meta.join(" · ")}</div>${extra}
+      </div>`;
+  };
+  const back = modal(`<h2 class="modal-title">${escapeHtml(at("orders"))}</h2>
+    <div class="hist">${orders.length ? orders.map(rowHtml).join("") : "<p class='modal-sub'>—</p>"}</div>`);
+  back.querySelectorAll(".ord-row").forEach((row) => {
+    const btn = row.querySelector(".ord-dl");
+    if (!btn) return;
+    // Only the chart already on screen is used without asking; any other case
+    // (none open, or several to choose from) shows the picker first.
+    btn.onclick = () => {
+      const charts = reportCharts();
+      mountReportDownload(row.querySelector(".ord-host"), row.dataset.sku,
+        { autostart: charts.length === 1 && charts[0].open });
+    };
+  });
 }
 
 /* ---------- admin: coupons ----------
