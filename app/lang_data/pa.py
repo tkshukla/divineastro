@@ -2906,6 +2906,8 @@ HUB_LABELS = {
     "years": "ਵਰਤ ਅਤੇ ਤਿਉਹਾਰਾਂ ਦੇ ਕੈਲੰਡਰ",
     # EN: Ekadashi
     "ekadashi": "ਇਕਾਦਸ਼ੀ",
+    # EN: Prices
+    "pricing": "ਕੀਮਤਾਂ",
     # EN: Every section of Divine Astro in one place: daily Panchang for Indian cities, Rashifal,
     #     vrat and festival dates, shubh muhurat, nakshatra and rashi guides, kathas and the free
     #     tools.

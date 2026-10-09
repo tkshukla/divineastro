@@ -325,7 +325,7 @@ def _footer_sections(lang: str) -> str:
     items = [("sitemap", f"{pre}/sitemap"), ("panchang", f"{pre}/panchang"),
              ("rashifal", f"{pre}/rashifal"), ("vrat", f"{pre}/vrat-tyohar"),
              ("muhurat", f"{pre}/muhurat/vivah-{muhurat_years[-1]}"),
-             ("nakshatra", f"{pre}/nakshatra"),
+             ("nakshatra", f"{pre}/nakshatra"), ("pricing", f"{pre}/pricing"),
              ("katha", "/katha" if lang == HI else "/en/katha")]
     links = " ".join(f'<a href="{href}">{label(k, lang)}</a>' for k, href in items)
     from .learn_pages import footer_link   # '' unless ASTRO_LEARN_PAGES=1 (DIVASTRO-142)
@@ -1089,9 +1089,10 @@ def sitemap_paths() -> list[str]:
     from .katha import sitemap_paths as katha_paths  # same
     from .learn_pages import sitemap_paths as learn_paths  # same; [] unless ASTRO_LEARN_PAGES=1 (DIVASTRO-142)
     from .site_hub import sitemap_paths as hub_paths  # same (DIVASTRO-133)
+    from .pricing_pages import sitemap_paths as pricing_paths  # same (DIVASTRO-149)
     return (paths + hub_paths() + rashifal_paths() + muhurat_paths() + vrat_paths() + vrat_city_paths()
             + recurring_paths() + nakshatra_paths() + katha_paths()
-            + learn_paths())
+            + learn_paths() + pricing_paths())
 
 
 LEGAL_PATHS = frozenset({"/terms", "/privacy", "/refund", "/contact"})
@@ -1131,6 +1132,8 @@ def sitemap_priority(path: str) -> float:
             score = 0.6 if parts[1] in _TOP_CITY_SLUGS else 0.5
     elif root == "tyohar" and len(parts) >= 3:  # a festival's city page (DIVASTRO-140)
         score = 0.5
+    elif root == "pricing":                     # DIVASTRO-149: useful to people, not a ranking page
+        score = 0.4
     else:
         score = 0.8 if len(parts) <= 1 else 0.7
     return round(score - (0.1 if lang not in (EN, HI) else 0.0), 1)

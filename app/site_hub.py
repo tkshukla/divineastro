@@ -104,6 +104,9 @@ def _body(lang: str) -> str:
         (label("rahu", lang), _path("rahu-kaal", seo_cities.DEFAULT, lang)),
         (label("choghadiya", lang), _path("choghadiya", seo_cities.DEFAULT, lang)),
     ]))
+
+    out.append(_section(label("pricing", lang),                    # DIVASTRO-149
+                        [(label("pricing", lang), i18n.prefix(lang) + "/pricing")]))
     return "\n".join(out)
 
 

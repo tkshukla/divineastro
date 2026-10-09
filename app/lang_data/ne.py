@@ -2906,6 +2906,8 @@ HUB_LABELS = {
     "years": "व्रत र चाडपर्वका पात्रो",
     # EN: Ekadashi
     "ekadashi": "एकादशी",
+    # EN: Prices
+    "pricing": "मूल्य",
     # EN: Every section of Divine Astro in one place: daily Panchang for Indian cities, Rashifal,
     #     vrat and festival dates, shubh muhurat, nakshatra and rashi guides, kathas and the free
     #     tools.

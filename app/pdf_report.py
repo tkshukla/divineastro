@@ -53,7 +53,7 @@ try:                                    # typst ships as a stellium dependency
 except ImportError:                     # pragma: no cover - defensive
     typst = None                        # type: ignore[assignment]
 
-from . import pdf_i18n
+from . import pdf_i18n, report_text
 from .chart_service import SIDEREAL_YEAR, VIMSHOTTARI, dms, vimshottari, wheel_svg
 
 # --------------------------------------------------------------------------
@@ -530,11 +530,53 @@ _SINGLE_QUESTION_BODY = """
   line(length: 100%, stroke: 0.6pt + RULE)
 })
 
+#let vedic(path, label) = align(center)[
+  #image(path, width: 100%)
+  #v(3pt)
+  #text(size: 8.2pt, fill: MUTED, label)
+]
+
+#let chartrow(a, b, la, lb) = {
+  let cells = ()
+  if a != "" { cells.push(vedic(a, la)) }
+  if b != "" { cells.push(vedic(b, lb)) }
+  if cells.len() > 0 { grid(columns: cells.map(c => 1fr), gutter: 14pt, ..cells) }
+}
+
 #section(d.texts.birth_details)
 #kvtable(d.birth)
+#v(4pt)
+#blocks(d.scope)
+
+#if d.d1_north != "" or d.d1_south != "" [
+  #block(breakable: false)[
+    #section(d.texts.charts_d1)
+    #chartrow(d.d1_north, d.d1_south, d.texts.north, d.texts.south)
+  ]
+]
+
+#if d.d9_north != "" or d.d9_south != "" [
+  #block(breakable: false)[
+    #section(d.texts.charts_d9)
+    #chartrow(d.d9_north, d.d9_south, d.texts.north, d.texts.south)
+  ]
+]
 
 #section(d.texts.houses_title)
 #datatable(d.houses)
+#v(4pt)
+#section(d.texts.houses_read)
+#blocks(d.houses_read)
+
+#if d.planets.len() > 0 [
+  #section(d.texts.planets_title)
+  #blocks(d.planets)
+]
+
+#if d.career.len() > 0 [
+  #section(d.texts.career_title)
+  #blocks(d.career)
+]
 
 #if d.dasha != none [
   #section(d.texts.dasha_title)
@@ -543,18 +585,32 @@ _SINGLE_QUESTION_BODY = """
   #datatable(d.dasha.table)
 ]
 
+#if d.windows.len() > 0 [
+  #section(d.texts.windows_title)
+  #blocks(d.windows_note)
+  #v(4pt)
+  #grid(
+    columns: (auto, 1fr),
+    gutter: 12pt,
+    ..d.windows.map(m => (
+      text(weight: "bold", fill: ACC, m.at(0)),
+      blocks(m.at(1))
+    )).flatten()
+  )
+]
+
 #if d.yogas.rows.len() > 0 [
   #section(d.texts.yogas_title)
   #datatable(d.yogas)
 ]
 
-#section(d.texts.analysis_title)
-#blocks(d.analysis)
-
 #if d.remedies.len() > 0 [
   #section(d.texts.remedies_title)
   #blocks(d.remedies)
 ]
+
+#section(d.texts.about_title)
+#blocks(d.about)
 """
 
 _LIFE_BOOK_BODY = """
@@ -578,19 +634,23 @@ _LIFE_BOOK_BODY = """
 #kvtable(d.birth)
 
 #if d.d1_north != "" or d.d1_south != "" {
-  section(d.texts.d1_title)
-  let cells = ()
-  if d.d1_north != "" { cells.push(vedic(d.d1_north, d.texts.north_indian)) }
-  if d.d1_south != "" { cells.push(vedic(d.d1_south, d.texts.south_indian)) }
-  grid(columns: cells.map(c => 1fr), gutter: 14pt, ..cells)
+  block(breakable: false, {
+    section(d.texts.d1_title)
+    let cells = ()
+    if d.d1_north != "" { cells.push(vedic(d.d1_north, d.texts.north_indian)) }
+    if d.d1_south != "" { cells.push(vedic(d.d1_south, d.texts.south_indian)) }
+    grid(columns: cells.map(c => 1fr), gutter: 14pt, ..cells)
+  })
 }
 
 #if d.d9_north != "" or d.d9_south != "" {
-  section(d.texts.d9_title)
-  let cells = ()
-  if d.d9_north != "" { cells.push(vedic(d.d9_north, d.texts.north_indian)) }
-  if d.d9_south != "" { cells.push(vedic(d.d9_south, d.texts.south_indian)) }
-  grid(columns: cells.map(c => 1fr), gutter: 14pt, ..cells)
+  block(breakable: false, {
+    section(d.texts.d9_title)
+    let cells = ()
+    if d.d9_north != "" { cells.push(vedic(d.d9_north, d.texts.north_indian)) }
+    if d.d9_south != "" { cells.push(vedic(d.d9_south, d.texts.south_indian)) }
+    grid(columns: cells.map(c => 1fr), gutter: 14pt, ..cells)
+  })
 }
 
 #section(d.texts.planetary_positions)
@@ -604,8 +664,10 @@ _LIFE_BOOK_BODY = """
   #datatable(d.aspects)
 ]
 
-#section(d.texts.ashtakavarga_title)
-#datatable(d.ashtakavarga)
+#if d.ashtakavarga.rows.len() > 0 [
+  #section(d.texts.ashtakavarga_title)
+  #datatable(d.ashtakavarga)
+]
 
 #if d.ashtakavarga_note != "" [
   #v(4pt)
@@ -623,7 +685,7 @@ _LIFE_BOOK_BODY = """
   #kvtable(d.dasha.summary)
   #v(8pt)
   #datatable(d.dasha.table)
-  
+
   #v(8pt)
   #section(d.texts.antardasha_title)
   #datatable(d.dasha.antardasha)
@@ -640,7 +702,7 @@ _LIFE_BOOK_BODY = """
 ]
 
 #if d.varshphal.len() > 0 [
-  #section(d.texts.varshphal_title)
+  #section(d.varshphal_title)
   #grid(
     columns: (auto, 1fr),
     gutter: 12pt,
@@ -651,9 +713,24 @@ _LIFE_BOOK_BODY = """
   )
 ]
 
+#if d.upcoming.len() > 0 [
+  #v(6pt)
+  #blocks(d.upcoming)
+]
+
+#if d.house_summary.len() > 0 [
+  #section(d.texts.house_summary_title)
+  #blocks(d.house_summary)
+]
+
 #if d.remedies_detailed.len() > 0 [
   #section(d.texts.remedies_detailed_title)
   #blocks(d.remedies_detailed)
+]
+
+#if d.omitted.len() > 0 [
+  #section(d.texts.omitted_title)
+  #blocks(d.omitted)
 ]
 """
 
@@ -1709,6 +1786,15 @@ _LOCALIZED_TEXTS = {
         "houses_detailed_title": "Detailed House Analysis",
         "planets_detailed_title": "Planetary Placement Interpretations",
         "remedies_detailed_title": "Spiritual Guidelines & Remedies",
+        "outlook_title": "The Next Twelve Months: Dasha Sub-periods",
+        "outlook_note": "These are the Vimshottari sub-periods (antardashas) running over the next twelve months, computed from your birth data, with the classical result for each. They are not a month-by-month prediction.",
+        "omitted_title": "About This Edition",
+        "omit_chart": "A chart drawing could not be generated for this copy",
+        "omit_dasha": "The Vimshottari dasha tables could not be generated for this copy.",
+        "omit_dasha_tropical": "Dasha tables are computed for sidereal charts only; this chart is tropical, so they are left out.",
+        "omit_ashtakavarga": "The Ashtakavarga table could not be generated for this copy.",
+        "omit_delineation": "The classical placement texts are not available for this chart, so the planet readings list placements only.",
+        "omit_outlook": "The twelve-month section could not be generated for this copy.",
     },
     "hi": {
         "title": "जन्म कुंडली विवरण",
@@ -1735,6 +1821,15 @@ _LOCALIZED_TEXTS = {
         "houses_detailed_title": "द्वादश भाव फल विवेचन",
         "planets_detailed_title": "ग्रह फल विवेचन",
         "remedies_detailed_title": "ज्योतिषीय उपाय एवं वैदिक मंत्र",
+        "outlook_title": "आगामी बारह महीने: दशा-अंतर्दशा",
+        "outlook_note": "आपके जन्म-विवरण से गणना की गई, आगामी बारह महीनों में चलने वाली विंशोत्तरी अंतर्दशाएँ। यह मास-दर-मास भविष्यवाणी नहीं है। शास्त्रीय फल का पाठ केवल अंग्रेज़ी रिपोर्ट में है।",
+        "omitted_title": "इस प्रति के बारे में",
+        "omit_chart": "इस प्रति में एक कुंडली-चित्र नहीं बन सका",
+        "omit_dasha": "विंशोत्तरी दशा सारणियाँ इस प्रति में नहीं बन सकीं।",
+        "omit_dasha_tropical": "दशा सारणियाँ केवल निरयन कुंडली के लिए बनती हैं; यह कुंडली सायन है, इसलिए वे इस प्रति में नहीं हैं।",
+        "omit_ashtakavarga": "अष्टकवर्ग सारणी इस प्रति में नहीं बन सकी।",
+        "omit_delineation": "इस कुंडली के लिए ग्रहों का शास्त्रीय फल-पाठ उपलब्ध नहीं है, इसलिए ग्रह फल में केवल स्थितियाँ दी गई हैं।",
+        "omit_outlook": "आगामी बारह महीनों का खंड इस प्रति में नहीं बन सका।",
     }
 }
 
@@ -2208,6 +2303,72 @@ def remedies_pdf(session, *, brand: str, site: str, language: str = "en") -> byt
     return _compile(_REMEDIES_BODY, data)
 
 
+_SQ_TEXTS = {
+    "en": {
+        "birth_details": "Birth details & summary",
+        "charts_d1": "Rashi Chart (D1)",
+        "charts_d9": "Navamsa Chart (D9)",
+        "north": "North Indian Style",
+        "south": "South Indian Style",
+        "houses_title": "Primary Houses for this Topic",
+        "houses_read": "What Your Chart Shows in These Houses",
+        "planets_title": "The Planets This Topic Turns On",
+        "career_title": "Career Significators in Your Chart",
+        "dasha_title": "Active Dasha",
+        "windows_title": "Timing: Sub-periods Over the Next Three Years",
+        "windows_note": ("Each line is a real Vimshottari sub-period computed from your birth data. A period is "
+                         "marked when its lord rules one of this topic's houses or is its natural significator; "
+                         "those are the stretches when this area of life is classically emphasised. "
+                         "This is guidance on timing, not a promise of an event."),
+        "yogas_title": "Classical Yogas in Your Chart",
+        "remedies_title": "Remedies & Recommended Practices",
+        "about_title": "About This Report",
+        "about": ("Written by our rule engine from your own chart: placements, house lords, dignities and the "
+                  "classical results published for them. It is not generated by an AI model and is not a "
+                  "substitute for a consultation."),
+        "omit_chart": "A chart drawing could not be generated for this copy",
+        "omit_delineation": "The classical placement texts are not available for this chart, so planet lines list placements only.",
+        "omit_dasha": "The dasha tables could not be generated for this copy (they need a sidereal chart).",
+        "marked": "activates this topic",
+        "lagna": "Lagna (Ascendant)", "moon": "Moon Sign", "mahadasha": "Current Mahadasha",
+        "antardasha": "Current Antardasha", "name": "Name", "when": "Date & time", "place": "Place",
+        "topic": "Topic", "born": "Born", "generated": "Generated",
+        "houses_headers": ["House", "Sign on cusp", "Cusp", "Ruler", "Occupants"],
+        "dasha_headers": ["Mahadasha", "Years", "From", "To", "Status"],
+    },
+    "hi": {
+        "birth_details": "जन्म विवरण एवं कुंडली सारांश",
+        "charts_d1": "लग्न कुंडली (D1)",
+        "charts_d9": "नवमांश कुंडली (D9)",
+        "north": "उत्तर भारतीय शैली",
+        "south": "दक्षिण भारतीय शैली",
+        "houses_title": "इस विषय से संबंधित मुख्य भाव",
+        "houses_read": "इन भावों में आपकी कुंडली क्या दर्शाती है",
+        "planets_title": "इस विषय के प्रमुख ग्रह",
+        "career_title": "आपकी कुंडली में करियर कारक",
+        "dasha_title": "सक्रिय दशा",
+        "windows_title": "समय-चक्र: आगामी तीन वर्षों की अंतर्दशाएँ",
+        "windows_note": ("प्रत्येक पंक्ति आपके जन्म-विवरण से गणना की गई वास्तविक विंशोत्तरी अंतर्दशा है। जिस अवधि का स्वामी "
+                         "इस विषय के किसी भाव का स्वामी या कारक है, उसे चिह्नित किया गया है; शास्त्रानुसार इन अवधियों में "
+                         "यह क्षेत्र विशेष रूप से सक्रिय रहता है। यह समय का मार्गदर्शन है, किसी घटना का वचन नहीं।"),
+        "yogas_title": "आपकी कुंडली के शास्त्रीय योग",
+        "remedies_title": "शास्त्रीय उपाय एवं मंत्र परामर्श",
+        "about_title": "इस रिपोर्ट के बारे में",
+        "about": ("यह रिपोर्ट हमारे नियम-आधारित इंजन ने आपकी कुंडली से बनाई है: ग्रह-स्थिति, भावेश, बल और उनके लिए प्रकाशित "
+                  "शास्त्रीय फल। इसे किसी AI मॉडल ने नहीं लिखा, और यह परामर्श का विकल्प नहीं है।"),
+        "omit_chart": "इस प्रति में एक कुंडली-चित्र नहीं बन सका",
+        "omit_delineation": "इस कुंडली के लिए शास्त्रीय फल-पाठ उपलब्ध नहीं है, इसलिए ग्रह पंक्तियों में केवल स्थितियाँ हैं।",
+        "omit_dasha": "इस प्रति में दशा सारणियाँ नहीं बन सकीं (उनके लिए निरयन कुंडली चाहिए)।",
+        "marked": "इस विषय को सक्रिय करती है",
+        "lagna": "लग्न राशि", "moon": "चंद्र राशि", "mahadasha": "वर्तमान महादशा",
+        "antardasha": "वर्तमान अंतर्दशा", "name": "नाम", "when": "जन्म विवरण", "place": "जन्म स्थान",
+        "topic": "परामर्श विषय", "born": "जन्म", "generated": "तिथि",
+        "houses_headers": ["भाव", "राशि", "आरंभ", "भावेश", "स्थित ग्रह"],
+        "dasha_headers": ["महादशा", "वर्ष", "आरंभ", "समाप्ति", "स्थिति"],
+    },
+}
+
+
 def single_question_pdf(
     session,
     topic: str,
@@ -2215,63 +2376,206 @@ def single_question_pdf(
     brand: str = "Divine Astro",
     site: dict | None = None,
     language: str = "en",
+    when: dt.datetime | None = None,
 ) -> bytes:
-    """Generate a targeted, topic-specific single question PDF report."""
+    """A single-topic report (career, marriage, wealth) from the customer's own chart.
+
+    Written entirely by the rule engine (app/report_text.py): the houses that
+    govern the topic, who rules and occupies them, the classical result for each
+    planet that matters, and the real sub-periods of the next three years with
+    the ones that switch the topic on marked. No model is involved, so it is the
+    same with or without one configured.
+    """
+    log = logging.getLogger(__name__)
     bundle = getattr(session, "bundle", session)
     meta = bundle.get("meta", {})
+    when = when or dt.datetime.now()
+    omitted: list[str] = []
+    language = _report_language(language, omitted)
     hi = language == "hi"
-    when = dt.datetime.now()
+    T = _SQ_TEXTS[language]
+    key = report_text.topic_for(topic)
+    cfg = report_text.TOPICS[key]
+    title = cfg["title_hi"] if hi else cfg["title_en"]
 
-    # Topic configuration
-    t_clean = (topic or "career").lower().replace("sq_", "")
-    if "marriage" in t_clean or "relationship" in t_clean:
-        title = "Marriage & Relationship Timing Report" if not hi else "विवाह समय एवं संबंध मार्गदर्शन रिपोर्ट"
-        target_houses = {7, 2, 11, 4, 8}
-        scope_summary = (
-            "This report analyzes the 7th house of marriage, 2nd house of family, 11th house of gains, "
-            "and Venus/Jupiter significations in your natal chart, cross-referenced with your active dasha."
-            if not hi else
-            "यह रिपोर्ट आपकी जन्मकुंडली के सप्तम भाव (विवाह व जीवनसाथी), द्वितीय भाव (कुटुंब), एकादश भाव (इच्छापूर्ति), "
-            "तथा शुक्र व गुरु ग्रह की स्थिति का आपकी सक्रिय दशा के साथ विस्तृत विश्लेषण प्रस्तुत करती है।"
-        )
-    elif "wealth" in t_clean or "finance" in t_clean or "business" in t_clean:
-        title = "Wealth, Finance & Growth Report" if not hi else "धन, वित्त एवं व्यापार वृद्धि रिपोर्ट"
-        target_houses = {2, 11, 9, 5, 10}
-        scope_summary = (
-            "This report focuses on the Dhana (wealth) and Labha (gains) houses: 2nd, 5th, 9th, and 11th, "
-            "evaluating wealth accumulation potential, favorable investment periods, and commercial ventures."
-            if not hi else
-            "यह रिपोर्ट धन एवं लाभ भावों (द्वितीय, पंचम, नवम एवं एकादश) का विश्लेषण कर धन संचय, लाभदायक निवेश अवधियों "
-            "तथा व्यापारिक वृद्धि की संभावनाओं का समग्र वैदिक मार्गदर्शन प्रदान करती है।"
-        )
-    else:  # Career default
-        title = "Career & Profession Guidance Report" if not hi else "करियर एवं व्यवसाय मार्गदर्शन रिपोर्ट"
-        target_houses = {10, 2, 6, 11, 1}
-        scope_summary = (
-            "This report focuses on the Karma Bhava (10th house), 2nd house of income, 6th house of service and competition, "
-            "and 11th house of achievements, evaluating profession direction, leadership potential, and promotion timing."
-            if not hi else
-            "यह रिपोर्ट कर्म भाव (दशम), आय भाव (द्वितीय), सेवा व प्रतिस्पर्धा भाव (षष्ठ) तथा उपलब्धि भाव (एकादश) का विश्लेषण कर "
-            "करियर दिशा, पदोन्नति के योग तथा व्यापारिक सफलता का प्रामाणिक मार्गदर्शन प्रदान करती है।"
-        )
+    files: dict[str, str] = {}
+    if hasattr(session, "chart"):
+        for name, svg in _vedic_svgs(session, language=language).items():
+            files[f"{name}.svg"] = svg
+    for k, label in (("d1_north", "D1 North"), ("d1_south", "D1 South"),
+                     ("d9_north", "D9 North"), ("d9_south", "D9 South")):
+        if f"{k}.svg" not in files:
+            omitted.append(f"{T['omit_chart']}: {label}.")
 
+    pos_table = _positions_table(bundle)
     all_houses = _houses_table(bundle)
-    filtered_rows = [
-        row for row in all_houses["rows"]
-        if any(f"House {h}" in str(row[0]) or f"{h} " in str(row[0]) for h in target_houses)
+    houses_rows_en = [list(r) for r in all_houses["rows"]]
+    places = report_text.planet_places(pos_table["rows"])
+
+    delin = None
+    try:
+        from .astro import delineation
+        delin = delineation.delineate(session)
+    except Exception as exc:
+        log.info("delineation unavailable: %s", exc)
+        omitted.append(T["omit_delineation"])
+    dignities = ({n: p["dignity"]["state"].replace("_", " ") for n, p in delin["planets"].items()}
+                 if delin else {})
+
+    # Primary houses, in the topic's own order of importance. The earlier
+    # filter compared "House 10" to the bare "10" in the table and never
+    # matched, so every topic printed houses 1-5.
+    wanted = cfg["houses"]
+    by_house = {str(r[0]).strip(): r for r in houses_rows_en}
+    shown = [by_house[str(h)] for h in wanted if str(h) in by_house]
+    shown_hi = [[r[0], _translate_val(r[1], language), r[2], _translate_val(r[3], language),
+                 _translate_val(r[4], language)] for r in shown] if hi else shown
+    houses_tbl = {"headers": T["houses_headers"], "cols": [0, 0, 0, 0, 1], "rows": shown_hi}
+
+    houses_md = "\n".join(
+        report_text.house_reading(h, houses_rows_en, places, dignities, hi) for h in wanted)
+
+    key_list, why = report_text.key_planets(key, houses_rows_en, hi)
+    planet_lines = []
+    for name in key_list:
+        line = report_text.planet_reading(name, places, delin["planets"] if delin else None, hi)
+        if line:
+            planet_lines.append(f"{line}\n  *{why.get(name, '')}*")
+    planets_md = "\n".join(planet_lines)
+    if hi:
+        planets_md = report_text.NOTE_EN_ONLY_HI + "\n\n" + planets_md
+    career_md = ""
+    if key == "career" and delin and delin.get("career") and not hi:
+        career_md = "\n".join(
+            f"* **{c['planet']}** ({c['role']}, from the {c['from']}): {c['theme']}."
+            for c in delin["career"])
+
+    dasha = None
+    windows: list = []
+    if getattr(session.birth, "zodiac", "sidereal") == "sidereal":
+        dasha, _ = _dasha_block(session, when, language)
+        if dasha is not None:
+            try:
+                from .astro.delineation import ANTARDASHA_EFFECTS
+                periods = _upcoming_periods(session, when, 365 * 3)
+                rows = report_text.outlook_rows(
+                    periods, ANTARDASHA_EFFECTS, hi, when=when,
+                    key_planets={k: why[k] for k in key_list}, key_label=T["marked"])
+                windows = [[lbl, markdown_blocks(md)] for lbl, md in rows]
+            except Exception as exc:
+                log.warning("single report: sub-period windows unavailable: %s", exc)
+    if dasha is None:
+        omitted.append(T["omit_dasha"])
+
+    dasha_data = None
+    if dasha is not None:
+        maha = dasha["summary"][2][1]
+        antar = dasha["summary"][3][1]
+        dasha_data = {
+            "summary": [[T["mahadasha"], maha], [T["antardasha"], antar]],
+            "table": {"headers": T["dasha_headers"], "cols": [0, 0, 0, 0, 1],
+                      "rows": dasha["table"]["rows"][:5]},
+        }
+
+    yogas_tbl = _yogas_pdf_table(session, language=language)
+    rem = None
+    try:
+        from .astro.remedies import recommend_remedies
+        rem = recommend_remedies(session)
+    except Exception as exc:
+        log.info("remedies unavailable: %s", exc)
+    remedies_md = report_text.remedies_section(rem, hi) if rem else ""
+
+    asc_sign = _translate_val(bundle["objects"]["ASC"]["sign"], language)
+    moon_sign = _translate_val(bundle["objects"].get("Moon", {}).get("sign", "—"), language)
+    birth_rows = [
+        [T["name"], meta.get("name", "—")],
+        [T["when"], meta.get("local_time", "—")],
+        [T["place"], meta.get("place", "—")],
+        [T["lagna"], asc_sign],
+        [T["moon"], moon_sign],
     ]
-    if not filtered_rows:
-        filtered_rows = all_houses["rows"][:5]
-
-    houses_tbl = {
-        "headers": all_houses["headers"] if not hi else ["भाव", "राशि", "आरंभ", "ग्रह स्थिति"],
-        "cols": all_houses.get("cols", [1, 1, 1, 2]),
-        "rows": filtered_rows
+    data = {
+        "brand": brand,
+        "title": title,
+        "subject": meta.get("name", "Kundali Consultation"),
+        "lang": language,
+        "cover": [
+            [T["topic"], title],
+            [T["born"], meta.get("local_time", "—")],
+            [T["generated"], dt.datetime.now().strftime("%d %B %Y")],
+        ],
+        "footer": f"{brand} · divineastro.org",
+        "scope": markdown_blocks(cfg["scope_hi"] if hi else cfg["scope_en"]),
+        "birth": birth_rows,
+        "d1_north": "d1_north.svg" if "d1_north.svg" in files else "",
+        "d1_south": "d1_south.svg" if "d1_south.svg" in files else "",
+        "d9_north": "d9_north.svg" if "d9_north.svg" in files else "",
+        "d9_south": "d9_south.svg" if "d9_south.svg" in files else "",
+        "houses": houses_tbl,
+        "houses_read": markdown_blocks(houses_md),
+        "planets": markdown_blocks(planets_md),
+        "career": markdown_blocks(career_md),
+        "dasha": dasha_data,
+        "windows": windows,
+        "windows_note": markdown_blocks(T["windows_note"]) if windows else [],
+        "yogas": yogas_tbl,
+        "remedies": markdown_blocks(remedies_md),
+        "about": markdown_blocks(T["about"] + (("\n\n" + "\n".join(f"* {o}" for o in omitted)) if omitted else "")),
+        "texts": T,
     }
+    return _compile(_SINGLE_QUESTION_BODY, data, files)
 
+
+def _report_language(language: str, notes: list[str]) -> str:
+    """The language a paid report is really printed in.
+
+    Hindi needs a Devanagari face. The production image refuses to build
+    without one (Dockerfile), but a developer machine or a trimmed image may
+    lack it, and Typst would then print empty boxes without a word. Print
+    English instead and say so in the report.
+    """
+    if language == "hi" and not devanagari_font():
+        logging.getLogger(__name__).warning(
+            "Hindi report requested but no Devanagari font is installed; printing English")
+        notes.append("This copy was printed in English because the Hindi font is not "
+                     "installed on this server.")
+        return "en"
+    return language if language in ("en", "hi") else "en"
+
+
+def _engine_inputs(session) -> dict:
+    """Delineation + remedies from the rule engine, each best-effort."""
+    out: dict = {"delin": None, "rem": None}
+    try:
+        from .astro import delineation
+        out["delin"] = delineation.delineate(session)
+    except Exception as exc:
+        logging.getLogger(__name__).info("delineation unavailable: %s", exc)
+    try:
+        from .astro.remedies import recommend_remedies
+        out["rem"] = recommend_remedies(session)
+    except Exception as exc:
+        logging.getLogger(__name__).info("remedies unavailable: %s", exc)
+    return out
+
+
+def _upcoming_periods(session, when: dt.datetime, days: int):
+    periods, when = _mahadasha_periods(session, when)
+    return report_text.antardasha_periods(periods, when, days, VIMSHOTTARI, SIDEREAL_YEAR)
+
+
+def _dasha_block(session, when: dt.datetime, language: str):
+    """The dasha summary + ladders both long reports print, or None.
+
+    Returns (block, antardasha_lord). Raises nothing: a chart that cannot
+    supply it gets (None, None) and the caller says so on the page."""
+    hi = language == "hi"
     try:
         summary = vimshottari(session, when)
         maha, antar = summary.get("mahadasha"), summary.get("antardasha")
+        antardasha_lord = antar["lord"] if antar else None
+
         def _period(p: dict) -> str:
             if not p:
                 return "—"
@@ -2281,106 +2585,59 @@ def single_question_pdf(
                 start, end = _month_year_hi(start), _month_year_hi(end)
             return f"{lord}  {start} – {end}"
 
+        nak = summary["nakshatra"]
+        nak_label = f"{_NAKSHATRAS_HI.get(nak, nak)} (पाद {summary['pada']})" if hi else f"{nak} (pada {summary['pada']})"
+
+        yogini_summary_rows: list[list[str]] = []
+        try:
+            from .chart_service import yogini_dasha as _yogini_dasha
+            yd = _yogini_dasha(session, when)
+
+            def _yperiod(p: dict | None) -> str:
+                if not p:
+                    return "—"
+                name = _YOGINI_HI.get(p["name"], p["name"]) if hi else p["name"]
+                graha = _PLANETS_HI.get(p["graha"], p["graha"]) if hi else p["graha"]
+                start, end = p["start"], p["end"]
+                if hi:
+                    start, end = _month_year_hi(start), _month_year_hi(end)
+                return f"{name} — {graha}  {start} – {end}"
+
+            yogini_summary_rows = [
+                ["Yogini Dasha" if not hi else "योगिनी दशा", _yperiod(yd.get("mahadasha"))],
+                ["Yogini Antardasha" if not hi else "योगिनी अंतर्दशा", _yperiod(yd.get("antardasha"))],
+            ]
+        except Exception as exc:
+            logging.getLogger(__name__).info("yogini dasha unavailable: %s", exc)
+
         dasha = {
             "summary": [
-                ["Lagna (Ascendant)" if not hi else "लग्न", bundle["objects"]["ASC"]["sign"]],
-                ["Moon Sign" if not hi else "चंद्र राशि", bundle["objects"].get("Moon", {}).get("sign", "—")],
-                ["Current Mahadasha" if not hi else "वर्तमान महादशा", _period(maha)],
-                ["Current Antardasha" if not hi else "वर्तमान अंतर्दशा", _period(antar)],
+                ["Moon" if not hi else "चंद्रमा", summary["moon_position"]],
+                ["Nakshatra" if not hi else "नक्षत्र", nak_label],
+                ["Mahadasha" if not hi else "वर्तमान महादशा", _period(maha)],
+                ["Antardasha" if not hi else "वर्तमान अंतर्दशा", _period(antar)],
+                *yogini_summary_rows,
+                ["As of" if not hi else "तिथि के अनुसार", when.strftime("%d %B %Y")],
             ],
             "table": {
-                "headers": ["Mahadasha", "Years", "From", "To", "Status"] if not hi else ["महादशा", "वर्ष", "आरंभ", "समाप्ति", "स्थिति"],
+                "headers": ["Mahadasha", "Years", "From", "To", "Status"] if not hi else ["महादशा", "वर्ष", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"],
                 "cols": [0, 0, 0, 0, 1],
-                "rows": _dasha_ladder(session, when)[:5],
-            }
+                "rows": _dasha_ladder(session, when),
+            },
+            "antardasha": {
+                "headers": ["Antardasha", "From", "To", "Status"] if not hi else ["अंतर्दशा", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"],
+                "cols": [0, 0, 0, 1],
+                "rows": _antardasha_ladder(session, when),
+            },
         }
-    except Exception:
-        dasha = None
-
-    yogas_tbl = _yogas_pdf_table(session, language=language)
-
-    try:
-        from .astro.remedies import recommend_remedies
-        rem = recommend_remedies(session)
-        dasha_lord = rem["dasha_remedies"]["mahadasha_lord"]
-        mantra = rem["dasha_remedies"]["mantra"]
-        charity = rem["dasha_remedies"]["charity"]
-        gem = rem["gemstones"].get("fortune_stone") or rem["gemstones"].get("life_stone")
-        gem_name = gem["name"] if gem else "Yellow Sapphire"
-    except Exception:
-        dasha_lord = "Jupiter"
-        mantra = "Om Namah Shivaya"
-        charity = "Donate yellow items or food to the needy."
-        gem_name = "Yellow Sapphire"
-
-    if hi:
-        analysis_md = f"""
-### कुंडली स्थिति एवं विषय-संकेत
-{scope_summary}
-
-### दशा एवं समय-चक्र का प्रभाव
-वर्तमान समय में आपकी कुंडली में **{dasha_lord}** की दशा सक्रिय है। यह काल आपके इस प्रश्न क्षेत्र के लिए अत्यंत महत्वपूर्ण मोड़ लेकर आता है। गोचर और दशा का अनुकूल समन्वय प्रयास करने पर अभीष्ट सिद्धि प्रदान करता है।
-
-### प्रमुख शास्त्रीय योग
-आपकी कुंडली में निर्मित शुभ योग एवं ग्रहों की स्थिति इस भाव को अतिरिक्त संबल प्रदान करती है। शुभ ग्रहों की दृष्टि कार्यों में स्थायित्व व प्रगति का मार्ग प्रशस्त करती है।
-"""
-        remedies_md = f"""
-* **शुभ रत्न:** अनुकूलता हेतु **{gem_name}** धारण करना लाभकारी रहेगा।
-* **दशा मंत्र जप:** प्रतिदिन **{mantra}** का 108 बार श्रद्धापूर्वक जप करें।
-* **दान एवं सेवा:** {charity}
-"""
-    else:
-        analysis_md = f"""
-### Astrological Context & Significators
-{scope_summary}
-
-### Dasha Alignment & Timing
-Your active period is governed by **{dasha_lord}**. In Vedic astrology, the dasha lord acts as the primary dispenser of karmic results. When harmonized with appropriate focus and actions, favorable planetary placements in these houses yield steady advancement and success.
-
-### Key Planetary Yogas
-Planetary alignments and friendly aspects in the relevant houses strengthen the promise of your chart. Favorable alignments provide positive momentum for ongoing endeavors.
-"""
-        remedies_md = f"""
-* **Recommended Gemstone:** Consider wearing **{gem_name}** to empower the auspicious significator planet.
-* **Mantra Sadhana:** Chant **{mantra}** 108 times daily during morning prayers.
-* **Charity & Good Deeds:** {charity}
-"""
-
-    birth_rows = [
-        ["Name" if not hi else "नाम", meta.get("name", "—")],
-        ["Date & time" if not hi else "जन्म विवरण", meta.get("local_time", "—")],
-        ["Place" if not hi else "जन्म स्थान", meta.get("place", "—")],
-        ["Lagna (Ascendant)" if not hi else "लग्न राशि", bundle["objects"]["ASC"]["sign"]],
-    ]
-
-    site_str = "divineastro.org"
-    data = {
-        "brand": brand,
-        "title": title,
-        "subject": meta.get("name", "Kundali Consultation"),
-        "lang": language,
-        "cover": [
-            ["Topic" if not hi else "परामर्श विषय", title],
-            ["Born" if not hi else "जन्म", meta.get("local_time", "—")],
-            ["Generated" if not hi else "तिथि", dt.datetime.now().strftime("%d %B %Y")],
-        ],
-        "footer": f"{brand} · {site_str}",
-        "birth": birth_rows,
-        "houses": houses_tbl,
-        "dasha": dasha,
-        "yogas": yogas_tbl,
-        "analysis": markdown_blocks(analysis_md),
-        "remedies": markdown_blocks(remedies_md),
-        "texts": {
-            "birth_details": "Birth details & summary" if not hi else "जन्म विवरण एवं कुंडली सारांश",
-            "houses_title": "Primary Houses for this Topic" if not hi else "इस विषय से संबंधित मुख्य भाव",
-            "dasha_title": "Active Dasha & Timing Windows" if not hi else "सक्रिय दशा एवं समय-चक्र",
-            "yogas_title": "Classical Yogas in Orb" if not hi else "सक्रिय शास्त्रीय योग",
-            "analysis_title": "Vedic Astrological Guidance" if not hi else "वैदिक ज्योतिषीय विश्लेषण एवं परामर्श",
-            "remedies_title": "Remedies & Recommended Practices" if not hi else "शास्त्रीय उपाय एवं मंत्र परामर्श",
-        }
-    }
-    return _compile(_SINGLE_QUESTION_BODY, data)
+        if hi:
+            dasha["table"]["rows"] = [[_translate_val(c, language) for c in r] for r in dasha["table"]["rows"]]
+            dasha["antardasha"]["rows"] = [[_translate_val(c, language) for c in r] for r in dasha["antardasha"]["rows"]]
+            dasha["summary"] = [[r[0], _translate_val(r[1], language)] for r in dasha["summary"]]
+        return dasha, antardasha_lord
+    except Exception as exc:
+        logging.getLogger(__name__).warning("dasha tables unavailable: %s", exc)
+        return None, None
 
 
 def life_book_pdf(
@@ -2391,105 +2648,58 @@ def life_book_pdf(
     when: dt.datetime | None = None,
     language: str = "en"
 ) -> bytes:
-    """A comprehensive 35+ page luxury Vedic Life Book PDF report."""
-    from .astro.ashtakavarga import calculate_ashtakavarga
-    from .astro.vargas import get_shodashvarga_data
-    from .llm import generate_kundali_narratives
+    """The Vedic Life Book: a long PDF horoscope from the customer's own chart.
 
+    With a narration model configured, the three interpretation sections and
+    the 12-month forecast are the model's. Without one (or when its call
+    fails) they are built by the rule engine from the chart's own placements
+    (app/report_text.py) and say so on the page. Nothing is dropped silently:
+    anything the chart cannot supply is listed under "About this edition".
+    """
+    from .astro.ashtakavarga import calculate_ashtakavarga
+    from .llm import generate_kundali_interpretations, generate_kundali_narratives
+
+    log = logging.getLogger(__name__)
     when = when or dt.datetime.now()
     bundle = session.bundle
     birth = session.birth
     meta = bundle["meta"]
-
-    texts = _LOCALIZED_TEXTS.get(language, _LOCALIZED_TEXTS["en"])
-    files: dict[str, str] = {}
-
-    d1_north = d1_south = d9_north = d9_south = ""
-    try:
-        from . import vedic_chart
-        d1_north_svg = vedic_chart.render_north_indian(session, theme="light")
-        d1_south_svg = vedic_chart.render_south_indian(session, theme="light")
-        d1_north, d1_south = "d1_north.svg", "d1_south.svg"
-        files[d1_north] = d1_north_svg
-        files[d1_south] = d1_south_svg
-
-        d9_north_svg = vedic_chart.render_north_indian(session, varga="D9", theme="light")
-        d9_south_svg = vedic_chart.render_south_indian(session, varga="D9", theme="light")
-        d9_north, d9_south = "d9_north.svg", "d9_south.svg"
-        files[d9_north] = d9_north_svg
-        files[d9_south] = d9_south_svg
-    except Exception as exc:
-        logging.getLogger(__name__).warning("vedic chart SVGs unavailable: %s", exc)
-
+    omitted: list[str] = []
+    language = _report_language(language, omitted)
     hi = language == "hi"
+    texts = _LOCALIZED_TEXTS[language]
 
-    dasha = None
-    antardasha_lord = None
+    # The four chart drawings (D1 and D9, North and South Indian).
+    files: dict[str, str] = {}
+    for name, svg in _vedic_svgs(session, language=language).items():
+        files[f"{name}.svg"] = svg
+    for key, label in (("d1_north", "D1 North Indian"), ("d1_south", "D1 South Indian"),
+                       ("d9_north", "D9 North Indian"), ("d9_south", "D9 South Indian")):
+        if f"{key}.svg" not in files:
+            omitted.append(f"{texts['omit_chart']}: {label}.")
+
+    dasha, antardasha_lord = None, None
     if birth.zodiac == "sidereal":
-        try:
-            summary = vimshottari(session, when)
-            maha, antar = summary.get("mahadasha"), summary.get("antardasha")
-            antardasha_lord = antar["lord"] if antar else None
+        dasha, antardasha_lord = _dasha_block(session, when, language)
+        if dasha is None:
+            omitted.append(texts["omit_dasha"])
+    else:
+        omitted.append(texts["omit_dasha_tropical"])
 
-            def _period(p: dict) -> str:
-                if not p:
-                    return "—"
-                lord = _PLANETS_HI.get(p["lord"], p["lord"]) if hi else p["lord"]
-                start, end = p["start"], p["end"]
-                if hi:
-                    start, end = _month_year_hi(start), _month_year_hi(end)
-                return f"{lord}  {start} – {end}"
-
-            nak = summary["nakshatra"]
-            nak_label = f"{_NAKSHATRAS_HI.get(nak, nak)} (पाद {summary['pada']})" if hi else f"{nak} (pada {summary['pada']})"
-
-            yogini_summary_rows: list[list[str]] = []
-            try:
-                from .chart_service import yogini_dasha as _yogini_dasha
-                yd = _yogini_dasha(session, when)
-                def _yperiod(p: dict | None) -> str:
-                    if not p:
-                        return "—"
-                    name = _YOGINI_HI.get(p["name"], p["name"]) if hi else p["name"]
-                    graha = _PLANETS_HI.get(p["graha"], p["graha"]) if hi else p["graha"]
-                    start, end = p["start"], p["end"]
-                    if hi:
-                        start, end = _month_year_hi(start), _month_year_hi(end)
-                    return f"{name} — {graha}  {start} – {end}"
-
-                yogini_summary_rows = [
-                    ["Yogini Dasha" if not hi else "योगिनी दशा", _yperiod(yd.get("mahadasha"))],
-                    ["Yogini Antardasha" if not hi else "योगिनी अंतर्दशा", _yperiod(yd.get("antardasha"))],
-                ]
-            except Exception:
-                pass
-
-            dasha = {
-                "summary": [
-                    ["Moon" if not hi else "चंद्रमा", summary["moon_position"]],
-                    ["Nakshatra" if not hi else "नक्षत्र", nak_label],
-                    ["Mahadasha" if not hi else "वर्तमान महादशा", _period(maha)],
-                    ["Antardasha" if not hi else "वर्तमान अंतर्दशा", _period(antar)],
-                    *yogini_summary_rows,
-                    ["As of" if not hi else "तिथि के अनुसार", when.strftime("%d %B %Y")],
-                ],
-                "table": {
-                    "headers": ["Mahadasha", "Years", "From", "To", "Status"] if not hi else ["महादशा", "वर्ष", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"],
-                    "cols": [0, 0, 0, 0, 1],
-                    "rows": _dasha_ladder(session, when),
-                },
-                "antardasha": {
-                    "headers": ["Antardasha", "From", "To", "Status"] if not hi else ["अंतर्दशा", "आरंभ तिथि", "समाप्ति तिथि", "स्थिति"],
-                    "cols": [0, 0, 0, 1],
-                    "rows": _antardasha_ladder(session, when)
-                }
-            }
-        except Exception:
-            dasha = None
-
-    av_data = calculate_ashtakavarga(session, lang=language)
-    ashtakavarga_table = av_data["table"]
-    ashtakavarga_note = av_data["financial_note"]
+    av_table = {"headers": [], "cols": [], "rows": []}
+    av_note = ""
+    av_sav_by_house = None
+    try:
+        av_data = calculate_ashtakavarga(session, lang=language)
+        raw = av_data["table"]
+        av_table = {"headers": [str(h) for h in raw["headers"]],
+                    "cols": [0] * len(raw["headers"]),
+                    "rows": [[str(c) for c in row] for row in raw["rows"]]}
+        av_note = av_data["financial_note"]
+        av_sav_by_house = av_data["sav_by_house"]
+    except Exception as exc:
+        log.warning("life book: ashtakavarga unavailable: %s", exc)
+        omitted.append(texts["omit_ashtakavarga"])
 
     vargas_table = _varga_grid(session)
     yogas_table = _yogas_pdf_table(session, language=language)
@@ -2497,36 +2707,86 @@ def life_book_pdf(
     houses_table = _houses_table(bundle)
     aspects_table = _aspects_table(bundle)
 
+    eng = _engine_inputs(session)
+    delin, rem = eng["delin"], eng["rem"]
+    if delin is None:
+        omitted.append(texts["omit_delineation"])
+    places = report_text.planet_places(pos_table["rows"])
+    dignities = ({n: p["dignity"]["state"].replace("_", " ") for n, p in delin["planets"].items()}
+                 if delin else {})
+
     analysis_input = {
         "meta": meta,
         "lagna": bundle["objects"]["ASC"]["sign"],
-        "dasha": {"mahadasha": _current_mahadasha(dasha), "antardasha": {"lord": antardasha_lord if dasha else None}},
+        "dasha": {"mahadasha": _current_mahadasha(dasha), "antardasha": {"lord": antardasha_lord}},
         "placements": pos_table["rows"],
         "houses": houses_table["rows"],
         "vargas": vargas_table,
         "yogas": _yogas_for_prompt(session),
-        "ashtakavarga": av_data["sav_by_house"],
     }
+    if av_sav_by_house is not None:
+        analysis_input["ashtakavarga"] = av_sav_by_house
     if "Moon" in bundle["objects"]:
         analysis_input["moon_sign"] = bundle["objects"]["Moon"]["sign"]
+    if rem:
+        analysis_input["remedies"] = rem
+    if delin:
+        analysis_input["dignities"] = [[n, p["dignity"]["state"].replace("_", " "), p["dignity"]["note"]]
+                                       for n, p in delin["planets"].items()]
+        analysis_input["house_placements"] = [[n, str(p["house"]), p["house_text"]]
+                                              for n, p in delin["planets"].items()]
 
-    try:
-        from .astro.remedies import recommend_remedies
-        analysis_input["remedies"] = recommend_remedies(session)
-    except Exception:
-        pass
+    # The engine text reads the English tables, so capture them before any
+    # Hindi translation of the printed ones.
+    houses_rows_en = [list(r) for r in houses_table["rows"]]
+    yoga_rows = [list(r) for r in yogas_table["rows"]]
 
     narratives = generate_kundali_narratives(analysis_input, language=language)
+    interpretations = generate_kundali_interpretations(analysis_input, language=language)
+    model_outlook = narratives.get("source") == "model"
+    model_interp = interpretations.get("source") == "model"
 
-    if language == "hi":
-        pos_table["headers"] = [_translate_val(h, language) for h in pos_table["headers"]]
-        pos_table["rows"] = [[_translate_val(cell, language) for cell in row] for row in pos_table["rows"]]
-        houses_table["headers"] = [_translate_val(h, language) for h in houses_table["headers"]]
-        houses_table["rows"] = [[_translate_val(cell, language) for cell in row] for row in houses_table["rows"]]
-        aspects_table["headers"] = [_translate_val(h, language) for h in aspects_table["headers"]]
-        aspects_table["rows"] = [[_translate_val(cell, language) for cell in row] for row in aspects_table["rows"]]
-        vargas_table["headers"] = [_translate_val(h, language) for h in vargas_table["headers"]]
-        vargas_table["rows"] = [[_translate_val(cell, language) for cell in row] for row in vargas_table["rows"]]
+    if hi:
+        for tbl in (pos_table, houses_table, aspects_table, vargas_table):
+            tbl["headers"] = [_translate_val(h, language) for h in tbl["headers"]]
+            tbl["rows"] = [[_translate_val(cell, language) for cell in row] for row in tbl["rows"]]
+
+    # --- the readings: the model when it answered, the rule engine otherwise ---
+    if model_interp:
+        houses_md = interpretations["houses_detailed"]
+        planets_md = interpretations["planets_detailed"]
+        remedies_md = interpretations["yogas_remedies_detailed"]
+    else:
+        note = report_text.NOTE_ENGINE_HI if hi else report_text.NOTE_ENGINE_EN
+        extra = ("\n\n" + report_text.NOTE_EN_ONLY_HI) if hi else ""
+        houses_md = note + "\n\n" + report_text.houses_section(houses_rows_en, places, dignities, hi)
+        planets_md = (note + extra + "\n\n"
+                      + report_text.planets_section(places, delin["planets"] if delin else None, hi))
+        remedies_md = note + "\n\n" + report_text.yogas_remedies_section(yoga_rows, rem, hi)
+        if delin and delin.get("conjunctions") and not hi:
+            planets_md += "\n\n### Conjunctions\n" + "\n".join(
+                f"* **{' + '.join(c['planets'])} in {c['sign']}**: {report_text._sentence(c['note'])}"
+                for c in delin["conjunctions"])
+
+    # --- the 12 months ahead ---------------------------------------------------
+    varshphal_title = texts["varshphal_title"]
+    upcoming_md = house_summary_md = ""
+    varshphal: list = []
+    if model_outlook:
+        varshphal = [[m, markdown_blocks(p)] for m, p in narratives["varshphal"]]
+        upcoming_md, house_summary_md = narratives["key_periods"], narratives["house_summary"]
+    elif birth.zodiac == "sidereal":
+        try:
+            from .astro.delineation import ANTARDASHA_EFFECTS
+            periods = _upcoming_periods(session, when, 365)
+            rows = report_text.outlook_rows(periods, ANTARDASHA_EFFECTS, hi, when=when)
+            varshphal = [[lbl, markdown_blocks(md)] for lbl, md in rows]
+            varshphal_title = texts["outlook_title"]
+            upcoming_md = texts["outlook_note"]
+        except Exception as exc:
+            log.warning("life book: dasha outlook unavailable: %s", exc)
+    if not varshphal:
+        omitted.append(texts["omit_outlook"])
 
     data = {
         "brand": brand,
@@ -2547,25 +2807,26 @@ def life_book_pdf(
             ["Lagna (Ascendant)" if not hi else "लग्न राशि", _translate_val(bundle["objects"]["ASC"]["sign"], language)],
             ["Moon Sign" if not hi else "चंद्र राशि", _translate_val(bundle["objects"].get("Moon", {}).get("sign", "—"), language)],
         ],
-        "d1_north": d1_north,
-        "d1_south": d1_south,
-        "d9_north": d9_north,
-        "d9_south": d9_south,
+        "d1_north": "d1_north.svg" if "d1_north.svg" in files else "",
+        "d1_south": "d1_south.svg" if "d1_south.svg" in files else "",
+        "d9_north": "d9_north.svg" if "d9_north.svg" in files else "",
+        "d9_south": "d9_south.svg" if "d9_south.svg" in files else "",
         "positions": pos_table,
         "houses": houses_table,
         "aspects": aspects_table,
-        "ashtakavarga": ashtakavarga_table,
-        "ashtakavarga_note": ashtakavarga_note,
+        "ashtakavarga": av_table,
+        "ashtakavarga_note": av_note,
         "vargas": vargas_table,
         "yogas": yogas_table,
         "dasha": dasha,
-        "houses_detailed": markdown_blocks(narratives.get("houses_detailed", "")),
-        "planets_detailed": markdown_blocks(narratives.get("planets_detailed", "")),
-        "varshphal": [
-            [f"Year {y['year']} ({y['ascendant']})" if not hi else f"वर्ष {y['year']} (वर्ष लग्न: {y['ascendant']})", markdown_blocks(y["text"])]
-            for y in narratives.get("varshphal", [])
-        ],
-        "remedies_detailed": markdown_blocks(narratives.get("remedies_detailed", "")),
+        "houses_detailed": markdown_blocks(houses_md),
+        "planets_detailed": markdown_blocks(planets_md),
+        "varshphal": varshphal,
+        "varshphal_title": varshphal_title,
+        "upcoming": markdown_blocks(upcoming_md),
+        "house_summary": markdown_blocks(house_summary_md),
+        "remedies_detailed": markdown_blocks(remedies_md),
+        "omitted": markdown_blocks("\n".join(f"* {o}" for o in omitted)) if omitted else [],
         "texts": texts,
     }
     return _compile(_LIFE_BOOK_BODY, data, files=files)

@@ -31,7 +31,7 @@ class TestLifeBook(unittest.TestCase):
         prod = billing.PRODUCTS.get("life_book")
         self.assertIsNotNone(prod)
         self.assertEqual(prod.sku, "life_book")
-        self.assertEqual(prod.pages, 35)
+        self.assertEqual(prod.pages, 8)
         self.assertEqual(prod.amount_paise, 49900)
 
     def test_life_book_order_and_gating(self):

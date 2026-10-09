@@ -269,7 +269,8 @@ PUBLIC_PAGES = frozenset({"/", "/feedback", "/terms", "/privacy", "/refund", "/c
 # The SEO pages (seo_pages.py): the bare tool path, or tool + a real city slug,
 # each also under /hi/ (DIVASTRO-106's Hindi copies).
 SEO_TOOLS = frozenset({"/panchang", "/rahu-kaal", "/choghadiya", "/kundali-milan",
-                       "/free-kundali", "/sitemap"})   # /sitemap: DIVASTRO-133
+                       "/free-kundali", "/sitemap",    # /sitemap: DIVASTRO-133
+                       "/pricing"})                   # /pricing: DIVASTRO-149
 SEO_CITY_TOOLS = frozenset({"/panchang", "/rahu-kaal", "/choghadiya"})
 # The daily rashifal pages (rashifal_pages.py): the 26 canonical URLs, EN + HI.
 RASHIFAL_PAGES = rashifal_pages.PUBLIC_PATHS
@@ -470,6 +471,11 @@ EVENT_NAMES = frozenset({
     "strip_push",      # tapped "get daily alert" in the stay-in-touch strip (content pages)
     "strip_channel",   # tapped "join our WhatsApp channel" in that strip
     "strip_share",     # tapped "share this page on WhatsApp" in that strip
+    "pricing_view",    # DIVASTRO-149: the home "Plans" section scrolled into view (detail "home"),
+                       #   or /pricing opened (detail "page")
+    "plans_click",     # tapped a plan card or "See all plans" on the home screen, or "Start free" on /pricing
+    "offer_shown",     # an in-app offer appeared (detail: the sku, "low_credits" or "life_book_dashboard")
+    "offer_click",     # ...and was tapped (same detail)
 })
 MAX_EVENT_BYTES = 512
 
@@ -651,6 +657,8 @@ APP_FUNNEL = (   # (label, event name, detail or None)
     ("Opened sign-in", "signin_open", None),
     ("Signed up", "signup", None),
     ("Asked the AI a question", "ask_sent", None),
+    ("Saw the prices", "pricing_view", None),
+    ("Tapped an in-app offer", "offer_click", None),
     ("Opened the store", "store_open", None),
     ("Started checkout", "checkout_start", None),
     ("Paid", "paid", None),
@@ -738,6 +746,24 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("strip_push", ""): "Tapped Get daily alert on a content page",
     ("strip_channel", ""): "Tapped Join WhatsApp channel on a content page",
     ("strip_share", ""): "Tapped Share on WhatsApp on a content page",
+    # DIVASTRO-149: the purchase funnel's new steps
+    ("pricing_view", "home"): "Saw the Plans section on the home screen",
+    ("pricing_view", "page"): "Opened the /pricing page",
+    ("plans_click", ""): "Tapped a plan on the home screen or Start free on /pricing",
+    ("offer_shown", ""): "An in-app offer was shown",
+    ("offer_shown", "low_credits"): "Offer shown: few questions left",
+    ("offer_shown", "life_book_dashboard"): "Offer shown: Life Book after the chart",
+    ("offer_shown", "sq_career"): "Offer shown: Career report after an answer",
+    ("offer_shown", "sq_marriage_timing"): "Offer shown: Marriage report after an answer",
+    ("offer_shown", "sq_wealth_business"): "Offer shown: Wealth report after an answer",
+    ("offer_shown", "life_book"): "Offer shown: Life Book after an answer",
+    ("offer_click", ""): "Tapped an in-app offer",
+    ("offer_click", "low_credits"): "Tapped the offer: few questions left",
+    ("offer_click", "life_book_dashboard"): "Tapped the offer: Life Book after the chart",
+    ("offer_click", "sq_career"): "Tapped the offer: Career report",
+    ("offer_click", "sq_marriage_timing"): "Tapped the offer: Marriage report",
+    ("offer_click", "sq_wealth_business"): "Tapped the offer: Wealth report",
+    ("offer_click", "life_book"): "Tapped the offer: Life Book",
 }
 
 
