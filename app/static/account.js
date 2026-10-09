@@ -630,9 +630,9 @@ function packCard(p) {
     ${price}
     ${unit}
     <p class="pack-blurb">${escapeHtml(loc(p, "blurb"))}</p>
-    <div class="pack-buy"><button class="primary buy-btn" data-sku="${p.sku}">${label}</button>
+    <button class="primary buy-btn" data-sku="${p.sku}">${label}</button>
     ${SAMPLE_SKUS.has(p.sku) ? `<a class="pack-sample" href="${sampleHref(p.sku)}" target="_blank" rel="noopener"
-      data-sample="${p.sku}" title="${escapeHtml(at("sampleNote"))}">${escapeHtml(at("sampleView"))}</a>` : ""}</div>
+      data-sample="${p.sku}" title="${escapeHtml(at("sampleNote"))}">${escapeHtml(at("sampleView"))}</a>` : ""}
   </div>`;
 }
 

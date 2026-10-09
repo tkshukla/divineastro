@@ -2614,6 +2614,7 @@ html[lang="ne"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetic
   .modal.store .pack-unit { grid-area: u; text-align: left; margin: 4px 0 0; font-size: 12px; }
   .modal.store .pack-blurb { grid-area: b; margin: 0; font-size: 12px; line-height: 1.42; }
   .modal.store .pack .buy-btn { grid-area: c; align-self: end; margin: 6px 0 0; padding: 8px 6px; font-size: 13px; }
+  .modal.store .pack .pack-sample { grid-area: u; justify-self: start; align-self: start; margin: 0; padding: 3px 0; text-align: left; }
   .modal.store .pack-flag { top: -10px; left: 12px; font-size: 12px; padding: 1px 8px; }
   .modal.store .store-h { font-size: 17px; }
   .modal.store .store-sec[data-sec="single_question"] > .modal-sub { display: none; }
@@ -2716,9 +2717,8 @@ html[lang="ne"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetic
 .plan.has-sample { padding-bottom: 34px; }
 .plan-sample { position: absolute; right: 12px; bottom: 8px; padding: 2px 4px; font-size: 12.5px;
                color: var(--gold-soft); text-decoration: underline; }
-.pack-buy { display: flex; align-items: center; gap: 10px; }
-.pack-buy .buy-btn { flex: 1; min-width: 0; }
-.pack-sample { flex: none; font-size: 13px; color: var(--gold-soft); text-decoration: underline; }
+.pack-sample { display: block; text-align: center; margin-top: 8px; padding: 4px; font-size: 13px;
+               color: var(--gold-soft); text-decoration: underline; }
 @media (max-width: 700px) { .plans-grid { grid-template-columns: 1fr 1fr; } }
 .plan-hw {
   display: flex; flex-direction: column; gap: 3px; margin-top: 8px; padding: 12px 14px; min-height: 44px;
