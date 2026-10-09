@@ -2711,4 +2711,14 @@ html[lang="ne"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetic
              color: var(--gold-soft); text-decoration: none; }
 .plans-all:hover { text-decoration: underline; }
 @media (max-width: 700px) { .plans-grid { grid-template-columns: 1fr 1fr; } }
+.plan-hw {
+  display: flex; flex-direction: column; gap: 3px; margin-top: 8px; padding: 12px 14px; min-height: 44px;
+  border: 1px solid var(--line); border-radius: 14px; background: rgba(255, 255, 255, 0.035);
+  color: var(--ink); text-decoration: none;
+}
+.plan-hw:hover { border-color: rgba(var(--gold-rgb), 0.45); background: rgba(var(--gold-rgb), 0.07); }
+.plan-hw-head { font-size: 14px; font-weight: 600; line-height: 1.3; color: var(--gold); }
+.plan-hw-text { font-size: 12.5px; color: var(--ink-dim); line-height: 1.45; overflow-wrap: anywhere; }
+.plan-hw-go { font-size: 13px; color: var(--gold-soft); padding: 4px 0; }
+[data-theme="light"] .plan-hw { background: rgba(20, 30, 80, 0.045); }
 [data-theme="light"] .plan { background: rgba(20, 30, 80, 0.045); }

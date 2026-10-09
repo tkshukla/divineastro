@@ -127,7 +127,7 @@ check("no claim about page counts for the reports or the book",
 print("\n3. The page follows the catalogue and the settings")
 saved_products, saved_free = dict(billing.PRODUCTS), billing.FREE_QUESTIONS
 try:
-    billing.PRODUCTS["q10"] = dataclasses.replace(billing.PRODUCTS["q10"], amount_paise=12300)
+    billing.PRODUCTS["q10"] = dataclasses.replace(billing.PRODUCTS["q10"], offer_paise=12300)
     billing.FREE_QUESTIONS = 7
     h = get("/pricing").text
     check("a changed catalogue price shows on the page", rows(h)["q10"] == "₹123", rows(h).get("q10"))
@@ -221,6 +221,32 @@ check("the in-app funnel kept its steps and gained the new ones",
 js = (ROOT / "app" / "static" / "pricing.js").read_text(encoding="utf-8")
 check("pricing.js reports pricing_view and plans_click through daTrack",
       "daTrack" in js and "'pricing_view'" in js and "'plans_click'" in js)
+
+print("\n7b. The three classical texts are named under the hand-written section only (DIVASTRO-153)")
+for path, sent, h2s in (
+    ("/pricing", "Hand-written kundali readings are prepared from the knowledge of Ravan Samhita, Lal Kitab and Jataka Parijata.",
+     ("Single-topic reports", "Question packs", "Life Book")),
+    ("/hi/pricing", "हस्तलिखित कुंडली रावण संहिता, लाल किताब और जातक पारिजात के ज्ञान के आधार पर तैयार की जाती है।",
+     ("एकल-विषय रिपोर्ट", "प्रश्न पैक", "लाइफ बुक")),
+):
+    html = get(path).text
+    check(f"{path}: the hand-written section has id=handwritten", 'id="handwritten"' in html)
+    check(f"{path}: the sentence appears exactly once", html.count(sent.replace("'", "&#x27;")) == 1
+          or html.count(sent) == 1)
+    body = html.split('id="handwritten"', 1)[1]
+    sect = body.split("<h2", 1)[0] if "<h2" in body else body
+    nxt = body.split("<h2", 1)[1].split("</h2>")[0] if "<h2" in body else ""
+    check(f"{path}: the sentence sits in the hand-written section", sent in sect, sect[:200])
+    before = html.split('id="handwritten"', 1)[0]
+    check(f"{path}: no report / pack / Life Book section carries the texts",
+          "Ravan" not in before and "रावण" not in before)
+    after = body.split("</table>", 1)[1] if "</table>" in body else ""
+    check(f"{path}: nothing after the hand-written table names the texts",
+          "Ravan" not in after and "रावण" not in after)
+check("the home page ships the hand-written strip text keys (i18n en)",
+      "Ravan Samhita, Lal Kitab and Jataka Parijata" in (ROOT / "app" / "static" / "i18n" / "en.json").read_text(encoding="utf-8"))
+check("plans_click 'handwritten' has a plain-words label",
+      bool(analytics.EVENT_LABELS.get(("plans_click", "handwritten"))))
 
 print("\n8. Product wording stays inside what the code delivers")
 for p in catalogue:

@@ -150,6 +150,18 @@ def _table(items: list[dict], lang: str) -> str:
 
 
 def _product_ld(p: dict, lang: str, canonical: str) -> dict:
+    offer = {
+        "@type": "Offer",
+        "price": str(p["rupees"]),
+        "priceCurrency": "INR",
+        "availability": "https://schema.org/InStock",
+        "url": f"{canonical}#{p['sku']}",
+        "seller": {"@type": "Organization", "name": BRAND},
+    }
+    # Only while the offer is live, and only the real end date: after it the
+    # price above is the list price and carries no expiry.
+    if p["offer"]["active"] and p["offer"]["ends_at"]:
+        offer["priceValidUntil"] = p["offer"]["ends_at"]
     return {
         "@type": "Product",
         "@id": f"{canonical}#{p['sku']}",
@@ -157,14 +169,7 @@ def _product_ld(p: dict, lang: str, canonical: str) -> dict:
         "description": _blurb(p, lang),
         "sku": p["sku"],
         "brand": {"@type": "Brand", "name": BRAND},
-        "offers": {
-            "@type": "Offer",
-            "price": str(p["rupees"]),
-            "priceCurrency": "INR",
-            "availability": "https://schema.org/InStock",
-            "url": f"{canonical}#{p['sku']}",
-            "seller": {"@type": "Organization", "name": BRAND},
-        },
+        "offers": offer,
     }
 
 
@@ -198,11 +203,13 @@ def render(lang: str = EN) -> HTMLResponse:
                   f'<div class="box"><p>{_e(_tx("free.p", cl, **values))}</p></div>')
 
     for key, items in _sections(products):
-        blocks.append(f"<h2>{_e(_tx(key + '.h2', cl))}</h2>" if key != "more" else "")
+        h2_id = ' id="handwritten"' if key == "kundali" else ""
+        blocks.append(f"<h2{h2_id}>{_e(_tx(key + '.h2', cl))}</h2>" if key != "more" else "")
         if key == "kundali":
             blocks.append("<p>" + _e(
                 _tx("kundali.p", cl, astrologer=f["astrologer"], days=f["days"]) if f["astrologer"]
                 else _tx("kundali.p0", cl)) + "</p>")
+            blocks.append(f'<p class="hw-texts">{_e(_tx("kundali.texts", cl))}</p>')
         elif _has(key + ".p"):
             blocks.append(f"<p>{_e(_tx(key + '.p', cl))}</p>")
         blocks.append(_table(items, cl))
