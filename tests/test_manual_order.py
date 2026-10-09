@@ -97,7 +97,7 @@ def main() -> int:
 
     print("\n3. The customer signing in later gets that same account and credits")
     cust, _ = sign_in(email)
-    check("purchase is waiting on their account", credits(cust) == 20, str(credits(cust)))
+    check("purchase is waiting on their account", credits(cust) == free_questions() + 10, str(credits(cust)))
     mine = cust.get(f"{BASE}/api/orders", timeout=20).json()["orders"]
     check("it shows in their order history",
           any(x["id"] == o["id"] and x["status"] == "paid" for x in mine))
@@ -105,10 +105,10 @@ def main() -> int:
     print("\n4. A repeat click is caught, an intentional repeat is allowed")
     dup = admin_s.post(url, json={"email": email, "sku": "q10"}, timeout=30)
     check("identical order within 2 minutes -> 409", dup.status_code == 409, dup.text[:160])
-    check("balance untouched by the refused duplicate", credits(cust) == 20, str(credits(cust)))
+    check("balance untouched by the refused duplicate", credits(cust) == free_questions() + 10, str(credits(cust)))
     again = admin_s.post(url, json={"email": email, "sku": "q10", "force": True}, timeout=30)
     check("force records it", again.status_code == 200, again.text[:160])
-    check("second sale's credits landed", credits(cust) == 30, str(credits(cust)))
+    check("second sale's credits landed", credits(cust) == free_questions() + 20, str(credits(cust)))
     check("existing customer is not re-created", again.json()["customer"]["created"] is False)
 
     print("\n5. Kundali with birth details reaches the astrologer's queue")

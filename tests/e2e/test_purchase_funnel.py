@@ -97,7 +97,7 @@ def plans_signed_out(browser, base: str) -> None:
         check(f"[{name}] a 'See all plans' link to /pricing",
               pg.page.get_attribute("#plans .plans-all", "href") == "/pricing")
         check(f"[{name}] the free note uses the server's number",
-              "10 questions are free" in pg.page.locator("#plans .plans-free").inner_text())
+              "every new account gets 3 free questions" in pg.page.locator("#plans .plans-free").inner_text())
         check(f"[{name}] no horizontal scroll",
               pg.page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"))
         pg.page.locator("#plans").scroll_into_view_if_needed()

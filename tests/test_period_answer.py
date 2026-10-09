@@ -81,7 +81,13 @@ def main() -> int:
     email = f"period{random.randint(10000, 99999)}@example.com"
     r = client.post("/api/auth/dev", json={"email": email, "name": "Period Test"})
     check("dev sign-in", r.status_code == 200, r.text[:200])
-    credits0 = r.json()["user"]["credits"]
+    # A new account starts with billing.FREE_QUESTIONS (3 since DIVASTRO-154); this suite
+    # asks more than that, so top the test account up.
+    from app.db import EntryKind, grant, session as db_session
+    with db_session() as db:
+        grant(db, r.json()["user"]["id"], 20, EntryKind.admin_adjust, note="test top-up")
+        db.commit()
+    credits0 = client.get("/api/me").json()["user"]["credits"]
 
     r = client.post("/api/chart", json={
         "name": "Sanskruti", "date": "1999-08-14", "time": "14:07",

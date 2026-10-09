@@ -128,7 +128,7 @@ def main() -> int:
 
     print("\n10. History and ledger")
     hist = s.get(f"{BASE}/api/history").json()["questions"]
-    check("questions logged", len(hist) == 11, f"{len(hist)} rows")
+    check("questions logged (the free ones + 1 paid)", len(hist) == start_credits + 1, f"{len(hist)} rows")
     check("answers stored", all(q["answer"] for q in hist))
     ledger = s.get(f"{BASE}/api/ledger").json()
     check("ledger balances", ledger["balance"] == after, f"{ledger['balance']} vs {after}")

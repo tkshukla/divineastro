@@ -1,6 +1,6 @@
 """Asking a question end to end: streaming, the stop button, starter chips
-hiding, a Hindi answer, the paywall at 0 credits, and the 10 free credits
-being consumed (DIVASTRO-72, flow 6).
+hiding, a Hindi answer, the paywall at 0 credits, and the 3 free credits
+(DIVASTRO-154; 10 before it) being consumed (DIVASTRO-72, flow 6).
 
     C:\\Astro\\.venv\\Scripts\\python.exe -m tests.e2e.test_ask_question
 """
@@ -141,7 +141,7 @@ def hindi_answer(p, browser, base: str) -> None:
 
 
 def paywall_after_free_questions(p, browser, base: str) -> None:
-    print("\n[the 10 free questions are actually consumed, then the paywall opens]")
+    print("\n[the 3 free questions are actually consumed, then the paywall opens]")
     ctx = browser.new_context(**DESKTOPS["desktop_1440x800"])
     pg = Page(ctx.new_page(), base)
     # A dedicated account: the default e2e@example.com is shared by every
@@ -150,13 +150,14 @@ def paywall_after_free_questions(p, browser, base: str) -> None:
     pg.open_chat(email="e2e-paywall@example.com", name="Paywall Tester")
 
     me = pg.page.context.request.get(f"{base}/api/me").json()
-    check("a fresh sign-up starts with 10 free questions",
-          me["user"]["credits"] == 10, str(me["user"]))
+    # DIVASTRO-154: new accounts get 3 (ASTRO_FREE_QUESTIONS), down from 10.
+    check("a fresh sign-up starts with 3 free questions",
+          me["user"]["credits"] == 3 and me["free_questions"] == 3, str(me))
 
     pill_text = pg.page.locator("#btn-credits").inner_text()
-    check("the credits pill shows 10 up front", "10" in pill_text, pill_text)
+    check("the credits pill shows 3 up front", "3" in pill_text and "10" not in pill_text, pill_text)
 
-    for i in range(10):
+    for i in range(3):
         bot_before = pg.page.locator(".msg.bot").count()
         ask(pg, f"Question number {i + 1} about my life.")
         pg.page.wait_for_function("state.busy === false", timeout=20000)
@@ -165,7 +166,7 @@ def paywall_after_free_questions(p, browser, base: str) -> None:
             arg=bot_before, timeout=20000)
 
     me_after = pg.page.context.request.get(f"{base}/api/me").json()
-    check("all 10 free questions were actually consumed",
+    check("all 3 free questions were actually consumed",
           me_after["user"]["credits"] == 0, str(me_after["user"]))
 
     statuses: list[int] = []
@@ -173,7 +174,7 @@ def paywall_after_free_questions(p, browser, base: str) -> None:
                if r.url.endswith("/api/ask/stream") else None)
     ask(pg, "One more question, now that I'm out of credits.")
     pg.page.wait_for_timeout(2000)
-    check("the 11th question is refused with 402, not silently answered",
+    check("the 4th question is refused with 402, not silently answered",
           402 in statuses, str(statuses))
     check("the store/paywall modal opens on a 402",
           pg.page.locator(".modal, .modal-backdrop").count() > 0)

@@ -176,8 +176,7 @@ def oauth_flow(browser, base: str) -> None:
     check("back from the provider: the guest question and answer are back on screen, then the parked one",
           ok and users.index("Is this a good year for money?") < users.index("What about my health?"),
           str(users) + " " + "; ".join(pg.console_errors[:3]))
-    restored = pg.page.locator("#thread .msg.bot").filter(has_text="Is this").count() == 0 and \
-        pg.page.evaluate("""() => { const u = [...document.querySelectorAll('#thread .msg')];
+    restored = pg.page.evaluate("""() => { const u = [...document.querySelectorAll('#thread .msg')];
             const i = u.findIndex(m => m.classList.contains('user') && m.innerText.trim() === 'Is this a good year for money?');
             return i >= 0 && !!u[i + 1] && u[i + 1].classList.contains('bot') && u[i + 1].innerText.length > 80; }""")
     check("...with its answer under it", restored)

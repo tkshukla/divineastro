@@ -421,6 +421,12 @@ def main() -> int:
     email = f"regional{random.randint(10000, 99999)}@example.com"
     r = client.post("/api/auth/dev", json={"email": email, "name": "Regional Test"})
     check("dev sign-in", r.status_code == 200, r.text[:200])
+    # This suite asks about a dozen questions; a new account starts with only
+    # billing.FREE_QUESTIONS (3 since DIVASTRO-154), so top the test account up.
+    from app.db import EntryKind, grant, session as db_session
+    with db_session() as db:
+        grant(db, r.json()["user"]["id"], 30, EntryKind.admin_adjust, note="test top-up")
+        db.commit()
     r = client.post("/api/chart", json={
         "name": "Sanskruti", "date": "1999-08-14", "time": "14:07",
         "place": "Pune, Maharashtra, India", "latitude": 18.5204, "longitude": 73.8567,
