@@ -476,6 +476,7 @@ EVENT_NAMES = frozenset({
     "plans_click",     # tapped a plan card or "See all plans" on the home screen, or "Start free" on /pricing
     "offer_shown",     # an in-app offer appeared (detail: the sku, "low_credits" or "life_book_dashboard")
     "offer_click",     # ...and was tapped (same detail)
+    "sample_view",     # DIVASTRO-151: opened a sample report (detail: the sku)
 })
 MAX_EVENT_BYTES = 512
 
@@ -765,6 +766,12 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("offer_click", "sq_marriage_timing"): "Tapped the offer: Marriage report",
     ("offer_click", "sq_wealth_business"): "Tapped the offer: Wealth report",
     ("offer_click", "life_book"): "Tapped the offer: Life Book",
+    # DIVASTRO-151: sample reports
+    ("sample_view", ""): "Opened a sample report",
+    ("sample_view", "sq_career"): "Opened the sample Career report",
+    ("sample_view", "sq_marriage_timing"): "Opened the sample Marriage report",
+    ("sample_view", "sq_wealth_business"): "Opened the sample Wealth report",
+    ("sample_view", "life_book"): "Opened the sample Life Book",
 }
 
 

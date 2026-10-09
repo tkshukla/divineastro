@@ -46,6 +46,8 @@ TEXT: dict[str, dict[str, str]] = {
         "th.price": "Price",
         "per_q": "₹{value} per question",
         "popular": "Most popular",
+        "sample.link": "See a sample",
+        "sample.note": "Sample for a fictional chart; yours is cast from your own birth details",
         "pay.h2": "How you pay",
         "pay.gateway": ("You pay on {gateway}'s secure checkout page, in rupees. The payment "
                         "methods you can choose are the ones {gateway} shows there."),
@@ -108,6 +110,8 @@ TEXT: dict[str, dict[str, str]] = {
         "th.price": "कीमत",
         "per_q": "₹{value} प्रति प्रश्न",
         "popular": "सबसे लोकप्रिय",
+        "sample.link": "नमूना देखें",
+        "sample.note": "काल्पनिक कुंडली का नमूना; आपकी रिपोर्ट आपके अपने जन्म विवरण से बनती है",
         "pay.h2": "भुगतान कैसे करें",
         "pay.gateway": ("भुगतान रुपयों में {gateway} के सुरक्षित चेकआउट पेज पर होता है। भुगतान के जो "
                         "तरीके चुन सकते हैं, वे वही हैं जो {gateway} वहाँ दिखाता है।"),

@@ -30,6 +30,7 @@ from . import i18n as i18n  # DIVASTRO-121: language registry (index.html picker
 from .api_account import router as account_router
 from .api_feedback import router as feedback_router
 from .api_traffic import router as traffic_router
+from .sample_reports import router as samples_router
 from .api_tools import router as tools_router
 from .legal import router as legal_router
 from .seo_pages import router as seo_router
@@ -102,6 +103,7 @@ app.include_router(muhurat_pages_router)  # /muhurat/vivah-2026 etc. + /hi/ copi
 app.include_router(vrat_city_pages_router)  # /tyohar/<festival>-2026/<city> (DIVASTRO-140)
 app.include_router(vrat_pages_router)  # /vrat-tyohar, /tyohar/<x>-2026, /ekadashi-2026, /api/vrat/today (DIVASTRO-111)
 app.include_router(recurring_pages_router)  # /purnima-2026, /amavasya-2026, /pradosh-vrat-2026 ... (DIVASTRO-141)
+app.include_router(samples_router)  # /samples/<sku>.pdf: free sample reports (DIVASTRO-151)
 app.include_router(pricing_router)  # /pricing + /hi/pricing: every product and its price (DIVASTRO-149)
 app.include_router(learn_router)  # /learn, /learn/what-is-... + /hi/ copies; 404 unless ASTRO_LEARN_PAGES=1 (DIVASTRO-142)
 app.include_router(push_router)   # /sw.js, /api/push/* daily web push (DIVASTRO-112); 404 while VAPID keys are unset
