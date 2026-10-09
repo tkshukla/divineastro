@@ -65,7 +65,7 @@ async function loadAccount() {
   } catch { acct.user = null; }
 
   try {
-    const p = await (await fetch("/api/products")).json();
+    const p = await (await fetch("/api/products", { cache: "no-store" })).json();
     acct.products = p.products || [];
     acct.payment = p.payment || { gateway: "test", live: false };
     acct.live = !!acct.payment.live;
@@ -591,6 +591,86 @@ const money = (r) => `₹${Number(r).toLocaleString("en-IN")}`;
 /* Per-question price with two decimals: ₹11.10, ₹7.02, ₹6.51. */
 const perQuestion = (p) => `₹${Number(p.per_question).toFixed(2)}`;
 
+/* ---------- DIVASTRO-152: the Diwali offer, shown only while the API says it is live ----------
+   Every figure below is read from /api/products, never typed or computed here, except the
+   "Save N%" badge, which is arithmetic on the two real prices. When offer.active is false the
+   API sends list_amount_paise = null and every helper returns the plain price: no strike, no
+   label, no banner. After the end instant nothing in this file needs to change. */
+const offerOn = (p) => !!(p && p.offer && p.offer.active
+  && Number.isInteger(p.list_amount_paise) && p.list_amount_paise > p.amount_paise);
+
+/* The live offer as the catalogue reports it: { name, ends_at } or null. */
+function liveOffer() {
+  const p = (acct.products || []).find((x) => x.offer && x.offer.active && x.offer.ends_at);
+  return p ? p.offer : null;
+}
+
+/* The end date in the page language, in India time (the offer ends at 23:59:59 IST).
+   Languages whose Intl data is missing fall back to English. */
+function offerDate(iso, long = false) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const lang = state.lang || "en";
+  const opts = { day: "numeric", month: lang === "en" && !long ? "short" : "long",
+    timeZone: "Asia/Kolkata", numberingSystem: "latn" };
+  if (long) opts.year = "numeric";
+  for (const loc of lang === "en" ? ["en-IN"] : [`${lang}-IN`, "en-IN"]) {
+    try {
+      if (loc !== "en-IN" && !Intl.DateTimeFormat.supportedLocalesOf([loc]).length) continue;
+      return new Intl.DateTimeFormat(loc, opts).format(d);
+    } catch { /* try the next locale */ }
+  }
+  return String(iso).slice(0, 10);
+}
+
+/* "Diwali offer · ends 15 Nov" */
+function offerPill() {
+  const o = liveOffer();
+  return o ? `<span class="offer-pill" data-offer-pill>${escapeHtml(at("offerPill").replace("{date}", offerDate(o.ends_at)))}</span>` : "";
+}
+
+/* The one sentence of urgency there is: the real end date. Top of Plans and of the store. */
+function offerBanner() {
+  const o = liveOffer();
+  if (!o) return "";
+  return `<p class="offer-banner" data-offer-banner>${offerPill()}
+    <span class="offer-banner-text">${escapeHtml(at("offerBanner").replace("{date}", offerDate(o.ends_at, true)))}</span></p>`;
+}
+
+/* <s>₹199</s>, with the words a screen reader needs. */
+const wasHtml = (paise) => `<s class="was"><span class="sr-only">${escapeHtml(at("wasPrice"))} </span>${money(paise / 100)}</s>`;
+/* The price as one run: "₹199 ₹111" (strike + current) while the offer is live, else "₹111". */
+function priceHtml(p) {
+  return offerOn(p)
+    ? `${wasHtml(p.list_amount_paise)}<span class="sr-only">, ${escapeHtml(at("nowPrice"))} </span>${money(p.rupees)}`
+    : money(p.rupees);
+}
+/* "Save 44%": arithmetic on the two real prices. */
+function saveBadge(p) {
+  if (!offerOn(p)) return "";
+  const n = Math.round((1 - p.amount_paise / p.list_amount_paise) * 100);
+  return n > 0 ? `<span class="save-badge">${escapeHtml(at("savePct").replace("{n}", n))}</span>` : "";
+}
+/* "₹11.10 per question", with the regular per-question price struck through while live. */
+function perQuestionHtml(p) {
+  const was = offerOn(p) && p.list_per_question
+    ? `<s class="was"><span class="sr-only">${escapeHtml(at("wasPrice"))} </span>₹${Number(p.list_per_question).toFixed(2)}</s> ` : "";
+  return `${was}${perQuestion(p)} ${escapeHtml(at("perQ"))}`;
+}
+
+/* The catalogue again, with the clock of the server. Called when the store opens so a page that
+   stayed open past the end of the offer shows (and charges) the regular price. */
+async function refreshProducts() {
+  try {
+    const res = await fetch("/api/products", { cache: "no-store" });
+    if (!res.ok) return false;
+    const p = await res.json();
+    const before = JSON.stringify(acct.products);
+    acct.products = p.products || acct.products;
+    return JSON.stringify(acct.products) !== before;
+  } catch { return false; }
+}
+
 /* DIVASTRO-151: the four reports that are written by the engine have a free sample PDF
    (/samples/<sku>.pdf, Hindi with ?lang=hi). The hand-written kundali products do not,
    and are not listed here: no automatic sample can exist for them. */
@@ -601,13 +681,15 @@ function packCard(p) {
   const cp = couponFor(p.sku);
   const applied = !!acct.coupon;
 
-  let price = `<div class="pack-price">${money(p.rupees)}</div>`;
+  let price = `<div class="pack-price"><span class="pp-line">${priceHtml(p)}</span>${saveBadge(p)}</div>`;
   let unit = p.per_question
-    ? `<div class="pack-unit">${perQuestion(p)} ${escapeHtml(at("perQ"))}</div>` : "";
+    ? `<div class="pack-unit">${perQuestionHtml(p)}</div>` : "";
   let label = `${escapeHtml(at("buy"))} ${money(p.rupees)}`;
 
   if (cp && cp.discount > 0) {
-    price = `<div class="pack-price">
+    price = offerOn(p)
+      ? `<div class="pack-price">${wasHtml(p.list_amount_paise)}<span class="sr-only">, ${escapeHtml(at("nowPrice"))} </span>₹${rupees(cp.final)}</div>`
+      : `<div class="pack-price">
       <s style="opacity:.45;font-size:.6em">${money(p.rupees)}</s> ₹${rupees(cp.final)}</div>`;
     unit = `<div class="pack-unit" style="color:var(--green)">
       −₹${rupees(cp.discount)} ${escapeHtml(acct.coupon.code)}</div>`;
@@ -624,7 +706,7 @@ function packCard(p) {
   // says they sell best, so they do not wear the label.
   const flagged = p.highlight && p.kind === "questions";
   const focus = acct.storeFocus === p.sku;
-  return `<div class="pack${flagged ? " featured" : ""}${focus ? " focus" : ""}" data-sku="${p.sku}">
+  return `<div class="pack${flagged ? " featured" : ""}${focus ? " focus" : ""}${offerOn(p) ? " has-offer" : ""}" data-sku="${p.sku}">
     ${flagged ? `<span class="pack-flag">${escapeHtml(at("popular"))}</span>` : ""}
     <h4>${escapeHtml(loc(p, "title"))}</h4>
     ${price}
@@ -696,6 +778,7 @@ function openStore(outOfCredits = false, focusSku = null) {
   const back = modal(`
     <h2 class="modal-title">${escapeHtml(outOfCredits ? at("outTitle") : at("buyMore"))}</h2>
     ${outOfCredits ? `<p class="modal-sub">${escapeHtml(at("outSub"))}</p>` : ""}
+    <div id="store-offer">${offerBanner()}</div>
     ${trustLine()}
     ${acct.live ? "" : `<p class="test-banner">${escapeHtml(at("testMode"))}</p>`}
     ${sections.map(sectionHtml).join("")}
@@ -719,9 +802,11 @@ function openStore(outOfCredits = false, focusSku = null) {
   const msg = back.querySelector(".coupon-msg");
 
   const repaint = () => {
+    const slot = back.querySelector("#store-offer");
+    if (slot) slot.innerHTML = offerBanner();
     sections.forEach((s) => {
       const box = back.querySelector(`.packs[data-kind="${s.kind}"]`);
-      if (box) box.innerHTML = s.items.map(packCard).join("");
+      if (box) box.innerHTML = acct.products.filter((p) => p.kind === s.kind).map(packCard).join("");
     });
     back.querySelectorAll(".buy-btn").forEach((b) => {
       b.onclick = () => startCheckout(b.dataset.sku, back);
@@ -782,6 +867,16 @@ function openStore(outOfCredits = false, focusSku = null) {
 
   repaint();
   if (focusSku) focusStoreProduct(back, focusSku);
+
+  // DIVASTRO-152: read the catalogue again with the server's clock. A page left open past the end
+  // of the offer then shows the regular prices (what checkout charges) instead of the stale ones.
+  // Skipped once a coupon is applied: its preview was priced against the list already on screen.
+  refreshProducts().then((changed) => {
+    if (!changed || !back.isConnected || acct.coupon) return;
+    repaint();
+    if (focusSku) focusStoreProduct(back, focusSku);
+    renderPlans();
+  });
 }
 
 async function startCheckout(sku, back) {
@@ -1540,13 +1635,16 @@ async function paidSkus() {
   return acct.paid;
 }
 
-function offerCard({ key, detail, text, button, focus }) {
+function offerCard({ key, detail, text, button, focus, priceOf }) {
   const el = document.createElement("div");
   el.className = "offer-card";
   el.setAttribute("role", "note");
   el.dataset.offer = detail;
-  el.innerHTML = `<p class="offer-text">${escapeHtml(text)}</p>
-    <button type="button" class="offer-go">${escapeHtml(button)}</button>
+  // `text` and `button` are templates with an optional {price}; it becomes the price run
+  // (struck regular price + current price while the offer is live, DIVASTRO-152).
+  const fill = (t, p) => escapeHtml(t).replace("{price}", () => (p ? priceHtml(p) : ""));
+  el.innerHTML = `<p class="offer-text">${fill(text, priceOf)}</p>
+    <button type="button" class="offer-go">${fill(button, priceOf)}</button>
     <button type="button" class="offer-x" aria-label="${escapeHtml(at("close"))}">&times;</button>`;
   el.querySelector(".offer-go").onclick = () => {
     window.daTrack?.("offer_click", detail);
@@ -1574,9 +1672,8 @@ async function maybeOfferAfterAnswer(result, bubble) {
     const pack = productBySku("q50");
     if (left <= LOW_CREDITS_AT && pack && !offersSeen.has("low_credits")) {
       card = offerCard({
-        key: "low_credits", detail: "low_credits", focus: "q50", button: at("buyMore"),
-        text: at("offerLow").replace("{n}", left).replace("{pack}", loc(pack, "title"))
-          .replace("{price}", money(pack.rupees)),
+        key: "low_credits", detail: "low_credits", focus: "q50", button: at("buyMore"), priceOf: pack,
+        text: at("offerLow").replace("{n}", left).replace("{pack}", loc(pack, "title")),
       });
     }
     if (!card) {
@@ -1584,9 +1681,9 @@ async function maybeOfferAfterAnswer(result, bubble) {
       const p = productBySku(sku);
       if (p && !offersSeen.has(sku) && !(await paidSkus()).has(sku)) {
         card = offerCard({
-          key: sku, detail: sku, focus: sku,
+          key: sku, detail: sku, focus: sku, priceOf: p,
           text: at(sku === "life_book" ? "offerBook" : "offerReport").replace("{title}", loc(p, "title")),
-          button: at("offerBtn").replace("{price}", money(p.rupees)),
+          button: at("offerBtn"),
         });
       }
     }
@@ -1605,9 +1702,9 @@ async function offerDashboard() {
     if (!slot || !p || !offerAllowed() || offersSeen.has("life_book")) return;
     if ((await paidSkus()).has("life_book") || slot.querySelector(".offer-card")) return;
     slot.replaceChildren(offerCard({
-      key: "life_book", detail: "life_book_dashboard", focus: "life_book",
-      text: at("offerDash").replace("{title}", loc(p, "title")).replace("{price}", money(p.rupees)),
-      button: at("offerBtn").replace("{price}", money(p.rupees)),
+      key: "life_book", detail: "life_book_dashboard", focus: "life_book", priceOf: p,
+      text: at("offerDash").replace("{title}", loc(p, "title")),
+      button: at("offerBtn"),
     }));
   } catch (ex) { console.warn("offer:", ex); }
 }
@@ -1620,7 +1717,7 @@ function handwrittenStrip(page) {
   const low = ks.reduce((m, p) => (p.rupees < m.rupees ? p : m), ks[0]);
   return `
     <a class="plan-hw" href="${page}#handwritten" data-plans="handwritten">
-      <span class="plan-hw-head">${escapeHtml(at("hwFrom").replace("{price}", money(low.rupees)))}</span>
+      <span class="plan-hw-head">${escapeHtml(at("hwFrom")).replace("{price}", () => priceHtml(low))}</span>
       <span class="plan-hw-text">${escapeHtml(at("hwTexts"))}</span>
       <span class="plan-hw-go">${escapeHtml(at("hwLink"))} &rsaquo;</span>
     </a>`;
@@ -1636,18 +1733,20 @@ function renderPlans() {
   const picks = PLAN_PICKS.map(productBySku).filter(Boolean);
   if (!picks.length) { box.hidden = true; return; }
   const page = `${state.lang === "en" ? "" : "/" + state.lang}/pricing`;
-  const line = (p) => (p.kind === "questions" ? `${perQuestion(p)} ${at("perQ")}`
-    : p.kind === "kundali_book" ? at("plansBookLine") : at("plansReportLine"));
+  const line = (p) => (p.kind === "questions" ? perQuestionHtml(p)
+    : escapeHtml(p.kind === "kundali_book" ? at("plansBookLine") : at("plansReportLine")));
   box.innerHTML = `
     <h2 class="plans-title" id="plans-title">${escapeHtml(at("plansTitle"))}</h2>
+    ${offerBanner()}
     ${acct.freeKnown ? `<p class="plans-free">${escapeHtml(at("plansFree").replace("{n}", acct.freeQuestions))}</p>` : ""}
     <div class="plans-grid">${picks.map((p) => `
       <div class="plan-cell">
       <a class="plan${p.sku === "q50" ? " featured" : ""}${SAMPLE_SKUS.has(p.sku) ? " has-sample" : ""}" href="${page}#${p.sku}" data-plans="${p.sku}">
         ${p.sku === "q50" ? `<span class="plan-flag">${escapeHtml(at("popular"))}</span>` : ""}
         <span class="plan-name">${escapeHtml(loc(p, "title"))}</span>
-        <span class="plan-price">${money(p.rupees)}</span>
-        <span class="plan-line">${escapeHtml(line(p))}</span>
+        <span class="plan-price">${priceHtml(p)}</span>
+        ${saveBadge(p)}
+        <span class="plan-line">${line(p)}</span>
       </a>${SAMPLE_SKUS.has(p.sku) ? `
       <a class="plan-sample" href="${sampleHref(p.sku)}" target="_blank" rel="noopener" data-sample="${p.sku}"
          title="${escapeHtml(at("sampleNote"))}">${escapeHtml(at("sampleShort"))}</a>` : ""}

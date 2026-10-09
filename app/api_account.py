@@ -449,8 +449,12 @@ def _birth_dict(b: BirthProfile) -> dict:
 # --------------------------------------------------------------------------
 
 @router.get("/products")
-def products(kind: str | None = None) -> dict:
+def products(response: Response, kind: str | None = None) -> dict:
     from . import gateways
+
+    # DIVASTRO-152: the prices depend on the clock (the Diwali offer ends at an instant), so a
+    # browser must never reuse an earlier answer. Caddy does no response caching.
+    response.headers["Cache-Control"] = "no-store"
 
     return {
         "products": billing.catalogue(kind),

@@ -292,7 +292,10 @@ def main() -> int:
     check("during: Offer price is the offer price", q10["offers"]["price"] == "111", str(q10["offers"]))
     check("during: priceValidUntil is the real end", q10["offers"].get("priceValidUntil")
           == "2026-11-15T23:59:59+05:30", str(q10["offers"]))
-    check("during: page shows the offer price", "₹111" in h and "₹199" not in h)
+    # DIVASTRO-152 UI half: the regular price now appears too, but only struck through (<s class="was">).
+    plain = re.sub(r'<s class="was">.*?</s>', "", h, flags=re.S)
+    check("during: page shows the offer price (the regular price only struck through)",
+          "<b>₹111</b>" in h and "₹199" not in plain and '<s class="was">' in h)
     at(AFTER)
     h = client.get("/pricing").text
     ld = [n for n in graph(h) if n.get("@type") == "Product"]

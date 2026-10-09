@@ -38,6 +38,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+# DIVASTRO-152: /pricing shows the real end date of the Diwali offer; pin it so the recording does not depend on the calendar (CI sets the same value).
+os.environ.setdefault("ASTRO_OFFER_ENDS", "2099-01-01T00:00:00+05:30")
 if "ASTRO_DATABASE_URL" not in os.environ:
     _tmp = tempfile.mkdtemp(prefix="astro_snap_")
     os.environ["ASTRO_DATABASE_URL"] = f"sqlite:///{Path(_tmp).as_posix()}/t.db"

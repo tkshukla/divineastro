@@ -162,6 +162,24 @@ property returning the effective price, so every old reader keeps working.
   `ASTRO_OFFER_ENDS=2099-...` so the other suites (which assert offer prices) do
   not go red after the offer; locally they will after 15 Nov unless you set it.
 
+* **UI half**: while `offer.active` is true the app shows the real regular price
+  (`list_amount_paise`) struck through beside the current one (`<s class="was">` with
+  sr-only "Regular price ..., now ..."), a "Save N%" badge (arithmetic on the two API
+  numbers), a banner at the top of the home Plans section, the store and `/pricing`
+  ("Diwali offer prices are valid until {date}, 11:59 PM IST. Regular prices apply after
+  that."), and on `/pricing` an explanation section (en + hi, `pricing_text.py`). Nothing
+  is hard-coded: `account.js` (`offerOn`, `offerBanner`, `priceHtml`, `saveBadge`) and
+  `pricing_pages.py` (`_offer_of`, `_table`) render it only from the catalogue, so after the
+  end instant (or `ASTRO_OFFER_OFF=1`) every screen is the plain regular-price screen with no
+  code change. The store re-reads `/api/products` when it opens. The Orders screen shows the
+  charged amount only. Strings: `acct.offerPill/offerBanner/wasPrice/nowPrice/savePct` in all
+  13 i18n files. Tests: `tests/test_offer_screens.py`, `tests/e2e/test_offer.py`.
+* **Caching**: `/pricing` is `private, max-age=min(300, seconds until ends_at)` while the
+  offer is live (so a browser copy can never show the offer after the end instant), the shell's
+  usual header (up to 30 min) once it is over; there is no in-process page cache and Caddy does
+  no response caching. `/api/products` is `no-store`. The seo snapshot test pins
+  `ASTRO_OFFER_ENDS` to 2099 so its recording does not depend on the calendar.
+
 ## Working notes
 
 Google sign-in **does** work — `/api/me` returns `provider: "google"` for

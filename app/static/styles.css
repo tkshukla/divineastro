@@ -2605,7 +2605,7 @@ html[lang="ne"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetic
      on the right. About 100px each instead of a 250px card. */
   .modal.store .pack {
     display: grid; grid-template-columns: minmax(0, 1fr) 100px; column-gap: 10px; row-gap: 0;
-    grid-template-areas: "t p" "b c" "u c";
+    grid-template-areas: "t p" "b p" "b c" "u c";
     padding: 12px 12px 12px; border-radius: 14px; align-items: start;
   }
   .modal.store .pack:hover { transform: none; }
@@ -2731,3 +2731,54 @@ html[lang="ne"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetic
 .plan-hw-go { font-size: 13px; color: var(--gold-soft); padding: 4px 0; }
 [data-theme="light"] .plan-hw { background: rgba(20, 30, 80, 0.045); }
 [data-theme="light"] .plan { background: rgba(20, 30, 80, 0.045); }
+
+/* DIVASTRO-152: the Diwali offer. Shown only while /api/products says it is live (account.js
+   offerOn / offerBanner): a struck regular price beside the current one, a small "Save N%"
+   badge, and one calm banner with the real end date. No motion; the strike is the muted ink. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+s.was {
+  color: var(--ink-faint); font-family: var(--sans); font-size: 0.6em; font-weight: 400;
+  text-decoration-thickness: 1px; margin-right: 0.35em; white-space: nowrap;
+}
+.offer-text s.was, .offer-go s.was, .pack-unit s.was, .plan-line s.was, .plan-hw-head s.was { font-size: 1em; margin-right: 0.25em; }
+.save-badge {
+  display: inline-block; align-self: flex-start; width: fit-content; padding: 1px 8px; border-radius: 999px;
+  background: rgba(var(--gold-rgb), 0.16); color: var(--gold-soft);
+  font: 600 12px/1.5 var(--sans); letter-spacing: 0; white-space: nowrap;
+}
+.pack-price .save-badge { display: block; margin: 4px 0 8px; }
+.offer-pill {
+  display: inline-block; padding: 1px 9px; border-radius: 999px; white-space: nowrap;
+  border: 1px solid rgba(var(--gold-rgb), 0.6); color: var(--gold-soft);
+  font: 600 12px/1.5 var(--sans);
+}
+.offer-banner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 12px; padding: 8px 12px;
+  border: 1px solid rgba(var(--gold-rgb), 0.35); border-radius: 12px;
+  background: rgba(var(--gold-rgb), 0.07); font-size: 13px; line-height: 1.45; color: var(--ink-dim);
+}
+.offer-banner-text { flex: 1 1 200px; min-width: 0; }
+.modal.store .offer-banner { margin-bottom: 10px; }
+@media (max-width: 700px) {
+  /* The store sheet on a phone: the banner is one block (pill, then the sentence), and the price
+     column holds "struck regular price + price" on one line with the badge under it. */
+  .modal.store .offer-banner { display: block; padding: 6px 11px; font-size: 12.5px; margin-bottom: 6px; }
+  .modal.store .offer-banner .offer-pill { margin-right: 6px; padding: 0 8px; font-size: 12px; }
+  .modal.store .pack.has-offer { grid-template-columns: minmax(0, 1fr) 108px; }
+  /* A little tighter on a phone, so the banner costs the sheet next to nothing in height. */
+  .modal.store .test-banner { margin-bottom: 6px; padding: 6px 11px; }
+  .modal.store .store-trust { margin-bottom: 8px; }
+  .modal.store .store-sec > summary.store-h { padding-top: 0; padding-bottom: 0; min-height: 44px; display: flex; align-items: center; }
+  .modal.store .packs { gap: 10px; }
+  .modal.store .pack { padding-top: 9px; padding-bottom: 9px; }
+  .modal.store .store-sec { padding: 2px 0 4px; }
+  .modal.store .pack-price { display: flex; flex-direction: column; align-items: flex-end; }
+  .modal.store .pack-price .pp-line { white-space: nowrap; }
+  .modal.store .pack-price s.was { font-size: 13px; margin-right: 6px; }
+  .modal.store .pack-price .save-badge { align-self: flex-end; margin: 2px 0 0; font-size: 12px; padding: 0 7px; }
+}
+.plan-price { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0; }
+.plan-price s.was { font-size: 14px; margin-right: 8px; }
