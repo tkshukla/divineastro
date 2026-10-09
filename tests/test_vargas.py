@@ -40,6 +40,17 @@ class TestVargas(unittest.TestCase):
         self.assertIn("D10", data["vargas"])
         self.assertEqual(len(data["available_codes"]), 6)
 
+        # The ascendant of every varga is a sign NAME, in both languages (it was a dict, which
+        # crashed the Hindi tab with "unhashable type: 'dict'" and was wrong in English too).
+        from app.astro.vargas import _SIGNS_HI
+        hi = get_shodashvarga_data(bundle, lang="hi")
+        for code, v in data["vargas"].items():
+            self.assertIsInstance(v["ascendant_sign"], str, code)
+            self.assertIn(v["ascendant_sign"], _SIGNS_HI, code)
+            self.assertEqual(v["ascendant_label"], v["ascendant_sign"], code)
+            self.assertEqual(hi["vargas"][code]["ascendant_sign"], v["ascendant_sign"], code)
+            self.assertEqual(hi["vargas"][code]["ascendant_label"], _SIGNS_HI[v["ascendant_sign"]], code)
+
 
 if __name__ == "__main__":
     unittest.main()
