@@ -29,13 +29,13 @@ CSS = {"A": (HERE / "mockup_a.css").read_text(encoding="utf-8"),
        "B": (HERE / "mockup_b.css").read_text(encoding="utf-8")}
 
 # ---------------------------------------------------------------- draft copy
-# Every claim maps to a shipped feature. The "10" is the server's free-question
+# Every claim maps to a shipped feature. The "3" is the server's free-question
 # setting (ASTRO_FREE_QUESTIONS); the real page would read it, not hard-code it.
 COPY = {
     "en": dict(
         headline="Know your kundali. Ask anything.",
         sub="Your birth chart, cast to the exact minute — with answers in Hindi or English, drawn from your own planets and dashas.",
-        badge_b="\U0001FA94 First 10 questions FREE", badge_s="No card needed · sign up in one tap",
+        badge_b="\U0001FA94 First 3 questions FREE", badge_s="No card needed · sign up in one tap",
         cta="Get my free kundali reading",
         feats=[("\U0001F319", "Kundali cast to the exact minute"), ("\U0001F5E3\uFE0F", "Ask in Hindi or English"),
                ("\u23F3", "Dasha timelines & transits"), ("\U0001F48D", "Kundali Milan — 36 gun match"),
@@ -43,7 +43,7 @@ COPY = {
     "hi": dict(
         headline="अपनी कुंडली जानें। कुछ भी पूछें।",
         sub="सटीक समय पर बनी आपकी जन्म कुंडली — आपके अपने ग्रहों और दशाओं पर आधारित उत्तर, हिंदी या अंग्रेज़ी में।",
-        badge_b="\U0001FA94 पहले 10 प्रश्न बिल्कुल मुफ़्त", badge_s="कार्ड की ज़रूरत नहीं · एक टैप में साइन-अप",
+        badge_b="\U0001FA94 पहले 3 प्रश्न बिल्कुल मुफ़्त", badge_s="कार्ड की ज़रूरत नहीं · एक टैप में साइन-अप",
         cta="मेरी निःशुल्क कुंडली देखें",
         feats=[("\U0001F319", "सटीक समय की कुंडली"), ("\U0001F5E3\uFE0F", "हिंदी या अंग्रेज़ी में पूछें"),
                ("\u23F3", "दशा और गोचर"), ("\U0001F48D", "कुंडली मिलान — 36 गुण"),

@@ -180,6 +180,35 @@ property returning the effective price, so every old reader keeps working.
   no response caching. `/api/products` is `no-store`. The seo snapshot test pins
   `ASTRO_OFFER_ENDS` to 2099 so its recording does not depend on the calendar.
 
+## Free questions and the guest answer (DIVASTRO-154)
+
+* **New accounts get 3 free questions** (`billing.FREE_QUESTIONS`, env
+  `ASTRO_FREE_QUESTIONS`, default 3; was 10). Every sign-up grant reads it at the
+  moment the account is created; existing balances (credit_entries) are never
+  touched. **The production `.env` still says `ASTRO_FREE_QUESTIONS=10`: change it
+  to 3 (or delete the line) when deploying, or nothing changes.**
+* Every place that states the allowance reads that value: `/api/me` and
+  `/api/products` (`free_questions`, which the app's `{n}` strings use), `/pricing`
+  + its FAQ JSON-LD (`pricing_text`, `{free}`), the daily WhatsApp/Telegram promo
+  (`daily_message._promos`), the katha call to action, index.html's og:description
+  (`__FREE_QUESTIONS__`, filled by `main._page`). The share card image
+  `app/static/og-card.jpg` (from `assets/og/card.html`, `python assets/og/shot.py`)
+  is the one place the number is baked in: regenerate it if the number changes.
+* **One answer without signing in** (`app/guest.py`): a signed-out visitor with a
+  chart gets one real answer from `/api/ask/stream` (same engine and narration,
+  nothing charged), then 401 and the sign-in sheet ("Sign in to keep asking — 3 more
+  questions free"). Limits: signed HttpOnly cookie `astro_guest` + a `guest_answers`
+  row per answer keyed by the day-scoped visitor hash (no IP stored) + an in-memory
+  per-address ceiling (`ASTRO_GUEST_ANSWERS_PER_ADDRESS`, 20/day) + global caps
+  (`ASTRO_GUEST_ANSWERS_PER_HOUR` 60, `ASTRO_GUEST_ANSWERS_PER_DAY` 400); none for
+  bots, prefetches, cloud addresses. DNT/GPC visitors get their answer but only
+  time + hash are stored. `ASTRO_GUEST_ANSWER=0` switches it off (pages and promos
+  then stop offering it). Rows are purged after 400 days with the statistics and
+  show in the admin's signed-out questions as "answered free (guest)".
+  Known limit: the hash rotates at IST midnight, so a visitor who clears cookies
+  can get one more answer the next day; the global caps bound the cost.
+  Tests: `tests/test_guest_answer.py`, `tests/e2e/test_guest_answer.py`.
+
 ## Working notes
 
 Google sign-in **does** work — `/api/me` returns `provider: "google"` for

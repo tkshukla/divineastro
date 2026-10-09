@@ -457,10 +457,15 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
     # addresses), then 401 as before, which opens the sign-in sheet. Nothing is charged.
     claim = None
     if user_id is None:
-        if not guest.answers_left(request):
+        try:
+            if not guest.answers_left(request):
+                raise denied
+            # Only a chart this guest cast (and that still exists) is answered; anything
+            # else stays the 401 it always was. Checked before the allowance is taken.
+            session = _session(req.session_id, request)
+        except HTTPException:
             analytics.record_unregistered_question(request, question, req.language)  # DIVASTRO-131
-            raise denied
-        session = _session(req.session_id, request)   # a chart that is theirs, before the allowance
+            raise denied from None
         claim = guest.claim(request, question, req.language)
         if claim is None:                              # lost a race, or a cap was just reached
             analytics.record_unregistered_question(request, question, req.language)
@@ -1077,6 +1082,9 @@ def _page(name: str) -> HTMLResponse:
     html = (STATIC / name).read_text(encoding="utf-8")
     html = _ASSET_REF.sub(rf"\1?v={version}", html)
     html = _lang_inline(html, version)
+    # DIVASTRO-154: the free allowance in a page's static text (index.html's
+    # og:description) is the setting, never a number typed into the file.
+    html = html.replace("__FREE_QUESTIONS__", str(billing.FREE_QUESTIONS))
     return HTMLResponse(html, headers={"Cache-Control": "no-store"})
 
 

@@ -298,8 +298,9 @@ def whoami(request: Request, db: Session = Depends(get_db)) -> dict:
         # still get without an account (0 or 1), so the chat only offers what the
         # server will actually give.
         return {"user": None, "free_questions": billing.FREE_QUESTIONS,
-                "guest_answers": guest.answers_left(request)}
-    return {"user": _user_dict(db, user), "free_questions": billing.FREE_QUESTIONS}
+                "guest_free": guest.GUEST_ANSWERS, "guest_answers": guest.answers_left(request)}
+    return {"user": _user_dict(db, user), "free_questions": billing.FREE_QUESTIONS,
+            "guest_free": guest.GUEST_ANSWERS}
 
 
 @router.post("/me")

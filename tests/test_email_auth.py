@@ -39,6 +39,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 from app import auth, email_auth, mail  # noqa: E402
 from app.db import User, session as db_session  # noqa: E402
 from app.main import app  # noqa: E402
+from app.billing import FREE_QUESTIONS as FREE  # noqa: E402  (DIVASTRO-154: 3, was 10)
 
 failures: list[str] = []
 
@@ -147,7 +148,7 @@ def main() -> int:
     data = r.json()
     user = data["user"]
     check("a new account was created", data.get("created") is True, str(data))
-    check("the signup bonus was granted once", user["credits"] == 10, str(user))
+    check("the signup bonus was granted once", user["credits"] == FREE, str(user))
     check("provider is 'email'", user["provider"] == "email", str(user))
     check("the verified address is the account's email", user["email"] == addr, str(user))
     check("it is labelled by its address", user["login_label"] == addr, str(user))
@@ -164,7 +165,7 @@ def main() -> int:
     r = verify(fresh, addr, last_code(addr))
     check("second sign-in -> 200", r.status_code == 200, f"{r.status_code} {r.text[:200]}")
     check("same user id, created False", r.json()["user"]["id"] == uid and r.json()["created"] is False)
-    check("credits unchanged (no second bonus)", r.json()["user"]["credits"] == 10)
+    check("credits unchanged (no second bonus)", r.json()["user"]["credits"] == FREE)
     db = db_session()
     try:
         n = db.query(User).filter(User.email == addr).count()
@@ -292,7 +293,7 @@ def main() -> int:
     u = r.json()["user"]
     check("lands in the Google account, not a new one",
           u["id"] == gid and r.json()["created"] is False, str(u))
-    check("no second bonus", u["credits"] == 10, str(u["credits"]))
+    check("no second bonus", u["credits"] == FREE, str(u["credits"]))
     check("it is still a Google account (Google sign-in by sub keeps working)",
           u["provider"] == "google", u["provider"])
     db = db_session()
@@ -357,7 +358,7 @@ def main() -> int:
     r = verify(wc, "walkin@gmail.com", last_code("walkin@gmail.com"))
     check("lands in the admin-recorded account", r.json()["user"]["id"] == manual_id, r.text[:160])
     check("it is now an email account", r.json()["user"]["provider"] == "email")
-    check("the welcome bonus is granted once", r.json()["user"]["credits"] == 10,
+    check("the welcome bonus is granted once", r.json()["user"]["credits"] == FREE,
           str(r.json()["user"]["credits"]))
 
     print("\n16. Blocked accounts and the admin view")

@@ -33,6 +33,11 @@ def check(label: str, ok: bool, detail: str = "") -> None:
         failures.append(label)
 
 
+def free_questions() -> int:
+    """The welcome gift, as the server states it (DIVASTRO-154: 3, was 10)."""
+    return requests.get(f"{BASE}/api/me", timeout=30).json()["free_questions"]
+
+
 def sign_in(email: str | None = None) -> tuple[requests.Session, str]:
     s = requests.Session()
     email = email or f"man{random.randint(100000, 999999)}@example.com"
@@ -84,7 +89,7 @@ def main() -> int:
     check("credits come from the pack", o["credits"] == 10, str(o["credits"]))
     check("fulfilment not applicable for questions", o["fulfilment"] == "not_applicable")
     check("welcome gift + pack credits both on the balance",
-          d["customer"]["credits"] == 10 + 10,
+          d["customer"]["credits"] == free_questions() + 10,
           str(d["customer"]["credits"]))
     check("note records method and reference",
           "cash" in o["note"] and "receipt 42" in o["note"], o["note"])
@@ -162,7 +167,7 @@ def main() -> int:
         check(f"{label} -> 400", r.status_code == 400, f"{r.status_code} {r.text[:100]}")
     probe, _ = sign_in(ghost)
     check("a refused order did not leave a customer with credits behind",
-          credits(probe) == 10, str(credits(probe)))   # only the ordinary sign-up gift
+          credits(probe) == free_questions(), str(credits(probe)))   # only the ordinary sign-up gift
 
     print("\n9. Phone-only customer")
     phone = f"9{random.randint(100000000, 999999999)}"

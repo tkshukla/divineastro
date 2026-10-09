@@ -250,8 +250,11 @@ def part2_guest() -> None:
     stranger = browser(ua=CHROME.replace("126.0", "121.0"))
     n = count(GuestAnswer)
     r = ask(stranger, theirs, "Whose chart is this?")
-    check("a guest asking about someone else's chart gets 404 and spends nothing",
-          r.status_code == 404 and count(GuestAnswer) == n and stranger.get("/api/me").json()["guest_answers"] == 1)
+    check("a guest asking about someone else's chart gets 401 as before and spends nothing",
+          r.status_code == 401 and count(GuestAnswer) == n and stranger.get("/api/me").json()["guest_answers"] == 1)
+    r = ask(stranger, "no-such-session", "Expired chart?")
+    check("...as does a chart session that does not exist (expired, or never cast)",
+          r.status_code == 401 and count(GuestAnswer) == n)
 
     real = main_mod.analyse
     main_mod.analyse = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("engine down"))

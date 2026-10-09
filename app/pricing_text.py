@@ -6,7 +6,9 @@ each product delivers is the catalogue's own blurb. The sentences below are only
 the frame around them, and each one is limited to what the code does:
 
 * purchases are one-off (there is no subscription or renewal anywhere in the code);
-* the free allowance is billing.FREE_QUESTIONS;
+* the free allowance is billing.FREE_QUESTIONS; the answer a visitor gets without
+  signing in is guest.GUEST_ANSWERS (DIVASTRO-154), and the "*.guest" variants of a
+  sentence are used only while that is switched on;
 * a hand-written kundali is made by the astrologer named in the settings, with the
   turnaround from the settings;
 * the payment sentence depends on the gateway that is really configured.
@@ -26,7 +28,18 @@ TEXT: dict[str, dict[str, str]] = {
         "lead": ("Start free: {free} questions about your chart cost nothing. After that you pay only "
                  "for what you choose. Every purchase is one-off, there is no subscription, and all "
                  "prices are in Indian rupees (INR)."),
+        "desc.guest": ("What Divine Astro costs, in rupees: {guest} free answer without signing in, "
+                       "{free} free questions with a free account, question packs from ₹{pack_from}, "
+                       "single-topic reports at ₹{report_from}, the Life Book at ₹{book} and "
+                       "hand-written kundali."),
+        "lead.guest": ("Start free: {guest} free answer without signing in, {free} free questions with "
+                       "a free account. After that you pay only for what you choose. Every purchase is "
+                       "one-off, there is no subscription, and all prices are in Indian rupees (INR)."),
         "free.h2": "What is free",
+        "free.p.guest": ("Ask your first question without signing in: {guest} free answer, no account "
+                         "needed. Every new account then gets {free} free questions about your chart. "
+                         "Casting your kundali, the daily Panchang, Rahu Kaal, Choghadiya, Muhurat and "
+                         "Kundali Milan are free tools."),
         "free.p": ("Every new account gets {free} free questions about your chart. Casting your "
                    "kundali, the daily Panchang, Rahu Kaal, Choghadiya, Muhurat and Kundali Milan "
                    "are free tools."),
@@ -69,6 +82,10 @@ TEXT: dict[str, dict[str, str]] = {
                        "Panchang, Rahu Kaal, Choghadiya, Muhurat and Kundali Milan tools cost "
                        "nothing. Question packs, reports, the Life Book and hand-written kundali "
                        "are paid."),
+        "faq.free_a.guest": ("Yes, to start: {guest} free answer without signing in, {free} free "
+                             "questions with a free account, and the kundali, Panchang, Rahu Kaal, "
+                             "Choghadiya, Muhurat and Kundali Milan tools cost nothing. Question packs, "
+                             "reports, the Life Book and hand-written kundali are paid."),
         "faq.cost_q": "How much does a question cost?",
         "faq.cost_a": ("{packs}. The bigger the pack, the lower the price per question."),
         "faq.pay_q": "How do I pay?",
@@ -103,7 +120,16 @@ TEXT: dict[str, dict[str, str]] = {
         "lead": ("मुफ़्त से शुरू करें: आपकी कुंडली पर {free} प्रश्न बिल्कुल मुफ़्त हैं। उसके बाद आप वही "
                  "चुनते हैं जो आपको चाहिए। हर खरीद एकमुश्त है, कोई सब्सक्रिप्शन नहीं, और सभी कीमतें "
                  "भारतीय रुपयों (INR) में हैं।"),
+        "desc.guest": ("डिवाइन एस्ट्रो की कीमतें रुपयों में: बिना साइन-इन {guest} मुफ़्त उत्तर, मुफ़्त "
+                       "खाते पर {free} मुफ़्त प्रश्न, प्रश्न पैक ₹{pack_from} से, एक विषय की रिपोर्ट "
+                       "₹{report_from} में, लाइफ बुक ₹{book} में और हस्तलिखित कुंडली।"),
+        "lead.guest": ("मुफ़्त से शुरू करें: बिना साइन-इन {guest} मुफ़्त उत्तर, और मुफ़्त खाते पर {free} "
+                       "मुफ़्त प्रश्न। उसके बाद आप वही चुनते हैं जो आपको चाहिए। हर खरीद एकमुश्त है, कोई "
+                       "सब्सक्रिप्शन नहीं, और सभी कीमतें भारतीय रुपयों (INR) में हैं।"),
         "free.h2": "क्या मुफ़्त है",
+        "free.p.guest": ("पहला प्रश्न बिना साइन-इन के पूछें: {guest} मुफ़्त उत्तर, खाते की ज़रूरत नहीं। "
+                         "उसके बाद हर नए खाते को आपकी कुंडली पर {free} मुफ़्त प्रश्न मिलते हैं। कुंडली "
+                         "बनाना, दैनिक पंचांग, राहु काल, चौघड़िया, मुहूर्त और कुंडली मिलान मुफ़्त टूल हैं।"),
         "free.p": ("हर नए खाते को आपकी कुंडली पर {free} मुफ़्त प्रश्न मिलते हैं। कुंडली बनाना, दैनिक "
                    "पंचांग, राहु काल, चौघड़िया, मुहूर्त और कुंडली मिलान मुफ़्त टूल हैं।"),
         "reports.h2": "एक विषय की रिपोर्ट",
@@ -143,6 +169,10 @@ TEXT: dict[str, dict[str, str]] = {
         "faq.free_a": ("शुरुआत के लिए हाँ: आपकी कुंडली पर {free} प्रश्न मुफ़्त हैं, और कुंडली, पंचांग, राहु "
                        "काल, चौघड़िया, मुहूर्त और कुंडली मिलान टूल मुफ़्त हैं। प्रश्न पैक, रिपोर्ट, लाइफ "
                        "बुक और हस्तलिखित कुंडली सशुल्क हैं।"),
+        "faq.free_a.guest": ("शुरुआत के लिए हाँ: बिना साइन-इन {guest} मुफ़्त उत्तर, मुफ़्त खाते पर "
+                             "{free} मुफ़्त प्रश्न, और कुंडली, पंचांग, राहु काल, चौघड़िया, मुहूर्त और "
+                             "कुंडली मिलान टूल मुफ़्त हैं। प्रश्न पैक, रिपोर्ट, लाइफ बुक और हस्तलिखित "
+                             "कुंडली सशुल्क हैं।"),
         "faq.cost_q": "एक प्रश्न की कीमत क्या है?",
         "faq.cost_a": "{packs}। पैक जितना बड़ा, प्रति प्रश्न कीमत उतनी कम।",
         "faq.pay_q": "भुगतान कैसे करूँ?",

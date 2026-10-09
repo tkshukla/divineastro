@@ -352,6 +352,9 @@ body.admin-body {
   font-family: var(--serif); font-weight: 400; font-size: 25px;
   margin: 0 0 8px; color: var(--gold-soft); letter-spacing: 0.02em;
 }
+/* A title long enough to wrap (DIVASTRO-154's "Sign in to keep asking — 3 more
+   questions free") must not run under the close button. */
+.modal-x + .modal-body > .modal-title:first-child { padding-right: 32px; }
 .modal-sub { color: var(--ink-dim); font-size: 14px; margin: 0 0 20px; }
 .modal-error { color: var(--rose); font-size: 13.5px; margin: 12px 0 0; }
 .modal input { margin-bottom: 12px; }
@@ -1178,6 +1181,10 @@ details.reasoning summary:hover { color: var(--gold); }
 /* starters */
 .starters { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 30px 12px; }
 .starters[hidden] { display: none; }
+/* DIVASTRO-154: "Ask your first question free" above the box, signed out only. */
+.guest-line { margin: 0; padding: 0 30px 8px; font-size: 12.5px; line-height: 1.4; color: var(--gold-soft); }
+.guest-line[hidden] { display: none; }
+.guest-line::before { content: "\2726\00a0"; }
 .starter {
   font-size: 12.5px; padding: 7px 14px; border-radius: 999px; cursor: pointer;
   border: 1px solid var(--line); background: rgba(var(--accent-rgb),0.08); color: var(--ink-dim);
@@ -1271,7 +1278,7 @@ details.reasoning summary:hover { color: var(--gold); }
   .wheel svg { max-height: none; }
   .tabpanes { max-height: none; }
 
-  .thread, .starters, .composer { padding-left: 16px; padding-right: 16px; }
+  .thread, .starters, .composer, .guest-line { padding-left: 16px; padding-right: 16px; }
   .intro h1 { font-size: 44px; }
   .hero svg { width: clamp(180px, 62vw, 260px); }
 }
@@ -2641,6 +2648,9 @@ html[lang="ne"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetic
 }
 .offer-x:hover { color: var(--ink); }
 #dash-offer:empty { display: none; }
+/* DIVASTRO-154: under a guest's one answer, the way to the next free questions. */
+.offer-card.guest-cta { border-color: rgba(var(--gold-rgb), 0.55); background: rgba(var(--gold-rgb), 0.1); }
+.offer-card.guest-cta .offer-text { color: var(--ink); font-weight: 600; }
 #dash-offer .offer-card { margin: 0 0 14px; max-width: none; }
 
 /* DIVASTRO-150: delivering a purchased report. The ready screen, the Download PDF

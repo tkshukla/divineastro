@@ -35,6 +35,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 from app import phone_auth  # noqa: E402
 from app.db import User, session as db_session  # noqa: E402
 from app.main import app  # noqa: E402
+from app.billing import FREE_QUESTIONS as FREE  # noqa: E402  (DIVASTRO-154: 3, was 10)
 
 failures: list[str] = []
 
@@ -126,7 +127,7 @@ def main() -> int:
     check("verify -> 200", r.status_code == 200, f"{r.status_code} {r.text[:200]}")
     data = r.json()
     check("a new account was created", data.get("created") is True, str(data))
-    check("the signup bonus was granted", data["user"]["credits"] == 10, str(data["user"]))
+    check("the signup bonus was granted", data["user"]["credits"] == FREE, str(data["user"]))
     check("no email is attached", data["user"]["email"] == "", str(data["user"]))
     check("provider is 'phone'", data["user"]["provider"] == "phone", str(data["user"]))
     check("the verified number fills the phone field", data["user"]["phone"] == number, str(data["user"]))
@@ -146,7 +147,7 @@ def main() -> int:
     check("second sign-in -> 200", r.status_code == 200, f"{r.status_code} {r.text[:200]}")
     check("same user id", r.json()["user"]["id"] == uid, str(r.json()["user"]))
     check("created is False", r.json()["created"] is False)
-    check("credits unchanged (no second bonus)", r.json()["user"]["credits"] == 10)
+    check("credits unchanged (no second bonus)", r.json()["user"]["credits"] == FREE)
 
     print("\n6. A wrong code, then the right one")
     phone_auth.reset_for_tests()
@@ -245,7 +246,7 @@ def main() -> int:
     check("verify -> 200", r.status_code == 200, f"{r.status_code} {r.text[:120]}")
     check("lands in the admin-recorded account", r.json()["user"]["id"] == manual_id, str(r.json()["user"]))
     check("it is now a phone account", r.json()["user"]["provider"] == "phone")
-    check("the welcome bonus it never had is granted once", r.json()["user"]["credits"] == 10,
+    check("the welcome bonus it never had is granted once", r.json()["user"]["credits"] == FREE,
           str(r.json()["user"]["credits"]))
 
     print("\n14. The MSG91 sender puts nothing in the URL (httpx logs URLs)")

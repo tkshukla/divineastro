@@ -11,7 +11,8 @@ and an assistant can all see what Divine Astro costs.
 **Nothing is typed here that the catalogue already knows.** Every price, title,
 description, credit count and the free allowance is read from app/billing.py at
 render time (billing.PRODUCTS, billing.FREE_QUESTIONS, billing.ASTROLOGER,
-billing.TURNAROUND_DAYS), so the page cannot drift from what the store charges.
+billing.TURNAROUND_DAYS), so the page cannot drift from what the store charges. The
+one answer without signing in (DIVASTRO-154) is guest.GUEST_ANSWERS.
 What a product delivers is the catalogue's own blurb. The payment sentence follows
 the gateway that is really active (gateways.active()).
 
@@ -31,7 +32,7 @@ import datetime as dt
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from . import billing, gateways, i18n, sample_reports, seo_pages
+from . import billing, gateways, guest, i18n, sample_reports, seo_pages
 from .pricing_text import TEXT
 from .seo_pages import BRAND, EN, HI, SITE_URL, _e, _render
 
@@ -107,6 +108,7 @@ def _facts(products: list[dict]) -> dict:
     book = next((p for p in products if p["kind"] == "kundali_book"), None)
     return {
         "free": billing.FREE_QUESTIONS,
+        "guest": guest.GUEST_ANSWERS,
         "pack_from": min((p["rupees"] for p in packs), default=0),
         "report_from": min((p["rupees"] for p in reports), default=0),
         "book": book["rupees"] if book else 0,
@@ -274,17 +276,19 @@ def render(lang: str = EN) -> HTMLResponse:
     offer = _offer_of(products)
     f = _facts(products)
     canonical = SITE_URL + page_path(lang)
-    values = {"brand": BRAND, "free": f["free"], "pack_from": f["pack_from"],
+    values = {"brand": BRAND, "free": f["free"], "guest": f["guest"], "pack_from": f["pack_from"],
               "report_from": f["report_from"], "book": f["book"]}
+    # DIVASTRO-154: while a signed-out visitor can get an answer, the free sentences say so.
+    g = ".guest" if f["guest"] > 0 else ""
 
     title = _tx("title", cl, **values)
-    desc = _tx("desc", cl, **values)
+    desc = _tx("desc" + g, cl, **values)
     h1 = _tx("h1", cl)
 
     blocks = [f"<h1>{_e(h1)}</h1>", _CSS, _banner(offer, cl),
-              f"<p>{_e(_tx('lead', cl, **values))}</p>", _explanation(offer, cl)]
+              f"<p>{_e(_tx('lead' + g, cl, **values))}</p>", _explanation(offer, cl)]
     blocks.append(f"<h2>{_e(_tx('free.h2', cl))}</h2>"
-                  f'<div class="box"><p>{_e(_tx("free.p", cl, **values))}</p></div>')
+                  f'<div class="box"><p>{_e(_tx("free.p" + g, cl, **values))}</p></div>')
 
     for key, items in _sections(products):
         h2_id = ' id="handwritten"' if key == "kundali" else ""
@@ -307,7 +311,7 @@ def render(lang: str = EN) -> HTMLResponse:
         terms=f'<a href="/terms">{_tx("terms.link", cl)}</a>') + "</p>")
 
     faq_items = (
-        (_tx("faq.free_q", cl), _tx("faq.free_a", cl, **values)),
+        (_tx("faq.free_q", cl), _tx("faq.free_a" + g, cl, **values)),
         (_tx("faq.cost_q", cl), _tx("faq.cost_a", cl, packs=_pack_sentence(f["packs"], cl))),
         (_tx("faq.pay_q", cl), pay),
         (_tx("faq.refund_q", cl), _tx("faq.refund_a", cl)),
