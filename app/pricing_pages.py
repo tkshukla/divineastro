@@ -150,6 +150,18 @@ def _table(items: list[dict], lang: str) -> str:
 
 
 def _product_ld(p: dict, lang: str, canonical: str) -> dict:
+    offer = {
+        "@type": "Offer",
+        "price": str(p["rupees"]),
+        "priceCurrency": "INR",
+        "availability": "https://schema.org/InStock",
+        "url": f"{canonical}#{p['sku']}",
+        "seller": {"@type": "Organization", "name": BRAND},
+    }
+    # Only while the offer is live, and only the real end date: after it the
+    # price above is the list price and carries no expiry.
+    if p["offer"]["active"] and p["offer"]["ends_at"]:
+        offer["priceValidUntil"] = p["offer"]["ends_at"]
     return {
         "@type": "Product",
         "@id": f"{canonical}#{p['sku']}",
@@ -157,14 +169,7 @@ def _product_ld(p: dict, lang: str, canonical: str) -> dict:
         "description": _blurb(p, lang),
         "sku": p["sku"],
         "brand": {"@type": "Brand", "name": BRAND},
-        "offers": {
-            "@type": "Offer",
-            "price": str(p["rupees"]),
-            "priceCurrency": "INR",
-            "availability": "https://schema.org/InStock",
-            "url": f"{canonical}#{p['sku']}",
-            "seller": {"@type": "Organization", "name": BRAND},
-        },
+        "offers": offer,
     }
 
 

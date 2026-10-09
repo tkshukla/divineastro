@@ -520,6 +520,15 @@ def confirm_order(body: ConfirmIn, user: User = Depends(me),
     }
 
 
+def _amount_matches(order: Order, amount: str) -> bool:
+    """A gateway-reported rupee amount equals the amount quoted on the order."""
+    from decimal import Decimal, InvalidOperation
+    try:
+        return Decimal(str(amount).strip()) * 100 == Decimal(int(order.amount_paise))
+    except (InvalidOperation, ValueError):
+        return False
+
+
 @router.post("/payu/return")
 async def payu_return(request: Request, db: Session = Depends(get_db)) -> Response:
     """PayU's surl/furl target: a real browser POST from PayU's own domain,
@@ -541,6 +550,13 @@ async def payu_return(request: Request, db: Session = Depends(get_db)) -> Respon
 
     granted = False
     verified = order is not None and gw.key == "payu" and gw.verify_return(payload)
+    if verified and not _amount_matches(order, payload.get("amount", "")):
+        # Signed by PayU, but for a different sum than this order was quoted
+        # (the price frozen on the order at creation, never a recomputed one).
+        logging.getLogger(__name__).error(
+            "PayU return amount %r != quoted %s for order %s; not granting",
+            payload.get("amount"), order.amount_paise, order.id)
+        verified = False
     if verified:
         granted, _ = billing.mark_paid(
             db, order, payload.get("mihpayid", "") or payload.get("payuMoneyId", ""))
@@ -995,8 +1011,9 @@ def preview_coupon(body: CouponPreviewIn, user: User = Depends(me),
     if product is None:
         raise HTTPException(400, f"Unknown product '{body.sku}'")
 
-    coupon, message, discount, bonus = coupons.validate(db, body.code, user, product)
-    original = product.amount_paise
+    original = product.amount_paise      # the price in force now, not the list price
+    coupon, message, discount, bonus = coupons.validate(
+        db, body.code, user, product, amount_paise=original)
     if coupon is None:
         discount, bonus = 0, 0
     final = original - discount

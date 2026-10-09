@@ -15,8 +15,10 @@ so the whole flow is developable before KYC completes.
 
 from __future__ import annotations
 
+import logging
 import os
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -26,6 +28,8 @@ from .db import (
     Coupon, CreditEntry, EntryKind, FulfilStatus, Order, OrderStatus,
     WebhookEvent, grant, utcnow,
 )
+
+log = logging.getLogger("astro.billing")
 
 FREE_QUESTIONS = int(os.environ.get("ASTRO_FREE_QUESTIONS", "10"))
 
@@ -42,18 +46,107 @@ def live() -> bool:
 # Catalogue
 # --------------------------------------------------------------------------
 
+# --------------------------------------------------------------------------
+# The Diwali offer: a real, time-boxed price
+#
+# Every product has two prices. `list_paise` is the regular price the site
+# charges once the offer is over. `offer_paise` is the limited-offer price.
+# The price in force is computed from the clock, never stored:
+#
+#   offer active  (now < ends_at, and not switched off)  -> offer_paise
+#   otherwise                                              -> list_paise
+#
+# so the price flips by itself at the end instant, with no manual step. The
+# struck-through "was" price shown to customers is list_paise and only while
+# the offer is active, which is exactly what is charged afterwards.
+# See HANDOVER.md "Diwali offer" for the honesty rules.
+# --------------------------------------------------------------------------
+
+OFFER_NAME = "Diwali offer"
+IST = timezone(timedelta(hours=5, minutes=30), "IST")
+# 15 November 2026, 23:59:59 IST: the offer is live strictly before this instant;
+# at it and after, list prices apply.
+OFFER_END_DEFAULT = datetime(2026, 11, 15, 23, 59, 59, tzinfo=IST)
+
+
+def _now() -> datetime:
+    """The clock. Tests replace this to move time."""
+    return datetime.now(timezone.utc)
+
+
+def offer_ends_at() -> datetime | None:
+    """When the offer ends (an aware datetime), or None if it cannot be
+    determined. ASTRO_OFFER_ENDS (ISO 8601; a value without an offset is read
+    as IST) moves the end without a deploy. An unreadable value is logged and
+    the offer is treated as OVER: list prices are the safe failure, since they
+    are what the site charges anyway."""
+    raw = os.environ.get("ASTRO_OFFER_ENDS", "").strip()
+    if not raw:
+        return OFFER_END_DEFAULT
+    try:
+        dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        log.error("ASTRO_OFFER_ENDS=%r is not ISO 8601; the offer is OFF", raw)
+        return None
+    return dt if dt.tzinfo else dt.replace(tzinfo=IST)
+
+
+def _killed() -> bool:
+    return os.environ.get("ASTRO_OFFER_OFF", "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def offer_active(now: datetime | None = None) -> bool:
+    if _killed():                      # the kill switch only ever ENDS the offer
+        return False
+    ends = offer_ends_at()
+    if ends is None:
+        return False
+    now = now or _now()
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=timezone.utc)
+    return now < ends
+
+
+def offer_status(now: datetime | None = None) -> dict:
+    """{active, name, ends_at_iso, ends_at_label}. ends_at_* are None once the
+    offer is not active, so nothing can advertise an end that has passed."""
+    if not offer_active(now):
+        return {"active": False, "name": OFFER_NAME,
+                "ends_at_iso": None, "ends_at_label": None}
+    ends = offer_ends_at().astimezone(IST)
+    return {"active": True, "name": OFFER_NAME,
+            "ends_at_iso": ends.isoformat(),
+            "ends_at_label": f"{ends.day} {ends:%B %Y}, {ends:%H:%M} IST"}
+
+
+def effective_price_paise(sku: str, now: datetime | None = None) -> int:
+    """What a customer is charged for `sku` right now."""
+    p = PRODUCTS[sku]
+    return p.offer_paise if offer_active(now) else p.list_paise
+
+
 @dataclass(frozen=True)
 class Product:
     sku: str
     title: str
     title_hi: str
-    amount_paise: int
+    offer_paise: int          # the limited-offer price
     credits: int
     kind: str                 # 'questions' | 'kundali'
     blurb: str
     blurb_hi: str
     pages: int = 0
     highlight: bool = False
+    list_paise: int = 0       # the regular price, charged once the offer ends
+
+    def price_paise(self, now: datetime | None = None) -> int:
+        return self.offer_paise if offer_active(now) else self.list_paise
+
+    @property
+    def amount_paise(self) -> int:
+        """The price in force right now. Read this (or price_paise(now)) for
+        anything a customer is charged or shown; never offer_paise directly."""
+        return self.price_paise()
 
     @property
     def rupees(self) -> int:
@@ -63,11 +156,34 @@ class Product:
     def per_question(self) -> float | None:
         return round(self.amount_paise / 100 / self.credits, 2) if self.credits else None
 
-    def to_dict(self) -> dict:
-        d = asdict(self)
-        d["rupees"] = self.rupees
-        d["per_question"] = self.per_question
-        return d
+    def to_dict(self, now: datetime | None = None) -> dict:
+        now = now or _now()                      # one instant for the whole dict
+        active = offer_active(now)
+        amount = self.price_paise(now)
+        return {
+            "sku": self.sku, "title": self.title, "title_hi": self.title_hi,
+            "amount_paise": amount,
+            "credits": self.credits, "kind": self.kind,
+            "blurb": self.blurb, "blurb_hi": self.blurb_hi,
+            "pages": self.pages, "highlight": self.highlight,
+            "rupees": amount // 100,
+            "per_question": round(amount / 100 / self.credits, 2) if self.credits else None,
+            # The regular price, only while the offer is live (else null).
+            "list_amount_paise": self.list_paise if active else None,
+            "list_per_question": (round(self.list_paise / 100 / self.credits, 2)
+                                  if active and self.credits else None),
+            "offer": {"active": active, "name": OFFER_NAME,
+                      "ends_at": offer_status(now)["ends_at_iso"]},
+        }
+
+
+# Regular prices, in paise: what the site charges after the offer. The
+# offer_paise given in each Product() below is the Diwali offer price.
+LIST_PRICES_PAISE = {
+    "q10": 19900, "q50": 59900, "q100": 119900,
+    "sq_career": 19900, "sq_marriage_timing": 19900, "sq_wealth_business": 19900,
+    "life_book": 89900, "k3": 19900, "k5": 59900, "k3q3": 199900,
+}
 
 
 # PRICING LADDER: each larger pack must cost less per question than the one
@@ -127,8 +243,17 @@ PRODUCTS: dict[str, Product] = {p.sku: p for p in [
 ]}
 
 
-def catalogue(kind: str | None = None) -> list[dict]:
-    return [p.to_dict() for p in PRODUCTS.values() if kind is None or p.kind == kind]
+# Attach the regular prices (kept in one table so they are easy to review).
+PRODUCTS = {sku: (p if p.list_paise else
+                  Product(**{**p.__dict__, "list_paise": LIST_PRICES_PAISE[sku]}))
+            for sku, p in PRODUCTS.items()}
+assert all(p.list_paise >= p.offer_paise for p in PRODUCTS.values()), \
+    "a list price below its offer price would make the 'offer' a surcharge"
+
+
+def catalogue(kind: str | None = None, now: datetime | None = None) -> list[dict]:
+    now = now or _now()
+    return [p.to_dict(now) for p in PRODUCTS.values() if kind is None or p.kind == kind]
 
 
 # --------------------------------------------------------------------------
@@ -149,11 +274,16 @@ def create_order(db: Session, user, sku: str, birth_id: int | None = None,
     if product is None:
         raise ValueError(f"Unknown product '{sku}'")
 
+    # One instant decides the price for coupon, order and gateway alike, and
+    # it is frozen on the order below (amount_paise): a payment made later is
+    # checked against that, never against a recomputed price.
+    price = product.price_paise(_now())
+
     coupon = None
     discount = bonus = 0
     if coupon_code and coupon_code.strip():
         coupon, message, discount, bonus = coupons.validate(
-            db, coupon_code, user, product)
+            db, coupon_code, user, product, amount_paise=price)
         if coupon is None:
             raise ValueError(message or "That coupon cannot be used.")
 
@@ -163,8 +293,8 @@ def create_order(db: Session, user, sku: str, birth_id: int | None = None,
         user_id=user.id,
         sku=product.sku,
         title=product.title,
-        amount_paise=product.amount_paise - discount,
-        original_amount_paise=product.amount_paise,
+        amount_paise=price - discount,
+        original_amount_paise=price,
         discount_paise=discount,
         coupon_id=coupon.id if coupon else None,
         credits=product.credits + bonus,

@@ -58,6 +58,11 @@ def pin(day: dt.date = DAY) -> None:
     for name, mod in list(sys.modules.items()):
         if name.startswith("app.") and callable(getattr(mod, "_today", None)):
             setattr(mod, "_today", lambda d=day: d)
+    # The Diwali offer follows the real clock; pin it to the same day so the
+    # recorded /pricing does not change when the offer ends (DIVASTRO-152).
+    from app import billing
+    noon = dt.datetime.combine(day, dt.time(12), tzinfo=billing.IST)
+    billing._now = lambda n=noon: n
 
 
 def _keep(path: str) -> bool:

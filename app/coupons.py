@@ -114,7 +114,7 @@ def price(coupon: Coupon, amount_paise: int) -> tuple[int, int, bool]:
 # Validation
 # --------------------------------------------------------------------------
 
-def validate(db: Session, code: str, user, product
+def validate(db: Session, code: str, user, product, amount_paise: int | None = None
              ) -> tuple[Coupon | None, str | None, int, int]:
     """Check a code against a user and a product.
 
@@ -124,6 +124,10 @@ def validate(db: Session, code: str, user, product
     user-facing reason. When `coupon` is set the code is good and `message` is
     a short confirmation (which also carries the notice when a discount had to
     be clamped to keep the charge at ₹1).
+
+    `amount_paise` is the price the coupon applies to (the price in force when
+    the caller quoted it); default is the product's current price. Coupons
+    always apply to the effective price, never the struck-through list price.
     """
     code = normalise(code)
     if not code:
@@ -156,7 +160,7 @@ def validate(db: Session, code: str, user, product
         if mine >= int(coupon.max_per_user):
             return None, "You have already used this coupon.", 0, 0
 
-    amount = int(product.amount_paise)
+    amount = int(product.amount_paise if amount_paise is None else amount_paise)
     if coupon.min_amount_paise and amount < int(coupon.min_amount_paise):
         return None, (f"This coupon needs an order of "
                       f"{_rupees(int(coupon.min_amount_paise))} or more."), 0, 0

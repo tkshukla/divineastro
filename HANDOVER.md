@@ -123,6 +123,45 @@ checked against Postgres directly.
 
 ---
 
+## Diwali offer pricing (DIVASTRO-152)
+
+Every product has two prices in `app/billing.py`: the **offer price**
+(`Product.offer_paise`, the first money argument of each `Product(...)`) and the
+**list price** (`LIST_PRICES_PAISE`, what the site charges once the offer is
+over). The price in force is *computed from the clock*, never stored:
+`billing.effective_price_paise(sku, now=None)`; `billing.offer_status(now=None)`
+-> `{active, name, ends_at_iso, ends_at_label}`. `Product.amount_paise` is now a
+property returning the effective price, so every old reader keeps working.
+
+* **End date**: 15 Nov 2026 23:59:59 IST (`OFFER_END_DEFAULT`). The offer is live
+  strictly *before* that instant; at it and after, list prices apply by
+  themselves (no deploy, no manual step, strike and offer label vanish).
+  Move it without a deploy with `ASTRO_OFFER_ENDS` (ISO 8601 with offset, e.g.
+  `2026-11-20T23:59:59+05:30`; no offset = IST). An unparseable value is logged
+  and treated as "offer over" (list prices), the safe failure.
+* **Kill switch**: `ASTRO_OFFER_OFF=1` ends the offer immediately (list prices).
+  It can only ever end the offer, never start or extend one.
+* **Change prices**: edit `offer_paise` in the `Product(...)` or the
+  `LIST_PRICES_PAISE` table. An assert refuses list < offer.
+* **API**: `/api/products` keeps `amount_paise`/`rupees`/`per_question` (now the
+  effective price) and adds `list_amount_paise` (null unless the offer is
+  active), `list_per_question`, and `offer {active, name, ends_at}`.
+  `/pricing` JSON-LD carries `priceValidUntil` only while the offer is active.
+* **Orders**: `Order.amount_paise` is frozen at creation (coupon applied to the
+  effective price of that instant, `original_amount_paise` = that price). Paying
+  later never reprices: gateways and verification use the stored amount, and the
+  PayU return now also refuses a signed return whose amount differs from it. A
+  pending order is neither repriced nor expired at the end instant; it stays
+  payable at the price the customer was quoted (the gateway session already
+  carries it).
+* **Honesty rules (India consumer law: no fake "was" price, no fake urgency)**:
+  charged == shown, always; the struck-through price is shown only while the offer
+  is active and is exactly what is charged afterwards; no per-visitor countdown or
+  stock-style urgency, the only urgency is the real end date; never show a list
+  price the site does not charge. Tests: `tests/test_offer_pricing.py`. CI sets
+  `ASTRO_OFFER_ENDS=2099-...` so the other suites (which assert offer prices) do
+  not go red after the offer; locally they will after 15 Nov unless you set it.
+
 ## Working notes
 
 Google sign-in **does** work — `/api/me` returns `provider: "google"` for
