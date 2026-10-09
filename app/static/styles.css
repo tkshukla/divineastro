@@ -2716,7 +2716,8 @@ html[lang="ne"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetic
 .plan.has-sample { padding-bottom: 34px; }
 .plan-sample { position: absolute; right: 12px; bottom: 8px; padding: 2px 4px; font-size: 12.5px;
                color: var(--gold-soft); text-decoration: underline; }
-.pack-sample { display: block; margin-top: 8px; padding: 4px 2px; text-align: center; font-size: 13px;
-               color: var(--gold-soft); }
+.pack-buy { display: flex; align-items: center; gap: 10px; }
+.pack-buy .buy-btn { flex: 1; min-width: 0; }
+.pack-sample { flex: none; font-size: 13px; color: var(--gold-soft); text-decoration: underline; }
 @media (max-width: 700px) { .plans-grid { grid-template-columns: 1fr 1fr; } }
 [data-theme="light"] .plan { background: rgba(20, 30, 80, 0.045); }

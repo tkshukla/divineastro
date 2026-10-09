@@ -196,7 +196,7 @@ jobs:
             test_account test_ask_question test_chart_casting test_chart_panel \
             test_chat_layout test_dashboard_widgets test_feedback_admin \
             test_first_run test_home test_language_picker test_milan test_mobile_screens \
-            test_panchang_tools test_panchang_hindi test_pdfs_and_account test_purchase_funnel test_push_optin test_report_delivery test_share test_site_chrome test_store; do
+            test_panchang_tools test_panchang_hindi test_pdfs_and_account test_purchase_funnel test_push_optin test_report_delivery test_samples test_share test_site_chrome test_store; do
             echo "::group::$m"
             python -u -m tests.e2e.$m
             echo "::endgroup::"
