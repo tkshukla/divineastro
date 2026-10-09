@@ -986,10 +986,15 @@ def pdf_single_question(sid: str, request: Request, sku: str = "sq_career", lang
 
 @app.get("/api/pdf/life-book/{sid}")
 def pdf_life_book(sid: str, request: Request, lang: str = "en") -> Response:
-    """Download the comprehensive 35+ page Vedic Life Book PDF report."""
+    """Download the Vedic Life Book PDF (about 8 pages from the rule engine; more when a narration model is on)."""
     with db_session() as db:
         user = auth.require_user(request, db)
-        order = billing.has_paid_report(db, user, sku="life_book", topic="life_book")
+        # By sku only. The store's checkout never sends a report_topic for the
+        # Life Book (billing.create_order sets one only for single-question
+        # products), so also requiring topic == "life_book" refused every
+        # customer who had paid through the app. The sku, the paid status and
+        # the owner are all still required.
+        order = billing.has_paid_report(db, user, sku="life_book")
         if not order:
             raise HTTPException(402, "The Comprehensive Life Book requires purchase before downloading.")
 
