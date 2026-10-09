@@ -109,7 +109,7 @@ _SHELL = """<!DOCTYPE html>
 <script src="/static/visit.js" defer></script>   <!-- counts the page load: see analytics.py -->
 </body></html>"""
 
-UPDATED = "6 October 2026"
+UPDATED = "9 October 2026"
 
 
 def _page(title: str, body: str, path: str, description: str) -> HTMLResponse:
@@ -168,8 +168,11 @@ the free question allowance more than once may result in suspension.</p>
 
 <h2>3. Questions and credits</h2>
 <ul>
-  <li>New accounts receive a number of <strong>free questions</strong> as a
-      trial. The current allowance is shown when you sign in.</li>
+  <li>You may ask <strong>one question without an account</strong> and get a
+      full answer, once per visitor (we may withdraw this at busy times). New
+      accounts then receive a number of <strong>free questions</strong> as a
+      trial; the current allowance is shown on our <a href="/pricing">prices</a>
+      page and when you sign in.</li>
   <li>Further questions are bought as <strong>credit packs</strong>. One
       question consumes one credit.</li>
   <li>A credit is deducted only when an answer is successfully produced. If our
@@ -235,6 +238,16 @@ do about it. It is written to meet the Digital Personal Data Protection Act,
       It is stored without your name, email or IP address, is not linked to any
       account, and is deleted after about 13 months. We honour
       Do&nbsp;Not&nbsp;Track and Global&nbsp;Privacy&nbsp;Control here too.</li>
+  <li><strong>Your free answer without signing in</strong> — you can ask one
+      question without an account. To make sure each visitor gets one free
+      answer, we keep that question, the answer we gave and the time, under the
+      same one-way code that changes every day (never your IP address, name or
+      birth details), and set one small cookie that says the free answer has been
+      used. This is kept only to enforce the one-answer limit and to see what
+      visitors ask; it is anonymised and deleted with the other statistics after
+      about 13 months. If your browser sends Do&nbsp;Not&nbsp;Track or
+      Global&nbsp;Privacy&nbsp;Control you still get your answer, but we keep only
+      the time and the one-way code, which is all the limit needs.</li>
   <li><strong>Payment records</strong> — what you bought, when, and the
       gateway's transaction reference. <strong>We never see or store your card,
       UPI or bank details</strong>; those go directly to the payment gateway.</li>
@@ -286,7 +299,8 @@ days. You can delete an individual saved birth profile yourself at any time.</p>
 
 <h2>Cookies</h2>
 <p>We use one cookie to keep you signed in and one short-lived cookie during
-sign-in.</p>
+sign-in. If you ask a question without signing in, one more cookie records that
+your free answer has been used; it holds nothing else.</p>
 <p><strong>Advertising.</strong> We show ads served by Google AdSense. Google and
 its partners use cookies to serve ads based on your previous visits to this and
 other websites; Google's advertising cookies let it and its partners show you
