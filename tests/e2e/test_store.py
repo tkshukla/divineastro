@@ -104,7 +104,12 @@ def coupon_at_checkout(p, browser, base: str) -> None:
     admin_ctx.close()
 
     pg.page.click("#btn-buy")
-    pg.page.wait_for_selector("#coupon-code", timeout=10000)
+    # DIVASTRO-149: the coupon box is a collapsed section of the store now.
+    pg.page.wait_for_selector('.store-sec[data-sec="coupon"] > summary', timeout=10000)
+    check("the coupon box starts folded away",
+          not pg.page.locator("#coupon-code").is_visible())
+    pg.page.click('.store-sec[data-sec="coupon"] > summary')
+    pg.page.wait_for_selector("#coupon-code", state="visible", timeout=10000)
     pg.page.fill("#coupon-code", "E2ESTORE10")
     pg.page.click("#coupon-apply")
     pg.page.wait_for_timeout(1000)
