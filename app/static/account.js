@@ -80,6 +80,7 @@ async function loadAccount() {
   } catch { acct.authProviders = []; }
 
   renderAccountBar();
+  renderPlans();
   // Rescue a chart cast before signing in, THEN list. Order matters: claiming
   // calls loadSavedCharts itself on success, so the panel shows it immediately
   // rather than only on the visit after.
@@ -572,18 +573,24 @@ function couponFor(sku) {
   return r && r.valid ? r : null;
 }
 
+/* A whole number of rupees as people read it: 351, 1,100. (The server sends
+   rupees as an integer; paise only ever appear in coupon previews.) */
+const money = (r) => `₹${Number(r).toLocaleString("en-IN")}`;
+/* Per-question price with two decimals: ₹11.10, ₹7.02, ₹6.51. */
+const perQuestion = (p) => `₹${Number(p.per_question).toFixed(2)}`;
+
 function packCard(p) {
   const cp = couponFor(p.sku);
   const applied = !!acct.coupon;
 
-  let price = `<div class="pack-price">₹${p.rupees}</div>`;
+  let price = `<div class="pack-price">${money(p.rupees)}</div>`;
   let unit = p.per_question
-    ? `<div class="pack-unit">₹${p.per_question} ${escapeHtml(at("perQ"))}</div>` : "";
-  let label = `${escapeHtml(at("buy"))} ₹${p.rupees}`;
+    ? `<div class="pack-unit">${perQuestion(p)} ${escapeHtml(at("perQ"))}</div>` : "";
+  let label = `${escapeHtml(at("buy"))} ${money(p.rupees)}`;
 
   if (cp && cp.discount > 0) {
     price = `<div class="pack-price">
-      <s style="opacity:.45;font-size:.6em">₹${p.rupees}</s> ₹${rupees(cp.final)}</div>`;
+      <s style="opacity:.45;font-size:.6em">${money(p.rupees)}</s> ₹${rupees(cp.final)}</div>`;
     unit = `<div class="pack-unit" style="color:var(--green)">
       −₹${rupees(cp.discount)} ${escapeHtml(acct.coupon.code)}</div>`;
     label = `${escapeHtml(at("buy"))} ₹${rupees(cp.final)}`;
@@ -594,8 +601,13 @@ function packCard(p) {
     unit = `<div class="pack-unit">${escapeHtml(at("couponNotHere"))}</div>`;
   }
 
-  return `<div class="pack${p.highlight ? " featured" : ""}">
-    ${p.highlight ? `<span class="pack-flag">${escapeHtml(at("popular"))}</span>` : ""}
+  // "Most popular" is the question pack that is flagged (50). The reports, the
+  // book and the kundali carry the same catalogue flag, but nothing in the code
+  // says they sell best, so they do not wear the label.
+  const flagged = p.highlight && p.kind === "questions";
+  const focus = acct.storeFocus === p.sku;
+  return `<div class="pack${flagged ? " featured" : ""}${focus ? " focus" : ""}" data-sku="${p.sku}">
+    ${flagged ? `<span class="pack-flag">${escapeHtml(at("popular"))}</span>` : ""}
     <h4>${escapeHtml(loc(p, "title"))}</h4>
     ${price}
     ${unit}
@@ -604,51 +616,82 @@ function packCard(p) {
   </div>`;
 }
 
-function openStore(outOfCredits = false) {
-  if (!acct.user) return openSignIn(() => openStore(outOfCredits));
+/* The line under the store title: what is true of checkout in production. The
+   gateway's name is only claimed when a real gateway is configured; in test mode
+   the banner below says so instead. */
+function trustLine() {
+  const pay = acct.payment || {};
+  const parts = [];
+  if (acct.live) {
+    parts.push(escapeHtml(pay.gateway === "upi_manual"
+      ? at("trustUpi") : at("trustGateway").replace("{gateway}", pay.label || "")));
+  }
+  parts.push(`<a href="/refund" target="_blank" rel="noopener">${escapeHtml(at("trustRefund"))}</a>`);
+  parts.push(`<a href="/terms" target="_blank" rel="noopener">${escapeHtml(at("terms"))}</a>`);
+  return `<p class="store-trust">${parts.join(" · ")}</p>`;
+}
+
+/* focusSku: scroll the store to one product and highlight it (the in-app offers
+   open the store this way). Its section is opened first if it was collapsed. */
+function focusStoreProduct(back, sku) {
+  const card = back.querySelector(`.pack[data-sku="${sku}"]`);
+  if (!card) return;
+  const sec = card.closest("details");
+  if (sec) sec.open = true;
+  card.classList.add("focus");
+  card.scrollIntoView({ block: "center" });
+}
+
+function openStore(outOfCredits = false, focusSku = null) {
+  if (!acct.user) return openSignIn(() => openStore(outOfCredits, focusSku));
   window.daTrack?.("store_open", outOfCredits ? "credits" : "browse");
   acct.coupon = null;
+  acct.storeFocus = focusSku || null;
   const packs = acct.products.filter((p) => p.kind === "questions");
   const singleReports = acct.products.filter((p) => p.kind === "single_question");
   const lifeBooks = acct.products.filter((p) => p.kind === "kundali_book");
   const kundalis = acct.products.filter((p) => p.kind === "kundali");
 
+  // The three ₹111 reports are the easiest first purchase, so they come first;
+  // then the question packs, the Life Book and the hand-written kundali. The first
+  // two sections start open, the rest fold away so the sheet stays short.
+  const sections = [
+    { kind: "single_question", items: singleReports, title: at("singleQuestionTitle"),
+      sub: at("singleQuestionSub"), open: true },
+    { kind: "questions", items: packs, title: at("packsTitle"), sub: "", open: true },
+    { kind: "kundali_book", items: lifeBooks, title: at("lifeBookTitle"),
+      sub: at("lifeBookSub"), open: false },
+    { kind: "kundali", items: kundalis, title: at("kundaliTitle"),
+      sub: at("kundaliSub") + (acct.astrologer ? ` ${acct.astrologer} · ~${acct.turnaround} days.` : ""),
+      open: false },
+  ].filter((s) => s.items.length);
+
+  const sectionHtml = (s) => `
+    <details class="store-sec" data-sec="${s.kind}"${s.open || s.items.some((p) => p.sku === focusSku) ? " open" : ""}>
+      <summary class="store-h">${escapeHtml(s.title)}</summary>
+      ${s.sub ? `<p class="modal-sub">${escapeHtml(s.sub)}</p>` : ""}
+      <div class="packs" data-kind="${s.kind}"></div>
+    </details>`;
+
   const back = modal(`
     <h2 class="modal-title">${escapeHtml(outOfCredits ? at("outTitle") : at("buyMore"))}</h2>
-    <p class="modal-sub">${escapeHtml(outOfCredits ? at("outSub") : "")}</p>
+    ${outOfCredits ? `<p class="modal-sub">${escapeHtml(at("outSub"))}</p>` : ""}
+    ${trustLine()}
     ${acct.live ? "" : `<p class="test-banner">${escapeHtml(at("testMode"))}</p>`}
-    
-    <div class="packs" data-kind="questions">${packs.map(packCard).join("")}</div>
-
-    ${singleReports.length ? `
-      <h3 class="store-h">${escapeHtml(at("singleQuestionTitle"))}</h3>
-      <p class="modal-sub">${escapeHtml(at("singleQuestionSub"))}</p>
-      <div class="packs" data-kind="single_question">${singleReports.map(packCard).join("")}</div>
-    ` : ""}
-
-    ${lifeBooks.length ? `
-      <h3 class="store-h" style="color:var(--gold);">${escapeHtml(at("lifeBookTitle"))}</h3>
-      <p class="modal-sub">${escapeHtml(at("lifeBookSub"))}</p>
-      <div class="packs" data-kind="kundali_book">${lifeBooks.map(packCard).join("")}</div>
-    ` : ""}
-
-    ${kundalis.length ? `
-      <h3 class="store-h">${escapeHtml(at("kundaliTitle"))}</h3>
-      <p class="modal-sub">${escapeHtml(at("kundaliSub"))}${
-        acct.astrologer ? ` ${escapeHtml(acct.astrologer)} · ~${acct.turnaround} days.` : ""}</p>
-      <div class="packs" data-kind="kundali">${kundalis.map(packCard).join("")}</div>
-    ` : ""}
-
-    <h3 class="store-h">${escapeHtml(at("couponLabel"))}</h3>
-    <div style="display:flex;gap:10px;align-items:center">
-      <input id="coupon-code" type="text" autocomplete="off" spellcheck="false"
-             style="flex:1;margin-bottom:0;text-transform:uppercase"
-             placeholder="${escapeHtml(at("couponPlaceholder"))}">
-      <button class="ghost-btn" id="coupon-apply">${escapeHtml(at("couponApply"))}</button>
-      <button class="ghost-btn" id="coupon-clear" hidden>${escapeHtml(at("couponRemove"))}</button>
-    </div>
-    <p class="coupon-msg modal-sub" style="margin:10px 0 0" hidden></p>
+    ${sections.map(sectionHtml).join("")}
+    <details class="store-sec" data-sec="coupon">
+      <summary class="store-h">${escapeHtml(at("couponLabel"))}</summary>
+      <div class="coupon-row">
+        <input id="coupon-code" type="text" autocomplete="off" spellcheck="false"
+               style="flex:1;margin-bottom:0;text-transform:uppercase"
+               placeholder="${escapeHtml(at("couponPlaceholder"))}">
+        <button class="ghost-btn" id="coupon-apply">${escapeHtml(at("couponApply"))}</button>
+        <button class="ghost-btn" id="coupon-clear" hidden>${escapeHtml(at("couponRemove"))}</button>
+      </div>
+      <p class="coupon-msg modal-sub" style="margin:10px 0 0" hidden></p>
+    </details>
     <p class="modal-error" hidden></p>`);
+  back.querySelector(".modal").classList.add("store");
 
   const input = back.querySelector("#coupon-code");
   const applyBtn = back.querySelector("#coupon-apply");
@@ -656,14 +699,10 @@ function openStore(outOfCredits = false) {
   const msg = back.querySelector(".coupon-msg");
 
   const repaint = () => {
-    const qPacks = back.querySelector('.packs[data-kind="questions"]');
-    if (qPacks) qPacks.innerHTML = packs.map(packCard).join("");
-    const sqPacks = back.querySelector('.packs[data-kind="single_question"]');
-    if (sqPacks) sqPacks.innerHTML = singleReports.map(packCard).join("");
-    const lbPacks = back.querySelector('.packs[data-kind="kundali_book"]');
-    if (lbPacks) lbPacks.innerHTML = lifeBooks.map(packCard).join("");
-    const kPacks = back.querySelector('.packs[data-kind="kundali"]');
-    if (kPacks) kPacks.innerHTML = kundalis.map(packCard).join("");
+    sections.forEach((s) => {
+      const box = back.querySelector(`.packs[data-kind="${s.kind}"]`);
+      if (box) box.innerHTML = s.items.map(packCard).join("");
+    });
     back.querySelectorAll(".buy-btn").forEach((b) => {
       b.onclick = () => startCheckout(b.dataset.sku, back);
     });
@@ -722,6 +761,7 @@ function openStore(outOfCredits = false) {
   };
 
   repaint();
+  if (focusSku) focusStoreProduct(back, focusSku);
 }
 
 async function startCheckout(sku, back) {
@@ -911,6 +951,7 @@ async function confirmPayment(orderId, payload) {
   acct.user.credits = data.credits;
   renderAccountBar();
   closeModal();
+  acct.paid = null;          // re-read the paid orders before offering a report again
   if (!data.pending) window.daTrack?.("paid", acct.checkoutSku || "");
 
   if (data.pending) {
@@ -1166,6 +1207,163 @@ async function openCouponAdmin() {
   };
 
   refresh();
+}
+
+/* ---------- plans and in-app offers (DIVASTRO-149) ----------
+   Prices were only reachable after sign-in; these put them where the visitor is.
+
+   Plans: the compact section on the home screen, for everyone (signed out too),
+   built from the same /api/products list the store uses, so a price can never
+   differ between the two.
+
+   Offers: small, quiet cards for signed-in users with questions left. Each is
+   dismissible and shown at most once per browser session (sessionStorage), never
+   on the sign-in wall, and never at 0 questions left (the paywall opens the store
+   by itself then). Tapping one opens the store scrolled to that product. */
+
+const productBySku = (sku) => acct.products.find((p) => p.sku === sku);
+
+/* The topic the ENGINE routed the question to (interpret/topics.py, sent in the
+   'analysis' event as result.topic) -> the report that matches it. Any other
+   topic gets the Life Book. Nothing here reads the question text. */
+const OFFER_REPORT_FOR_TOPIC = { career: "sq_career", love: "sq_marriage_timing", money: "sq_wealth_business" };
+const LOW_CREDITS_AT = 3;
+
+const offersSeen = new Set();
+try { JSON.parse(sessionStorage.getItem("da_offers") || "[]").forEach((k) => offersSeen.add(k)); }
+catch { /* private mode: the offers are then limited to this page load */ }
+function markOfferSeen(key) {
+  offersSeen.add(key);
+  try { sessionStorage.setItem("da_offers", JSON.stringify([...offersSeen])); } catch { /* ignore */ }
+}
+
+/* The report and book SKUs this person has already paid for: they are not offered
+   again. Fetched once, and again after a purchase. */
+async function paidSkus() {
+  if (acct.paid) return acct.paid;
+  try {
+    const { orders } = await (await fetch("/api/orders")).json();
+    acct.paid = new Set((orders || []).filter((o) => o.status === "paid").map((o) => o.sku));
+  } catch { acct.paid = new Set(); }
+  return acct.paid;
+}
+
+function offerCard({ key, detail, text, button, focus }) {
+  const el = document.createElement("div");
+  el.className = "offer-card";
+  el.setAttribute("role", "note");
+  el.dataset.offer = detail;
+  el.innerHTML = `<p class="offer-text">${escapeHtml(text)}</p>
+    <button type="button" class="offer-go">${escapeHtml(button)}</button>
+    <button type="button" class="offer-x" aria-label="${escapeHtml(at("close"))}">&times;</button>`;
+  el.querySelector(".offer-go").onclick = () => {
+    window.daTrack?.("offer_click", detail);
+    el.remove();
+    openStore(false, focus);
+  };
+  el.querySelector(".offer-x").onclick = () => el.remove();
+  markOfferSeen(key);
+  window.daTrack?.("offer_shown", detail);
+  return el;
+}
+
+const offerAllowed = () => !!acct.user && acct.user.credits > 0;
+
+/* After an answer has finished streaming. At most one card per answer: the
+   "few questions left" nudge when 3 or fewer remain, otherwise the report that
+   matches the topic of the question. */
+async function maybeOfferAfterAnswer(result, bubble) {
+  try {
+    if (!offerAllowed() || !bubble) return;
+    const msg = bubble.closest(".msg") || bubble;
+    let card = null;
+
+    const left = acct.user.credits;
+    const pack = productBySku("q50");
+    if (left <= LOW_CREDITS_AT && pack && !offersSeen.has("low_credits")) {
+      card = offerCard({
+        key: "low_credits", detail: "low_credits", focus: "q50", button: at("buyMore"),
+        text: at("offerLow").replace("{n}", left).replace("{pack}", loc(pack, "title"))
+          .replace("{price}", money(pack.rupees)),
+      });
+    }
+    if (!card) {
+      const sku = OFFER_REPORT_FOR_TOPIC[result?.topic] || "life_book";
+      const p = productBySku(sku);
+      if (p && !offersSeen.has(sku) && !(await paidSkus()).has(sku)) {
+        card = offerCard({
+          key: sku, detail: sku, focus: sku,
+          text: at(sku === "life_book" ? "offerBook" : "offerReport").replace("{title}", loc(p, "title")),
+          button: at("offerBtn").replace("{price}", money(p.rupees)),
+        });
+      }
+    }
+    if (!card) return;
+    if (!msg.isConnected || msg.nextElementSibling?.classList.contains("offer-card")) return;
+    msg.after(card);
+    if (typeof scrollThread === "function") scrollThread();
+  } catch (ex) { console.warn("offer:", ex); }
+}
+
+/* After a chart is cast and the dashboard opens: one line about the Life Book. */
+async function offerDashboard() {
+  try {
+    const slot = document.getElementById("dash-offer");
+    const p = productBySku("life_book");
+    if (!slot || !p || !offerAllowed() || offersSeen.has("life_book")) return;
+    if ((await paidSkus()).has("life_book") || slot.querySelector(".offer-card")) return;
+    slot.replaceChildren(offerCard({
+      key: "life_book", detail: "life_book_dashboard", focus: "life_book",
+      text: at("offerDash").replace("{title}", loc(p, "title")).replace("{price}", money(p.rupees)),
+      button: at("offerBtn").replace("{price}", money(p.rupees)),
+    }));
+  } catch (ex) { console.warn("offer:", ex); }
+}
+
+/* The home screen's Plans section. */
+const PLAN_PICKS = ["sq_career", "q10", "q50", "life_book"];
+let plansSeen = false;
+
+function renderPlans() {
+  const box = document.getElementById("plans");
+  if (!box) return;
+  const picks = PLAN_PICKS.map(productBySku).filter(Boolean);
+  if (!picks.length) { box.hidden = true; return; }
+  const page = `${state.lang === "en" ? "" : "/" + state.lang}/pricing`;
+  const line = (p) => (p.kind === "questions" ? `${perQuestion(p)} ${at("perQ")}`
+    : p.kind === "kundali_book" ? at("plansBookLine") : at("plansReportLine"));
+  box.innerHTML = `
+    <h2 class="plans-title" id="plans-title">${escapeHtml(at("plansTitle"))}</h2>
+    ${acct.freeKnown ? `<p class="plans-free">${escapeHtml(at("plansFree").replace("{n}", acct.freeQuestions))}</p>` : ""}
+    <div class="plans-grid">${picks.map((p) => `
+      <a class="plan${p.sku === "q50" ? " featured" : ""}" href="${page}#${p.sku}" data-plans="${p.sku}">
+        ${p.sku === "q50" ? `<span class="plan-flag">${escapeHtml(at("popular"))}</span>` : ""}
+        <span class="plan-name">${escapeHtml(loc(p, "title"))}</span>
+        <span class="plan-price">${money(p.rupees)}</span>
+        <span class="plan-line">${escapeHtml(line(p))}</span>
+      </a>`).join("")}
+    </div>
+    <a class="plans-all" href="${page}" data-plans="all">${escapeHtml(at("plansAll"))} &rsaquo;</a>`;
+  box.hidden = false;
+  box.setAttribute("aria-labelledby", "plans-title");
+
+  if (!box.dataset.wired) {
+    box.dataset.wired = "1";
+    box.addEventListener("click", (e) => {
+      const a = e.target.closest("[data-plans]");
+      if (a) window.daTrack?.("plans_click", a.dataset.plans);
+    });
+    // "Saw the prices": counted once, when the section is actually on screen.
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver((entries) => {
+        if (plansSeen || !entries.some((x) => x.isIntersecting)) return;
+        plansSeen = true;
+        io.disconnect();
+        window.daTrack?.("pricing_view", "home");
+      }, { threshold: 0.4 });
+      io.observe(box);
+    }
+  }
 }
 
 /* ---------- toast ---------- */

@@ -171,6 +171,11 @@
       </a>
     </div>
 
+    <!-- DIVASTRO-149: what Divine Astro costs, visible to everyone (signed out too).
+         Filled by account.js (renderPlans) from /api/products, so the prices are
+         the store's own; stays hidden until they arrive. -->
+    <section class="plans" id="plans" hidden></section>
+
     <!-- Saved charts live here on the home screen: a returning customer opens
          one with a tap instead of re-entering birth details. -->
     <section id="saved-charts" class="card saved-charts" hidden></section>
@@ -218,6 +223,7 @@
       <a href="/vrat-tyohar">Vrat &amp; Tyohar</a>
       <a href="/nakshatra">Nakshatra</a>
       <a href="/en/katha">Stories</a>
+      <a href="/pricing">Prices</a>
     </nav>
     <p class="legal-entity">
       Yavi Info Solutions and Consultants · B1-1402 Leisure Park, Greater Noida,
@@ -247,6 +253,9 @@
         <button type="button" class="ghost-btn" id="dash-change-profile">Switch Profile</button>
       </div>
     </div>
+
+    <!-- DIVASTRO-149: one quiet line about the Life Book (account.js offerDashboard) -->
+    <div id="dash-offer"></div>
 
     <!-- Daily Forecast & Transit Score -->
     <div class="card forecast-card">

@@ -840,6 +840,7 @@ function applyLanguage() {
   $("#theme-toggle")?.setAttribute("title", t("hdrThemeTitle"));
   renderLangPicker();                    // its aria-label is t("hdrLang") + the native name
   if (typeof renderAccountBar === "function") renderAccountBar();
+  if (typeof renderPlans === "function") renderPlans();      // DIVASTRO-149: the home Plans section
 
   if (state.sessionId) {
     loadAndShowDashboard();
@@ -2117,6 +2118,7 @@ $("#ask-form").addEventListener("submit", async (e) => {
   const pending = addThinking();
 
   let bubble = null;
+  let answerEl = null;       // the answer's bubble, for the offer card under it (DIVASTRO-149)
   let result = null;
   let polished = "";
   let truncated = false;
@@ -2177,9 +2179,11 @@ $("#ask-form").addEventListener("submit", async (e) => {
           pending.remove?.();
           if (state.provider === "off") {
             const b = addBot(result.answer_engine, result);
+            answerEl = b;
             b.insertAdjacentHTML("afterbegin", fallbackNoteHtml(result));
           } else {
             bubble = addBot("", result, false);
+            answerEl = bubble;
             bubble.innerHTML =
               `<div class="thinking"><i></i><i></i><i></i>
                <span style="margin-left:6px">${escapeHtml(t("writing"))}</span></div>`;
@@ -2213,6 +2217,11 @@ $("#ask-form").addEventListener("submit", async (e) => {
     if (truncated && bubble) {
       bubble.insertAdjacentHTML("beforeend",
         `<p class="incomplete-note">${escapeHtml(t("responseTruncated"))}</p>`);
+    }
+    // DIVASTRO-149: a quiet offer under the finished answer (account.js decides
+    // whether one is due: signed in, questions left, not shown before this session).
+    if (answerEl && result && typeof maybeOfferAfterAnswer === "function") {
+      maybeOfferAfterAnswer(result, answerEl);
     }
   } catch (ex) {
     pending.remove();
@@ -2408,6 +2417,7 @@ async function loadAndShowDashboard() {
         block.addEventListener("click", updateBox);
       });
     }
+    if (typeof offerDashboard === "function") offerDashboard();     // DIVASTRO-149
   } catch (ex) {
     console.error("Failed to load dashboard:", ex);
   }

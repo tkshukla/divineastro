@@ -2567,3 +2567,106 @@ html[lang="ne"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetic
   color: #3a1500;
   box-shadow: 0 6px 18px rgba(255, 154, 31, 0.35);
 }
+
+/* ===== DIVASTRO-149: purchase funnel — store layout, offers, home Plans ===== */
+
+/* Store: collapsible sections, a trust line, and compact rows on a phone. */
+.modal.store .modal-sub { margin-bottom: 12px; }
+.store-trust { margin: 0 0 12px; font-size: 12.5px; color: var(--ink-dim); line-height: 1.5; }
+.store-trust a { color: var(--ink-dim); text-decoration: underline; }
+.store-trust a:hover { color: var(--gold); }
+.store-sec { border-top: 1px solid var(--line); padding: 4px 0 6px; }
+.store-sec:first-of-type { border-top: 0; }
+.store-sec > summary.store-h {
+  list-style: none; cursor: pointer; margin: 0; padding: 12px 28px 8px 0; position: relative;
+  min-height: 24px;
+}
+.store-sec > summary.store-h::-webkit-details-marker { display: none; }
+.store-sec > summary.store-h::after {
+  content: ""; position: absolute; right: 6px; top: 50%; width: 8px; height: 8px;
+  border-right: 2px solid var(--ink-faint); border-bottom: 2px solid var(--ink-faint);
+  transform: translateY(-70%) rotate(45deg); transition: transform 0.15s;
+}
+.store-sec[open] > summary.store-h::after { transform: translateY(-30%) rotate(-135deg); }
+.store-sec > summary.store-h:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 6px; }
+.coupon-row { display: flex; gap: 10px; align-items: center; padding-top: 4px; }
+.pack.focus { border-color: var(--gold); background: rgba(var(--gold-rgb), 0.13);
+              box-shadow: 0 0 0 2px rgba(var(--gold-rgb), 0.55);
+              animation: pack-pulse 1.4s ease-out 1; }
+@keyframes pack-pulse { 0% { box-shadow: 0 0 0 0 rgba(var(--gold-rgb), 0.8); }
+                        100% { box-shadow: 0 0 0 2px rgba(var(--gold-rgb), 0.55); } }
+@media (prefers-reduced-motion: reduce) { .pack.focus { animation: none; } }
+
+@media (max-width: 700px) {
+  .modal.store .modal-body { padding: 22px 16px 18px; }
+  .modal.store .modal-title { font-size: 22px; margin-bottom: 6px; padding-right: 30px; }
+  .modal.store .packs { grid-template-columns: 1fr; gap: 12px; margin-bottom: 4px; }
+  /* One row per product: name and what you get on the left, price and the button
+     on the right. About 100px each instead of a 250px card. */
+  .modal.store .pack {
+    display: grid; grid-template-columns: minmax(0, 1fr) 100px; column-gap: 10px; row-gap: 0;
+    grid-template-areas: "t p" "b c" "u c";
+    padding: 12px 12px 12px; border-radius: 14px; align-items: start;
+  }
+  .modal.store .pack:hover { transform: none; }
+  .modal.store .pack h4 { grid-area: t; margin: 0 0 4px; font-size: 14px; line-height: 1.3; }
+  .modal.store .pack-price { grid-area: p; font-size: 24px; text-align: right; }
+  .modal.store .pack-unit { grid-area: u; text-align: left; margin: 4px 0 0; font-size: 12px; }
+  .modal.store .pack-blurb { grid-area: b; margin: 0; font-size: 12px; line-height: 1.42; }
+  .modal.store .pack .buy-btn { grid-area: c; align-self: end; margin: 6px 0 0; padding: 8px 6px; font-size: 13px; }
+  .modal.store .pack-flag { top: -10px; left: 12px; font-size: 12px; padding: 1px 8px; }
+  .modal.store .store-h { font-size: 17px; }
+  .modal.store .store-sec[data-sec="single_question"] > .modal-sub { display: none; }
+}
+
+/* Offer cards: under a finished answer, and on the dashboard. Quiet on purpose:
+   no motion, no overlay, a close button, nothing blocks the question box. */
+.offer-card {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+  position: relative; margin: 8px 0 14px; padding: 10px 48px 10px 14px;
+  border: 1px solid rgba(var(--gold-rgb), 0.35); border-radius: 12px;
+  background: rgba(var(--gold-rgb), 0.07); max-width: 760px;
+}
+.offer-text { flex: 1 1 220px; margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-dim); }
+.offer-go {
+  flex: none; min-height: 44px; padding: 8px 14px; border-radius: 10px; cursor: pointer;
+  border: 1px solid rgba(var(--gold-rgb), 0.6); background: transparent; color: var(--gold-soft);
+  font: 600 13.5px var(--sans);
+}
+.offer-go:hover { background: rgba(var(--gold-rgb), 0.15); }
+.offer-x {
+  position: absolute; top: 0; right: 0; width: 44px; height: 44px; background: transparent;
+  border: 0; color: var(--ink-faint); font-size: 22px; line-height: 1; cursor: pointer;
+}
+.offer-x:hover { color: var(--ink); }
+#dash-offer:empty { display: none; }
+#dash-offer .offer-card { margin: 0 0 14px; max-width: none; }
+
+/* Home: the Plans section, below the free tools. */
+.plans { margin: 22px 0 8px; text-align: left; }
+.plans-title {
+  margin: 0 0 6px; font-family: var(--sans); font-size: 13px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint);
+}
+.plans-free { margin: 0 0 10px; font-size: 13.5px; color: var(--ink-dim); line-height: 1.5; }
+.plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.plan {
+  position: relative; display: flex; flex-direction: column; gap: 3px; padding: 13px 14px;
+  border: 1px solid var(--line); border-radius: 14px; background: rgba(255, 255, 255, 0.035);
+  color: var(--ink); text-decoration: none; transition: border-color 0.16s, background 0.16s;
+}
+.plan:hover { border-color: rgba(var(--gold-rgb), 0.45); background: rgba(var(--gold-rgb), 0.07); }
+.plan.featured { border-color: rgba(var(--gold-rgb), 0.5); }
+.plan-flag {
+  position: absolute; top: -9px; right: 10px; padding: 1px 8px; border-radius: 999px;
+  background: linear-gradient(100deg, var(--gold), #e8a94f); color: #241a04;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+}
+.plan-name { font-size: 14px; font-weight: 600; line-height: 1.3; min-height: 2.6em; }
+.plan-price { font-family: var(--serif); font-size: 26px; color: var(--gold); line-height: 1.15; }
+.plan-line { font-size: 12.5px; color: var(--ink-dim); line-height: 1.4; }
+.plans-all { display: inline-block; margin-top: 10px; padding: 8px 2px; font-size: 14px;
+             color: var(--gold-soft); text-decoration: none; }
+.plans-all:hover { text-decoration: underline; }
+@media (max-width: 700px) { .plans-grid { grid-template-columns: 1fr 1fr; } }
+[data-theme="light"] .plan { background: rgba(20, 30, 80, 0.045); }
