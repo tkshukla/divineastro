@@ -26,6 +26,8 @@ The shell is seo_pages._render, like /learn and /purnima-2026. The small script
 
 from __future__ import annotations
 
+import datetime as dt
+
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
@@ -129,6 +131,53 @@ def _payment_text(lang: str) -> str:
     return _tx("pay.gateway", lang, gateway=gw.label)
 
 
+def _offer_live(p: dict) -> bool:
+    """The Diwali offer applies to this product right now, as the catalogue says. The struck
+    price is the catalogue's own list_amount_paise (never typed or computed here)."""
+    return bool(p["offer"]["active"] and p.get("list_amount_paise")
+                and p["list_amount_paise"] > p["amount_paise"])
+
+
+def _offer_date(offer: dict, lang: str, *, short: bool) -> str:
+    """The real end date of the offer (offer.ends_at, India time), in the page language."""
+    ends = dt.datetime.fromisoformat(offer["ends_at"]).astimezone(billing.IST)
+    return i18n.format_date(ends.date(), lang, short=short)
+
+
+def _offer_of(products: list[dict]) -> dict | None:
+    """The live offer ({active, name, ends_at}) or None. Nothing of the offer is rendered
+    unless this is not None, so after the end the page is the plain regular-price page."""
+    return next((p["offer"] for p in products if p["offer"]["active"] and p["offer"]["ends_at"]), None)
+
+
+def _banner(offer: dict | None, lang: str) -> str:
+    if not offer:
+        return ""
+    return (f'<p class="pr-offer" data-offer-banner><span class="pr-pill" data-offer-pill>'
+            f'{_e(_tx("offer.pill", lang, date=_offer_date(offer, lang, short=True)))}</span> '
+            f'<span>{_e(_tx("offer.banner", lang, date=_offer_date(offer, lang, short=False)))}</span></p>')
+
+
+def _explanation(offer: dict | None, lang: str) -> str:
+    if not offer:
+        return ""
+    date = _offer_date(offer, lang, short=False)
+    return (f'<h2 id="diwali-offer">{_e(_tx("offer.h2", lang))}</h2>'
+            f'<div class="box" data-offer-about><p>{_e(_tx("offer.p1", lang, date=date))}</p>'
+            f'<p>{_e(_tx("offer.p2", lang))}</p></div>')
+
+
+def _cache_control(offer: dict | None, now: dt.datetime, default: str) -> str:
+    """While the offer is live the page may be cached for at most 300 s AND never past the end
+    instant, so a cached copy cannot show "offer active" after ends_at (private: browsers only;
+    Caddy does no caching). Once it is over, the shell's own header (up to 30 min) is fine:
+    there is nothing time-boxed left on the page."""
+    if not offer:
+        return default
+    left = (dt.datetime.fromisoformat(offer["ends_at"]) - now).total_seconds()
+    return f"private, max-age={max(1, min(300, int(left)))}"
+
+
 def _table(items: list[dict], lang: str) -> str:
     """Name and what it delivers on the left, the price on the right: two columns
     stay readable at 360px, where a third (the description) would squeeze the price."""
@@ -146,11 +195,21 @@ def _table(items: list[dict], lang: str) -> str:
             sample = (f'<span class="pr-sample"><a href="{_e(href)}" target="_blank" rel="noopener" '
                       f'data-sample="{_e(p["sku"])}">{_e(_tx("sample.link", lang))}</a> '
                       f'<small>{_e(_tx("sample.note", lang))}</small></span>')
+        was = ""
+        if _offer_live(p):                         # DIVASTRO-152: only while the offer is live
+            if p["kind"] == "questions" and p.get("list_per_question"):
+                extra = (f"<small><s class=\"was\">₹{_e(_each(p['list_per_question']))}</s> "
+                         f"{_e(_tx('per_q', lang, value=_each(p['per_question'])))}</small>")
+            pct = round((1 - p["amount_paise"] / p["list_amount_paise"]) * 100)
+            was = (f'<s class="was"><span class="sr-only">{_e(_tx("offer.was", lang))} </span>'
+                   f'{_e(_money(p["list_amount_paise"] / 100))}</s>'
+                   f'<span class="sr-only">, {_e(_tx("offer.now", lang))} </span>')
+            extra += f'<span class="pr-save">{_e(_tx("offer.save", lang, n=pct))}</span>'
         rows.append(
             f'<tr id="{_e(p["sku"])}" data-sku="{_e(p["sku"])}">'
             f'<td class="pr-name">{_e(_title(p, lang))}{flag}'
             f'<span class="pr-what">{_e(_blurb(p, lang))}</span>{sample}</td>'
-            f'<td class="pr-price"><b>{_e(_money(p["rupees"]))}</b>{extra}</td></tr>')
+            f'<td class="pr-price">{was}<b>{_e(_money(p["rupees"]))}</b>{extra}</td></tr>')
     head = f"<tr><th>{_e(_tx('th.product', lang))}</th><th>{_e(_tx('th.price', lang))}</th></tr>"
     return f'<div class="scroll"><table class="pr-table">{head}{"".join(rows)}</table></div>'
 
@@ -188,6 +247,20 @@ _CSS = """<style>
 .seo .pr-table td.pr-price b { color: var(--gold-soft); font-size: 17px; }
 .seo .pr-table .pr-sample { display: block; margin-top: 5px; font-weight: 400; font-size: 14px; }
 .seo .pr-table .pr-sample small { color: var(--ink-dim); font-size: 13px; }
+.seo .pr-table td.pr-price s.was { display: block; color: var(--ink-faint); font-size: 14px;
+                                    font-weight: 400; text-decoration-thickness: 1px; }
+.seo .pr-table td.pr-price small { display: block; }
+.seo .pr-table td.pr-price small s.was { display: inline; font-size: inherit; }
+.seo .pr-save { display: block; width: fit-content; margin: 4px 0 0 auto; padding: 0 8px; border-radius: 999px;
+                background: rgba(var(--gold-rgb), 0.16); color: var(--gold-soft);
+                font-size: 12px; font-weight: 600; line-height: 1.6; }
+.seo .pr-offer { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 14px 0 16px;
+                 padding: 9px 12px; border: 1px solid rgba(var(--gold-rgb), 0.35); border-radius: 12px;
+                 background: rgba(var(--gold-rgb), 0.07); color: var(--ink-dim); font-size: 15px; line-height: 1.5; }
+.seo .pr-pill { display: inline-block; padding: 1px 10px; border-radius: 999px; white-space: nowrap;
+                border: 1px solid var(--gold); color: var(--gold-soft); font-size: 12.5px; font-weight: 600; }
+.seo .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+                overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 .seo .pr-flag { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px;
                 border: 1px solid var(--gold); color: var(--gold); font-size: 11.5px;
                 font-weight: 500; white-space: nowrap; }
@@ -196,7 +269,9 @@ _CSS = """<style>
 
 def render(lang: str = EN) -> HTMLResponse:
     cl = lang if lang in TRANSLATED else EN
-    products = billing.catalogue()
+    now = billing._now()                      # one instant for the page and its Cache-Control
+    products = billing.catalogue(now=now)
+    offer = _offer_of(products)
     f = _facts(products)
     canonical = SITE_URL + page_path(lang)
     values = {"brand": BRAND, "free": f["free"], "pack_from": f["pack_from"],
@@ -206,7 +281,8 @@ def render(lang: str = EN) -> HTMLResponse:
     desc = _tx("desc", cl, **values)
     h1 = _tx("h1", cl)
 
-    blocks = [f"<h1>{_e(h1)}</h1>", _CSS, f"<p>{_e(_tx('lead', cl, **values))}</p>"]
+    blocks = [f"<h1>{_e(h1)}</h1>", _CSS, _banner(offer, cl),
+              f"<p>{_e(_tx('lead', cl, **values))}</p>", _explanation(offer, cl)]
     blocks.append(f"<h2>{_e(_tx('free.h2', cl))}</h2>"
                   f'<div class="box"><p>{_e(_tx("free.p", cl, **values))}</p></div>')
 
@@ -252,10 +328,12 @@ def render(lang: str = EN) -> HTMLResponse:
     blocks.append('<script src="/static/pricing.js" defer></script>')
 
     product_ld = [_product_ld(p, cl, canonical) for p in products]
-    return _render(title=title, description=desc, path=page_path(lang),
+    resp = _render(title=title, description=desc, path=page_path(lang),
                    crumbs=[(_tx("crumb", cl), page_path(lang))],
                    body="\n".join(b for b in blocks if b), lang=lang, alt="twin",
                    extra_ld=(*product_ld, faq_ld), translated=TRANSLATED)
+    resp.headers["Cache-Control"] = _cache_control(offer, now, resp.headers["Cache-Control"])
+    return resp
 
 
 def _has(key: str) -> bool:

@@ -77,7 +77,7 @@ def graph(h: str) -> list[dict]:
 def rows(h: str) -> dict[str, str]:
     """sku -> the price cell's text, from the page's tables."""
     out = {}
-    for sku, cell in re.findall(r'<tr id="([a-z0-9_]+)" data-sku="[^"]+">.*?<td class="pr-price"><b>(.*?)</b>', h, re.S):
+    for sku, cell in re.findall(r'<tr id="([a-z0-9_]+)" data-sku="[^"]+">.*?<td class="pr-price">.*?<b>(.*?)</b>', h, re.S):
         out[sku] = htmllib.unescape(cell)
     return out
 
