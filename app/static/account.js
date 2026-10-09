@@ -674,7 +674,7 @@ function openStore(outOfCredits = false, focusSku = null) {
     { kind: "kundali_book", items: lifeBooks, title: at("lifeBookTitle"),
       sub: at("lifeBookSub"), open: false },
     { kind: "kundali", items: kundalis, title: at("kundaliTitle"),
-      sub: at("kundaliSub") + (acct.astrologer ? ` ${acct.astrologer} · ~${acct.turnaround} days.` : ""),
+      sub: at("kundaliSub") + (acct.astrologer ? ` ${acct.astrologer} · ~${acct.turnaround} days.` : "") + " " + at("hwNote"),
       open: false },
   ].filter((s) => s.items.length);
 
@@ -1604,6 +1604,20 @@ async function offerDashboard() {
   } catch (ex) { console.warn("offer:", ex); }
 }
 
+/* DIVASTRO-153: the hand-written kundali strip under the Plans cards. The price is the
+   lowest kundali product in the catalogue; the sentence is scoped to hand-written readings. */
+function handwrittenStrip(page) {
+  const ks = acct.products.filter((p) => p.kind === "kundali");
+  if (!ks.length) return "";
+  const low = ks.reduce((m, p) => (p.rupees < m.rupees ? p : m), ks[0]);
+  return `
+    <a class="plan-hw" href="${page}#handwritten" data-plans="handwritten">
+      <span class="plan-hw-head">${escapeHtml(at("hwFrom").replace("{price}", money(low.rupees)))}</span>
+      <span class="plan-hw-text">${escapeHtml(at("hwTexts"))}</span>
+      <span class="plan-hw-go">${escapeHtml(at("hwLink"))} &rsaquo;</span>
+    </a>`;
+}
+
 /* The home screen's Plans section. */
 const PLAN_PICKS = ["sq_career", "q10", "q50", "life_book"];
 let plansSeen = false;
@@ -1627,7 +1641,7 @@ function renderPlans() {
         <span class="plan-line">${escapeHtml(line(p))}</span>
       </a>`).join("")}
     </div>
-    <a class="plans-all" href="${page}" data-plans="all">${escapeHtml(at("plansAll"))} &rsaquo;</a>`;
+    <a class="plans-all" href="${page}" data-plans="all">${escapeHtml(at("plansAll"))} &rsaquo;</a>${handwrittenStrip(page)}`;
   box.hidden = false;
   box.setAttribute("aria-labelledby", "plans-title");
 
@@ -1636,6 +1650,11 @@ function renderPlans() {
     box.addEventListener("click", (e) => {
       const a = e.target.closest("[data-plans]");
       if (a) window.daTrack?.("plans_click", a.dataset.plans);
+      // Signed in: the hand-written strip opens the store at that product; signed out: /pricing#handwritten.
+      if (a && a.dataset.plans === "handwritten" && acct.user) {
+        e.preventDefault();
+        openStore(false, (acct.products.find((p) => p.kind === "kundali") || {}).sku || "k3");
+      }
     });
     // "Saw the prices": counted once, when the section is actually on screen.
     if ("IntersectionObserver" in window) {

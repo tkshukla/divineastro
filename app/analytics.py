@@ -750,6 +750,7 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("pricing_view", "home"): "Saw the Plans section on the home screen",
     ("pricing_view", "page"): "Opened the /pricing page",
     ("plans_click", ""): "Tapped a plan on the home screen or Start free on /pricing",
+    ("plans_click", "handwritten"): "Tapped the hand-written kundali strip on the home screen",
     ("offer_shown", ""): "An in-app offer was shown",
     ("offer_shown", "low_credits"): "Offer shown: few questions left",
     ("offer_shown", "life_book_dashboard"): "Offer shown: Life Book after the chart",

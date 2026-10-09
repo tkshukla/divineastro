@@ -198,11 +198,13 @@ def render(lang: str = EN) -> HTMLResponse:
                   f'<div class="box"><p>{_e(_tx("free.p", cl, **values))}</p></div>')
 
     for key, items in _sections(products):
-        blocks.append(f"<h2>{_e(_tx(key + '.h2', cl))}</h2>" if key != "more" else "")
+        h2_id = ' id="handwritten"' if key == "kundali" else ""
+        blocks.append(f"<h2{h2_id}>{_e(_tx(key + '.h2', cl))}</h2>" if key != "more" else "")
         if key == "kundali":
             blocks.append("<p>" + _e(
                 _tx("kundali.p", cl, astrologer=f["astrologer"], days=f["days"]) if f["astrologer"]
                 else _tx("kundali.p0", cl)) + "</p>")
+            blocks.append(f'<p class="hw-texts">{_e(_tx("kundali.texts", cl))}</p>')
         elif _has(key + ".p"):
             blocks.append(f"<p>{_e(_tx(key + '.p', cl))}</p>")
         blocks.append(_table(items, cl))
