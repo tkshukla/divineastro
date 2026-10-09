@@ -22,6 +22,7 @@ Two providers, both optional:
 
 from __future__ import annotations
 
+import contextvars
 import json
 import logging
 import os
@@ -278,6 +279,12 @@ def _model_note(name: str) -> tuple[str, bool]:
     return "Weak at Indian scripts — expect garbled Hindi, Kannada, Tamil… Fine for English.", False
 
 
+# DIVASTRO-151: the sample reports are built with the narration model forced off, so they are the
+# same for everyone and cost nothing. A context variable (not a patched function) so a sample being
+# built never changes what a concurrent request in another thread sees.
+FORCE_OFF = contextvars.ContextVar("llm_force_off", default=False)
+
+
 def default_provider() -> str:
     """What a visitor who has never touched the narration picker should get.
 
@@ -285,6 +292,8 @@ def default_provider() -> str:
     never chosen automatically: they take minutes per answer on CPU, so opting
     into that has to be a deliberate act rather than a surprise.
     """
+    if FORCE_OFF.get():
+        return "off"
     return "anthropic" if _anthropic_ready() else "off"
 
 
