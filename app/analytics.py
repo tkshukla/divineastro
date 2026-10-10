@@ -483,6 +483,12 @@ EVENT_NAMES = frozenset({
     "offer_shown",     # an in-app offer appeared (detail: the sku, "low_credits" or "life_book_dashboard")
     "offer_click",     # ...and was tapped (same detail)
     "sample_view",     # DIVASTRO-151: opened a sample report (detail: the sku)
+    # DIVASTRO-155: the Starter (3 emailed answers). The first two come from the app;
+    # the last two are recorded by the server (detail: the answer's language).
+    "starter_shown",   # the Starter was offered (detail: "store", "paywall" or "nudge")
+    "starter_click",   # ...and its buy button was tapped (same detail)
+    "email_answer_queued",     # a question was queued for an emailed answer
+    "email_answer_delivered",  # ...and its answer was emailed
 })
 MAX_EVENT_BYTES = 512
 
@@ -516,6 +522,41 @@ def record_event(request: Request, name: str, detail: str = "") -> bool:
         return True
     except Exception:
         log.warning("event tracking failed", exc_info=True)
+        return False
+
+
+def event_visitor(request: Request) -> str:
+    """The day-scoped visitor hash a server-side event is filed under, or "" when this
+    browser is not counted (DNT/GPC, a bot, a cloud address, an admin's own session).
+    The Starter's emailed answers keep it on the job, so the "delivered" event that the
+    worker records later belongs to the same person as the "queued" one."""
+    try:
+        seen = _countable(request)
+        if seen is None:
+            return ""
+        with db_session() as db:
+            if _is_admin_session(db, request.cookies.get(auth.COOKIE)):
+                return ""
+        ua, ip = seen
+        return visitor_hash(ip, ua)
+    except Exception:
+        log.warning("event visitor failed", exc_info=True)
+        return ""
+
+
+def record_server_event(name: str, detail: str = "", visitor: str = "") -> bool:
+    """An event the server itself observed, outside any request (the emailed-answer
+    worker). Only for a person who was counted when they asked (`visitor` non-empty),
+    with the same privacy rules as record_event. Never raises."""
+    if not visitor or name not in EVENT_NAMES:
+        return False
+    try:
+        with db_session() as db:
+            db.add(Event(name=name, detail=clean(detail, 40), visitor=clean(visitor, 16)))
+            db.commit()
+        return True
+    except Exception:
+        log.warning("server event failed", exc_info=True)
         return False
 
 
@@ -789,6 +830,17 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("sample_view", "sq_marriage_timing"): "Opened the sample Marriage report",
     ("sample_view", "sq_wealth_business"): "Opened the sample Wealth report",
     ("sample_view", "life_book"): "Opened the sample Life Book",
+    # DIVASTRO-155: the Starter (3 answers by email for a one-time price)
+    ("starter_shown", ""): "The Starter (answers by email) was offered",
+    ("starter_shown", "store"): "Starter offered in the store",
+    ("starter_shown", "paywall"): "Starter offered when out of questions",
+    ("starter_shown", "nudge"): "Starter offered with one question left",
+    ("starter_click", ""): "Tapped Buy on the Starter",
+    ("starter_click", "store"): "Tapped Buy on the Starter in the store",
+    ("starter_click", "paywall"): "Tapped Buy on the Starter when out of questions",
+    ("starter_click", "nudge"): "Tapped the Starter offer with one question left",
+    ("email_answer_queued", ""): "Asked a question to be answered by email",
+    ("email_answer_delivered", ""): "An emailed answer was delivered",
 }
 
 

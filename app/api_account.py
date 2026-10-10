@@ -20,8 +20,8 @@ from sqlalchemy.orm import Session
 from . import analytics, auth, billing, coupons, email_auth, guest, i18n, mail, phone_auth
 from .db import (
     BirthProfile, Coupon, CouponKind, CouponRedemption, CreditEntry, EntryKind,
-    Feedback, FulfilStatus, Order, OrderStatus, QuestionLog, User, balance, grant,
-    session as db_session, utcnow,
+    Feedback, FulfilStatus, Order, OrderStatus, QuestionLog, User, aware, balance,
+    email_balance, grant, session as db_session, utcnow,
 )
 
 router = APIRouter(prefix="/api")
@@ -331,7 +331,20 @@ def _user_dict(db: Session, user: User) -> dict:
         "credits": balance(db, user.id),
         "questions_asked": len(asked),
         "member_since": user.created_at.strftime("%b %Y"),
+        # DIVASTRO-155: the Starter. email_credits is a separate balance (answers
+        # sent by email); starter says whether this account may still buy it.
+        "email_credits": email_balance(db, user.id),
+        "email_deliverable": bool(billing.deliverable_email(user)),
+        "starter": billing.starter_status(db, user),
+        "email_answers_waiting": _email_jobs_waiting(db, user),
     }
+
+
+def _email_jobs_waiting(db: Session, user: User) -> int:
+    from .db import EmailedAnswerJob
+    return int(db.execute(select(func.count(EmailedAnswerJob.id)).where(
+        EmailedAnswerJob.user_id == user.id,
+        EmailedAnswerJob.status.in_(("pending", "running")))).scalar_one())
 
 
 # --------------------------------------------------------------------------
@@ -476,6 +489,9 @@ def create_order(body: OrderIn, user: User = Depends(me),
     try:
         order, checkout = billing.create_order(
             db, user, body.sku, body.birth_id, body.coupon_code, body.report_topic)
+    except billing.StarterRefused as exc:
+        # DIVASTRO-155: once per account (or no email to deliver to, or switched off).
+        raise HTTPException(409, str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
     except Exception as exc:
@@ -518,6 +534,7 @@ def confirm_order(body: ConfirmIn, user: User = Depends(me),
             "ok": True, "granted": False, "pending": True,
             "message": "Payment is being confirmed. Credits appear within a minute.",
             "credits": balance(db, user.id), "order": _order_dict(order),
+            "email_credits": email_balance(db, user.id),
         }
 
     payment_id = (body.payload.get("razorpay_payment_id")
@@ -526,6 +543,7 @@ def confirm_order(body: ConfirmIn, user: User = Depends(me),
     return {
         "ok": True, "granted": granted, "message": message,
         "credits": balance(db, user.id), "order": _order_dict(order),
+        "email_credits": email_balance(db, user.id),       # DIVASTRO-155
     }
 
 
@@ -1215,17 +1233,51 @@ def admin_coupon_redemptions(coupon_id: int, _: User = Depends(admin),
 # History
 # --------------------------------------------------------------------------
 
+def _iso(value) -> str | None:
+    value = aware(value)
+    return value.isoformat() if value else None
+
+
 @router.get("/history")
 def history(limit: int = 100, user: User = Depends(me),
             db: Session = Depends(get_db)) -> dict:
+    from .db import EmailedAnswerJob
+
     rows = db.execute(
         select(QuestionLog).where(QuestionLog.user_id == user.id)
         .order_by(QuestionLog.created_at.desc()).limit(min(limit, 500))
     ).scalars().all()
-    return {"questions": [{
+    # DIVASTRO-155: a Starter question is a job until its answer is written; once
+    # delivered it is an ordinary row here, marked as emailed (with when).
+    jobs = db.execute(
+        select(EmailedAnswerJob).where(EmailedAnswerJob.user_id == user.id)
+        .order_by(EmailedAnswerJob.created_at.desc()).limit(50)
+    ).scalars().all()
+    by_row = {j.question_id: j for j in jobs if j.question_id}
+    waiting = [{
+        "id": None, "job_id": j.id, "question": j.question, "answer": "",
+        "topic": "", "verdict": "", "language": j.language,
+        "asked_at": j.created_at.strftime("%d %b %Y, %H:%M"),
+        "emailed": {"status": j.status, "asked": _iso(j.created_at),
+                    "due": _iso(aware(j.created_at) + dt.timedelta(
+                        minutes=billing.EMAIL_ANSWER_DEADLINE_MIN)),
+                    "delivered": None, "refunded": j.refunded},
+    } for j in jobs if j.status in ("pending", "running")
+        or (j.status == "failed" and not j.question_id)]
+
+    def emailed(q):
+        j = by_row.get(q.id)
+        if j is None:
+            return None
+        return {"status": j.status, "asked": _iso(j.created_at),
+                "delivered": _iso(j.finished_at) if j.status == "done" else None,
+                "sent": j.emailed, "refunded": j.refunded}
+
+    return {"questions": waiting + [{
         "id": q.id, "question": q.question, "answer": q.answer,
         "topic": q.topic, "verdict": q.verdict, "language": q.language,
         "asked_at": q.created_at.strftime("%d %b %Y, %H:%M"),
+        "emailed": emailed(q),
     } for q in rows]}
 
 
@@ -1237,8 +1289,10 @@ def ledger(user: User = Depends(me), db: Session = Depends(get_db)) -> dict:
     ).scalars().all()
     return {
         "balance": balance(db, user.id),
+        "email_balance": email_balance(db, user.id),
         "entries": [{
             "delta": e.delta, "kind": e.kind.value, "note": e.note,
+            "credit_type": e.credit_type,
             "at": e.created_at.strftime("%d %b %Y, %H:%M"),
         } for e in rows],
     }
@@ -1492,6 +1546,7 @@ def admin_user_detail(user_id: int, _: User = Depends(admin),
             "blocked_by": blocker.email if blocker else "",
         },
         "balance": balance(db, u.id),
+        "email_balance": email_balance(db, u.id),        # DIVASTRO-155: Starter answers
         "questions_count": db.execute(
             select(func.count(QuestionLog.id)).where(QuestionLog.user_id == u.id)
         ).scalar_one() or 0,
@@ -1499,7 +1554,8 @@ def admin_user_detail(user_id: int, _: User = Depends(admin),
             select(func.count(BirthProfile.id)).where(BirthProfile.user_id == u.id)
         ).scalar_one() or 0,
         "ledger": [{"id": e.id, "delta": e.delta, "kind": e.kind.value,
-                    "note": e.note, "at": when(e.created_at)} for e in ledger],
+                    "note": e.note, "credit_type": e.credit_type,
+                    "at": when(e.created_at)} for e in ledger],
         "orders": [{"id": o.id, "sku": o.sku, "title": o.title,
                     "amount": o.amount_paise // 100, "status": o.status.value,
                     "provider": o.provider, "fulfilment": o.fulfilment.value,

@@ -27,6 +27,7 @@ import json
 import logging
 import os
 import re
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -851,8 +852,20 @@ def _audit_dignity(meta: dict | None, analysis: dict, produced_text: str) -> Non
 
 
 def stream_polish(analysis: dict, language: str, provider: str, question: str,
-                   history: list[dict] | None = None, meta: dict | None = None):
+                   history: list[dict] | None = None, meta: dict | None = None, *,
+                   num_predict: int = 900, ollama_url: str | None = None,
+                   timeout: float = 900, deadline: float | None = None,
+                   brief: bool = True, local_fallback: bool = True):
     """Yield the rewritten answer in chunks. Raises on failure — caller decides.
+
+    The keyword-only arguments exist for the Starter's emailed answers
+    (DIVASTRO-155, app/emailed_answers.py), which reuse this exact prompt and
+    call path; their defaults are what the chat has always used. `num_predict`
+    caps a local model's output, `ollama_url` points at another Ollama,
+    `timeout` is the socket timeout, `deadline` (a time.monotonic() instant) a
+    wall-clock limit on the whole local generation (TimeoutError past it),
+    `brief=False` drops the local model's "keep it short" note, and
+    `local_fallback=False` stops a failed Claude call from switching to Ollama.
 
     `meta`, if given, is filled in with `meta["truncated"] = True` when the
     provider stopped because it hit its own token cap rather than finishing
@@ -863,25 +876,28 @@ def stream_polish(analysis: dict, language: str, provider: str, question: str,
     """
     kind, model = _split(provider)
     system = _system(language)
-    prompt = _build_prompt(analysis, language, question, history) + _brevity_note(kind)
+    prompt = _build_prompt(analysis, language, question, history) + (
+        _brevity_note(kind) if brief else "")
     produced: list[str] = []
 
     if kind == "ollama":
         payload = json.dumps({
             "model": model,
             "stream": True,
-            "options": {"temperature": 0.4, "num_predict": 900},
+            "options": {"temperature": 0.4, "num_predict": num_predict},
             "messages": [
                 {"role": "system", "content": system},
                 {"role": "user", "content": prompt},
             ],
         }).encode()
         request = urllib.request.Request(
-            f"{OLLAMA_URL}/api/chat", data=payload,
+            f"{ollama_url or OLLAMA_URL}/api/chat", data=payload,
             headers={"Content-Type": "application/json"},
         )
-        with urllib.request.urlopen(request, timeout=900) as resp:
+        with urllib.request.urlopen(request, timeout=timeout) as resp:
             for raw in resp:
+                if deadline is not None and time.monotonic() > deadline:
+                    raise TimeoutError("the local model ran past its time budget")
                 if not raw.strip():
                     continue
                 event = json.loads(raw)
@@ -939,7 +955,7 @@ def stream_polish(analysis: dict, language: str, provider: str, question: str,
             # restarting it in a different model's voice would read as broken,
             # not as graceful degradation, so that case still raises as before
             # and polish()/the caller falls back to the engine's own wording.
-            available = _ollama_models() if not produced else []
+            available = _ollama_models() if not produced and local_fallback else []
             if produced or not available:
                 raise
             fallback_model = OLLAMA_MODEL if OLLAMA_MODEL in available else available[0]
@@ -975,6 +991,84 @@ def polish(analysis: dict, language: str = "en", provider: str = "off",
     if len(text) < 120:
         return analysis.get("answer", ""), "The model returned too little text to trust."
     return text, None
+
+
+# --------------------------------------------------------------------------
+# Translation of a finished English reading (DIVASTRO-155, emailed answers)
+# --------------------------------------------------------------------------
+
+TRANSLATE_SYSTEM = """You are a translator, not a writer. Translate the astrology \
+reading the user sends from English into {language}.
+
+Absolute rules:
+1. Translate faithfully, sentence by sentence. Add nothing, remove nothing, \
+summarise nothing. No greeting, no preface, no note about the translation.
+2. Keep every number exactly as written, in Western digits (0-9): degrees \
+(8°02'), years, day numbers, house numbers, scores.
+3. Keep every date: translate the month name using the month list below, keep \
+the year digits unchanged.
+4. Use the standard Vedic term an astrologer writing in {language} would use for \
+planets, signs, nakshatras, houses and dashas. Never spell an English planet or \
+sign name out in {language} letters; use the glossary below exactly.
+5. Keep the paragraph breaks and any **bold** markers where they are.
+6. Output only the translation.
+
+{glossary}"""
+
+
+def _translation_glossary(language: str) -> str:
+    """English -> target terms for a translation: the same names tables the
+    narration glossary uses (_glossary), for Hindi too."""
+    if language == "hi":
+        from .astro.names_i18n import names_for
+        n = names_for("hi")
+
+        def pairs(items) -> str:
+            return "  ".join(f"{en}={loc}" for en, loc in items if loc)
+
+        return "\n".join([
+            "GLOSSARY — write these exactly as given:",
+            "Planets: " + pairs((p, n.GRAHA.get(p)) for p in _GRAHA_ORDER),
+            "Signs: " + pairs((x, n.RASHI.get(x)) for x in _SIGN_ORDER),
+            "Nakshatras: " + pairs(n.NAKSHATRAS.items()),
+            "Months: " + pairs(zip(_MONTHS_EN, n.MONTHS)),
+            "Terms: house=भाव  sign=राशि  dasha=दशा  mahadasha=महादशा  antardasha=अंतर्दशा  "
+            "ascendant=लग्न  transit=गोचर  yoga=योग  remedy=उपाय",
+        ])
+    return _glossary(language)
+
+
+TRANSLATE_MAX_TOKENS = int(os.environ.get("ASTRO_TRANSLATE_MAX_TOKENS", "6000"))
+
+
+def translate(text: str, language: str, *, timeout: float = 120) -> str:
+    """The English reading `text` in `language`, by Claude (CLAUDE_MODEL).
+
+    Strict: the prompt forbids additions, keeps numbers and dates, and hands the
+    model the same names tables the chat narration uses. Raises on any failure
+    (no key, the API down, too little text back); the caller decides what the
+    customer gets instead. English is returned unchanged without a call."""
+    if language in ("en", "", None) or language not in LANGUAGES:
+        return text
+    if not _anthropic_ready():
+        raise RuntimeError("Claude is not configured (no ANTHROPIC_API_KEY)")
+    import anthropic
+
+    client = anthropic.Anthropic(timeout=timeout)
+    system = TRANSLATE_SYSTEM.format(language=LANGUAGES[language],
+                                     glossary=_translation_glossary(language))
+    msg = client.messages.create(
+        model=CLAUDE_MODEL, max_tokens=TRANSLATE_MAX_TOKENS, system=system,
+        messages=[{"role": "user", "content": text}],
+    )
+    if getattr(msg, "stop_reason", None) == "refusal":
+        raise RuntimeError("Claude declined to translate this reading.")
+    out = "".join(getattr(b, "text", "") for b in (msg.content or [])).strip()
+    if len(out) < max(60, len(text) // 5):
+        raise RuntimeError("The translation came back too short to trust.")
+    if getattr(msg, "stop_reason", None) == "max_tokens":
+        raise RuntimeError("The translation was cut off (max_tokens).")
+    return out
 
 
 # generate_spiritual_guidance() used to hand the model nothing but three

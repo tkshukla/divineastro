@@ -20,12 +20,14 @@ from pathlib import Path
 from starlette.middleware.sessions import SessionMiddleware
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
-from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, StreamingResponse
+from fastapi.responses import (
+    FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, StreamingResponse,
+)
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from . import analytics, auth, billing, geo, guest, llm, pdf_report
+from . import analytics, auth, billing, emailed_answers, geo, guest, llm, pdf_report
 from . import i18n as i18n  # DIVASTRO-121: language registry (index.html picker + inline strings)
 from .api_account import router as account_router
 from .api_feedback import router as feedback_router
@@ -51,7 +53,7 @@ from .push import router as push_router, start_sender as start_push_sender
 from .astro.names_hi import KARANA_HI, NAKSHATRAS_HI, TITHI_HI, YOGA_HI
 from .chart_service import BirthData, build, solar_return, timing_snapshot, transits, wheel_svg
 from .db import (
-    EntryKind, QuestionLog, User, balance, grant, init_db, session as db_session,
+    EntryKind, QuestionLog, User, balance, email_balance, grant, init_db, session as db_session,
 )
 from .interpret import analyse
 from .interpret.topics import TOPICS
@@ -66,11 +68,15 @@ async def _lifespan(_app):
     # DIVASTRO-112: the daily web-push sender, an in-process loop (see push.py
     # for why, and why it assumes ONE worker). A no-op while push is off.
     task = start_push_sender()
+    # DIVASTRO-155: the Starter's emailed-answer worker (app/emailed_answers.py), one
+    # job at a time, DB-backed. ASTRO_EMAIL_ANSWER_WORKER=0 turns it off.
+    worker = emailed_answers.start_worker()
     try:
         yield
     finally:
-        if task is not None:
-            task.cancel()
+        for t in (task, worker):
+            if t is not None:
+                t.cancel()
 
 
 app = FastAPI(title=BRAND, description="Vedic chart analysis", version="2.0.0",
@@ -139,6 +145,26 @@ def _charge_and_log(db, user, question: str, result: dict, birth_id: int | None,
     if log_ids is not None:
         log_ids.append(row.id)
     return balance(db, user.id)
+
+
+def _queue_emailed(request: Request, user_id: int, session, question: str,
+                   language: str, birth_id: int | None, when: dt.datetime) -> dict:
+    """DIVASTRO-155: the customer has no instant questions left but holds Starter
+    emailed answers. Debit one, queue the question for the background worker and
+    return at once with what the app shows ("emailed to <email> within 30 minutes").
+    The chart session has already been checked to belong to this user."""
+    visitor = analytics.event_visitor(request)
+    with db_session() as db:
+        user = db.get(User, user_id)
+        if email_balance(db, user.id) <= 0:          # spent by a parallel request
+            raise InsufficientCredits(balance(db, user.id))
+        job = emailed_answers.enqueue(db, user, session, question, language,
+                                      birth_id, when, visitor=visitor)
+        out = emailed_answers.queued_payload(db, job)
+        out["credits"] = balance(db, user.id)
+    if visitor:
+        analytics.record_server_event("email_answer_queued", out["language"], visitor)
+    return out
 
 
 def _record_polished(log_id: int | None, text: str) -> None:
@@ -359,7 +385,13 @@ def ask(req: AskRequest, request: Request) -> dict:
         user = auth.require_user(request, db)
         credits = balance(db, user.id)
         if credits <= 0:
-            raise InsufficientCredits(credits)
+            if email_balance(db, user.id) <= 0:
+                raise InsufficientCredits(credits)
+            # DIVASTRO-155: answered by email instead (202: accepted, not yet done).
+            session = _session(req.session_id, request)
+            out = _queue_emailed(request, user.id, session, question, req.language,
+                                 req.birth_id, when)
+            return JSONResponse(out, status_code=202)
 
         # Retrieve last 5 questions for context
         hist_stmt = select(QuestionLog).where(QuestionLog.user_id == user.id)
@@ -430,6 +462,7 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
     user_id = None
     denied: HTTPException | None = None
     history: list[dict] = []
+    by_email = False
     with db_session() as db:
         try:
             user = auth.require_user(request, db)
@@ -440,7 +473,9 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
         if user is not None:
             credits = balance(db, user.id)
             if credits <= 0:
-                raise InsufficientCredits(credits)
+                if email_balance(db, user.id) <= 0:
+                    raise InsufficientCredits(credits)
+                by_email = True          # DIVASTRO-155: a Starter emailed answer
             user_id = user.id
 
             # Retrieve last 5 questions for context
@@ -472,6 +507,17 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
             raise denied
     else:
         session = _session(req.session_id, request)
+    if by_email:
+        # Nothing is analysed here: the worker does it. One "queued" event, then done.
+        queued = _queue_emailed(request, user_id, session, question, req.language,
+                                req.birth_id, when)
+
+        def queued_events():
+            yield f"event: queued\ndata: {json.dumps(queued)}\n\n"
+            yield "event: done\ndata: {}\n\n"
+
+        return StreamingResponse(queued_events(), media_type="text/event-stream",
+                                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
     try:
         result = analyse(session, question, when, language=_engine_lang(req.language)).to_dict()
         # Every real chat answer goes through this endpoint (the frontend only
