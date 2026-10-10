@@ -45,6 +45,7 @@ TRANSLATED = i18n.BASE_TRANSLATED
 # The catalogue's `kind` -> the section it is listed under, in page order. A kind
 # missing here still gets listed (under "more"): no product may go unlisted.
 SECTIONS = (
+    ("email_answers", "starter"),      # DIVASTRO-155: the one-time Starter, right after "what is free"
     ("single_question", "reports"),
     ("questions", "packs"),
     ("kundali_book", "book"),
@@ -160,12 +161,14 @@ def _banner(offer: dict | None, lang: str) -> str:
             f'<span>{_e(_tx("offer.banner", lang, date=_offer_date(offer, lang, short=False)))}</span></p>')
 
 
-def _explanation(offer: dict | None, lang: str) -> str:
+def _explanation(offer: dict | None, lang: str, starter: bool = False) -> str:
     if not offer:
         return ""
     date = _offer_date(offer, lang, short=False)
+    # DIVASTRO-155: the Starter has one fixed price; the sentence must not claim it is on offer.
+    p1 = "offer.p1.starter" if starter else "offer.p1"
     return (f'<h2 id="diwali-offer">{_e(_tx("offer.h2", lang))}</h2>'
-            f'<div class="box" data-offer-about><p>{_e(_tx("offer.p1", lang, date=date))}</p>'
+            f'<div class="box" data-offer-about><p>{_e(_tx(p1, lang, date=date))}</p>'
             f'<p>{_e(_tx("offer.p2", lang))}</p></div>')
 
 
@@ -286,14 +289,17 @@ def render(lang: str = EN) -> HTMLResponse:
     h1 = _tx("h1", cl)
 
     blocks = [f"<h1>{_e(h1)}</h1>", _CSS, _banner(offer, cl),
-              f"<p>{_e(_tx('lead' + g, cl, **values))}</p>", _explanation(offer, cl)]
+              f"<p>{_e(_tx('lead' + g, cl, **values))}</p>",
+              _explanation(offer, cl, any(p["sku"] == billing.STARTER_SKU for p in products))]
     blocks.append(f"<h2>{_e(_tx('free.h2', cl))}</h2>"
                   f'<div class="box"><p>{_e(_tx("free.p" + g, cl, **values))}</p></div>')
 
     for key, items in _sections(products):
         h2_id = ' id="handwritten"' if key == "kundali" else ""
         blocks.append(f"<h2{h2_id}>{_e(_tx(key + '.h2', cl))}</h2>" if key != "more" else "")
-        if key == "kundali":
+        if key == "starter":
+            blocks.append(f'<p>{_e(_tx("starter.p", cl, minutes=billing.EMAIL_ANSWER_DEADLINE_MIN))}</p>')
+        elif key == "kundali":
             blocks.append("<p>" + _e(
                 _tx("kundali.p", cl, astrologer=f["astrologer"], days=f["days"]) if f["astrologer"]
                 else _tx("kundali.p0", cl)) + "</p>")

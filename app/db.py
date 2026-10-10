@@ -174,6 +174,17 @@ class EntryKind(str, enum.Enum):
     admin_adjust = "admin_adjust"
 
 
+# Which balance a ledger row belongs to (DIVASTRO-155). "question" is the instant
+# answer balance every pack, the sign-up gift and admin adjustments have always used;
+# "email" is the Starter's emailed-answer balance. The two are summed separately
+# (balance() / email_balance()), so a Starter can never be spent as an instant
+# answer or the other way round. A plain string, not a DB enum: SQLite accepts any
+# label, so an enum can pass every local test and still 500 on Postgres when a
+# value is missing from the live type (see Feedback.status).
+CREDIT_QUESTION = "question"
+CREDIT_EMAIL = "email"
+
+
 class CreditEntry(Base):
     __tablename__ = "credit_entries"
 
@@ -184,6 +195,8 @@ class CreditEntry(Base):
     note: Mapped[str] = mapped_column(String(255), default="")
     order_id: Mapped[int | None] = mapped_column(ForeignKey("orders.id"), nullable=True)
     created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    credit_type: Mapped[str] = mapped_column(
+        String(12), default=CREDIT_QUESTION, server_default=CREDIT_QUESTION)
 
     user: Mapped[User] = relationship(back_populates="entries")
 
@@ -552,6 +565,60 @@ class PushSubscription(Base):
 
 
 # --------------------------------------------------------------------------
+# Emailed answers (DIVASTRO-155)
+# --------------------------------------------------------------------------
+
+JOB_STATUSES = ("pending", "running", "done", "failed")
+
+
+class EmailedAnswerJob(Base):
+    """One question bought with a Starter emailed-answer credit, answered in the
+    background and emailed (app/emailed_answers.py).
+
+    The row is the queue: the worker takes the oldest `pending` row, so a restart
+    loses nothing. `birth_json` is the chart's birth payload (BirthData.to_dict())
+    because the in-memory chart session may be gone by the time the job runs; it is
+    personal data, so it is cleared once the job is finished (done or failed) and
+    only `birth_id` (a saved profile, if any) stays. `question_id` is the
+    `questions` row the answer was saved to (My questions). `status` is a validated
+    string, not a DB enum (see Feedback.status).
+    """
+
+    __tablename__ = "emailed_answer_jobs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    birth_id: Mapped[int | None] = mapped_column(
+        ForeignKey("birth_profiles.id", ondelete="SET NULL"), nullable=True, default=None)
+    birth_json: Mapped[str] = mapped_column(Text, default="")
+    chart_name: Mapped[str] = mapped_column(String(120), default="")
+    question: Mapped[str] = mapped_column(Text)
+    language: Mapped[str] = mapped_column(String(5), default="en")
+    as_of: Mapped[str] = mapped_column(String(32), default="")       # analysis date, ISO
+    email: Mapped[str] = mapped_column(String(255), default="")      # where it is sent
+    status: Mapped[str] = mapped_column(String(10), default="pending", index=True)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    # How it was written: "ollama:<model>", "anthropic:<model>" or "engine"; plus
+    # who translated it ("anthropic:<model>", "" for English, "failed").
+    model_used: Mapped[str] = mapped_column(String(80), default="")
+    translator: Mapped[str] = mapped_column(String(80), default="")
+    route_reason: Mapped[str] = mapped_column(String(40), default="")
+    answer: Mapped[str] = mapped_column(Text, default="")
+    error: Mapped[str] = mapped_column(Text, default="")
+    emailed: Mapped[bool] = mapped_column(Boolean, default=False)
+    refunded: Mapped[bool] = mapped_column(Boolean, default=False)
+    question_id: Mapped[int | None] = mapped_column(
+        ForeignKey("questions.id", ondelete="SET NULL"), nullable=True, default=None)
+    visitor: Mapped[str] = mapped_column(String(16), default="")      # analytics hash, or ""
+    created_at: Mapped[dt.datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, index=True)
+    started_at: Mapped[dt.datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None)
+    finished_at: Mapped[dt.datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None)
+
+
+# --------------------------------------------------------------------------
 # Helpers
 # --------------------------------------------------------------------------
 
@@ -581,19 +648,28 @@ def session() -> Session:
     return Session(engine, expire_on_commit=False)
 
 
-def balance(db: Session, user_id: int) -> int:
-    """Current credit balance = sum of the ledger."""
+def balance(db: Session, user_id: int, credit_type: str = CREDIT_QUESTION) -> int:
+    """Current credit balance = sum of the ledger, for one balance type.
+
+    The default is the instant-answer balance every caller has always meant;
+    the Starter's emailed answers are `email_balance()`."""
     total = db.execute(
         select(func.coalesce(func.sum(CreditEntry.delta), 0))
-        .where(CreditEntry.user_id == user_id)
+        .where(CreditEntry.user_id == user_id, CreditEntry.credit_type == credit_type)
     ).scalar_one()
     return int(total)
 
 
+def email_balance(db: Session, user_id: int) -> int:
+    """Emailed answers left (DIVASTRO-155)."""
+    return balance(db, user_id, CREDIT_EMAIL)
+
+
 def grant(db: Session, user_id: int, amount: int, kind: EntryKind,
-          note: str = "", order_id: int | None = None) -> CreditEntry:
+          note: str = "", order_id: int | None = None,
+          credit_type: str = CREDIT_QUESTION) -> CreditEntry:
     entry = CreditEntry(user_id=user_id, delta=amount, kind=kind,
-                        note=note, order_id=order_id)
+                        note=note, order_id=order_id, credit_type=credit_type)
     db.add(entry)
     return entry
 
