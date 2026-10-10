@@ -479,6 +479,7 @@ def products(response: Response, kind: str | None = None) -> dict:
         "free_questions": billing.FREE_QUESTIONS,
         "astrologer": billing.ASTROLOGER,
         "turnaround_days": billing.TURNAROUND_DAYS,
+        "email_answer_minutes": billing.EMAIL_ANSWER_DEADLINE_MIN,   # DIVASTRO-155
         "payment": gateways.status(),
     }
 
@@ -1039,8 +1040,11 @@ def preview_coupon(body: CouponPreviewIn, user: User = Depends(me),
         raise HTTPException(400, f"Unknown product '{body.sku}'")
 
     original = product.amount_paise      # the price in force now, not the list price
-    coupon, message, discount, bonus = coupons.validate(
-        db, body.code, user, product, amount_paise=original)
+    if product.sku == billing.STARTER_SKU:   # DIVASTRO-155: create_order refuses it too
+        coupon, message, discount, bonus = None, "Coupons cannot be used on the Starter.", 0, 0
+    else:
+        coupon, message, discount, bonus = coupons.validate(
+            db, body.code, user, product, amount_paise=original)
     if coupon is None:
         discount, bonus = 0, 0
     final = original - discount

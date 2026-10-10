@@ -2179,7 +2179,12 @@ $("#ask-form").addEventListener("submit", async (e) => {
         if (!type || !payload) continue;
         const data = JSON.parse(payload);
 
-        if (type === "analysis") {
+        if (type === "queued") {
+          // DIVASTRO-155: no instant question left, a Starter emailed answer was used. The
+          // server has queued it; the card says where and when it arrives (account.js).
+          pending.remove?.();
+          if (typeof renderQueuedAnswer === "function") renderQueuedAnswer(data);
+        } else if (type === "analysis") {
           result = data;
           pending.remove?.();
           if (state.provider === "off") {

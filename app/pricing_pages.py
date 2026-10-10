@@ -248,7 +248,7 @@ _CSS = """<style>
 .seo .pr-table .pr-what { display: block; margin-top: 3px; color: var(--ink-dim); font-weight: 400;
                           font-size: 14px; line-height: 1.55; }
 .seo .pr-table td.pr-price { white-space: nowrap; text-align: right; width: 1%; }
-.seo .pr-table th:last-child { text-align: right; }
+.seo .pr-table th:last-child { text-align: right; white-space: nowrap; }
 .seo .pr-table td.pr-price b { color: var(--gold-soft); font-size: 17px; }
 .seo .pr-table .pr-sample { display: block; margin-top: 5px; font-weight: 400; font-size: 14px; }
 .seo .pr-table .pr-sample small { color: var(--ink-dim); font-size: 13px; }

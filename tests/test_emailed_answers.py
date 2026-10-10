@@ -245,6 +245,8 @@ def part1_product() -> None:
           st["credits"] == 3 and st["email_credits"] == 0 and st["starter"]["available"], str(st))
     r = c.post("/api/orders", json={"sku": billing.STARTER_SKU, "coupon_code": "ANY10"})
     check("a coupon cannot be used on it", r.status_code == 400 and "Coupon" in r.text, r.text)
+    pv = c.post("/api/coupons/preview", json={"sku": billing.STARTER_SKU, "code": "ANY10"}).json()
+    check("...and the coupon preview says so", pv["valid"] is False and pv["final"] == 2100, str(pv))
     r = c.post("/api/orders", json={"sku": billing.STARTER_SKU})
     check("the order is created at 2100 paise", r.status_code == 200
           and r.json()["order"]["amount_paise"] == 2100 and r.json()["checkout"]["amount"] == 2100, r.text[:200])

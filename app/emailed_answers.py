@@ -389,7 +389,7 @@ def _process(db: Session, job: EmailedAnswerJob, reason: str) -> None:
         if used and lang != "en":
             try:
                 text = llm.translate(text, lang)
-                translator = f"anthropic:{llm.CLAUDE_MODEL}"
+                translator = f"anthropic:{llm.TRANSLATE_MODEL}"
             except Exception as exc:                         # noqa: BLE001
                 translator = "failed"
                 notes.append(tx("note_translate", lang))

@@ -1039,10 +1039,13 @@ def _translation_glossary(language: str) -> str:
 
 
 TRANSLATE_MAX_TOKENS = int(os.environ.get("ASTRO_TRANSLATE_MAX_TOKENS", "6000"))
+# Haiku whatever ASTRO_CLAUDE_MODEL says: translating finished prose is not
+# reasoning-bound, and production may point the chat at a larger model.
+TRANSLATE_MODEL = os.environ.get("ASTRO_TRANSLATE_MODEL", "claude-haiku-4-5-20251001")
 
 
 def translate(text: str, language: str, *, timeout: float = 120) -> str:
-    """The English reading `text` in `language`, by Claude (CLAUDE_MODEL).
+    """The English reading `text` in `language`, by Claude (TRANSLATE_MODEL, Haiku).
 
     Strict: the prompt forbids additions, keeps numbers and dates, and hands the
     model the same names tables the chat narration uses. Raises on any failure
@@ -1058,7 +1061,7 @@ def translate(text: str, language: str, *, timeout: float = 120) -> str:
     system = TRANSLATE_SYSTEM.format(language=LANGUAGES[language],
                                      glossary=_translation_glossary(language))
     msg = client.messages.create(
-        model=CLAUDE_MODEL, max_tokens=TRANSLATE_MAX_TOKENS, system=system,
+        model=TRANSLATE_MODEL, max_tokens=TRANSLATE_MAX_TOKENS, system=system,
         messages=[{"role": "user", "content": text}],
     )
     if getattr(msg, "stop_reason", None) == "refusal":

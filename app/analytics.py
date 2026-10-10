@@ -838,7 +838,7 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("starter_click", ""): "Tapped Buy on the Starter",
     ("starter_click", "store"): "Tapped Buy on the Starter in the store",
     ("starter_click", "paywall"): "Tapped Buy on the Starter when out of questions",
-    ("starter_click", "nudge"): "Tapped the Starter offer with one question left",
+    ("starter_click", "nudge"): "Tapped Buy on the Starter after the one-question-left offer",
     ("email_answer_queued", ""): "Asked a question to be answered by email",
     ("email_answer_delivered", ""): "An emailed answer was delivered",
 }
