@@ -48,8 +48,11 @@ def money(paise: int) -> str:
 
 
 def products(pg: Page) -> dict:
+    """The products ON the Diwali offer. The Starter (DIVASTRO-155, kind email_answers) has
+    one fixed price and is not on it: tests/test_emailed_answers.py and
+    tests/e2e/test_starter_email.py check that it is never struck through."""
     data = pg.page.context.request.get(f"{pg.base}/api/products").json()
-    return {p["sku"]: p for p in data["products"]}
+    return {p["sku"]: p for p in data["products"] if p["kind"] != "email_answers"}
 
 
 def save_pct(p: dict) -> int:
