@@ -134,6 +134,9 @@ Absolute rules — breaking any of these makes the output worthless:
    conditions and tendencies, not a prediction of fact.
 5. Never pad with empty generic filler. Always tie statements directly back to the \
    specific placements and timing details in the evidence.
+6. Never print the engine's internal numbers: no "score", no "weight", no -1 to +1 \
+   values or decimals such as -0.138 or +0.42. They are for you only; say what they \
+   mean in plain words (favourable, mixed, challenging).
 
 {language_note}
 
@@ -723,7 +726,7 @@ def _build_prompt(analysis: dict, language: str, question: str, history: list[di
         f"THE QUESTION TO ANSWER: “{question}”\n\n"
         f"Topic: {analysis.get('topic_label')}. "
         f"The engine's verdict: {analysis.get('verdict')} "
-        f"(score {analysis.get('score')} on -1 to +1).\n\n"
+        f"(internal score {analysis.get('score')} on -1 to +1 — never quote it).\n\n"
         f"Chart evidence behind that verdict:\n{evidence}\n"
         f"{_timing_block(analysis.get('timing') or {}, question)}"
         # DIVASTRO-119: a question naming a date window carries its computed

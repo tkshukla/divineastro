@@ -68,6 +68,8 @@ CHROME = ("Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, l
 
 OLLAMA = FakeOllama().start()
 os.environ["ASTRO_EMAIL_ANSWER_OLLAMA_URL"] = OLLAMA.url
+# These tests exercise the local-model path and its fallbacks; production defaults to Claude.
+os.environ["ASTRO_EMAIL_ANSWER_WRITER"] = "ollama"
 
 
 def check(label: str, ok: bool, detail: str = "") -> None:
@@ -221,6 +223,21 @@ def fresh_queue() -> None:
 
 
 # ---------------------------------------------------------------- 1. product
+def part0_writer_default() -> None:
+    print("\n0. Writer: Claude by default; every job routed to Claude, never counted as a fallback")
+    saved = os.environ.pop("ASTRO_EMAIL_ANSWER_WRITER", None)
+    try:
+        check("default writer is claude", ea.writer() == "claude")
+        class J:  # minimal stand-in for a pending job
+            def __init__(self, i): self.id, self.created_at = i, ea.utcnow()
+        routes = ea.plan([J(1), J(2)], ea.utcnow(), 240.0, True)
+        check("all jobs routed to claude", routes == {1: "claude", 2: "claude"}, str(routes))
+        check("'claude' is not a fallback reason", "claude" not in ea.FALLBACK_REASONS)
+    finally:
+        if saved is not None:
+            os.environ["ASTRO_EMAIL_ANSWER_WRITER"] = saved
+
+
 def part1_product() -> None:
     print("\n1. The Starter product")
     p = billing.PRODUCTS[billing.STARTER_SKU]
@@ -657,6 +674,7 @@ def _migrate(cfg, url, create_engine, command) -> None:
 
 def main() -> int:
     try:
+        part0_writer_default()
         part1_product()
         part2_enqueue()
         part4_worker()

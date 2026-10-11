@@ -130,6 +130,14 @@ def ollama_max_s() -> int:
     return _int("ASTRO_EMAIL_ANSWER_OLLAMA_MAX_S", 1200)
 
 
+def writer() -> str:
+    """Who writes the emailed answers: "claude" (default; owner decision 11 Oct 2026, after the
+    local model measured ~25 min per answer on this 2-core VM) or "ollama" (local model first,
+    Claude as the safety net)."""
+    w = os.environ.get("ASTRO_EMAIL_ANSWER_WRITER", "claude").strip().lower()
+    return "ollama" if w == "ollama" else "claude"
+
+
 def fallback_alert_per_hour() -> int:
     return _int("ASTRO_EMAIL_ANSWER_FALLBACK_ALERT", 3)
 
@@ -230,6 +238,8 @@ def plan(jobs: list[EmailedAnswerJob], now: dt.datetime, avg_s: float,
     created_at + safe_min()."""
     out: dict[int, str] = {}
     t = now
+    if writer() == "claude":           # Claude writes every job; not a fallback
+        return {job.id: "claude" for job in jobs}
     for job in jobs:
         if not local_ok:
             out[job.id] = "ollama_down"

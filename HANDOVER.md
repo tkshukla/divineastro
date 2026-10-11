@@ -23,6 +23,9 @@ Starter's emailed answers): after a deploy that changes `docker-compose.yml`, ru
 `docker compose up -d ollama` (it recreates it with the CPU cap and the one-model
 settings), check `docker compose exec ollama ollama list` shows `qwen2.5:7b`, and run
 the smoke script (see "Starter: emailed answers" below). Mail (`ASTRO_SMTP_*`) must be
+
+> **Writer (11 Oct 2026):** `ASTRO_EMAIL_ANSWER_WRITER=claude` is the default: Claude (the same `ASTRO_CLAUDE_MODEL` as instant answers) writes every Starter answer. The local model was measured at ~25 minutes per answer on this 2-core VM (15 min just to read the prompt at 1 CPU), so it cannot keep the 30-minute promise; the Ollama container stays stopped. Set `ASTRO_EMAIL_ANSWER_WRITER=ollama` only on hardware that can do it, and start the `ollama` service.
+
 configured, or every emailed answer fails and is refunded.
 
 `provision.ps1` must stay **UTF-8 with BOM**. Without it the em-dashes decode as
