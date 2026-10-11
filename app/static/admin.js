@@ -1409,6 +1409,20 @@ function renderTraffic(d) {
     tiles.append(tile('Push subscribers', fmt(d.push.subscribers),
       d.push.enabled ? 'daily 6 AM alert' : 'push is off (no VAPID keys)'));
   }
+  // DIVASTRO-155: today's Starter emailed answers (count, median minutes, model mix, late/failed).
+  const ea = d.email_answers;
+  if (ea && (ea.today || ea.waiting || ea.enabled)) {
+    const mix = Object.entries(ea.models || {})
+      .map(([m, n]) => `${m.replace(/^anthropic:claude-/, 'claude ').replace(/^ollama:/, '')} ${n}`).join(', ');
+    const parts = [
+      ea.median_minutes != null ? `median ${ea.median_minutes} min` : 'none delivered yet',
+      `${fmt(ea.late)} late (> ${ea.deadline_min} min)`, `${fmt(ea.failed)} failed`,
+      ea.waiting ? `${fmt(ea.waiting)} waiting now` : '',
+      mix,
+    ].filter(Boolean);
+    tiles.append(tile('Emailed answers today', fmt(ea.today), parts.join(' · '),
+      ea.late || ea.failed ? 'orange' : undefined));
+  }
 
   const since = d.tracking_since
     ? `Visit tracking began on ${d.tracking_since}; earlier visits were not recorded (new-user counts go back further, since they come from sign-up dates). `

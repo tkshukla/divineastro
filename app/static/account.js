@@ -77,6 +77,7 @@ async function loadAccount() {
     acct.live = !!acct.payment.live;
     acct.astrologer = p.astrologer || "";
     acct.turnaround = p.turnaround_days || 10;
+    acct.emailMinutes = p.email_answer_minutes || 30;     // DIVASTRO-155: the Starter's promise
   } catch { /* catalogue is optional for rendering the app */ }
 
   try {
@@ -167,6 +168,7 @@ async function resumePayuReturn() {
       const { orders } = await (await fetch("/api/orders")).json();
       const o = (orders || []).find((x) => x.id === orderId);
       if (o && o.status === "paid" && isReportSku(o.sku)) showReportReady(o);
+      if (o && o.status === "paid" && o.sku === STARTER_SKU) showStarterBought(o.credits);
     } catch { /* the order is in My orders either way */ }
   }
 }
@@ -189,6 +191,9 @@ function renderAccountBar() {
       <b>${c}</b>
       <span class="pl-full">${escapeHtml(at("credits"))}</span><span class="pl-short">${escapeHtml(at("creditsShort"))}</span>
     </button>
+    ${acct.user.email_credits > 0 ? `<button class="mail-pill" id="btn-mail"
+      aria-label="${escapeHtml(at("emailCredits").replace("{n}", acct.user.email_credits))}"
+      title="${escapeHtml(at("emailCredits").replace("{n}", acct.user.email_credits))}">&#9993; <b>${acct.user.email_credits}</b></button>` : ""}
     <button class="ghost-btn" id="btn-buy">${escapeHtml(at("buyMore"))}</button>
     <div class="acct-menu">
       <!-- The caret matters: without it this reads as a label, and customers
@@ -209,6 +214,8 @@ function renderAccountBar() {
     </div>`;
   bar.querySelector("#btn-credits").onclick = () => openStore();
   bar.querySelector("#btn-buy").onclick = () => openStore();
+  const mailBtn = bar.querySelector("#btn-mail");
+  if (mailBtn) mailBtn.onclick = () => openHistory();
   const drop = bar.querySelector(".acct-drop");
   const acctBtn = bar.querySelector("#btn-acct");
   acctBtn.onclick = () => {
@@ -689,7 +696,69 @@ async function refreshProducts() {
 const SAMPLE_SKUS = new Set(["sq_career", "sq_marriage_timing", "sq_wealth_business", "life_book"]);
 const sampleHref = (sku) => `/samples/${sku}.pdf${state.lang === "hi" ? "?lang=hi" : ""}`;
 
+/* ---------- DIVASTRO-155: the Starter (3 detailed answers by email, once per account) ----------
+   The server decides whether this account may still buy it (/api/me user.starter.available:
+   not bought, no UPI claim pending, an email address to send to, switched on). */
+const STARTER_SKU = "starter_email3";
+function starterOffer() {
+  const p = productBySku(STARTER_SKU);
+  return p && acct.user && acct.user.starter && acct.user.starter.available ? p : null;
+}
+const starterText = (key) => at(key).replace("{minutes}", acct.emailMinutes || 30);
+
+/* After paying for the Starter: what they now have and what happens next. */
+function showStarterBought(n) {
+  const back = modal(`<h2 class="modal-title">${escapeHtml(at("starterBoughtTitle"))}</h2>
+    <p class="modal-sub starter-bought">${escapeHtml(starterText("starterBought").replace("{n}", n || 3))}</p>
+    <button type="button" class="primary" id="starter-ok">${escapeHtml(at("gotIt"))}</button>`);
+  back.querySelector(".modal").classList.add("starter-done");
+  back.querySelector("#starter-ok").onclick = () => {
+    back.remove();
+    // If the paywall interrupted a question, it is asked now: it will be answered by email.
+    if (acct.pendingQuestion) {
+      const q = acct.pendingQuestion;
+      acct.pendingQuestion = null;
+      // The unanswered copy the paywall left in the thread: the question is asked again now.
+      const last = [...document.querySelectorAll("#thread .msg.user")].pop();
+      if (last && last.textContent.trim() === q.trim()) last.remove();
+      const box = document.querySelector("#q");
+      if (box) { box.value = q; document.querySelector("#ask-form").requestSubmit(); }
+    }
+  };
+}
+
+/* The chat card for a question that will be answered by email (the "queued" event). */
+function renderQueuedAnswer(data) {
+  if (acct.user) {
+    if (typeof data.credits === "number") acct.user.credits = data.credits;
+    if (typeof data.email_credits === "number") acct.user.email_credits = data.email_credits;
+    renderAccountBar();
+  }
+  const history = at("history");
+  const text = data.email
+    ? at("queuedText").replace("{minutes}", data.minutes || acct.emailMinutes || 30)
+        .replace("{history}", history)
+    : at("queuedNoEmail").replace("{minutes}", data.minutes || acct.emailMinutes || 30)
+        .replace("{history}", history);
+  const el = document.createElement("div");
+  el.className = "msg bot";
+  // {email} becomes the address in bold; everything else is escaped text.
+  const html = escapeHtml(text).replace("{email}", () => `<b class="q-email">${escapeHtml(data.email || "")}</b>`);
+  el.innerHTML = `<div class="bubble queued-card" role="status" data-job="${Number(data.job_id) || ""}">
+    <div class="queued-head"><span class="queued-icon" aria-hidden="true">&#9993;</span>
+      <b>${escapeHtml(at("queuedTitle"))}</b></div>
+    <p class="queued-text">${html}</p>
+    ${typeof data.email_credits === "number" ? `<p class="queued-left">${escapeHtml(at("queuedLeft").replace("{n}", data.email_credits))}</p>` : ""}
+    <button type="button" class="offer-go queued-open">${escapeHtml(history)}</button>
+  </div>`;
+  el.querySelector(".queued-open").onclick = () => openHistory();
+  document.querySelector("#thread")?.append(el);
+  if (typeof scrollThread === "function") scrollThread(true);
+  return el;
+}
+
 function packCard(p) {
+  if (p.kind === "email_answers") return starterCard(p);
   const cp = couponFor(p.sku);
   const applied = !!acct.coupon;
 
@@ -730,6 +799,19 @@ function packCard(p) {
   </div>`;
 }
 
+/* The Starter in the store: one fixed price (never struck through, no coupon), its promise,
+   and that it is once per account. */
+function starterCard(p) {
+  const focus = acct.storeFocus === p.sku;
+  return `<div class="pack starter-pack featured${focus ? " focus" : ""}" data-sku="${p.sku}">
+    <span class="pack-flag">${escapeHtml(at("starterFlag"))}</span>
+    <h4>${escapeHtml(at("starterTitle"))}</h4>
+    <div class="pack-price"><span class="pp-line">${money(p.rupees)}</span></div>
+    <p class="pack-blurb">${escapeHtml(starterText("starterSub"))}</p>
+    <button class="primary buy-btn" data-sku="${p.sku}">${escapeHtml(at("buy"))} ${money(p.rupees)}</button>
+  </div>`;
+}
+
 /* The line under the store title: what is true of checkout in production. The
    gateway's name is only claimed when a real gateway is configured; in test mode
    the banner below says so instead. */
@@ -765,6 +847,12 @@ function openStore(outOfCredits = false, focusSku = null) {
   const singleReports = acct.products.filter((p) => p.kind === "single_question");
   const lifeBooks = acct.products.filter((p) => p.kind === "kundali_book");
   const kundalis = acct.products.filter((p) => p.kind === "kundali");
+  // DIVASTRO-155: the Starter is offered once the free/instant questions are used up (the
+  // paywall, or the store opened at 0 left), and leads the sheet then; also when the
+  // one-question-left nudge opens the store at it. Otherwise the store is unchanged.
+  const outNow = outOfCredits || !(acct.user.credits > 0);
+  const starter = outNow || focusSku === STARTER_SKU ? starterOffer() : null;
+  const starterCtx = outOfCredits ? "paywall" : focusSku === STARTER_SKU ? "nudge" : "store";
 
   // The three ₹111 reports are the easiest first purchase, so they come first;
   // then the question packs, the Life Book and the hand-written kundali. The first
@@ -779,6 +867,10 @@ function openStore(outOfCredits = false, focusSku = null) {
       sub: at("kundaliSub") + (acct.astrologer ? ` ${acct.astrologer} · ~${acct.turnaround} days.` : "") + " " + at("hwNote"),
       open: false },
   ].filter((s) => s.items.length);
+  if (starter) {
+    const sec = { kind: "email_answers", items: [starter], title: at("starterSection"), sub: "", open: true };
+    sections.splice(0, 0, sec);
+  }
 
   const sectionHtml = (s) => `
     <details class="store-sec" data-sec="${s.kind}"${s.open || s.items.some((p) => p.sku === focusSku) ? " open" : ""}>
@@ -821,7 +913,10 @@ function openStore(outOfCredits = false, focusSku = null) {
       if (box) box.innerHTML = acct.products.filter((p) => p.kind === s.kind).map(packCard).join("");
     });
     back.querySelectorAll(".buy-btn").forEach((b) => {
-      b.onclick = () => startCheckout(b.dataset.sku, back);
+      b.onclick = () => {
+        if (b.dataset.sku === STARTER_SKU) window.daTrack?.("starter_click", starterCtx);
+        startCheckout(b.dataset.sku, back);
+      };
     });
   };
 
@@ -879,6 +974,8 @@ function openStore(outOfCredits = false, focusSku = null) {
 
   repaint();
   if (focusSku) focusStoreProduct(back, focusSku);
+  // (Opened from the nudge: that card already reported starter_shown "nudge".)
+  if (starter && starterCtx !== "nudge") window.daTrack?.("starter_shown", starterCtx);
 
   // DIVASTRO-152: read the catalogue again with the server's clock. A page left open past the end
   // of the offer then shows the regular prices (what checkout charges) instead of the stale ones.
@@ -1076,6 +1173,9 @@ async function confirmPayment(orderId, payload) {
   if (!res.ok) { toast(data.detail || at("payFailed"), true); return; }
 
   acct.user.credits = data.credits;
+  if (typeof data.email_credits === "number") acct.user.email_credits = data.email_credits;
+  const starterOrder = data.order && data.order.sku === STARTER_SKU;
+  if (starterOrder && acct.user.starter) acct.user.starter = { available: false, reason: data.pending ? "pending" : "bought" };
   renderAccountBar();
   closeModal();
   acct.paid = null;          // re-read the paid orders before offering a report again
@@ -1094,16 +1194,24 @@ async function confirmPayment(orderId, payload) {
     for (let i = 0; i < 10; i++) {
       await new Promise((r) => setTimeout(r, 3000));
       const fresh = await (await fetch("/api/me")).json();
-      if (fresh.user && fresh.user.credits !== data.credits) {
+      if (fresh.user && (fresh.user.credits !== data.credits
+          || (fresh.user.email_credits || 0) !== (data.email_credits || 0))) {
         acct.user = fresh.user; renderAccountBar();
         window.daTrack?.("paid", acct.checkoutSku || "");
-        toast(`${at("paid")} ✓`); break;
+        if (starterOrder) showStarterBought(data.order.credits);
+        else toast(`${at("paid")} ✓`);
+        break;
       }
     }
     return;
   }
 
   const added = data.order?.credits || 0;
+  if (starterOrder) {
+    // Emailed answers, not instant questions: say so, and what happens next.
+    showStarterBought(added);
+    return;
+  }
   toast(`${at("paid")} ${added ? `${added} ${at("added")}` : "✓"}`);
 
   // A report or the Life Book is delivered here and now, not just listed.
@@ -1356,14 +1464,47 @@ async function waitForReportOrder(orderId) {
 }
 
 /* ---------- history & orders ---------- */
+/* A time the person reads in their own clock: "11 Oct, 14:32" (DIVASTRO-155). */
+function localTime(iso) {
+  const d = new Date(iso);
+  if (!iso || Number.isNaN(d.getTime())) return "";
+  const lang = state.lang || "en";
+  const opts = { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: false,
+    numberingSystem: "latn" };
+  for (const loc of lang === "en" ? ["en-IN"] : [`${lang}-IN`, "en-IN"]) {
+    try {
+      if (loc !== "en-IN" && !Intl.DateTimeFormat.supportedLocalesOf([loc]).length) continue;
+      return new Intl.DateTimeFormat(loc, opts).format(d);
+    } catch { /* next */ }
+  }
+  return d.toISOString().slice(0, 16).replace("T", " ");
+}
+
+function emailedMeta(e) {
+  if (!e) return "";
+  if (e.status === "done") return at("histEmailDone").replace("{time}", localTime(e.delivered));
+  if (e.status === "failed") return at("histEmailFailed");
+  return at("histEmailPending").replace("{time}", localTime(e.due));
+}
+
 async function openHistory() {
   const { questions } = await (await fetch("/api/history")).json();
-  modal(`<h2 class="modal-title">${escapeHtml(at("history"))}</h2>
-    <div class="hist">${questions.length ? questions.map((q) => `
-      <div class="hist-row">
+  const row = (q) => {
+    const e = q.emailed;
+    const meta = e ? `<div class="hist-meta hist-mail" data-mail="${escapeHtml(e.status)}">&#9993; ${escapeHtml(emailedMeta(e))}</div>`
+      : `<div class="hist-meta">${escapeHtml(q.asked_at)} · ${escapeHtml(q.verdict || q.topic)}</div>`;
+    const read = e && e.status === "done" && q.answer
+      ? `<details class="hist-answer"><summary>${escapeHtml(at("histRead"))}</summary>
+          <div class="hist-answer-body">${typeof markdown === "function" ? markdown(q.answer) : escapeHtml(q.answer)}</div></details>`
+      : "";
+    return `
+      <div class="hist-row${e ? " emailed" : ""}">
         <div class="hist-q">${escapeHtml(q.question)}</div>
-        <div class="hist-meta">${escapeHtml(q.asked_at)} · ${escapeHtml(q.verdict || q.topic)}</div>
-      </div>`).join("") : "<p class='modal-sub'>—</p>"}</div>`);
+        ${meta}${read}
+      </div>`;
+  };
+  modal(`<h2 class="modal-title">${escapeHtml(at("history"))}</h2>
+    <div class="hist">${questions.length ? questions.map(row).join("") : "<p class='modal-sub'>—</p>"}</div>`);
 }
 
 async function openOrders() {
@@ -1682,7 +1823,16 @@ async function maybeOfferAfterAnswer(result, bubble) {
 
     const left = acct.user.credits;
     const pack = productBySku("q50");
-    if (left <= LOW_CREDITS_AT && pack && !offersSeen.has("low_credits")) {
+    // DIVASTRO-155: one question left and the Starter still available: it is the next step.
+    const starter = starterOffer();
+    if (left === 1 && starter && !offersSeen.has("starter_nudge")) {
+      card = offerCard({
+        key: "starter_nudge", detail: "starter", focus: STARTER_SKU, priceOf: starter,
+        text: starterText("offerStarterLow"), button: at("offerStarterBtn"),
+      });
+      window.daTrack?.("starter_shown", "nudge");
+    }
+    if (!card && left <= LOW_CREDITS_AT && pack && !offersSeen.has("low_credits")) {
       card = offerCard({
         key: "low_credits", detail: "low_credits", focus: "q50", button: at("buyMore"), priceOf: pack,
         text: at("offerLow").replace("{n}", left).replace("{pack}", loc(pack, "title")),

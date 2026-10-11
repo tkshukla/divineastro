@@ -94,7 +94,13 @@ def graph(html: str) -> list[dict]:
 def main() -> int:
     print("\n1. During the offer: effective = offer price, list = the regular price")
     at(BEFORE)
-    check("every catalogue SKU is covered by this test", set(billing.PRODUCTS) == set(OFFER))
+    # DIVASTRO-155: the Starter is the one product NOT on the offer (one fixed price).
+    check("every catalogue SKU on the offer is covered by this test",
+          {s for s, p in billing.PRODUCTS.items() if p.on_offer} == set(OFFER))
+    check("the Starter is not on the offer: 21 = list = offer, during and after",
+          set(billing.PRODUCTS) - set(OFFER) == {billing.STARTER_SKU}
+          and billing.effective_price_paise(billing.STARTER_SKU, BEFORE) == 2100
+          and billing.effective_price_paise(billing.STARTER_SKU, AFTER) == 2100)
     check("effective price = offer price for every SKU",
           all(billing.effective_price_paise(s) == OFFER[s] for s in OFFER))
     check("regular (list) prices are the owner's",

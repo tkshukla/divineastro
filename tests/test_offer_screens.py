@@ -107,7 +107,9 @@ def main() -> int:
 
     print("\n1. During the offer: strike, badge, label, banner, explanation (en + hi)")
     at(BEFORE)
-    cat = {p["sku"]: p for p in billing.catalogue()}
+    full = {p["sku"]: p for p in billing.catalogue()}
+    # DIVASTRO-155: the Starter has one fixed price and is NOT on the offer (checked below).
+    cat = {s: p for s, p in full.items() if billing.PRODUCTS[s].on_offer}
     for label, tx in (("en", EN), ("hi", HI)):
         r = client.get(tx["path"])
         h = r.text
@@ -138,9 +140,13 @@ def main() -> int:
               and "15" in tx["banner"] and "2026" in tx["banner"])
         check(f"[{label}] no countdown, no scarcity wording",
               not re.search(r"countdown|only \d+ left|hurry|last chance|never be this low|कभी नहीं", t, re.I))
+    for label, tx in (("en", EN), ("hi", HI)):
+        st = cell(client.get(tx["path"]).text, billing.STARTER_SKU)
+        check(f"[{label}] the Starter row: its one price, no strike, no Save badge",
+              "<b>₹21</b>" in st and "<s " not in st and "pr-save" not in st, st[:200])
     en_text = text(client.get("/pricing").text)
-    check("the explanation: all products, regular prices afterwards, order keeps its quoted price",
-          "Every product on this page is on our Diwali offer" in en_text
+    check("the explanation: every product but the Starter, regular prices afterwards, order keeps its quoted price",
+          "Every product on this page except the Starter is on our Diwali offer" in en_text
           and "After that the regular prices apply automatically" in en_text
           and "An order you start during the offer keeps the price it was quoted at" in en_text
           and "11:59 PM IST" in en_text)
@@ -148,7 +154,11 @@ def main() -> int:
     print("\n2. JSON-LD: one Offer per product at the effective price, valid until the real end")
     nodes = graph(client.get("/pricing").text)
     products = [n for n in nodes if n.get("@type") == "Product"]
-    check("one Product per catalogue entry", len(products) == len(cat), str(len(products)))
+    check("one Product per catalogue entry", len(products) == len(full), str(len(products)))
+    starter = next(p for p in products if p["sku"] == billing.STARTER_SKU)
+    check("the Starter's Offer: 21, and no priceValidUntil (it is not time-boxed)",
+          starter["offers"]["price"] == "21" and "priceValidUntil" not in starter["offers"], str(starter["offers"]))
+    products = [p for p in products if p["sku"] in cat]
     bad = [p["sku"] for p in products
            if p["offers"]["price"] != str(billing.PRODUCTS[p["sku"]].offer_paise // 100)
            or p["offers"].get("priceValidUntil") != ends_iso

@@ -106,4 +106,9 @@ def admin_traffic(days: int = 30, _: User = Depends(admin),
     out = analytics.summary(db, days)
     from . import push                     # DIVASTRO-112: daily web-push subscribers
     out["push"] = push.admin_summary(db)
+    from . import emailed_answers           # DIVASTRO-155: today's Starter emailed answers
+    try:
+        out["email_answers"] = emailed_answers.admin_summary(db)
+    except Exception:                       # pragma: no cover - never break the Traffic tab
+        out["email_answers"] = None
     return out

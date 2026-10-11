@@ -18,6 +18,16 @@ project `astro-505710` · static IP `8.234.96.206`.
 edit the local file — editing the copy on the VM gets silently overwritten next
 time. Alembic runs at container startup, so migrations apply themselves.
 
+**Since DIVASTRO-155 the `ollama` service is part of the product** (it writes the
+Starter's emailed answers): after a deploy that changes `docker-compose.yml`, run
+`docker compose up -d ollama` (it recreates it with the CPU cap and the one-model
+settings), check `docker compose exec ollama ollama list` shows `qwen2.5:7b`, and run
+the smoke script (see "Starter: emailed answers" below). Mail (`ASTRO_SMTP_*`) must be
+
+> **Writer (11 Oct 2026):** `ASTRO_EMAIL_ANSWER_WRITER=claude` is the default: Claude (the same `ASTRO_CLAUDE_MODEL` as instant answers) writes every Starter answer. The local model was measured at ~25 minutes per answer on this 2-core VM (15 min just to read the prompt at 1 CPU), so it cannot keep the 30-minute promise; the Ollama container stays stopped. Set `ASTRO_EMAIL_ANSWER_WRITER=ollama` only on hardware that can do it, and start the `ollama` service.
+
+configured, or every emailed answer fails and is refunded.
+
 `provision.ps1` must stay **UTF-8 with BOM**. Without it the em-dashes decode as
 CP1252 and a stray byte closes a string early.
 
@@ -208,6 +218,109 @@ property returning the effective price, so every old reader keeps working.
   Known limit: the hash rotates at IST midnight, so a visitor who clears cookies
   can get one more answer the next day; the global caps bound the cost.
   Tests: `tests/test_guest_answer.py`, `tests/e2e/test_guest_answer.py`.
+
+## Starter: emailed answers (DIVASTRO-155)
+
+**What the customer gets.** When the free (instant) questions run out, the paywall
+store leads with the one-time **Starter: 3 detailed answers by email, ₹21**
+(`billing.STARTER_SKU = starter_email3`, kind `email_answers`). The nudge at 1
+question left mentions it. After paying ("You have 3 emailed answers. Ask your next
+question as usual — the answer arrives by email within 30 minutes."), every question
+asked with 0 instant questions and >0 emailed answers is **queued**, not answered in
+the chat: the chat shows "Your detailed answer will be emailed to <email> within 30
+minutes. You can also find it in My questions." The answer is written in the
+background, emailed, and saved in My questions (shown there as on its way / emailed,
+with the text). The answers are written by the site's AI; nothing says or implies a
+person writes them.
+
+**Rules (server-side).**
+* Once per account: a second order is a **409** (`billing.StarterRefused`) when a paid
+  Starter or a UPI claim for one exists. An order that was only created (the customer
+  left PayU) does not block a retry. `ASTRO_STARTER_ENABLED=0` takes it off sale
+  everywhere (catalogue, store, /pricing, checkout: 409); bought credits keep working.
+* **Accounts without an email cannot buy it** (phone/SMS and username/password
+  accounts have no address; `billing.deliverable_email`): the honest option rather
+  than selling an emailed answer we cannot email. `/api/me` → `user.starter =
+  {available, reason}` (`disabled | no_email | bought | pending`). No coupons on it.
+* **Not on the Diwali offer**: `Product.on_offer=False`, list = offer = 2100 paise, so
+  no strike, no Save badge, no offer end and no `priceValidUntil` in the JSON-LD.
+* **Separate balance**: `credit_entries.credit_type` is `question` (every existing
+  row, all packs, the sign-up gift, admin adjustments) or `email` (the Starter).
+  `db.balance()` is the instant balance as before; `db.email_balance()` the emailed
+  one. Purchase, the debit at enqueue (`EntryKind.question`) and a refund
+  (`EntryKind.refund`) are all `email` rows. Migration `e7a1c3d5f9b2`.
+
+**The queue and the worker** (`app/emailed_answers.py`, table `emailed_answer_jobs`).
+One job at a time, started from the app's lifespan, DB-backed (a restart puts a
+"running" job back in the queue; after 3 interrupted attempts it fails and is
+refunded). Each job stores the chart's birth payload (the in-memory chart session
+expires), cleared when the job finishes. Per job:
+1. rebuild the chart, `analyse()` + the Vedic context, exactly as an instant answer;
+2. **Ollama** (`ASTRO_EMAIL_ANSWER_MODEL`, default `qwen2.5:7b`) writes it in English
+   with the chat's narration prompt (`llm.stream_polish`, without the local "keep it
+   short" note, up to `ASTRO_EMAIL_ANSWER_NUM_PREDICT`=1000 tokens);
+3. a non-English answer is translated by **Claude Haiku** (`llm.translate`,
+   `ASTRO_TRANSLATE_MODEL`), a strict prompt with the language's names tables;
+4. emailed (HTML + text, the customer's language, question, chart name/date, link,
+   disclaimer) and saved to `questions` (`charged=True`; `False` if refunded).
+
+**Fallbacks that keep the 30-minute promise** (`model_used`, `route_reason` and
+`translator` record what happened for every job):
+* Ollama unreachable / model missing (`/api/tags`) → **Claude** writes it, directly in
+  the customer's language (`route_reason=ollama_down`).
+* Ollama errors, or runs past its budget (it may run until 25 min after the question,
+  `ASTRO_EMAIL_ANSWER_SAFE_MIN`) → Claude (`ollama_error` / `ollama_timeout`).
+* Projected late: queue position × the measured average local duration (last 5
+  local jobs; `ASTRO_EMAIL_ANSWER_AVG_MIN`=4 until measured) would end more than 25
+  min after the question → that job goes to Claude, ahead of the local queue
+  (`projected_late`).
+* Claude fails too (no key, credit balance too low, API down) → the **rule engine's**
+  own reading with a one-line note in the customer's language
+  (`model_used=engine`); still emailed and saved within the deadline.
+* Translation fails → the English answer with a one-line note (`translator=failed`).
+* The chart cannot be rebuilt, or the email cannot be sent → job `failed`, the
+  emailed answer is **refunded**, the customer is told (if the email works).
+
+**Alerts.** A job delivered after 30 min, more than `ASTRO_EMAIL_ANSWER_FALLBACK_ALERT`
+(3) local-model fallbacks in an hour, any Claude failure, a failed job: logged at
+ERROR (`astro.emailed_answers ALERT`) and emailed to `ASTRO_ADMIN_EMAILS`, at most one
+email an hour (lines in between ride along with the next one).
+
+**Env** (all optional; see `deploy/env.production.template`): `ASTRO_STARTER_ENABLED`
+(1), `ASTRO_EMAIL_ANSWER_DEADLINE_MIN` (30), `ASTRO_EMAIL_ANSWER_MODEL` (qwen2.5:7b),
+`ASTRO_EMAIL_ANSWER_OLLAMA_URL` (default `ASTRO_OLLAMA_URL`),
+`ASTRO_EMAIL_ANSWER_SAFE_MIN` (25), `ASTRO_EMAIL_ANSWER_AVG_MIN` (4),
+`ASTRO_EMAIL_ANSWER_NUM_PREDICT` (1000), `ASTRO_EMAIL_ANSWER_OLLAMA_MAX_S` (1200),
+`ASTRO_EMAIL_ANSWER_FALLBACK_ALERT` (3), `ASTRO_TRANSLATE_MODEL` (Haiku),
+`ASTRO_EMAIL_ANSWER_WORKER` (1; 0 = the queue only fills), `ASTRO_EMAIL_ANSWER_POLL_S` (5).
+Mail must be configured (`ASTRO_SMTP_*`, Brevo) or every job fails and is refunded.
+
+**Compose.** The `ollama` service must be running (`restart: unless-stopped`):
+`cpus: "1.0"` (the website keeps a core), `mem_limit: 7g`, `OLLAMA_MAX_LOADED_MODELS=1`
+(the earlier OOM was the 3b and 7b models loaded together), `OLLAMA_NUM_PARALLEL=1`,
+`OLLAMA_KEEP_ALIVE=15m`, `OLLAMA_CONTEXT_LENGTH=4096`; port still loopback-only. With
+one core expect roughly half of the 3.1 tok/s measured uncapped: ~8-15 min a job, so
+at most one or two queued jobs are written locally and the rest by Claude. **Measure
+before trusting it:** `docker compose up -d ollama`, then
+`docker compose exec app python tools/emailed_answer_smoke.py --ollama-url http://ollama:11434`
+(add `--lang hi`; `--no-claude` to see the local path alone). It runs one job on a
+scratch database and prints the duration, `model_used` and the email, sending nothing.
+Set `ASTRO_EMAIL_ANSWER_AVG_MIN` to what it measures.
+
+**Watching the queue.** Admin → Traffic: "Emailed answers today" (count, median
+minutes, late, failed, waiting now, model mix). Logs: `docker compose logs app | grep
+emailed`. SQL: `select id, status, model_used, route_reason, translator, created_at,
+finished_at, error from emailed_answer_jobs order by id desc limit 20;`.
+
+**When Ollama is down.** Nothing to do for the customers: Claude writes every job
+(the alert email says "fallbacks"). Check `docker compose ps ollama`, `docker compose
+logs ollama`, `docker compose exec ollama ollama list` (is `qwen2.5:7b` pulled?), then
+`docker compose up -d ollama`. If Claude is also failing (alert `claude_failed`, e.g.
+the Anthropic credit balance), customers get the engine's reading with a note: top up
+Anthropic. To stop selling while fixing: `ASTRO_STARTER_ENABLED=0` and redeploy.
+
+Tests: `tests/test_emailed_answers.py` (fake Ollama `tests/fake_ollama.py` + fake
+`anthropic`), `tests/e2e/test_starter_email.py`.
 
 ## Working notes
 

@@ -25,8 +25,8 @@ from sqlalchemy.orm import Session
 
 from . import coupons, gateways
 from .db import (
-    Coupon, CreditEntry, EntryKind, FulfilStatus, Order, OrderStatus,
-    WebhookEvent, grant, utcnow,
+    CREDIT_EMAIL, CREDIT_QUESTION, Coupon, CreditEntry, EntryKind, FulfilStatus, Order,
+    OrderStatus, WebhookEvent, grant, utcnow,
 )
 
 log = logging.getLogger("astro.billing")
@@ -41,6 +41,9 @@ FREE_QUESTIONS = int(os.environ.get("ASTRO_FREE_QUESTIONS", "3"))
 # Fulfilment promise shown to the customer at checkout and on the order.
 ASTROLOGER = os.environ.get("ASTRO_ASTROLOGER", "Pandit Shukla")
 TURNAROUND_DAYS = int(os.environ.get("ASTRO_TURNAROUND_DAYS", "10"))
+# DIVASTRO-155: the Starter's promise, in minutes from asking to the email. Every
+# sentence that states it (catalogue blurb, /pricing, the app, the email) reads this.
+EMAIL_ANSWER_DEADLINE_MIN = int(os.environ.get("ASTRO_EMAIL_ANSWER_DEADLINE_MIN", "30"))
 
 
 def live() -> bool:
@@ -143,8 +146,14 @@ class Product:
     pages: int = 0
     highlight: bool = False
     list_paise: int = 0       # the regular price, charged once the offer ends
+    # False for a product that is NOT part of the Diwali offer (the Starter,
+    # DIVASTRO-155): one fixed price, list == offer, so nothing is ever struck
+    # through and no "Save N%" or offer end date is shown for it.
+    on_offer: bool = True
 
     def price_paise(self, now: datetime | None = None) -> int:
+        if not self.on_offer:
+            return self.list_paise
         return self.offer_paise if offer_active(now) else self.list_paise
 
     @property
@@ -163,7 +172,7 @@ class Product:
 
     def to_dict(self, now: datetime | None = None) -> dict:
         now = now or _now()                      # one instant for the whole dict
-        active = offer_active(now)
+        active = offer_active(now) and self.on_offer
         amount = self.price_paise(now)
         return {
             "sku": self.sku, "title": self.title, "title_hi": self.title_hi,
@@ -178,7 +187,7 @@ class Product:
             "list_per_question": (round(self.list_paise / 100 / self.credits, 2)
                                   if active and self.credits else None),
             "offer": {"active": active, "name": OFFER_NAME,
-                      "ends_at": offer_status(now)["ends_at_iso"]},
+                      "ends_at": offer_status(now)["ends_at_iso"] if active else None},
         }
 
 
@@ -188,6 +197,8 @@ LIST_PRICES_PAISE = {
     "q10": 19900, "q50": 59900, "q100": 119900,
     "sq_career": 19900, "sq_marriage_timing": 19900, "sq_wealth_business": 19900,
     "life_book": 89900, "k3": 19900, "k5": 59900, "k3q3": 199900,
+    # DIVASTRO-155: not on the offer; this IS its only price (list == offer).
+    "starter_email3": 2100,
 }
 
 
@@ -245,6 +256,17 @@ PRODUCTS: dict[str, Product] = {p.sku: p for p in [
             "A PDF horoscope book from your own chart: the D1 and D9 chart drawings, planet, house and aspect tables, Ashtakavarga, a divisional-chart (varga) table, yogas, the Vimshottari dasha and antardasha tables, house-by-house and planet-by-planet readings, the dasha sub-periods of the next twelve months and remedies.",
             "आपकी अपनी कुंडली से बनी PDF पुस्तक: D1 और D9 कुंडली चित्र, ग्रह, भाव और दृष्टि सारणियाँ, अष्टकवर्ग, वर्ग कुंडली सारणी, योग, विंशोत्तरी महादशा-अंतर्दशा, भाव-भाव और ग्रह-ग्रह फल, अगले बारह महीनों की अंतर्दशाएँ और उपाय।",
             pages=8, highlight=True),
+
+    # DIVASTRO-155: the one-time Starter. 3 questions whose detailed written answers
+    # are emailed (and saved in My questions) within EMAIL_ANSWER_DEADLINE_MIN. Its
+    # credits are a separate balance (CREDIT_EMAIL) from the instant questions, it is
+    # sold once per account (starter_refusal) and it is not on the Diwali offer.
+    Product("starter_email3", "Starter: 3 detailed answers by email",
+            "स्टार्टर: ईमेल पर 3 विस्तृत उत्तर",
+            2100, 3, "email_answers",
+            f"Answers emailed within {EMAIL_ANSWER_DEADLINE_MIN} minutes. One-time offer for new accounts.",
+            f"उत्तर {EMAIL_ANSWER_DEADLINE_MIN} मिनट के भीतर ईमेल पर। नए खातों के लिए एक बार का ऑफ़र।",
+            on_offer=False),
 ]}
 
 
@@ -258,7 +280,82 @@ assert all(p.list_paise >= p.offer_paise for p in PRODUCTS.values()), \
 
 def catalogue(kind: str | None = None, now: datetime | None = None) -> list[dict]:
     now = now or _now()
-    return [p.to_dict(now) for p in PRODUCTS.values() if kind is None or p.kind == kind]
+    return [p.to_dict(now) for p in PRODUCTS.values()
+            if (kind is None or p.kind == kind)
+            and (p.sku != STARTER_SKU or starter_enabled())]
+
+
+# --------------------------------------------------------------------------
+# The Starter (DIVASTRO-155): once per account
+# --------------------------------------------------------------------------
+
+STARTER_SKU = "starter_email3"
+EMAIL_ANSWER_KIND = "email_answers"
+# Orders that block a second Starter: paid, or a UPI claim waiting for the admin.
+# An order that was only created (the customer left the payment page) or failed
+# does not: they may try again.
+_STARTER_BLOCKING = (OrderStatus.paid, OrderStatus.awaiting_verification)
+
+
+def starter_enabled() -> bool:
+    """ASTRO_STARTER_ENABLED=0 takes the Starter off sale everywhere (catalogue,
+    store, /pricing, checkout). Credits already bought keep working."""
+    return os.environ.get("ASTRO_STARTER_ENABLED", "1").strip().lower() not in (
+        "0", "false", "no", "off")
+
+
+def credit_type_for(sku: str) -> str:
+    p = PRODUCTS.get(sku)
+    return CREDIT_EMAIL if p is not None and p.kind == EMAIL_ANSWER_KIND else CREDIT_QUESTION
+
+
+def starter_status(db: Session, user) -> dict:
+    """{"available": bool, "reason": str|None} for this account.
+
+    reason: "disabled" (switched off), "no_email" (the account has no email address
+    to send the answers to: phone and username accounts), "bought" (a paid Starter),
+    "pending" (a UPI claim for one is waiting to be verified)."""
+    if not starter_enabled():
+        return {"available": False, "reason": "disabled"}
+    if not deliverable_email(user):
+        return {"available": False, "reason": "no_email"}
+    rows = db.execute(
+        select(Order.status).where(Order.user_id == user.id, Order.sku == STARTER_SKU,
+                                   Order.status.in_(_STARTER_BLOCKING))
+    ).scalars().all()
+    if OrderStatus.paid in rows:
+        return {"available": False, "reason": "bought"}
+    if rows:
+        return {"available": False, "reason": "pending"}
+    return {"available": True, "reason": None}
+
+
+def deliverable_email(user) -> str:
+    """The address emailed answers go to, or "".
+
+    Google / Microsoft / Apple accounts carry the address their provider verified,
+    email-code accounts the one they proved by typing the code, and an admin-recorded
+    customer the one the admin took down. Phone (SMS) and username/password accounts
+    have no email at all (auth.py), so they get "" and cannot buy the Starter: it
+    would sell a promise the site could not keep."""
+    email = (getattr(user, "email", "") or "").strip()
+    if "@" not in email or getattr(user, "provider", "") in ("phone", "password"):
+        return ""
+    return email
+
+
+class StarterRefused(ValueError):
+    """create_order() refuses a Starter for this account (API: 409)."""
+
+
+STARTER_REFUSALS = {
+    "disabled": "The Starter is not available right now.",
+    "no_email": ("The Starter sends its answers by email, and this account has no email "
+                 "address. Sign in with Google or an email code to buy it."),
+    "bought": "The Starter is a one-time offer and this account has already bought it.",
+    "pending": ("Your Starter payment is waiting to be confirmed. It is a one-time offer, "
+                "so there is no need to pay again."),
+}
 
 
 # --------------------------------------------------------------------------
@@ -278,6 +375,12 @@ def create_order(db: Session, user, sku: str, birth_id: int | None = None,
     product = PRODUCTS.get(sku)
     if product is None:
         raise ValueError(f"Unknown product '{sku}'")
+    if product.sku == STARTER_SKU:
+        st = starter_status(db, user)
+        if not st["available"]:
+            raise StarterRefused(STARTER_REFUSALS[st["reason"]])
+        if coupon_code and coupon_code.strip():
+            raise ValueError("Coupons cannot be used on the Starter.")
 
     # One instant decides the price for coupon, order and gateway alike, and
     # it is frozen on the order below (amount_paise): a payment made later is
@@ -455,7 +558,8 @@ def mark_paid(db: Session, order: Order, payment_id: str) -> tuple[bool, str]:
         if bonus:
             note += f" +{bonus} bonus"
         grant(db, order.user_id, order.credits, EntryKind.purchase,
-              note=note[:255], order_id=order.id)
+              note=note[:255], order_id=order.id,
+              credit_type=credit_type_for(order.sku))
 
     # Independently idempotent (UNIQUE on coupon_redemptions.order_id), which
     # matters for kundali orders: they grant no credits, so _already_granted is
