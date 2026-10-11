@@ -220,7 +220,7 @@ def flow(browser, base: str, lang: str) -> None:
 def main() -> int:
     fake = FakeOllama().start()
     env = {
-        "ASTRO_SMTP_HOST": "console", "ASTRO_EMAIL_ANSWER_OLLAMA_URL": fake.url,
+        "ASTRO_SMTP_HOST": "console", "ASTRO_EMAIL_ANSWER_OLLAMA_URL": fake.url, "ASTRO_EMAIL_ANSWER_WRITER": "ollama",
         "ASTRO_EMAIL_ANSWER_POLL_S": "1", "ANTHROPIC_API_KEY": "fake-key-e2e",
         "PYTHONPATH": os.pathsep.join(p for p in (str(FAKE_ANTHROPIC), os.environ.get("PYTHONPATH", "")) if p),
     }
