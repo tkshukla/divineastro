@@ -567,5 +567,11 @@
  "acct.histEmailDone": "Emailed · {time}",
  "acct.histEmailFailed": "Could not be prepared · the emailed answer was returned to your account",
  "acct.histRead": "Read the answer",
- "acct.emailCredits": "{n} answers by email left"
+ "acct.emailCredits": "{n} answers by email left",
+ "acct.starterInline_marriage": "Want the full picture on your marriage timing? Get 3 detailed answers by email for {price}.",
+ "acct.starterInline_career": "Want the full picture on your career? Get 3 detailed answers by email for {price}.",
+ "acct.starterInline_money": "Want the full picture on your money and wealth? Get 3 detailed answers by email for {price}.",
+ "acct.starterInline_health": "Want the full picture on your health? Get 3 detailed answers by email for {price}.",
+ "acct.starterInline_timing": "Want the full picture on the right time and muhurat? Get 3 detailed answers by email for {price}.",
+ "acct.starterInline_general": "Want the full picture on your chart? Get 3 detailed answers by email for {price}."
 }

@@ -167,6 +167,19 @@ def _queue_emailed(request: Request, user_id: int, session, question: str,
     return out
 
 
+def _starter_inline_fields(db, user, result: dict, question: str) -> None:
+    """DIVASTRO-157: what the app needs to put the Starter line under this answer.
+    offer_topic: the line's topic (billing.STARTER_INLINE_TOPICS), from the engine's
+    topic; starter_inline: whether this answer gets the line at all (a free answer and
+    the Starter still buyable; the guest answer while the Starter is on sale)."""
+    result["offer_topic"] = billing.starter_topic(result.get("topic"), question)
+    try:
+        result["starter_inline"] = billing.starter_inline(db, user)
+    except Exception as exc:                     # noqa: BLE001 — an offer never breaks an answer
+        logging.getLogger(__name__).warning("starter_inline: %s", exc)
+        result["starter_inline"] = False
+
+
 def _record_polished(log_id: int | None, text: str) -> None:
     """Store the rewritten answer on an already-logged question (DIVASTRO-119).
 
@@ -422,6 +435,7 @@ def ask(req: AskRequest, request: Request) -> dict:
                 result["fallback_note"] = note
 
         result["credits"] = _charge_and_log(db, user, question, result, req.birth_id)
+        _starter_inline_fields(db, user, result, question)
     return result
 
 
@@ -540,13 +554,16 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
     log_ids: list[int] = []
     if claim is None:
         with db_session() as db:
+            asker = db.get(User, user_id)
             result["credits"] = _charge_and_log(
-                db, db.get(User, user_id), question, result, req.birth_id, log_ids=log_ids)
+                db, asker, question, result, req.birth_id, log_ids=log_ids)
+            _starter_inline_fields(db, asker, result, question)
     else:
         # A guest's answer: no credit moves, no QuestionLog row (there is no account).
         # The app reads these to say "sign up to ask N more free questions".
         result["guest"] = True
         result["free_questions"] = billing.FREE_QUESTIONS
+        _starter_inline_fields(None, None, result, question)
         guest.record_answer(claim, result["answer"])
     log_id = log_ids[0] if log_ids else None
 

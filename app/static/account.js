@@ -708,6 +708,7 @@ const starterText = (key) => at(key).replace("{minutes}", acct.emailMinutes || 3
 
 /* After paying for the Starter: what they now have and what happens next. */
 function showStarterBought(n) {
+  document.querySelectorAll("#thread .starter-inline").forEach((e) => e.remove());
   const back = modal(`<h2 class="modal-title">${escapeHtml(at("starterBoughtTitle"))}</h2>
     <p class="modal-sub starter-bought">${escapeHtml(starterText("starterBought").replace("{n}", n || 3))}</p>
     <button type="button" class="primary" id="starter-ok">${escapeHtml(at("gotIt"))}</button>`);
@@ -838,8 +839,8 @@ function focusStoreProduct(back, sku) {
   card.scrollIntoView({ block: "center" });
 }
 
-function openStore(outOfCredits = false, focusSku = null) {
-  if (!acct.user) return openSignIn(() => openStore(outOfCredits, focusSku));
+function openStore(outOfCredits = false, focusSku = null, from = null) {
+  if (!acct.user) return openSignIn(() => openStore(outOfCredits, focusSku, from));
   window.daTrack?.("store_open", outOfCredits ? "credits" : "browse");
   acct.coupon = null;
   acct.storeFocus = focusSku || null;
@@ -852,7 +853,8 @@ function openStore(outOfCredits = false, focusSku = null) {
   // one-question-left nudge opens the store at it. Otherwise the store is unchanged.
   const outNow = outOfCredits || !(acct.user.credits > 0);
   const starter = outNow || focusSku === STARTER_SKU ? starterOffer() : null;
-  const starterCtx = outOfCredits ? "paywall" : focusSku === STARTER_SKU ? "nudge" : "store";
+  // `from` "inline": opened by the Starter line under a free answer (DIVASTRO-157).
+  const starterCtx = outOfCredits ? "paywall" : focusSku === STARTER_SKU ? (from || "nudge") : "store";
 
   // The three ₹111 reports are the easiest first purchase, so they come first;
   // then the question packs, the Life Book and the hand-written kundali. The first
@@ -974,8 +976,9 @@ function openStore(outOfCredits = false, focusSku = null) {
 
   repaint();
   if (focusSku) focusStoreProduct(back, focusSku);
-  // (Opened from the nudge: that card already reported starter_shown "nudge".)
-  if (starter && starterCtx !== "nudge") window.daTrack?.("starter_shown", starterCtx);
+  // (Opened from the nudge: that card already reported starter_shown "nudge"; from the
+  // line under an answer: that one reported starter_inline_shown.)
+  if (starter && starterCtx !== "nudge" && starterCtx !== "inline") window.daTrack?.("starter_shown", starterCtx);
 
   // DIVASTRO-152: read the catalogue again with the server's clock. A page left open past the end
   // of the offer then shows the regular prices (what checkout charges) instead of the stale ones.
@@ -1817,6 +1820,8 @@ const offerAllowed = () => !!acct.user && acct.user.credits > 0;
    matches the topic of the question. */
 async function maybeOfferAfterAnswer(result, bubble) {
   try {
+    // DIVASTRO-157: a free answer carries the Starter line, and then nothing else.
+    if (starterInlineAfterAnswer(result, bubble)) return;
     if (!offerAllowed() || !bubble) return;
     const msg = bubble.closest(".msg") || bubble;
     let card = null;
@@ -1854,6 +1859,51 @@ async function maybeOfferAfterAnswer(result, bubble) {
     msg.after(card);
     if (typeof scrollThread === "function") scrollThread();
   } catch (ex) { console.warn("offer:", ex); }
+}
+
+/* ---------- DIVASTRO-157: the Starter under a free answer ----------
+   One compact line under every answer from the free allowance (and under the guest
+   answer), in the words of that question's topic: "Want the full picture on your
+   marriage timing? Get 3 detailed answers by email for ₹21." The server decides when
+   it is due (result.starter_inline: a free answer, the Starter still buyable) and the
+   topic (result.offer_topic, from the engine's routing). Only one is ever on screen:
+   the previous one goes whenever a new answer arrives. Tapping it opens the same
+   store the other Starter offers open (sign-in first when signed out). */
+const STARTER_INLINE_TOPICS = ["marriage", "career", "money", "health", "timing", "general"];
+
+function starterInlineAfterAnswer(result, bubble) {
+  document.querySelectorAll("#thread .starter-inline").forEach((e) => e.remove());
+  try {
+    if (!result || !result.starter_inline || !bubble) return false;
+    const p = productBySku(STARTER_SKU);
+    if (!p) return false;
+    // Bought (or claimed) in this page since the answer was written: not again.
+    if (acct.user && !(acct.user.starter && acct.user.starter.available)) return false;
+    const topic = STARTER_INLINE_TOPICS.includes(result.offer_topic) ? result.offer_topic : "general";
+    const msg = bubble.closest(".msg") || bubble;
+    if (!msg.isConnected) return false;
+    const el = document.createElement("div");
+    el.className = "offer-card starter-inline";
+    el.setAttribute("role", "note");
+    el.dataset.offer = "starter_inline";
+    el.dataset.topic = topic;
+    const text = escapeHtml(at(`starterInline_${topic}`)).replace("{price}", () => `<b>${money(p.rupees)}</b>`);
+    el.innerHTML = `<p class="offer-text">${text}</p>
+      <button type="button" class="offer-go">${escapeHtml(at("offerStarterBtn"))}</button>
+      <button type="button" class="offer-x" aria-label="${escapeHtml(at("close"))}">&times;</button>`;
+    el.querySelector(".offer-go").onclick = () => {
+      window.daTrack?.("starter_inline_click", topic);
+      el.remove();
+      openStore(false, STARTER_SKU, "inline");
+    };
+    el.querySelector(".offer-x").onclick = () => el.remove();
+    // Under the answer, or under the guest's sign-up line when there is one.
+    const after = msg.nextElementSibling?.classList.contains("guest-cta") ? msg.nextElementSibling : msg;
+    after.after(el);
+    window.daTrack?.("starter_inline_shown", topic);
+    if (typeof scrollThread === "function") scrollThread();
+    return true;
+  } catch (ex) { console.warn("starter line:", ex); return false; }
 }
 
 /* After a chart is cast and the dashboard opens: one line about the Life Book. */
@@ -2005,6 +2055,7 @@ function guestAfterAnswer(result, bubble, question, text) {
     <button type="button" class="offer-go">${escapeHtml(at("guestSignUp"))}</button>`;
   el.querySelector(".offer-go").onclick = () => openSignIn(null, "guest");
   msg.after(el);
+  starterInlineAfterAnswer(result, bubble);      // DIVASTRO-157: under the sign-up line
   if (typeof scrollThread === "function") scrollThread();
 }
 

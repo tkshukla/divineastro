@@ -2652,6 +2652,12 @@ html[lang="ne"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetic
 .offer-card.guest-cta { border-color: rgba(var(--gold-rgb), 0.55); background: rgba(var(--gold-rgb), 0.1); }
 .offer-card.guest-cta .offer-text { color: var(--ink); font-weight: 600; }
 #dash-offer .offer-card { margin: 0 0 14px; max-width: none; }
+/* DIVASTRO-157: the Starter line under a free answer. Compact: one short sentence and
+   the button beside it (under it on a narrow phone), inside the thread, never over the box. */
+.offer-card.starter-inline { margin: 4px 0 12px; padding: 6px 44px 6px 12px; gap: 6px 10px; }
+.offer-card.starter-inline .offer-text { flex-basis: 200px; font-size: 13px; line-height: 1.45; }
+.offer-card.starter-inline .offer-text b { color: var(--ink); }
+.offer-card.starter-inline .offer-go { padding: 6px 12px; font-size: 13px; }
 
 /* DIVASTRO-150: delivering a purchased report. The ready screen, the Download PDF
    rows (also inside My orders) and the compact "Your reports" row on the dashboard. */

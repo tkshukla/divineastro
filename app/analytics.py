@@ -489,6 +489,10 @@ EVENT_NAMES = frozenset({
     "starter_click",   # ...and its buy button was tapped (same detail)
     "email_answer_queued",     # a question was queued for an emailed answer
     "email_answer_delivered",  # ...and its answer was emailed
+    # DIVASTRO-157: the Starter line under a free answer (detail: its topic, one of
+    # marriage, career, money, health, timing, general)
+    "starter_inline_shown",
+    "starter_inline_click",
 })
 MAX_EVENT_BYTES = 512
 
@@ -718,6 +722,8 @@ APP_FUNNEL = (   # (label, event name, detail or None)
     ("Asked the AI a question", "ask_sent", None),
     ("Saw the prices", "pricing_view", None),
     ("Tapped an in-app offer", "offer_click", None),
+    ("Saw the Starter under a free answer", "starter_inline_shown", None),
+    ("Tapped the Starter under a free answer", "starter_inline_click", None),
     ("Opened the store", "store_open", None),
     ("Started checkout", "checkout_start", None),
     ("Paid", "paid", None),
@@ -839,6 +845,22 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("starter_click", "store"): "Tapped Buy on the Starter in the store",
     ("starter_click", "paywall"): "Tapped Buy on the Starter when out of questions",
     ("starter_click", "nudge"): "Tapped Buy on the Starter after the one-question-left offer",
+    ("starter_click", "inline"): "Tapped Buy on the Starter after the line under a free answer",
+    # DIVASTRO-157: the Starter line under a free answer, by the question's topic
+    ("starter_inline_shown", ""): "Saw the Starter line under a free answer",
+    ("starter_inline_shown", "marriage"): "Saw the Starter line under a free answer (marriage)",
+    ("starter_inline_shown", "career"): "Saw the Starter line under a free answer (career)",
+    ("starter_inline_shown", "money"): "Saw the Starter line under a free answer (money)",
+    ("starter_inline_shown", "health"): "Saw the Starter line under a free answer (health)",
+    ("starter_inline_shown", "timing"): "Saw the Starter line under a free answer (timing / muhurat)",
+    ("starter_inline_shown", "general"): "Saw the Starter line under a free answer (general)",
+    ("starter_inline_click", ""): "Tapped the Starter line under a free answer",
+    ("starter_inline_click", "marriage"): "Tapped the Starter line under a free answer (marriage)",
+    ("starter_inline_click", "career"): "Tapped the Starter line under a free answer (career)",
+    ("starter_inline_click", "money"): "Tapped the Starter line under a free answer (money)",
+    ("starter_inline_click", "health"): "Tapped the Starter line under a free answer (health)",
+    ("starter_inline_click", "timing"): "Tapped the Starter line under a free answer (timing / muhurat)",
+    ("starter_inline_click", "general"): "Tapped the Starter line under a free answer (general)",
     ("email_answer_queued", ""): "Asked a question to be answered by email",
     ("email_answer_delivered", ""): "An emailed answer was delivered",
 }

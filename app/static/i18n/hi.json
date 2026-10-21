@@ -571,5 +571,11 @@
  "acct.histEmailDone": "ईमेल भेजा गया · {time}",
  "acct.histEmailFailed": "तैयार नहीं हो सका · ईमेल उत्तर आपके खाते में वापस जोड़ दिया गया",
  "acct.histRead": "उत्तर पढ़ें",
- "acct.emailCredits": "ईमेल पर {n} उत्तर बचे हैं"
+ "acct.emailCredits": "ईमेल पर {n} उत्तर बचे हैं",
+ "acct.starterInline_marriage": "अपने विवाह के समय की पूरी तस्वीर चाहिए? {price} में ईमेल पर 3 विस्तृत उत्तर पाइए।",
+ "acct.starterInline_career": "अपने करियर की पूरी तस्वीर चाहिए? {price} में ईमेल पर 3 विस्तृत उत्तर पाइए।",
+ "acct.starterInline_money": "अपने धन और आर्थिक स्थिति की पूरी तस्वीर चाहिए? {price} में ईमेल पर 3 विस्तृत उत्तर पाइए।",
+ "acct.starterInline_health": "अपने स्वास्थ्य की पूरी तस्वीर चाहिए? {price} में ईमेल पर 3 विस्तृत उत्तर पाइए।",
+ "acct.starterInline_timing": "सही समय और मुहूर्त की पूरी तस्वीर चाहिए? {price} में ईमेल पर 3 विस्तृत उत्तर पाइए।",
+ "acct.starterInline_general": "अपनी कुंडली की पूरी तस्वीर चाहिए? {price} में ईमेल पर 3 विस्तृत उत्तर पाइए।"
 }

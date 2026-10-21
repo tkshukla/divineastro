@@ -359,6 +359,56 @@ STARTER_REFUSALS = {
 
 
 # --------------------------------------------------------------------------
+# DIVASTRO-157: the Starter offered under a free answer, matched to its topic
+# --------------------------------------------------------------------------
+
+# The offer line has one sentence per topic (acct.starterInline_<topic> in the app's
+# i18n files). The engine's topic (interpret/topics.py, result["topic"]) picks it.
+STARTER_INLINE_TOPICS = ("marriage", "career", "money", "health", "timing", "general")
+_STARTER_TOPIC_FOR = {
+    "love": "marriage", "career": "career", "money": "money", "health": "health",
+    "timing": "timing", "period": "timing",
+}
+# A muhurat question is about choosing a time, whatever the engine routed it to
+# (a griha pravesh muhurat is routed to the home, a vivah muhurat to marriage).
+_MUHURAT_WORDS = ("muhurat", "muhurt", "mahurat", "मुहूर्त", "मुहुर्त", "महूरत")
+
+
+def starter_topic(engine_topic: str | None, question: str = "") -> str:
+    """The offer line's topic for an answer: one of STARTER_INLINE_TOPICS."""
+    q = (question or "").lower()
+    if any(w in q for w in _MUHURAT_WORDS):
+        return "timing"
+    return _STARTER_TOPIC_FOR.get(engine_topic or "", "general")
+
+
+def on_free_allowance(db: Session, user) -> bool:
+    """True while every instant question this account ever received was the sign-up
+    gift: no pack bought, nothing added by an admin (a manual order or a goodwill
+    top-up is treated as a paying customer's credit)."""
+    other = db.execute(
+        select(CreditEntry.id).where(
+            CreditEntry.user_id == user.id, CreditEntry.credit_type == CREDIT_QUESTION,
+            CreditEntry.delta > 0, CreditEntry.kind != EntryKind.signup_bonus).limit(1)
+    ).first()
+    return other is None
+
+
+def starter_inline(db: Session | None, user) -> bool:
+    """Should the answer just given carry the Starter line under it?
+
+    Signed out (user None, the guest answer): whenever the Starter is on sale; buying
+    starts with signing in. Signed in: the answer came from the free allowance and this
+    account may still buy the Starter (starter_status: not bought, no claim pending, an
+    email address to send to, on sale)."""
+    if user is None:
+        return starter_enabled()
+    if not starter_status(db, user)["available"]:
+        return False
+    return on_free_allowance(db, user)
+
+
+# --------------------------------------------------------------------------
 # Order creation
 # --------------------------------------------------------------------------
 
