@@ -6,7 +6,8 @@ against a FAKE Ollama (tests/fake_ollama.py, started here) and a FAKE `anthropic
 package (tests/e2e/fake_anthropic, first on the server's PYTHONPATH), with the console
 mail transport, so nothing leaves the machine:
 
-  1. a new account asks its 3 free questions; with 1 left the nudge offers the Starter;
+  1. a new account asks its 3 free questions; under each free answer the Starter line
+     (DIVASTRO-157, in the question's topic) offers it, one at a time;
   2. the 4th question opens the out-of-questions store with the Starter FIRST (Rs 21,
      no strike, no Save badge, once-per-account wording), and the 390px sheet fits;
   3. buying it on the test gateway shows "You have 3 emailed answers ..." and the
@@ -45,7 +46,7 @@ WORDS = {
            "sub": "Answers emailed within 30 minutes. One-time offer for new accounts.",
            "bought": "You have 3 emailed answers. Ask your next question as usual — the answer arrives by email within 30 minutes.",
            "queued": "Your detailed answer will be emailed to {email} within 30 minutes. You can also find it in My questions.",
-           "nudge": "1 question left. Next: the Starter",
+           "nudge": "Get 3 detailed answers by email for ₹21.",
            "subject": "Your detailed answer from Divine Astro",
            "answer_bit": "steady rise through effort",
            "pricing": "/pricing", "once": "Once per account"},
@@ -53,7 +54,7 @@ WORDS = {
            "sub": "उत्तर 30 मिनट के भीतर ईमेल पर। नए खातों के लिए एक बार का ऑफ़र।",
            "bought": "आपके पास 3 ईमेल उत्तर हैं। अगला प्रश्न हमेशा की तरह पूछिए — उत्तर 30 मिनट के भीतर ईमेल पर आएगा।",
            "queued": "आपका विस्तृत उत्तर 30 मिनट के भीतर {email} पर ईमेल किया जाएगा। यह आपको मेरे प्रश्न में भी मिलेगा।",
-           "nudge": "1 प्रश्न बचा है। आगे: स्टार्टर",
+           "nudge": "₹21 में ईमेल पर 3 विस्तृत उत्तर पाइए।",
            "subject": "डिवाइन एस्ट्रो से आपका विस्तृत उत्तर",
            "answer_bit": "धीरे-धीरे आगे बढ़ने",
            "pricing": "/hi/pricing", "once": "एक खाते पर एक बार"},
@@ -104,8 +105,9 @@ def flow(browser, base: str, lang: str) -> None:
           me(pg)["credits"] == 3 and me(pg)["starter"]["available"])
     ask(pg, "Will my career grow this year?")
     ask(pg, "Is this a good time to change jobs?")
-    nudge = pg.page.locator('.offer-card[data-offer="starter"]')
-    check(f"[{lang}] with 1 question left the nudge offers the Starter (₹21)",
+    # DIVASTRO-157: the Starter line under a free answer (it took the 1-left nudge's place).
+    nudge = pg.page.locator('#thread .starter-inline')
+    check(f"[{lang}] under the free answer (1 left) one Starter line offers it (₹21)",
           nudge.count() == 1 and w["nudge"] in nudge.inner_text() and "₹21" in nudge.inner_text(),
           nudge.inner_text() if nudge.count() else "no card")
     if nudge.count():
