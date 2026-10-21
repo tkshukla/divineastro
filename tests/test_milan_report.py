@@ -176,8 +176,8 @@ def part2_order() -> tuple[TestClient, int]:
     check("...with the report language and the ORDER's email", data["lang"] == "hi"
           and data["email"] == "milan.buyer@example.com")
     check("the order's email is what delivery reads", milan_report.order_email(o) == "milan.buyer@example.com")
-    check("a per-order email column (guest checkout) would win",
-          milan_report.order_email(type("O", (), {"email": "guest@example.com", "order_data": o.order_data})())
+    check("a guest order's typed email (DIVASTRO-158) wins",
+          milan_report.order_email(type("O", (), {"guest_email": "guest@example.com", "order_data": o.order_data})())
           == "guest@example.com")
     check("an unknown time is noon, kept as unknown",
           milan_report.clean_pair({**PAIR, "bride": {**BRIDE, "time_known": False}})["bride"]["time"] == "12:00")
@@ -404,7 +404,7 @@ def part6_rest() -> None:
         cols = [c["name"] for c in inspect(eng).get_columns("orders")]
         check("migration up: orders.order_data", "order_data" in cols)
         eng.dispose()
-        command.downgrade(cfg, "-1")
+        command.downgrade(cfg, "e7a1c3d5f9b2")
         eng = create_engine(url)
         cols = [c["name"] for c in inspect(eng).get_columns("orders")]
         check("migration down: gone", "order_data" not in cols)
