@@ -166,6 +166,8 @@ def store(browser, base: str) -> None:
     pg = Page(ctx.new_page(), base)
     pg.sign_in("milan.store@example.com", "Store Visitor")
     pg.open_home()
+    # openStore() opens the sign-in dialog instead if the account has not loaded yet.
+    pg.page.wait_for_function("typeof acct !== 'undefined' && acct.user && acct.products && acct.products.length")
     pg.page.evaluate("openStore()")
     sec = pg.page.locator('.store-sec[data-sec="milan_report"]')
     sec.wait_for(timeout=10000)
