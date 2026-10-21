@@ -191,6 +191,12 @@ class Product:
         }
 
 
+# DIVASTRO-156: the Kundali Milan report (its own kind: it is bought for a PAIR of people,
+# with both birth details on the order, so no chart-based flow may pick it up by kind).
+MILAN_SKU = "milan_report"
+MILAN_KIND = "milan_report"
+
+
 # Regular prices, in paise: what the site charges after the offer. The
 # offer_paise given in each Product() below is the Diwali offer price.
 LIST_PRICES_PAISE = {
@@ -199,6 +205,8 @@ LIST_PRICES_PAISE = {
     "life_book": 89900, "k3": 19900, "k5": 59900, "k3q3": 199900,
     # DIVASTRO-155: not on the offer; this IS its only price (list == offer).
     "starter_email3": 2100,
+    # DIVASTRO-156: the Kundali Milan report; ~80% above its offer price, like the others.
+    "milan_report": 9100,
 }
 
 
@@ -267,6 +275,15 @@ PRODUCTS: dict[str, Product] = {p.sku: p for p in [
             f"Answers emailed within {EMAIL_ANSWER_DEADLINE_MIN} minutes. One-time offer for new accounts.",
             f"उत्तर {EMAIL_ANSWER_DEADLINE_MIN} मिनट के भीतर ईमेल पर। नए खातों के लिए एक बार का ऑफ़र।",
             on_offer=False),
+
+    # DIVASTRO-156: the detailed Kundali Milan report, sold under the match result. It is
+    # written for TWO people, whose birth details travel on the order (Order.order_data,
+    # see milan_report.py), not for a saved chart.
+    Product("milan_report", "Detailed Kundali Milan Report", "विस्तृत कुंडली मिलान रिपोर्ट",
+            5100, 0, MILAN_KIND,
+            "A PDF for two people, from both birth charts: the 8 kootas one by one with what each means, the total guna, Manglik dosh for both and whether it cancels, the key planetary links between the two charts and the classical wedding dates of the coming months.",
+            "दोनों की जन्म कुंडलियों से बनी PDF: आठों कूट एक-एक करके और हर कूट का अर्थ, कुल गुण, दोनों का मांगलिक दोष और उसका परिहार, दोनों कुंडलियों के मुख्य ग्रह-संबंध और आने वाले महीनों के शास्त्रीय विवाह मुहूर्त।",
+            pages=6),
 ]}
 
 
@@ -364,17 +381,30 @@ STARTER_REFUSALS = {
 
 def create_order(db: Session, user, sku: str, birth_id: int | None = None,
                  coupon_code: str | None = None,
-                 report_topic: str | None = None) -> tuple[Order, dict]:
+                 report_topic: str | None = None,
+                 milan: dict | None = None) -> tuple[Order, dict]:
     """Create the local order, then ask the active gateway to open a session.
 
     A coupon is priced here, once, and the result is frozen onto the order:
     the gateway is asked for exactly `amount_paise`, and `credits` already
     includes any extra_credits bonus. Editing the coupon afterwards therefore
     cannot change what an order in flight charges or pays out.
+
+    `milan` (DIVASTRO-156, the Kundali Milan report only, and required for it) is
+    {"groom": {...}, "bride": {...}, "lang": "en"}: both people's birth details as
+    the matching form posts them. They are checked (both charts must cast and
+    match) and frozen onto the order with the address the PDF is emailed to
+    (milan_report.order_data), so the report is written from the order alone.
     """
     product = PRODUCTS.get(sku)
     if product is None:
         raise ValueError(f"Unknown product '{sku}'")
+    order_data = ""
+    if product.sku == MILAN_SKU:
+        from . import milan_report
+        order_data = milan_report.order_data(milan, email=deliverable_email(user))
+    elif milan:
+        raise ValueError("Birth details for two people are only taken for the Kundali Milan report.")
     if product.sku == STARTER_SKU:
         st = starter_status(db, user)
         if not st["available"]:
@@ -411,6 +441,7 @@ def create_order(db: Session, user, sku: str, birth_id: int | None = None,
         fulfilment=(FulfilStatus.pending if product.kind == "kundali"
                     else FulfilStatus.not_applicable),
         provider=gateway.key,
+        order_data=order_data,
     )
     db.add(order)
     db.flush()   # assign order.id so the gateway receipt can reference it
@@ -465,6 +496,11 @@ def create_manual_order(db: Session, user, admin_user, *, sku: str,
         product = PRODUCTS.get(sku)
         if product is None:
             raise ValueError(f"Unknown product '{sku}'")
+        if product.sku == MILAN_SKU:
+            # It is written from two people's birth details, which only the site's
+            # matching form collects onto the order; an admin record would have none.
+            raise ValueError("The Kundali Milan report needs both people's birth details: "
+                             "it can only be bought through the matching tool.")
         title, credits, kind, list_price = (
             product.title, product.credits, product.kind, product.amount_paise)
 
@@ -570,6 +606,11 @@ def mark_paid(db: Session, order: Order, payment_id: str) -> tuple[bool, str]:
             coupons.redeem(db, coupon, order.user_id, order, order.discount_paise)
 
     db.commit()
+    if order.sku == MILAN_SKU:
+        # DIVASTRO-156: email the PDF to the ORDER's address (in the background:
+        # building it takes seconds). Idempotent: an order already emailed is skipped.
+        from . import milan_report
+        milan_report.schedule_delivery(order.id)
     return True, "Payment recorded."
 
 

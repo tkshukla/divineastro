@@ -1,6 +1,7 @@
 """Public sample reports (DIVASTRO-151): see what a paid report holds before paying.
 
     GET /samples/<sku>.pdf?lang=en|hi        sku: sq_career sq_marriage_timing sq_wealth_business life_book
+                                                  milan_report (DIVASTRO-156)
 
 Each sample is the REAL paid builder (pdf_report.single_question_pdf / life_book_pdf)
 run on ONE fixed, fictional chart ("Sample Customer"), with the narration model forced
@@ -37,13 +38,25 @@ SKUS = {
     "sq_marriage_timing": "marriage-timing-report",
     "sq_wealth_business": "wealth-business-report",
     "life_book": "life-book",
+    "milan_report": "kundali-milan-report",      # DIVASTRO-156: a pair, not one chart
 }
+# The samples written from ONE chart (DEMO_BIRTH); milan_report is written for DEMO_PAIR.
+CHART_SKUS = ("sq_career", "sq_marriage_timing", "sq_wealth_business", "life_book")
 
 # A fictional customer, a date and place that belong to nobody in particular.
 DEMO_BIRTH = dict(
     name="Sample Customer", date="1990-08-15", time="10:30",
     latitude=28.6139, longitude=77.2090, timezone="Asia/Kolkata",
     place="New Delhi, India", zodiac="sidereal", ayanamsa="lahiri", house_system="Whole Sign")
+
+# DIVASTRO-156: the Kundali Milan sample's two fictional people, in the matching form's
+# shape (milan_report.clean_pair). The groom is DEMO_BIRTH.
+DEMO_PAIR = {
+    "groom": dict(name="Arjun", date="1990-08-15", time="10:30", time_known=True,
+                  place="New Delhi, India", latitude=28.6139, longitude=77.2090, timezone="Asia/Kolkata"),
+    "bride": dict(name="Meera", date="1993-02-11", time="07:45", time_known=True,
+                  place="Jaipur, India", latitude=26.9124, longitude=75.7873, timezone="Asia/Kolkata"),
+}
 
 MAX_AGE_S = 7 * 24 * 3600
 RATE_WINDOW_S = 60.0
@@ -88,6 +101,10 @@ def _rate_ok(ip: str, now: float | None = None) -> bool:
 
 def build(sku: str, lang: str) -> bytes:
     """Run the real builder on the demo chart, model off, sample mode on."""
+    if sku == "milan_report":
+        from . import milan_report
+        return milan_report.milan_report_pdf(milan_report.clean_pair(DEMO_PAIR), brand="Divine Astro",
+                                             site="divineastro.org", language=lang, sample=True)
     session = chart_service.build(chart_service.BirthData(**DEMO_BIRTH))
     token = llm.FORCE_OFF.set(True)
     try:

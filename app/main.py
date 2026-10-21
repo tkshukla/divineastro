@@ -1099,6 +1099,30 @@ def pdf_life_book(sid: str, request: Request, lang: str = "en") -> Response:
 
 
 
+@app.get("/api/pdf/milan/{order_id}")
+def pdf_milan(order_id: int, request: Request, lang: str = "") -> Response:
+    """DIVASTRO-156: the detailed Kundali Milan report of a paid order, written from the
+    two people's birth details frozen on the order (no chart session involved). Only
+    the order's owner may download it; the same PDF is emailed to the order's address."""
+    from . import milan_report
+    from .db import Order, OrderStatus
+    with db_session() as db:
+        user = auth.require_user(request, db)
+        order = db.get(Order, order_id)
+        if order is None or order.user_id != user.id or order.sku != billing.MILAN_SKU:
+            raise HTTPException(404, "Order not found.")
+        if order.status != OrderStatus.paid:
+            raise HTTPException(402, "The Kundali Milan report requires purchase before downloading.")
+    try:
+        data = milan_report.order_pdf(order, _engine_lang(lang) if lang else None,
+                                      brand=BRAND, site=SITE_URL.split("://")[-1])
+    except milan_report.MilanDataError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
+    return _pdf_response(data, milan_report.filename(order))
+
+
 @app.get("/api/pdf/fonts")
 def pdf_fonts(request: Request) -> dict:
     """Whether this machine can render Devanagari in a PDF. Ops diagnostic."""
