@@ -248,6 +248,18 @@ do about it. It is written to meet the Digital Personal Data Protection Act,
       about 13 months. If your browser sends Do&nbsp;Not&nbsp;Track or
       Global&nbsp;Privacy&nbsp;Control you still get your answer, but we keep only
       the time and the one-way code, which is all the limit needs.</li>
+  <li><strong>Buying without signing in</strong> — if you pay without an
+      account, we keep the email address you type at checkout (and the phone
+      number, if you give one) with the order, to send you what you bought and the
+      private link to your order, and to answer you about it. The phone number is
+      also passed to the payment gateway. For the Starter, the birth details of the
+      chart you made are kept with the order only until your questions are in, and
+      with each question only until its answer has been emailed. If that email
+      address already has an account with us, the purchase is added to that
+      account (we never sign you in to it or show you anything from it); otherwise
+      the order is kept under that address and becomes part of your account the
+      first time you sign in with it. You can ask us to delete it like any other
+      account data.</li>
   <li><strong>Payment records</strong> — what you bought, when, and the
       gateway's transaction reference. <strong>We never see or store your card,
       UPI or bank details</strong>; those go directly to the payment gateway.</li>

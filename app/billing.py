@@ -406,6 +406,27 @@ def starter_inline(db: Session | None, user) -> bool:
     if not starter_status(db, user)["available"]:
         return False
     return on_free_allowance(db, user)
+# Guest checkout (DIVASTRO-158): buying without signing in
+# --------------------------------------------------------------------------
+
+# The products a signed-out visitor may buy with only an email address (and
+# optionally a phone). Each must be deliverable to that address with no sign-in:
+# the Starter emails its answers. Adding a product is this one line, plus whatever
+# its delivery needs from the order (order_email(), Order.guest_json); see
+# app/guest_checkout.py for the flow and why it never signs anyone in.
+GUEST_CHECKOUT_SKUS: frozenset[str] = frozenset({"starter_email3"})
+
+
+def guest_checkout_skus() -> list[str]:
+    """The guest-purchasable skus currently on sale (the Starter can be switched off)."""
+    return sorted(s for s in GUEST_CHECKOUT_SKUS
+                  if s in PRODUCTS and (s != STARTER_SKU or starter_enabled()))
+
+
+def order_email(order: Order, user) -> str:
+    """Where an order's deliverables go: the address a guest typed at checkout, or
+    the account's own deliverable address for a signed-in order."""
+    return (order.guest_email or "").strip() or deliverable_email(user)
 
 
 # --------------------------------------------------------------------------
@@ -414,17 +435,29 @@ def starter_inline(db: Session | None, user) -> bool:
 
 def create_order(db: Session, user, sku: str, birth_id: int | None = None,
                  coupon_code: str | None = None,
-                 report_topic: str | None = None) -> tuple[Order, dict]:
+                 report_topic: str | None = None, *,
+                 guest: dict | None = None, payer=None) -> tuple[Order, dict]:
     """Create the local order, then ask the active gateway to open a session.
 
     A coupon is priced here, once, and the result is frozen onto the order:
     the gateway is asked for exactly `amount_paise`, and `credits` already
     includes any extra_credits bonus. Editing the coupon afterwards therefore
     cannot change what an order in flight charges or pays out.
+
+    DIVASTRO-158: `guest` ({"email", "phone", "json"}) marks an order placed without
+    signing in (only for GUEST_CHECKOUT_SKUS, never with a coupon); `payer` is what
+    the gateway is shown instead of `user` (the typed email and phone, no name), so
+    nothing about an existing account reaches the checkout page. Price, amount and
+    the Starter's once-per-account rule are exactly the signed-in ones.
     """
     product = PRODUCTS.get(sku)
     if product is None:
         raise ValueError(f"Unknown product '{sku}'")
+    if guest is not None:
+        if product.sku not in GUEST_CHECKOUT_SKUS:
+            raise ValueError("This product needs an account.")
+        if coupon_code and coupon_code.strip():
+            raise ValueError("Coupons cannot be used without signing in.")
     if product.sku == STARTER_SKU:
         st = starter_status(db, user)
         if not st["available"]:
@@ -462,10 +495,14 @@ def create_order(db: Session, user, sku: str, birth_id: int | None = None,
                     else FulfilStatus.not_applicable),
         provider=gateway.key,
     )
+    if guest is not None:
+        order.guest_email = (guest.get("email") or "")[:255] or None
+        order.guest_phone = (guest.get("phone") or "")[:20] or None
+        order.guest_json = guest.get("json") or None
     db.add(order)
     db.flush()   # assign order.id so the gateway receipt can reference it
 
-    checkout = gateway.create(order, user)
+    checkout = gateway.create(order, payer if payer is not None else user)
     db.commit()
     return order, checkout
 
@@ -593,6 +630,7 @@ def mark_paid(db: Session, order: Order, payment_id: str) -> tuple[bool, str]:
     if order.status == OrderStatus.paid and _already_granted(db, order):
         return False, "Payment already recorded."
 
+    first_paid = order.status != OrderStatus.paid
     order.status = OrderStatus.paid
     # Keep NULL rather than "" when a gateway gives us no payment id, so the
     # (provider, payment_id) uniqueness stays meaningful.
@@ -620,6 +658,15 @@ def mark_paid(db: Session, order: Order, payment_id: str) -> tuple[bool, str]:
             coupons.redeem(db, coupon, order.user_id, order, order.discount_paise)
 
     db.commit()
+    if first_paid and order.guest_email:
+        # DIVASTRO-158: a guest order just became paid (by whichever path: PayU's
+        # return, a webhook, the admin's UPI check). Best-effort: the buyer is emailed
+        # the link to their order; a mail failure must never undo a recorded payment.
+        try:
+            from . import guest_checkout
+            guest_checkout.on_paid(db, order)
+        except Exception:                          # noqa: BLE001
+            log.exception("guest order %s: after-payment step failed", order.id)
     return True, "Payment recorded."
 
 

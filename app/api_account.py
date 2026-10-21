@@ -480,6 +480,7 @@ def products(response: Response, kind: str | None = None) -> dict:
         "astrologer": billing.ASTROLOGER,
         "turnaround_days": billing.TURNAROUND_DAYS,
         "email_answer_minutes": billing.EMAIL_ANSWER_DEADLINE_MIN,   # DIVASTRO-155
+        "guest_checkout": billing.guest_checkout_skus(),            # DIVASTRO-158
         "payment": gateways.status(),
     }
 
@@ -602,6 +603,11 @@ async def payu_return(request: Request, db: Session = Depends(get_db)) -> Respon
     dest = f"/?payu={'ok' if granted else 'failed'}"
     if order is not None:
         dest += f"&order={order.id}"
+        if verified and order.guest_email and order.status == OrderStatus.paid:
+            # DIVASTRO-158: a guest order has no session to find it by; its signed token
+            # (only after PayU's verified, amount-checked return) opens the order page.
+            from . import guest_checkout
+            dest += f"&gt={guest_checkout.token_for(order)}"
     return RedirectResponse(dest, status_code=303)
 
 

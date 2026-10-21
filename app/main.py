@@ -50,6 +50,7 @@ from .recurring_pages import router as recurring_pages_router
 from .learn_pages import router as learn_router
 from .pricing_pages import router as pricing_router
 from .push import router as push_router, start_sender as start_push_sender
+from .guest_checkout import router as guest_checkout_router
 from .astro.names_hi import KARANA_HI, NAKSHATRAS_HI, TITHI_HI, YOGA_HI
 from .chart_service import BirthData, build, solar_return, timing_snapshot, transits, wheel_svg
 from .db import (
@@ -113,6 +114,7 @@ app.include_router(samples_router)  # /samples/<sku>.pdf: free sample reports (D
 app.include_router(pricing_router)  # /pricing + /hi/pricing: every product and its price (DIVASTRO-149)
 app.include_router(learn_router)  # /learn, /learn/what-is-... + /hi/ copies; 404 unless ASTRO_LEARN_PAGES=1 (DIVASTRO-142)
 app.include_router(push_router)   # /sw.js, /api/push/* daily web push (DIVASTRO-112); 404 while VAPID keys are unset
+app.include_router(guest_checkout_router)  # /api/guest/*: buying without signing in (DIVASTRO-158)
 
 
 class InsufficientCredits(HTTPException):

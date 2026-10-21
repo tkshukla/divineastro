@@ -165,14 +165,17 @@ def eta_minutes(db: Session) -> int:
 
 def enqueue(db: Session, user: User, session, question: str, language: str,
             birth_id: int | None, as_of: dt.datetime | None = None,
-            visitor: str = "") -> EmailedAnswerJob:
+            visitor: str = "", *, email: str | None = None,
+            order_id: int | None = None) -> EmailedAnswerJob:
     """Debit one emailed-answer credit and queue the question. Commits.
 
-    `session` is the live chart session (chart_service.ChartSession); its birth
-    payload is stored so the worker can rebuild the chart after the session has
-    expired. The caller has already checked email_balance(...) > 0."""
+    `session` is the live chart session (chart_service.ChartSession) or anything
+    with a `.birth` (chart_service.BirthData); its birth payload is stored so the
+    worker can rebuild the chart after the session has expired. The caller has
+    already checked email_balance(...) > 0. DIVASTRO-158: a guest order's question
+    passes the order's own `email` and `order_id` (app/guest_checkout.py)."""
     birth = session.birth
-    email = billing.deliverable_email(user)
+    email = billing.deliverable_email(user) if email is None else email
     grant(db, user.id, -1, EntryKind.question, note=question[:200], credit_type=CREDIT_EMAIL)
     job = EmailedAnswerJob(
         user_id=user.id, birth_id=birth_id,
@@ -180,7 +183,7 @@ def enqueue(db: Session, user: User, session, question: str, language: str,
         chart_name=(birth.name or "")[:120], question=question,
         language=i18n.normalize(language), email=email,
         as_of=(as_of or dt.datetime.now()).isoformat(timespec="seconds"),
-        visitor=visitor[:16],
+        visitor=visitor[:16], order_id=order_id,
     )
     db.add(job)
     db.commit()
@@ -314,6 +317,11 @@ def run_next(now: dt.datetime | None = None) -> int | None:
 
 
 def _history(db: Session, job: EmailedAnswerJob) -> list[dict]:
+    if job.order_id:
+        # DIVASTRO-158: a question entered on a guest order's page. The account may be
+        # an existing one the buyer cannot see; its other conversations must not shape
+        # (or show up in) an answer written for this order.
+        return []
     stmt = select(QuestionLog).where(QuestionLog.user_id == job.user_id,
                                      QuestionLog.created_at < job.created_at)
     if job.birth_id:
