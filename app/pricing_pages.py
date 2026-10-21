@@ -47,6 +47,7 @@ TRANSLATED = i18n.BASE_TRANSLATED
 SECTIONS = (
     ("email_answers", "starter"),      # DIVASTRO-155: the one-time Starter, right after "what is free"
     ("single_question", "reports"),
+    ("milan_report", "milan"),         # DIVASTRO-156: the Kundali Milan report, for two people
     ("questions", "packs"),
     ("kundali_book", "book"),
     ("kundali", "kundali"),

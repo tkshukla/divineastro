@@ -219,6 +219,33 @@ property returning the effective price, so every old reader keeps working.
   can get one more answer the next day; the global caps bound the cost.
   Tests: `tests/test_guest_answer.py`, `tests/e2e/test_guest_answer.py`.
 
+## Kundali Milan report (DIVASTRO-156)
+
+**What it is.** A ₹51 PDF (Diwali offer; ₹91 list, `billing.MILAN_SKU = milan_report`,
+kind `milan_report`) for TWO people: the 8 kootas one by one with what each measures,
+the total and its band, Manglik dosh for both and the pair verdict (cancelled when both
+are Manglik), both D1 charts and the key placements / lord friendships, and the vivah
+dates of the next 15 months (the /muhurat/vivah engine, New Delhi). Written by the rule
+engine only (`app/milan_report.py`), no model, English or Hindi.
+
+**Where it is sold.** A card under the in-app match result (`account.js
+mountMilanReport`, called by `tools.js renderMilan`), the store (with no match on
+screen its button opens Kundali Milan), /pricing, and a card on the public
+/kundali-milan pages and under a /naam-se-kundali-milan result (`app/milan_card.py`,
+words `seo_text` `km.rpt.*`; its button opens the app's matching tool). Sample:
+/samples/milan_report.pdf (a fictional pair, `sample_reports.DEMO_PAIR`).
+
+**Data and delivery.** `/api/orders {sku: "milan_report", milan: {groom, bride, lang}}`
+checks both people (both charts must cast and match) and freezes them on
+`orders.order_data` (JSON text, migration `f4b6d8e0a2c3`) with the address the PDF goes
+to (`milan_report.order_email`: a per-order `email` column, if one is added for guest
+checkout, wins). On payment (`billing.mark_paid`) the PDF is built in a background
+thread and emailed to that address once (`order_data.emailed_at`); it is always
+downloadable by the owner from My orders (`GET /api/pdf/milan/<order id>?lang=`).
+An admin manual sale of it is refused (no birth details). Events:
+`milan_report_shown` / `milan_report_click` (detail `app`, `page`, `naam`; a click also `store`).
+Tests: `tests/test_milan_report.py`, `tests/e2e/test_milan_report.py`.
+
 ## Starter: emailed answers (DIVASTRO-155)
 
 **What the customer gets.** When the free (instant) questions run out, the paywall

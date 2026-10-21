@@ -476,6 +476,11 @@ class Order(Base):
     delivered_path: Mapped[str] = mapped_column(String(255), default="")
     birth_id: Mapped[int | None] = mapped_column(ForeignKey("birth_profiles.id"), nullable=True)
     report_topic: Mapped[str | None] = mapped_column(String(64), nullable=True, default=None)
+    # DIVASTRO-156: per-order data a product needs that is not a saved chart, as JSON
+    # text ("" when none). The Kundali Milan report keeps both people's birth details
+    # here, with the address its PDF is emailed to (milan_report.order_data). Personal
+    # data: only the order's owner (and the admin) can read it back.
+    order_data: Mapped[str] = mapped_column(Text, default="")
 
     # --- manual UPI collection -------------------------------------------
     # What the customer claims, and who checked it.

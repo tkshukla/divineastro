@@ -61,6 +61,9 @@ class OrderIn(BaseModel):
     birth_id: int | None = None
     coupon_code: str | None = None
     report_topic: str | None = None
+    # DIVASTRO-156: the Kundali Milan report's two people, as the matching form posts
+    # them ({"groom": {...}, "bride": {...}, "lang": "en"}); checked by milan_report.
+    milan: dict | None = None
 
 
 class CouponPreviewIn(BaseModel):
@@ -490,7 +493,8 @@ def create_order(body: OrderIn, user: User = Depends(me),
                  db: Session = Depends(get_db)) -> dict:
     try:
         order, checkout = billing.create_order(
-            db, user, body.sku, body.birth_id, body.coupon_code, body.report_topic)
+            db, user, body.sku, body.birth_id, body.coupon_code, body.report_topic,
+            milan=body.milan)
     except billing.StarterRefused as exc:
         # DIVASTRO-155: once per account (or no email to deliver to, or switched off).
         raise HTTPException(409, str(exc)) from exc
@@ -1026,7 +1030,16 @@ def _order_dict(o: Order) -> dict:
         "original_amount_paise": o.original_amount_paise or o.amount_paise,
         "discount_paise": o.discount_paise or 0,
         "coupon_id": o.coupon_id,
+        # DIVASTRO-156: "Asha & Ravi" on a Kundali Milan report ("" for anything else)
+        "pair": _pair_label(o),
     }
+
+
+def _pair_label(o: Order) -> str:
+    if o.sku != billing.MILAN_SKU:
+        return ""
+    from . import milan_report
+    return milan_report.pair_label(o)
 
 
 # --------------------------------------------------------------------------

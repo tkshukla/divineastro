@@ -496,6 +496,11 @@ EVENT_NAMES = frozenset({
     # DIVASTRO-158: buying without signing in, both recorded by the server (detail: the sku)
     "guest_checkout_start",    # a signed-out visitor opened a payment with their email
     "guest_checkout_paid",     # ...and that guest order was paid
+    # DIVASTRO-156: the ₹51 Kundali Milan report card under a match result
+    # (detail: "app" the in-app matching screen, "page" /kundali-milan, "naam"
+    # a /naam-se-kundali-milan result; a click may also be "store", the store)
+    "milan_report_shown",      # the card was shown
+    "milan_report_click",      # ...and its button was tapped (same detail)
 })
 
 # users.signup_source values that are not a sign-up on the site: a customer an admin
@@ -732,6 +737,8 @@ APP_FUNNEL = (   # (label, event name, detail or None)
     ("Tapped an in-app offer", "offer_click", None),
     ("Saw the Starter under a free answer", "starter_inline_shown", None),
     ("Tapped the Starter under a free answer", "starter_inline_click", None),
+    ("Saw the Kundali Milan report offer", "milan_report_shown", None),     # DIVASTRO-156
+    ("Tapped the Kundali Milan report", "milan_report_click", None),
     ("Opened the store", "store_open", None),
     ("Started checkout", "checkout_start", None),
     ("Paid", "paid", None),
@@ -880,6 +887,17 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("guest_checkout_start", "starter_email3"): "Started paying for the Starter without signing in",
     ("guest_checkout_paid", ""): "Paid without signing in",
     ("guest_checkout_paid", "starter_email3"): "Paid for the Starter without signing in",
+    # DIVASTRO-156: the Kundali Milan report (₹51) under a match result
+    ("milan_report_shown", ""): "The Kundali Milan report was offered",
+    ("milan_report_shown", "app"): "Kundali Milan report offered under an in-app match",
+    ("milan_report_shown", "page"): "Kundali Milan report offered on /kundali-milan",
+    ("milan_report_shown", "naam"): "Kundali Milan report offered under a naam milan result",
+    ("milan_report_click", ""): "Tapped the Kundali Milan report",
+    ("milan_report_click", "app"): "Tapped Buy on the Kundali Milan report under an in-app match",
+    ("milan_report_click", "page"): "Tapped the Kundali Milan report on /kundali-milan",
+    ("milan_report_click", "naam"): "Tapped the Kundali Milan report under a naam milan result",
+    ("milan_report_click", "store"): "Tapped the Kundali Milan report in the store",
+    ("sample_view", "milan_report"): "Opened the sample Kundali Milan report",
 }
 
 

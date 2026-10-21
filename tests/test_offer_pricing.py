@@ -52,10 +52,12 @@ AFTER = ENDS + dt.timedelta(days=3)
 
 OFFER = {"q10": 11100, "q50": 35100, "q100": 65100, "sq_career": 11100,
          "sq_marriage_timing": 11100, "sq_wealth_business": 11100,
-         "life_book": 49900, "k3": 11100, "k5": 35100, "k3q3": 110000}
+         "life_book": 49900, "k3": 11100, "k5": 35100, "k3q3": 110000,
+         "milan_report": 5100}                                    # DIVASTRO-156
 LIST = {"q10": 19900, "q50": 59900, "q100": 119900, "sq_career": 19900,
         "sq_marriage_timing": 19900, "sq_wealth_business": 19900,
-        "life_book": 89900, "k3": 19900, "k5": 59900, "k3q3": 199900}
+        "life_book": 89900, "k3": 19900, "k5": 59900, "k3q3": 199900,
+        "milan_report": 9100}
 
 failures: list[str] = []
 client = TestClient(app, raise_server_exceptions=False)

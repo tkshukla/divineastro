@@ -565,7 +565,7 @@ def part7_events_privacy_migration() -> None:
         check("migration up: orders.guest_* and emailed_answer_jobs.order_id",
               {"guest_email", "guest_phone", "guest_json"} <= ocols and "order_id" in jcols)
         eng.dispose()
-        command.downgrade(cfg, "e7a1c3d5f9b2")
+        command.downgrade(cfg, "f4b6d8e0a2c3")
         eng = create_engine(url)
         ocols = {c["name"] for c in inspect(eng).get_columns("orders")}
         jcols = {c["name"] for c in inspect(eng).get_columns("emailed_answer_jobs")}

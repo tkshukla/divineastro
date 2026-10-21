@@ -45,6 +45,11 @@ TEXT: dict[str, dict[str, str]] = {
                    "are free tools."),
         "reports.h2": "Single-topic reports",
         "reports.p": "One PDF report on one area of life, read from your own chart. Pick the one you care about.",
+        # DIVASTRO-156
+        "milan.h2": "Kundali Milan report",
+        "milan.p": ("A PDF for two people, bought under the result of the free Kundali Milan: enter both "
+                    "birth details there, see the score, then get the report. Download it from My orders; "
+                    "when your account has an email address it is emailed to you as well."),
         "packs.h2": "Question packs",
         "packs.p": ("Ask in your own words and get an answer read from your chart. A bigger pack "
                     "costs less per question."),
@@ -143,6 +148,11 @@ TEXT: dict[str, dict[str, str]] = {
                    "पंचांग, राहु काल, चौघड़िया, मुहूर्त और कुंडली मिलान मुफ़्त टूल हैं।"),
         "reports.h2": "एक विषय की रिपोर्ट",
         "reports.p": "जीवन के एक क्षेत्र पर एक PDF रिपोर्ट, आपकी अपनी कुंडली से। वही चुनें जो आपके लिए ज़रूरी हो।",
+        # DIVASTRO-156
+        "milan.h2": "कुंडली मिलान रिपोर्ट",
+        "milan.p": ("दो लोगों के लिए एक PDF, मुफ़्त कुंडली मिलान के परिणाम के नीचे से ली जाती है: वहाँ दोनों के जन्म "
+                    "विवरण भरें, गुण देखें, फिर रिपोर्ट लें। इसे 'मेरे ऑर्डर' से डाउनलोड करें; आपके खाते में ईमेल पता हो "
+                    "तो यह ईमेल पर भी भेजी जाती है।"),
         "packs.h2": "प्रश्न पैक",
         "packs.p": ("अपने शब्दों में पूछिए और अपनी कुंडली से पढ़ा हुआ उत्तर पाइए। बड़ा पैक लेने पर "
                     "प्रति प्रश्न कीमत कम पड़ती है।"),
