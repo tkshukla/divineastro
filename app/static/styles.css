@@ -2825,3 +2825,22 @@ s.was {
   /* Room for the "One-time" flag above the Starter's title in the compact phone row. */
   .modal.store .pack.starter-pack { padding-top: 18px; }
 }
+
+/* ---------- DIVASTRO-158: buying without signing in ---------- */
+.guest-pay-offer { border: 1px solid rgba(var(--gold-rgb), 0.55); background: rgba(var(--gold-rgb), 0.09);
+                   border-radius: 12px; padding: 12px 14px; margin: 0 0 4px; }
+.guest-pay-line { margin: 0 0 8px; font-size: 14.5px; line-height: 1.45; color: var(--ink); }
+.guest-pay-offer .primary, .modal.guest-pay .primary, .modal.guest-order .primary { width: 100%; }
+.modal.guest-pay input[type=email], .modal.guest-pay input[type=tel], .modal.guest-order textarea {
+  width: 100%; box-sizing: border-box; padding: 11px 13px; border-radius: 11px;
+  border: 1px solid var(--line); background: var(--input-bg); color: var(--ink);
+  font-family: var(--sans); font-size: 16px;            /* 16px: no zoom-on-focus on iOS */
+}
+.modal.guest-order textarea { resize: vertical; min-height: 64px; margin-bottom: 10px; line-height: 1.45; }
+.modal.guest-pay .guest-signin, .modal.guest-order .guest-signin { width: 100%; min-height: 44px; }
+.modal.guest-order .q-email { color: var(--ink); overflow-wrap: anywhere; }
+.guest-asked { margin: 6px 0 12px; padding-left: 20px; }
+.guest-asked li { margin: 0 0 8px; line-height: 1.45; }
+.guest-asked .gq-text { display: block; color: var(--ink); overflow-wrap: anywhere; }
+.guest-asked .gq-status { display: block; font-size: 13px; color: var(--gold-soft); }
+.guest-keep { margin-top: 10px; }

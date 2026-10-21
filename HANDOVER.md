@@ -322,6 +322,42 @@ Anthropic. To stop selling while fixing: `ASTRO_STARTER_ENABLED=0` and redeploy.
 Tests: `tests/test_emailed_answers.py` (fake Ollama `tests/fake_ollama.py` + fake
 `anthropic`), `tests/e2e/test_starter_email.py`.
 
+## Buying without signing in (DIVASTRO-158)
+
+A signed-out visitor can pay for a product in `billing.GUEST_CHECKOUT_SKUS` (today only
+the Starter) with an email address and an optional phone: "Pay ₹21 with UPI / card —
+no sign-in needed" in the sign-in sheet that the question after the free answer opens,
+and wherever the app calls `openStore(…, STARTER_SKU)` for a signed-out visitor. The
+whole design and its security reasoning are in `app/guest_checkout.py`'s docstring; in
+short:
+
+* **Order → user.** The order is credited to the account that address already has
+  (Google/Apple/dev, email-code, manual, or an earlier guest order), else to a
+  placeholder `users` row (`provider="guest"`, `signup_source="guest_checkout"`, no
+  password, never signed in to, not counted as a sign-up). The first email-code or
+  Google/Apple sign-in with that address adopts it (welcome questions and the sign-up
+  recorded then); a Microsoft sign-in does not. Nothing is ever signed in and nothing
+  of an existing account is shown; a refusal (Starter already bought, suspended) is one
+  generic sentence.
+* **Money.** Same `billing.create_order` (price frozen on the order, once per account),
+  same PayU return with its amount check, same webhook and `mark_paid`. The gateway sees
+  the typed address and phone, never the account's name. New columns `orders.guest_email`,
+  `guest_phone`, `guest_json` and `emailed_answer_jobs.order_id` (migration `f3b5d7e9a1c4`).
+* **The questions.** The checkout carries the chart the guest cast (birth details from
+  the server's own chart session). After payment the buyer types the 3 questions on an
+  order page reached by a signed token (`?gt=…`, 60 days): in the checkout reply, on
+  PayU's verified return, and emailed to the buyer once paid (any path: return, webhook,
+  the admin's UPI check). Each question is an ordinary emailed-answer job to the
+  order's address; the page shows statuses, never answer text.
+* **Limits.** 10 checkouts an hour per IP (IPv6 /64), 5 an hour and 10 a day per address.
+* **Analytics.** `guest_checkout_start` / `guest_checkout_paid` (server-side, detail = sku),
+  in the app funnel.
+* **Another product** (e.g. a PDF report): add its sku to `GUEST_CHECKOUT_SKUS` and deliver
+  to `billing.order_email(order, user)`; `guest_checkout.on_paid` only emails the
+  questions link for `email_answers` products.
+
+Tests: `tests/test_guest_checkout.py`, `tests/e2e/test_guest_checkout.py`.
+
 ## Working notes
 
 Google sign-in **does** work — `/api/me` returns `provider: "google"` for
