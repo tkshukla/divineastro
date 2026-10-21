@@ -269,7 +269,8 @@ for p in catalogue:
           not re.search(r"\b(\d+\+?[- ]?page|2-page|35\+|5-year|full year|personally)", text, re.I), p["blurb"])
 
 print("\n9. Sample reports (DIVASTRO-151)")
-SAMPLED = ("sq_career", "sq_marriage_timing", "sq_wealth_business", "life_book")
+SAMPLED = ("sq_career", "sq_marriage_timing", "sq_wealth_business", "life_book",
+           "milan_report")                        # DIVASTRO-156
 for path, lang in (("/pricing", ""), ("/hi/pricing", "?lang=hi")):
     page = get(path).text
     rows = {m.group(1): m.group(0) for m in re.finditer(r'<tr id="([a-z0-9_]+)".*?</tr>', page, re.S)}

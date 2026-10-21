@@ -1,6 +1,7 @@
 """Public sample reports (DIVASTRO-151): GET /samples/<sku>.pdf.
 
 Each of the four reports (Career, Marriage, Wealth, Life Book) in English and Hindi,
+plus the Kundali Milan report (DIVASTRO-156, built for a fictional PAIR, DEMO_PAIR),
 built by the REAL builder on one fixed fictional chart with the model forced off and
 `sample=True`. Checked here: valid PDF, as long as the paid report built the normal
 way, the watermark and footer line on EVERY page (text pulled out of the PDF itself),
@@ -47,6 +48,9 @@ def _pages(pdf: bytes) -> int:
 
 def _real(session, sku: str, lang: str) -> bytes:
     """The paid report, built the normal way (no sample mode), for the same chart."""
+    if sku == "milan_report":           # DIVASTRO-156: written for the demo PAIR, never by a model
+        from app import milan_report
+        return milan_report.milan_report_pdf(milan_report.clean_pair(sample_reports.DEMO_PAIR), language=lang)
     token = llm.FORCE_OFF.set(True)
     try:
         if sku == "life_book":
@@ -97,7 +101,7 @@ class SampleReports(unittest.TestCase):
                 self.assertTrue(pdf.startswith(b"%PDF-"))
                 self.assertTrue(pdf.rstrip().endswith(b"%%EOF"))
                 real = self.real.setdefault((sku, lang), _real(self.session, sku, lang))
-                self.assertGreaterEqual(_pages(pdf), MIN_PAGES[sku])
+                self.assertGreaterEqual(_pages(pdf), MIN_PAGES.get(sku, 4))
                 self.assertEqual(_pages(pdf), _pages(real), "a sample must be the full report, not an excerpt")
 
     def test_every_page_carries_the_watermark_and_the_footer(self):
@@ -158,7 +162,7 @@ class SampleReports(unittest.TestCase):
             self.assertEqual(llm.default_provider(), "anthropic")
 
     def test_chart_drawings_are_embedded_and_the_text_is_clean(self):
-        for sku in sample_reports.SKUS:
+        for sku in sample_reports.CHART_SKUS:
             for lang in LANGS:
                 with self.subTest(sku=sku, lang=lang):
                     seen, patch = _spy_compile()
@@ -176,6 +180,25 @@ class SampleReports(unittest.TestCase):
                     english = "\n".join(pdf_text.pages_text(pdf)) if lang == "en" else ""
                     for bad in ("Traceback", "nan", "None"):
                         self.assertNotRegex(english, rf"\b{bad}\b")
+
+    def test_the_milan_sample_is_the_pair_and_its_text_is_clean(self):
+        # DIVASTRO-156: two fictional people, both D1 drawings, nothing broken in the text.
+        for lang in LANGS:
+            with self.subTest(lang=lang):
+                seen, patch = _spy_compile()
+                with patch:
+                    pdf = sample_reports.build("milan_report", lang)
+                data, files = seen[0]
+                self.assertEqual(sorted(files), ["bride_d1.svg", "groom_d1.svg"])
+                for text in _strings(data):
+                    self.assertIsNone(BAD_WORDS.search(text), text[:160])
+                flat = " ".join(_strings(data))
+                self.assertIn("Arjun", flat)
+                self.assertIn("Meera", flat)
+                self.assertEqual(len(data["koota_table"]["rows"]), 8)
+                english = "\n".join(pdf_text.pages_text(pdf)) if lang == "en" else ""
+                for bad in ("Traceback", "nan", "None"):
+                    self.assertNotRegex(english, rf"\b{bad}\b")
 
     @unittest.skipUnless(HAS_DEVA, "no Devanagari font on this machine")
     def test_hindi_samples_are_in_devanagari(self):

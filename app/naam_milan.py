@@ -161,6 +161,11 @@ def _result(boy: str, girl: str, gm: Match | None, bm: Match | None, lang: str) 
         out.append(f'<div class="scroll"><table>{th}{rows}</table></div>')
         out.append(f'<p class="note">{_e(conv_note)}</p>')
         out.append(f'<div class="box"><p>{_tx("mangal", lang)}</p></div>')
+        # DIVASTRO-156: the detailed report (written from both BIRTH charts: the card
+        # opens the app's matching tool, where it is bought). The result page is not
+        # cached (cache=False below), so the price shown is the one in force.
+        from . import milan_card
+        out.append(milan_card.card(lang, "naam"))
     out.append(_caveat(lang))
     out.append(f'<a class="cta" href="{_e(i18n.app_link(lang, "open=milan"))}">'
                + _e(_tx("res.cta", lang)) + "</a>")

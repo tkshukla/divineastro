@@ -567,5 +567,16 @@
  "acct.histEmailDone": "Emailed · {time}",
  "acct.histEmailFailed": "Could not be prepared · the emailed answer was returned to your account",
  "acct.histRead": "Read the answer",
- "acct.emailCredits": "{n} answers by email left"
+ "acct.emailCredits": "{n} answers by email left",
+ "acct.milanRptTitle": "Detailed matching report",
+ "acct.milanRptSub": "Guna by guna, Manglik dosh, compatibility",
+ "acct.milanRptHow": "A PDF for these two people from this calculation: the 8 kootas one by one, Manglik dosh for both, the key planetary links and the wedding dates of the coming months.",
+ "acct.milanRptBuy": "Get the report",
+ "acct.milanRptKept": "Download it at once; it stays in My orders.",
+ "acct.milanRptMail": "We also email it to {email}.",
+ "acct.milanRptReady": "Your detailed Kundali Milan report is ready. Download it now; it stays in My orders.",
+ "acct.milanRptSection": "Kundali Milan report",
+ "acct.milanRptStore": "For two people: enter both birth details in Kundali Milan, see the score, then get the report under it.",
+ "acct.milanRptOpen": "Open Kundali Milan",
+ "acct.milanRptForPair": "For the match on screen: {pair}"
 }

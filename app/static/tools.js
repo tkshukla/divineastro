@@ -203,7 +203,7 @@
       });
       const data = await readJson(res);
       if (!res.ok) throw new Error(data.detail || 'Could not match those charts.');
-      renderMilan(data);
+      renderMilan(data, payload);
     } catch (ex) {
       err.textContent = ex.message; err.hidden = false;
     } finally {
@@ -211,7 +211,7 @@
     }
   });
 
-  function renderMilan(d) {
+  function renderMilan(d, payload) {
     const ak = d.ashtakoot;
     const pct = Math.round((ak.total / ak.maximum) * 100);
     const tone = ak.total >= 25 ? 'good' : ak.total >= 18 ? 'ok' : 'poor';
@@ -261,8 +261,11 @@
       </div>
 
       ${d.caveat ? `<p class="warn-line">${esc(d.caveat)}</p>` : ''}
-      <p class="muted-line">${esc(ak.band_note || '')} ${esc(ak.convention_note || '')}</p>`;
+      <p class="muted-line">${esc(ak.band_note || '')} ${esc(ak.convention_note || '')}</p>
+      <div id="milan-report-slot"></div>`;
     shareMilan(ak);                        // DIVASTRO-107
+    // DIVASTRO-156: the ₹51 detailed report for exactly this pair, under the result (account.js).
+    if (payload) window.mountMilanReport?.(q('#milan-report-slot'), payload);
     q('#milan-result').hidden = false;
     q('#milan-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }

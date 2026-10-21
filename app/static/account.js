@@ -693,7 +693,8 @@ async function refreshProducts() {
 /* DIVASTRO-151: the four reports that are written by the engine have a free sample PDF
    (/samples/<sku>.pdf, Hindi with ?lang=hi). The hand-written kundali products do not,
    and are not listed here: no automatic sample can exist for them. */
-const SAMPLE_SKUS = new Set(["sq_career", "sq_marriage_timing", "sq_wealth_business", "life_book"]);
+const SAMPLE_SKUS = new Set(["sq_career", "sq_marriage_timing", "sq_wealth_business", "life_book",
+  "milan_report"]);
 const sampleHref = (sku) => `/samples/${sku}.pdf${state.lang === "hi" ? "?lang=hi" : ""}`;
 
 /* ---------- DIVASTRO-155: the Starter (3 detailed answers by email, once per account) ----------
@@ -759,6 +760,7 @@ function renderQueuedAnswer(data) {
 
 function packCard(p) {
   if (p.kind === "email_answers") return starterCard(p);
+  if (p.kind === MILAN_SKU) return milanStoreCard(p);
   const cp = couponFor(p.sku);
   const applied = !!acct.coupon;
 
@@ -846,6 +848,7 @@ function openStore(outOfCredits = false, focusSku = null) {
   const packs = acct.products.filter((p) => p.kind === "questions");
   const singleReports = acct.products.filter((p) => p.kind === "single_question");
   const lifeBooks = acct.products.filter((p) => p.kind === "kundali_book");
+  const milanReports = acct.products.filter((p) => p.kind === MILAN_SKU);      // DIVASTRO-156
   const kundalis = acct.products.filter((p) => p.kind === "kundali");
   // DIVASTRO-155: the Starter is offered once the free/instant questions are used up (the
   // paywall, or the store opened at 0 left), and leads the sheet then; also when the
@@ -861,6 +864,8 @@ function openStore(outOfCredits = false, focusSku = null) {
     { kind: "single_question", items: singleReports, title: at("singleQuestionTitle"),
       sub: at("singleQuestionSub"), open: true },
     { kind: "questions", items: packs, title: at("packsTitle"), sub: "", open: true },
+    { kind: MILAN_SKU, items: milanReports, title: at("milanRptSection"), sub: "",
+      open: focusSku === MILAN_SKU || !!window.daMilanPair },
     { kind: "kundali_book", items: lifeBooks, title: at("lifeBookTitle"),
       sub: at("lifeBookSub"), open: false },
     { kind: "kundali", items: kundalis, title: at("kundaliTitle"),
@@ -915,8 +920,16 @@ function openStore(outOfCredits = false, focusSku = null) {
     back.querySelectorAll(".buy-btn").forEach((b) => {
       b.onclick = () => {
         if (b.dataset.sku === STARTER_SKU) window.daTrack?.("starter_click", starterCtx);
+        if (b.dataset.sku === MILAN_SKU) {
+          window.daTrack?.("milan_report_click", "store");
+          return startCheckout(MILAN_SKU, back, { milan: window.daMilanPair });
+        }
         startCheckout(b.dataset.sku, back);
       };
+    });
+    // DIVASTRO-156: no match on screen, so nothing to write the report for yet: go and match.
+    back.querySelectorAll(".milan-open").forEach((b) => {
+      b.onclick = () => { closeModal(); if (typeof showStage === "function") showStage("stage-milan"); };
     });
   };
 
@@ -988,7 +1001,7 @@ function openStore(outOfCredits = false, focusSku = null) {
   });
 }
 
-async function startCheckout(sku, back) {
+async function startCheckout(sku, back, extra = null) {
   const err = back.querySelector(".modal-error");
   const buttons = back.querySelectorAll(".buy-btn");
   buttons.forEach((b) => { b.disabled = true; });
@@ -996,7 +1009,7 @@ async function startCheckout(sku, back) {
 
   // Only send the code for a sku it is actually valid on — the server
   // re-validates regardless and would reject the order outright.
-  const body = { sku };
+  const body = { sku, ...(extra || {}) };
   if (couponFor(sku)) body.coupon_code = acct.coupon.code;
 
   try {
@@ -1237,7 +1250,9 @@ async function confirmPayment(orderId, payload) {
    person can read and a Try again button, never a blank JSON page. */
 
 const REPORT_SKUS = ["sq_career", "sq_marriage_timing", "sq_wealth_business", "life_book"];
-const isReportSku = (sku) => REPORT_SKUS.includes(sku);
+/* DIVASTRO-156: the Kundali Milan report is delivered too, but from the ORDER (both people's
+   birth details are on it), not from a chart: see the milan block below. */
+const isReportSku = (sku) => REPORT_SKUS.includes(sku) || sku === MILAN_SKU;
 /* The server prints reports in English or Hindi; any other app language gets the
    English one, and the panel says so. */
 const reportLangFor = (lang) => (lang === "hi" ? "hi" : "en");
@@ -1393,6 +1408,7 @@ function mountReportDownload(host, sku, { autostart = false } = {}) {
 /* Right after a purchase of a report or the Life Book. */
 async function showReportReady(order) {
   if (!order || !isReportSku(order.sku)) return;
+  if (order.sku === MILAN_SKU) return showMilanReady(order);
   if (acct.user && !(state.births || []).length) { try { await loadSavedCharts(); } catch { /* none saved */ } }
   const p = productBySku(order.sku);
   const title = p ? loc(p, "title") : order.title;
@@ -1404,6 +1420,137 @@ async function showReportReady(order) {
     </div>`);
   window.daTrack?.("report_ready", order.sku);
   mountReportDownload(back.querySelector(".rpt-host"), order.sku);
+  back.querySelector(".rpt-orders-link").onclick = () => { closeModal(); openOrders(); };
+}
+
+/* ---------- DIVASTRO-156: the detailed Kundali Milan report (₹51) ----------
+   Sold under a match result (tools.js calls mountMilanReport with the two people exactly as the
+   matching form posted them). The order carries both birth details, so the PDF is written from
+   the ORDER: /api/pdf/milan/<order id>?lang=, any time, from My orders; it is also emailed to the
+   order's address. Price, struck list price and Save N% come from /api/products only. */
+const MILAN_SKU = "milan_report";
+
+/* The two people of the match on screen ({groom, bride, lang}) or null. Set by mountMilanReport. */
+window.daMilanPair = window.daMilanPair || null;
+
+function milanPairLabel(pair) {
+  const n = [pair?.groom?.name, pair?.bride?.name].map((x) => (x || "").trim()).filter(Boolean);
+  return n.join(" & ");
+}
+
+/* The report in the store: it can only be bought for a match, so with none on screen the
+   button takes the person to Kundali Milan instead. */
+function milanStoreCard(p) {
+  const focus = acct.storeFocus === p.sku;
+  const pair = window.daMilanPair;
+  const who = milanPairLabel(pair);
+  const action = pair
+    ? `${who ? `<p class="pack-unit mr-for">${escapeHtml(at("milanRptForPair").replace("{pair}", who))}</p>` : ""}
+       <button class="primary buy-btn" data-sku="${p.sku}">${escapeHtml(at("buy"))} ${money(p.rupees)}</button>`
+    : `<p class="pack-unit">${escapeHtml(at("milanRptStore"))}</p>
+       <button type="button" class="primary milan-open">${escapeHtml(at("milanRptOpen"))}</button>`;
+  return `<div class="pack milan-pack${focus ? " focus" : ""}${offerOn(p) ? " has-offer" : ""}" data-sku="${p.sku}">
+    <h4>${escapeHtml(loc(p, "title"))}</h4>
+    <div class="pack-price"><span class="pp-line">${priceHtml(p)}</span>${saveBadge(p)}</div>
+    <p class="pack-blurb">${escapeHtml(loc(p, "blurb"))}</p>
+    ${action}
+    <a class="pack-sample" href="${sampleHref(p.sku)}" target="_blank" rel="noopener"
+      data-sample="${p.sku}" title="${escapeHtml(at("sampleNote"))}">${escapeHtml(at("sampleView"))}</a>
+  </div>`;
+}
+
+/* The card under the match result: "Detailed matching report — guna by guna, Manglik dosh,
+   compatibility — ₹51" (struck list price while the offer is live), a sample link, and Buy. */
+async function mountMilanReport(host, pair) {
+  if (!host || !pair) return;
+  window.daMilanPair = pair;
+  if (!productBySku(MILAN_SKU)) await refreshProducts();
+  const p = productBySku(MILAN_SKU);
+  if (!p || !host.isConnected) return;
+  const mail = acct.user && acct.user.email_deliverable && acct.user.email
+    ? ` ${at("milanRptMail").replace("{email}", acct.user.email)}` : "";
+  host.innerHTML = `<div class="card milan-rpt" data-sku="${MILAN_SKU}">
+      <p class="mr-head"><b>${escapeHtml(at("milanRptTitle"))}</b> — ${escapeHtml(at("milanRptSub"))} —
+        <span class="mr-price">${priceHtml(p)}</span>${saveBadge(p)}</p>
+      <p class="mr-how">${escapeHtml(at("milanRptHow"))}</p>
+      <div class="mr-actions">
+        <button type="button" class="primary buy-btn" data-sku="${MILAN_SKU}">${escapeHtml(at("milanRptBuy"))} ${money(p.rupees)}</button>
+        <a class="pack-sample" href="${sampleHref(MILAN_SKU)}" target="_blank" rel="noopener"
+          data-sample="${MILAN_SKU}" title="${escapeHtml(at("sampleNote"))}">${escapeHtml(at("sampleView"))}</a>
+      </div>
+      <p class="mr-kept">${escapeHtml(at("milanRptKept") + mail)}</p>
+      <p class="modal-error" hidden></p>
+    </div>`;
+  const card = host.querySelector(".milan-rpt");
+  window.daTrack?.("milan_report_shown", "app");
+  card.querySelector(".buy-btn").onclick = () => {
+    window.daTrack?.("milan_report_click", "app");
+    const go = () => startCheckout(MILAN_SKU, card, { milan: pair });
+    if (!acct.user) return openSignIn(go, "milan_report");
+    go();
+  };
+}
+window.mountMilanReport = mountMilanReport;
+
+/* Fetch the report of one paid order and hand it to the browser: {ok} or {ok: false, message}. */
+async function downloadMilan(orderId, lang) {
+  let res;
+  try { res = await fetch(`/api/pdf/milan/${encodeURIComponent(orderId)}?lang=${encodeURIComponent(lang)}`); }
+  catch { return { ok: false, message: at("rptNetwork") }; }
+  if (!res.ok) {
+    window.daTrack?.("report_download_failed", `${MILAN_SKU}:${res.status}`);
+    return { ok: false, status: res.status, message: reportErrorText(res.status) };
+  }
+  const blob = await res.blob();
+  const m = /filename="?([^";]+)"?/i.exec(res.headers.get("Content-Disposition") || "");
+  saveBlob(blob, m ? m[1] : "kundali-milan-report.pdf");
+  window.daTrack?.("report_downloaded", MILAN_SKU);
+  return { ok: true };
+}
+
+/* English / हिन्दी and one Download PDF button for one order. */
+function mountMilanDownload(host, orderId, { autostart = false } = {}) {
+  if (!host) return;
+  let lang = reportLangFor(state.lang);
+  host.classList.add("rpt-panel");
+  host.dataset.sku = MILAN_SKU;
+  const note = !["en", "hi"].includes(state.lang) ? `<p class="rpt-note">${escapeHtml(at("rptOnlyEnHi"))}</p>` : "";
+  host.innerHTML = `${note}<div class="rpt-langs" role="group" aria-label="${escapeHtml(at("rptLangLabel"))}">
+      ${["en", "hi"].map((c) => `<button type="button" class="ghost-btn rpt-lang" data-lang="${c}"
+        aria-pressed="${c === lang}" lang="${c}">${c === "en" ? "English" : "हिन्दी"}</button>`).join("")}
+    </div>
+    <div class="rpt-row"><button type="button" class="offer-go rpt-dl">${escapeHtml(at("rptDownload"))}</button></div>
+    <p class="rpt-msg" role="status" aria-live="polite" hidden></p>`;
+  const msg = host.querySelector(".rpt-msg");
+  const btn = host.querySelector(".rpt-dl");
+  host.querySelectorAll(".rpt-lang").forEach((b) => {
+    b.onclick = () => { lang = b.dataset.lang; host.querySelectorAll(".rpt-lang").forEach(
+      (x) => x.setAttribute("aria-pressed", String(x === b))); };
+  });
+  const run = async () => {
+    btn.disabled = true; msg.hidden = false; msg.classList.remove("rpt-bad"); msg.textContent = at("rptWorking");
+    const out = await downloadMilan(orderId, lang);
+    btn.disabled = false;
+    msg.classList.toggle("rpt-bad", !out.ok);
+    msg.textContent = out.ok ? at("rptDone") : out.message;
+    if (!out.ok) btn.textContent = at("rptRetry");
+  };
+  btn.onclick = run;
+  if (autostart) run();
+}
+
+/* Right after paying for it. */
+function showMilanReady(order) {
+  const p = productBySku(MILAN_SKU);
+  const title = p ? loc(p, "title") : order.title;
+  const back = modal(`<div class="rpt-ready" data-sku="${MILAN_SKU}">
+      <h2 class="modal-title rpt-ready-title">${escapeHtml(at("rptReadyTitle").replace("{title}", title))}</h2>
+      <p class="modal-sub">${escapeHtml(at("milanRptReady"))}${order.pair ? ` <b>${escapeHtml(order.pair)}</b>` : ""}</p>
+      <div class="rpt-host"></div>
+      <p class="rpt-orders"><button type="button" class="ghost-btn rpt-orders-link">${escapeHtml(at("orders"))}</button></p>
+    </div>`);
+  window.daTrack?.("report_ready", MILAN_SKU);
+  mountMilanDownload(back.querySelector(".rpt-host"), order.id);
   back.querySelector(".rpt-orders-link").onclick = () => { closeModal(); openOrders(); };
 }
 
@@ -1512,13 +1659,16 @@ async function openOrders() {
   if (acct.user && !(state.births || []).length) { try { await loadSavedCharts(); } catch { /* none saved */ } }
   const rowHtml = (o) => {
     const p = productBySku(o.sku);
-    const title = p ? loc(p, "title") : o.title;
+    const title = (p ? loc(p, "title") : o.title) + (o.pair ? ` · ${o.pair}` : "");
     const paid = o.status === "paid";
     const hand = o.fulfilment !== "not_applicable";      // a hand-written kundali: an astrologer fulfils it
     const meta = [escapeHtml(o.created_at), escapeHtml(statusText(o.status))];
     let extra = "";
     if (paid && hand) {
       extra = `<div class="hist-meta ord-hand">${escapeHtml(at("orderHandNote").replace("{status}", statusText(o.fulfilment)))}</div>`;
+    } else if (paid && o.sku === MILAN_SKU) {
+      extra = `<button type="button" class="offer-go ord-milan">${escapeHtml(at("rptDownload"))}</button>
+        <div class="ord-host"></div>`;
     } else if (paid && isReportSku(o.sku)) {
       extra = `<button type="button" class="offer-go ord-dl">${escapeHtml(at("rptDownload"))}</button>
         <div class="ord-host"></div>`;
@@ -1531,6 +1681,8 @@ async function openOrders() {
   const back = modal(`<h2 class="modal-title">${escapeHtml(at("orders"))}</h2>
     <div class="hist">${orders.length ? orders.map(rowHtml).join("") : "<p class='modal-sub'>—</p>"}</div>`);
   back.querySelectorAll(".ord-row").forEach((row) => {
+    const mb = row.querySelector(".ord-milan");
+    if (mb) mb.onclick = () => mountMilanDownload(row.querySelector(".ord-host"), Number(row.dataset.order), { autostart: true });
     const btn = row.querySelector(".ord-dl");
     if (!btn) return;
     // Only the chart already on screen is used without asking; any other case
