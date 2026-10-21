@@ -173,9 +173,9 @@ def store(browser, base: str) -> None:
     pack = pg.page.locator('.pack[data-sku="milan_report"]')
     check("the store lists the report next to the others, with its price",
           pack.count() == 1 and "₹51" in pack.inner_text() and "₹91" in pack.inner_text(), pack.inner_text()[:200])
-    check("with no match on screen it sends you to Kundali Milan",
-          pack.locator(".milan-open").count() == 1 and pack.locator(".buy-btn").count() == 0)
-    pack.locator(".milan-open").click()
+    check("with no match on screen its Buy sends you to Kundali Milan first",
+          pack.locator('.buy-btn[data-open="milan"]').count() == 1 and "enter both birth details" in pack.inner_text())
+    pack.locator(".buy-btn").click()
     pg.page.wait_for_selector("#stage-milan", state="visible", timeout=10000)
     check("...which opens the matching screen", pg.page.locator("#stage-milan").is_visible())
     fill_side(pg, "groom", GROOM)
@@ -186,7 +186,8 @@ def store(browser, base: str) -> None:
     pack = pg.page.locator('.pack[data-sku="milan_report"]')
     pack.wait_for(timeout=10000)
     check("after a match: Buy, for the pair on screen",
-          pack.locator(".buy-btn").count() == 1 and "Rohan & Priya" in pack.inner_text(), pack.inner_text()[:200])
+          pack.locator(".buy-btn:not([data-open])").count() == 1 and "Rohan & Priya" in pack.inner_text(),
+          pack.inner_text()[:200])
     pack.locator(".buy-btn").click()
     pg.page.wait_for_selector('.rpt-ready[data-sku="milan_report"]', timeout=30000)
     check("bought from the store: the ready sheet", True)

@@ -922,14 +922,16 @@ function openStore(outOfCredits = false, focusSku = null) {
         if (b.dataset.sku === STARTER_SKU) window.daTrack?.("starter_click", starterCtx);
         if (b.dataset.sku === MILAN_SKU) {
           window.daTrack?.("milan_report_click", "store");
+          // DIVASTRO-156: no match on screen, so nothing to write the report for yet: go and match.
+          if (b.dataset.open === "milan" || !window.daMilanPair) {
+            closeModal();
+            if (typeof showStage === "function") showStage("stage-milan");
+            return;
+          }
           return startCheckout(MILAN_SKU, back, { milan: window.daMilanPair });
         }
         startCheckout(b.dataset.sku, back);
       };
-    });
-    // DIVASTRO-156: no match on screen, so nothing to write the report for yet: go and match.
-    back.querySelectorAll(".milan-open").forEach((b) => {
-      b.onclick = () => { closeModal(); if (typeof showStage === "function") showStage("stage-milan"); };
     });
   };
 
@@ -1438,8 +1440,8 @@ function milanPairLabel(pair) {
   return n.join(" & ");
 }
 
-/* The report in the store: it can only be bought for a match, so with none on screen the
-   button takes the person to Kundali Milan instead. */
+/* The report in the store: it can only be bought for a match, so with none on screen its Buy
+   button takes the person to Kundali Milan (data-open), where the card under the result sells it. */
 function milanStoreCard(p) {
   const focus = acct.storeFocus === p.sku;
   const pair = window.daMilanPair;
@@ -1447,8 +1449,9 @@ function milanStoreCard(p) {
   const action = pair
     ? `${who ? `<p class="pack-unit mr-for">${escapeHtml(at("milanRptForPair").replace("{pair}", who))}</p>` : ""}
        <button class="primary buy-btn" data-sku="${p.sku}">${escapeHtml(at("buy"))} ${money(p.rupees)}</button>`
-    : `<p class="pack-unit">${escapeHtml(at("milanRptStore"))}</p>
-       <button type="button" class="primary milan-open">${escapeHtml(at("milanRptOpen"))}</button>`;
+    : `<p class="pack-unit mr-for">${escapeHtml(at("milanRptStore"))}</p>
+       <button class="primary buy-btn" data-sku="${p.sku}" data-open="milan"
+         title="${escapeHtml(at("milanRptOpen"))}">${escapeHtml(at("buy"))} ${money(p.rupees)}</button>`;
   return `<div class="pack milan-pack${focus ? " focus" : ""}${offerOn(p) ? " has-offer" : ""}" data-sku="${p.sku}">
     <h4>${escapeHtml(loc(p, "title"))}</h4>
     <div class="pack-price"><span class="pp-line">${priceHtml(p)}</span>${saveBadge(p)}</div>
