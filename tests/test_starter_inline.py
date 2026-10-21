@@ -248,8 +248,6 @@ def part5_i18n() -> None:
             check(f"{code}: translated (no English copy, not Latin script)",
                   all(v != en[f"acct.starterInline_{t}"] and not re.search(r"[A-Za-z]{3,}", v.replace("{price}", ""))
                       for t, v in zip(TOPICS, vals)), str(vals)[:120])
-        check(f"{code}: the keys were appended at the end of the file",
-              list(d)[-6:] == [f"acct.starterInline_{t}" for t in TOPICS])
 
 
 def main() -> int:

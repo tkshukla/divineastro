@@ -10,7 +10,8 @@
      the page does not scroll, nothing scrolls sideways.
   c. Not shown: a paying account (credits added), an account that bought the Starter.
   d. A signed-out visitor: under the guest answer, below the sign-up line; tapping it
-     opens the sign-in sheet (the same entry point as the other Starter offers).
+     opens the pay-without-signing-in sheet (DIVASTRO-158), through the same entry
+     point as the other Starter offers.
 
 Screenshots: $ASTRO_SHOTS_DIR (default tests/e2e/shots/) starter_inline_*.png.
 
@@ -266,8 +267,9 @@ def guest(browser, base: str) -> None:
     shot(pg, "guest")
     pg.page.click(f"{LINE} .offer-go")
     pg.page.wait_for_selector(".modal-backdrop", timeout=10000)
-    check("tapping it opens the sign-in sheet first", pg.page.locator(".modal.store").count() == 0
-          and pg.page.locator(".modal-backdrop").count() == 1)
+    check("tapping it opens the pay-without-signing-in sheet", pg.page.locator(".modal.store").count() == 0
+          and pg.page.locator(".modal-backdrop").count() == 1
+          and pg.page.locator("#gp-email, #gp-chart").count() >= 1)
     check("'starter_inline_click career' is reported",
           {"name": "starter_inline_click", "detail": "career"} in events, str(events))
     ctx.close()
