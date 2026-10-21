@@ -214,6 +214,7 @@ def upsert_user(db: Session, provider: str, claims: dict) -> tuple[User, bool]:
     user = db.execute(
         select(User).where(User.provider == provider, User.provider_sub == sub)
     ).scalar_one_or_none()
+    adopted = False
 
     # Same person, different provider, same verified address → one account.
     if user is None and email and verified:
@@ -226,7 +227,18 @@ def upsert_user(db: Session, provider: str, claims: dict) -> tuple[User, bool]:
         # An admin-created "manual" account (a customer paid off-site and was
         # recorded by hand) is adopted the first time its owner signs in with
         # the same verified address, so their purchase is waiting for them.
-        if user is not None and (not user.provider_sub or user.provider == "manual"):
+        if user is not None and user.provider == "guest":
+            # DIVASTRO-158: an account a guest checkout created for this address
+            # (never signed in to). Adopted like a manual one, but only by a provider
+            # whose address is proof of the mailbox (not Microsoft: see email_auth),
+            # and it counts as this person's sign-up. Otherwise a new account is made.
+            from . import guest_checkout
+            if guest_checkout.can_adopt(provider):
+                guest_checkout.adopt(db, user, provider, sub)
+                adopted = True
+            else:
+                user = None
+        elif user is not None and (not user.provider_sub or user.provider == "manual"):
             user.provider, user.provider_sub = provider, sub
 
     created = user is None
@@ -258,7 +270,7 @@ def upsert_user(db: Session, provider: str, claims: dict) -> tuple[User, bool]:
     db.commit()
     if user.blocked:
         raise HTTPException(403, SUSPENDED_MESSAGE)
-    return user, created
+    return user, created or adopted
 
 
 # --------------------------------------------------------------------------

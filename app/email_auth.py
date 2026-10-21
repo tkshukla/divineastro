@@ -433,6 +433,17 @@ def _link_existing(db: Session, addr: str) -> User | None:
     if user is not None:
         return user
 
+    # DIVASTRO-158: an account a guest checkout made for this address, never signed
+    # in to: adopted on first proof of the address (the code), as a Google sign-in
+    # adopts it, so the order and its answers are waiting.
+    guest = db.execute(
+        select(User).where(User.provider == "guest", User.email == addr).order_by(User.id)
+    ).scalars().first()
+    if guest is not None:
+        from . import guest_checkout
+        guest_checkout.adopt(db, guest, "email", addr)
+        return guest
+
     # An admin-recorded customer who paid off-site: adopted on first proof of
     # the address, as upsert_user does for a Google sign-in, so the purchase
     # is waiting for them.
@@ -459,8 +470,11 @@ def sign_in(db: Session, addr: str, lang: str = "en") -> tuple[User, bool]:
     user = db.execute(
         select(User).where(User.provider == "email", User.provider_sub == addr)
     ).scalar_one_or_none()
+    adopted = False
     if user is None:
         user = _link_existing(db, addr)
+        # A guest-checkout account becoming a real one counts as this person's sign-up.
+        adopted = bool(getattr(user, "adopted_guest", False))
 
     if (user is not None and user.is_admin) or addr in auth.admin_emails():
         # Before anything is written: no last_seen bump, no adoption. An
@@ -489,7 +503,7 @@ def sign_in(db: Session, addr: str, lang: str = "en") -> tuple[User, bool]:
     db.commit()
     if user.blocked:
         raise HTTPException(403, auth.SUSPENDED_MESSAGE)
-    return user, created
+    return user, created or adopted
 
 
 def reset_for_tests() -> None:

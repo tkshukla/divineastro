@@ -489,7 +489,15 @@ EVENT_NAMES = frozenset({
     "starter_click",   # ...and its buy button was tapped (same detail)
     "email_answer_queued",     # a question was queued for an emailed answer
     "email_answer_delivered",  # ...and its answer was emailed
+    # DIVASTRO-158: buying without signing in, both recorded by the server (detail: the sku)
+    "guest_checkout_start",    # a signed-out visitor opened a payment with their email
+    "guest_checkout_paid",     # ...and that guest order was paid
 })
+
+# users.signup_source values that are not a sign-up on the site: a customer an admin
+# recorded by hand, and the placeholder account a guest checkout makes (DIVASTRO-158;
+# it becomes a sign-up, with its real source, when its owner first signs in).
+NOT_SIGNUPS = ("manual", "guest_checkout")
 MAX_EVENT_BYTES = 512
 
 
@@ -721,6 +729,8 @@ APP_FUNNEL = (   # (label, event name, detail or None)
     ("Opened the store", "store_open", None),
     ("Started checkout", "checkout_start", None),
     ("Paid", "paid", None),
+    ("Started checkout without signing in", "guest_checkout_start", None),   # DIVASTRO-158
+    ("Paid without signing in", "guest_checkout_paid", None),
 )
 
 
@@ -839,8 +849,15 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("starter_click", "store"): "Tapped Buy on the Starter in the store",
     ("starter_click", "paywall"): "Tapped Buy on the Starter when out of questions",
     ("starter_click", "nudge"): "Tapped Buy on the Starter after the one-question-left offer",
+    ("starter_shown", "guest"): "Starter offered without signing in (sign-in sheet)",
+    ("starter_click", "guest"): "Opened the Starter's pay-without-signing-in sheet",
     ("email_answer_queued", ""): "Asked a question to be answered by email",
     ("email_answer_delivered", ""): "An emailed answer was delivered",
+    # DIVASTRO-158: buying without signing in
+    ("guest_checkout_start", ""): "Started paying without signing in",
+    ("guest_checkout_start", "starter_email3"): "Started paying for the Starter without signing in",
+    ("guest_checkout_paid", ""): "Paid without signing in",
+    ("guest_checkout_paid", "starter_email3"): "Paid for the Starter without signing in",
 }
 
 
@@ -869,7 +886,7 @@ def day_report(db: Session, day: dt.date, now: dt.datetime | None = None) -> dic
     users = db.execute(
         select(User.created_at).where(
             User.created_at >= t_start, User.created_at < end,
-            or_(User.signup_source.is_(None), User.signup_source != "manual"))).all()
+            or_(User.signup_source.is_(None), User.signup_source.notin_(NOT_SIGNUPS)))).all()
 
     per_day_visitors: dict[dt.date, set] = defaultdict(set)
     per_day_views: Counter = Counter()
@@ -957,7 +974,7 @@ def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict
     users = db.execute(
         select(User.created_at, User.signup_source, User.signup_campaign, User.provider)
         .where(User.created_at >= start_utc,
-               or_(User.signup_source.is_(None), User.signup_source != "manual"))).all()
+               or_(User.signup_source.is_(None), User.signup_source.notin_(NOT_SIGNUPS)))).all()
 
     pageviews: Counter = Counter()
     per_day_visitors: dict[dt.date, set] = defaultdict(set)
@@ -1030,7 +1047,7 @@ def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict
     live_now = db.execute(select(func.count(func.distinct(Visit.visitor)))
                           .where(Visit.ts >= live_cut)).scalar_one() or 0
     users_total = db.execute(select(func.count(User.id)).where(
-        or_(User.signup_source.is_(None), User.signup_source != "manual"))).scalar_one() or 0
+        or_(User.signup_source.is_(None), User.signup_source.notin_(NOT_SIGNUPS)))).scalar_one() or 0
 
     return {
         "range": {"days": n, "from": daily[0]["date"], "to": daily[-1]["date"], "tz": "Asia/Kolkata"},
