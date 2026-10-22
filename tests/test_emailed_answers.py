@@ -606,7 +606,11 @@ def part6_admin() -> None:
     with db_session() as db:
         total = db.execute(select(func.count(EmailedAnswerJob.id))).scalar_one()
     check("Traffic carries today's emailed answers: count, delivered, failed, late, median, model mix",
-          t.get("today") == total and t["delivered"] >= 8 and t["failed"] >= 2 and t["late"] >= 1
+          t["delivered"] >= 8 and t["failed"] >= 2
+          # The late job was backdated 40 minutes: in the first 45 minutes of an IST
+          # day that lands it in yesterday's window, so it is not in today's tile then.
+          and ((t.get("today") == total and t["late"] >= 1)
+               or (utcnow().astimezone(ea.IST).time() < dt.time(0, 45) and t.get("today") == total - 1))
           and t["median_minutes"] is not None
           and any(k.startswith("ollama:") for k in t["models"]) and "engine" in t["models"], str(t))
     with db_session() as db:

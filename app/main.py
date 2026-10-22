@@ -50,6 +50,7 @@ from .recurring_pages import router as recurring_pages_router
 from .learn_pages import router as learn_router
 from .pricing_pages import router as pricing_router
 from .push import router as push_router, start_sender as start_push_sender
+from .guest_checkout import router as guest_checkout_router
 from .astro.names_hi import KARANA_HI, NAKSHATRAS_HI, TITHI_HI, YOGA_HI
 from .chart_service import BirthData, build, solar_return, timing_snapshot, transits, wheel_svg
 from .db import (
@@ -113,6 +114,7 @@ app.include_router(samples_router)  # /samples/<sku>.pdf: free sample reports (D
 app.include_router(pricing_router)  # /pricing + /hi/pricing: every product and its price (DIVASTRO-149)
 app.include_router(learn_router)  # /learn, /learn/what-is-... + /hi/ copies; 404 unless ASTRO_LEARN_PAGES=1 (DIVASTRO-142)
 app.include_router(push_router)   # /sw.js, /api/push/* daily web push (DIVASTRO-112); 404 while VAPID keys are unset
+app.include_router(guest_checkout_router)  # /api/guest/*: buying without signing in (DIVASTRO-158)
 
 
 class InsufficientCredits(HTTPException):
@@ -165,6 +167,19 @@ def _queue_emailed(request: Request, user_id: int, session, question: str,
     if visitor:
         analytics.record_server_event("email_answer_queued", out["language"], visitor)
     return out
+
+
+def _starter_inline_fields(db, user, result: dict, question: str) -> None:
+    """DIVASTRO-157: what the app needs to put the Starter line under this answer.
+    offer_topic: the line's topic (billing.STARTER_INLINE_TOPICS), from the engine's
+    topic; starter_inline: whether this answer gets the line at all (a free answer and
+    the Starter still buyable; the guest answer while the Starter is on sale)."""
+    result["offer_topic"] = billing.starter_topic(result.get("topic"), question)
+    try:
+        result["starter_inline"] = billing.starter_inline(db, user)
+    except Exception as exc:                     # noqa: BLE001 — an offer never breaks an answer
+        logging.getLogger(__name__).warning("starter_inline: %s", exc)
+        result["starter_inline"] = False
 
 
 def _record_polished(log_id: int | None, text: str) -> None:
@@ -422,6 +437,7 @@ def ask(req: AskRequest, request: Request) -> dict:
                 result["fallback_note"] = note
 
         result["credits"] = _charge_and_log(db, user, question, result, req.birth_id)
+        _starter_inline_fields(db, user, result, question)
     return result
 
 
@@ -540,13 +556,16 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
     log_ids: list[int] = []
     if claim is None:
         with db_session() as db:
+            asker = db.get(User, user_id)
             result["credits"] = _charge_and_log(
-                db, db.get(User, user_id), question, result, req.birth_id, log_ids=log_ids)
+                db, asker, question, result, req.birth_id, log_ids=log_ids)
+            _starter_inline_fields(db, asker, result, question)
     else:
         # A guest's answer: no credit moves, no QuestionLog row (there is no account).
         # The app reads these to say "sign up to ask N more free questions".
         result["guest"] = True
         result["free_questions"] = billing.FREE_QUESTIONS
+        _starter_inline_fields(None, None, result, question)
         guest.record_answer(claim, result["answer"])
     log_id = log_ids[0] if log_ids else None
 
@@ -1097,6 +1116,30 @@ def pdf_life_book(sid: str, request: Request, lang: str = "en") -> Response:
     return _pdf_response(
         data, pdf_report.safe_filename(BRAND, "life-book", session.birth.name or "horoscope"))
 
+
+
+@app.get("/api/pdf/milan/{order_id}")
+def pdf_milan(order_id: int, request: Request, lang: str = "") -> Response:
+    """DIVASTRO-156: the detailed Kundali Milan report of a paid order, written from the
+    two people's birth details frozen on the order (no chart session involved). Only
+    the order's owner may download it; the same PDF is emailed to the order's address."""
+    from . import milan_report
+    from .db import Order, OrderStatus
+    with db_session() as db:
+        user = auth.require_user(request, db)
+        order = db.get(Order, order_id)
+        if order is None or order.user_id != user.id or order.sku != billing.MILAN_SKU:
+            raise HTTPException(404, "Order not found.")
+        if order.status != OrderStatus.paid:
+            raise HTTPException(402, "The Kundali Milan report requires purchase before downloading.")
+    try:
+        data = milan_report.order_pdf(order, _engine_lang(lang) if lang else None,
+                                      brand=BRAND, site=SITE_URL.split("://")[-1])
+    except milan_report.MilanDataError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
+    return _pdf_response(data, milan_report.filename(order))
 
 
 @app.get("/api/pdf/fonts")

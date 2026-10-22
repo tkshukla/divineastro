@@ -191,6 +191,12 @@ class Product:
         }
 
 
+# DIVASTRO-156: the Kundali Milan report (its own kind: it is bought for a PAIR of people,
+# with both birth details on the order, so no chart-based flow may pick it up by kind).
+MILAN_SKU = "milan_report"
+MILAN_KIND = "milan_report"
+
+
 # Regular prices, in paise: what the site charges after the offer. The
 # offer_paise given in each Product() below is the Diwali offer price.
 LIST_PRICES_PAISE = {
@@ -199,6 +205,8 @@ LIST_PRICES_PAISE = {
     "life_book": 89900, "k3": 19900, "k5": 59900, "k3q3": 199900,
     # DIVASTRO-155: not on the offer; this IS its only price (list == offer).
     "starter_email3": 2100,
+    # DIVASTRO-156: the Kundali Milan report; ~80% above its offer price, like the others.
+    "milan_report": 9100,
 }
 
 
@@ -267,6 +275,15 @@ PRODUCTS: dict[str, Product] = {p.sku: p for p in [
             f"Answers emailed within {EMAIL_ANSWER_DEADLINE_MIN} minutes. One-time offer for new accounts.",
             f"उत्तर {EMAIL_ANSWER_DEADLINE_MIN} मिनट के भीतर ईमेल पर। नए खातों के लिए एक बार का ऑफ़र।",
             on_offer=False),
+
+    # DIVASTRO-156: the detailed Kundali Milan report, sold under the match result. It is
+    # written for TWO people, whose birth details travel on the order (Order.order_data,
+    # see milan_report.py), not for a saved chart.
+    Product("milan_report", "Detailed Kundali Milan Report", "विस्तृत कुंडली मिलान रिपोर्ट",
+            5100, 0, MILAN_KIND,
+            "A PDF for two people, from both birth charts: the 8 kootas one by one with what each means, the total guna, Manglik dosh for both and whether it cancels, the key planetary links between the two charts and the classical wedding dates of the coming months.",
+            "दोनों की जन्म कुंडलियों से बनी PDF: आठों कूट एक-एक करके और हर कूट का अर्थ, कुल गुण, दोनों का मांगलिक दोष और उसका परिहार, दोनों कुंडलियों के मुख्य ग्रह-संबंध और आने वाले महीनों के शास्त्रीय विवाह मुहूर्त।",
+            pages=6),
 ]}
 
 
@@ -359,22 +376,118 @@ STARTER_REFUSALS = {
 
 
 # --------------------------------------------------------------------------
+# DIVASTRO-157: the Starter offered under a free answer, matched to its topic
+# --------------------------------------------------------------------------
+
+# The offer line has one sentence per topic (acct.starterInline_<topic> in the app's
+# i18n files). The engine's topic (interpret/topics.py, result["topic"]) picks it.
+STARTER_INLINE_TOPICS = ("marriage", "career", "money", "health", "timing", "general")
+_STARTER_TOPIC_FOR = {
+    "love": "marriage", "career": "career", "money": "money", "health": "health",
+    "timing": "timing", "period": "timing",
+}
+# A muhurat question is about choosing a time, whatever the engine routed it to
+# (a griha pravesh muhurat is routed to the home, a vivah muhurat to marriage).
+_MUHURAT_WORDS = ("muhurat", "muhurt", "mahurat", "मुहूर्त", "मुहुर्त", "महूरत")
+
+
+def starter_topic(engine_topic: str | None, question: str = "") -> str:
+    """The offer line's topic for an answer: one of STARTER_INLINE_TOPICS."""
+    q = (question or "").lower()
+    if any(w in q for w in _MUHURAT_WORDS):
+        return "timing"
+    return _STARTER_TOPIC_FOR.get(engine_topic or "", "general")
+
+
+def on_free_allowance(db: Session, user) -> bool:
+    """True while every instant question this account ever received was the sign-up
+    gift: no pack bought, nothing added by an admin (a manual order or a goodwill
+    top-up is treated as a paying customer's credit)."""
+    other = db.execute(
+        select(CreditEntry.id).where(
+            CreditEntry.user_id == user.id, CreditEntry.credit_type == CREDIT_QUESTION,
+            CreditEntry.delta > 0, CreditEntry.kind != EntryKind.signup_bonus).limit(1)
+    ).first()
+    return other is None
+
+
+def starter_inline(db: Session | None, user) -> bool:
+    """Should the answer just given carry the Starter line under it?
+
+    Signed out (user None, the guest answer): whenever the Starter is on sale; buying
+    starts with signing in. Signed in: the answer came from the free allowance and this
+    account may still buy the Starter (starter_status: not bought, no claim pending, an
+    email address to send to, on sale)."""
+    if user is None:
+        return starter_enabled()
+    if not starter_status(db, user)["available"]:
+        return False
+    return on_free_allowance(db, user)
+# Guest checkout (DIVASTRO-158): buying without signing in
+# --------------------------------------------------------------------------
+
+# The products a signed-out visitor may buy with only an email address (and
+# optionally a phone). Each must be deliverable to that address with no sign-in:
+# the Starter emails its answers. Adding a product is this one line, plus whatever
+# its delivery needs from the order (order_email(), Order.guest_json); see
+# app/guest_checkout.py for the flow and why it never signs anyone in.
+GUEST_CHECKOUT_SKUS: frozenset[str] = frozenset({"starter_email3"})
+
+
+def guest_checkout_skus() -> list[str]:
+    """The guest-purchasable skus currently on sale (the Starter can be switched off)."""
+    return sorted(s for s in GUEST_CHECKOUT_SKUS
+                  if s in PRODUCTS and (s != STARTER_SKU or starter_enabled()))
+
+
+def order_email(order: Order, user) -> str:
+    """Where an order's deliverables go: the address a guest typed at checkout, or
+    the account's own deliverable address for a signed-in order."""
+    return (order.guest_email or "").strip() or deliverable_email(user)
+
+
+# --------------------------------------------------------------------------
 # Order creation
 # --------------------------------------------------------------------------
 
 def create_order(db: Session, user, sku: str, birth_id: int | None = None,
                  coupon_code: str | None = None,
-                 report_topic: str | None = None) -> tuple[Order, dict]:
+                 report_topic: str | None = None,
+                 milan: dict | None = None, *,
+                 guest: dict | None = None, payer=None) -> tuple[Order, dict]:
     """Create the local order, then ask the active gateway to open a session.
 
     A coupon is priced here, once, and the result is frozen onto the order:
     the gateway is asked for exactly `amount_paise`, and `credits` already
     includes any extra_credits bonus. Editing the coupon afterwards therefore
     cannot change what an order in flight charges or pays out.
+
+    DIVASTRO-158: `guest` ({"email", "phone", "json"}) marks an order placed without
+    signing in (only for GUEST_CHECKOUT_SKUS, never with a coupon); `payer` is what
+    the gateway is shown instead of `user` (the typed email and phone, no name), so
+    nothing about an existing account reaches the checkout page. Price, amount and
+    the Starter's once-per-account rule are exactly the signed-in ones.
+    `milan` (DIVASTRO-156, the Kundali Milan report only, and required for it) is
+    {"groom": {...}, "bride": {...}, "lang": "en"}: both people's birth details as
+    the matching form posts them. They are checked (both charts must cast and
+    match) and frozen onto the order with the address the PDF is emailed to
+    (milan_report.order_data), so the report is written from the order alone.
     """
     product = PRODUCTS.get(sku)
     if product is None:
         raise ValueError(f"Unknown product '{sku}'")
+    if guest is not None:
+        if product.sku not in GUEST_CHECKOUT_SKUS:
+            raise ValueError("This product needs an account.")
+        if coupon_code and coupon_code.strip():
+            raise ValueError("Coupons cannot be used without signing in.")
+    order_data = ""
+    if product.sku == MILAN_SKU:
+        from . import milan_report
+        order_data = milan_report.order_data(
+            milan, email=((guest or {}).get("email") or "").strip() or deliverable_email(user))
+    elif milan:
+        raise ValueError("Birth details for two people are only taken for the Kundali Milan report.")
     if product.sku == STARTER_SKU:
         st = starter_status(db, user)
         if not st["available"]:
@@ -411,11 +524,16 @@ def create_order(db: Session, user, sku: str, birth_id: int | None = None,
         fulfilment=(FulfilStatus.pending if product.kind == "kundali"
                     else FulfilStatus.not_applicable),
         provider=gateway.key,
+        order_data=order_data,
     )
+    if guest is not None:
+        order.guest_email = (guest.get("email") or "")[:255] or None
+        order.guest_phone = (guest.get("phone") or "")[:20] or None
+        order.guest_json = guest.get("json") or None
     db.add(order)
     db.flush()   # assign order.id so the gateway receipt can reference it
 
-    checkout = gateway.create(order, user)
+    checkout = gateway.create(order, payer if payer is not None else user)
     db.commit()
     return order, checkout
 
@@ -465,6 +583,11 @@ def create_manual_order(db: Session, user, admin_user, *, sku: str,
         product = PRODUCTS.get(sku)
         if product is None:
             raise ValueError(f"Unknown product '{sku}'")
+        if product.sku == MILAN_SKU:
+            # It is written from two people's birth details, which only the site's
+            # matching form collects onto the order; an admin record would have none.
+            raise ValueError("The Kundali Milan report needs both people's birth details: "
+                             "it can only be bought through the matching tool.")
         title, credits, kind, list_price = (
             product.title, product.credits, product.kind, product.amount_paise)
 
@@ -543,6 +666,7 @@ def mark_paid(db: Session, order: Order, payment_id: str) -> tuple[bool, str]:
     if order.status == OrderStatus.paid and _already_granted(db, order):
         return False, "Payment already recorded."
 
+    first_paid = order.status != OrderStatus.paid
     order.status = OrderStatus.paid
     # Keep NULL rather than "" when a gateway gives us no payment id, so the
     # (provider, payment_id) uniqueness stays meaningful.
@@ -570,6 +694,20 @@ def mark_paid(db: Session, order: Order, payment_id: str) -> tuple[bool, str]:
             coupons.redeem(db, coupon, order.user_id, order, order.discount_paise)
 
     db.commit()
+    if first_paid and order.guest_email:
+        # DIVASTRO-158: a guest order just became paid (by whichever path: PayU's
+        # return, a webhook, the admin's UPI check). Best-effort: the buyer is emailed
+        # the link to their order; a mail failure must never undo a recorded payment.
+        try:
+            from . import guest_checkout
+            guest_checkout.on_paid(db, order)
+        except Exception:                          # noqa: BLE001
+            log.exception("guest order %s: after-payment step failed", order.id)
+    if order.sku == MILAN_SKU:
+        # DIVASTRO-156: email the PDF to the ORDER's address (in the background:
+        # building it takes seconds). Idempotent: an order already emailed is skipped.
+        from . import milan_report
+        milan_report.schedule_delivery(order.id)
     return True, "Payment recorded."
 
 

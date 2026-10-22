@@ -275,3 +275,18 @@ a.tool-card { text-decoration: none; }
   .deva-sub { font-size: 16px; margin-bottom: 6px; }
   .om { display: none; }
 }
+
+/* DIVASTRO-156: the ₹51 detailed Kundali Milan report, under the match result */
+.milan-rpt { margin: 16px 0 6px; border: 1px solid rgba(var(--gold-rgb), 0.45);
+             background: rgba(var(--gold-rgb), 0.07); }
+.milan-rpt .mr-head { margin: 0 0 6px; font-size: 15.5px; line-height: 1.5; }
+.milan-rpt .mr-head b { color: var(--gold-soft); }
+.milan-rpt .mr-price { white-space: nowrap; font-weight: 600; }
+.milan-rpt .mr-price s.was { margin-right: 6px; font-size: 0.85em; }
+.milan-rpt .save-badge { margin-left: 6px; }
+.milan-rpt .mr-how { margin: 0 0 10px; font-size: 13.5px; color: var(--ink-dim); line-height: 1.55; }
+.milan-rpt .mr-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.milan-rpt .mr-actions .buy-btn { width: auto; margin: 0; }
+.milan-rpt .mr-actions .pack-sample { display: inline-block; margin: 0; }
+.milan-rpt .mr-kept { margin: 10px 0 0; font-size: 12.5px; color: var(--ink-faint); }
+.milan-rpt .modal-error { margin: 8px 0 0; }

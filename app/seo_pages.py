@@ -900,6 +900,8 @@ def kundali_milan() -> HTMLResponse:
 
 
 def _kundali_milan_page(lang: str = EN) -> HTMLResponse:
+    from . import billing, milan_card, pricing_pages     # DIVASTRO-156: the report card
+    now = billing._now()
     hi = i18n.names(HI)
     rows = "".join(
         _tx("km.row", lang, name=_e(_koota_name(key, lang)), name_hi=_e(hi.KOOTA[key]),
@@ -914,6 +916,7 @@ def _kundali_milan_page(lang: str = EN) -> HTMLResponse:
     body = f"""
 {_tx("km.intro", lang, total=total)}
 {_cta("kundali-milan", _tx("km.cta1", lang), lang)}
+{milan_card.card(lang, "page", now)}
 {_tx("km.naam", lang, href=_prefix(lang) + "/naam-se-kundali-milan")}
 {_tx("km.kootas_h2", lang)}
 <div class="scroll"><table>{_tx("km.th", lang)}
@@ -927,8 +930,12 @@ def _kundali_milan_page(lang: str = EN) -> HTMLResponse:
 {_cta("kundali-milan", _tx("km.cta2", lang), lang)}
 {_tool_links(seo_cities.DEFAULT, "kundali-milan", lang)}"""
     path = _prefix(lang) + "/kundali-milan"
-    return _render(title=title, description=description, path=path, lang=lang,
+    resp = _render(title=title, description=description, path=path, lang=lang,
                    alt="/hi/kundali-milan", crumbs=[(_tx("km.crumb", lang), path)], body=body)
+    # The card prints the offer price: never cache it past the offer's end (as /pricing).
+    resp.headers["Cache-Control"] = pricing_pages._cache_control(
+        milan_card.offer(now), now, resp.headers["Cache-Control"])
+    return resp
 
 
 @router.get("/hi/kundali-milan", response_class=HTMLResponse)

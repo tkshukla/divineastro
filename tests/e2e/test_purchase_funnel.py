@@ -231,13 +231,13 @@ def store_layout(browser, base: str) -> None:
     pg.page.evaluate("openStore()")
     pg.page.wait_for_selector(".modal.store .pack")
     order = pg.page.eval_on_selector_all(".modal.store .store-sec", "els => els.map(e => e.dataset.sec)")
-    check("sections: reports, packs, Life Book, hand-written kundali, coupon",
-          order == ["single_question", "questions", "kundali_book", "kundali", "coupon"], str(order))
+    check("sections: reports, packs, Kundali Milan report, Life Book, hand-written kundali, coupon",
+          order == ["single_question", "questions", "milan_report", "kundali_book", "kundali", "coupon"], str(order))
     first_skus = pg.page.eval_on_selector_all(".modal.store .pack", "els => els.slice(0, 3).map(e => e.dataset.sku)")
     check("the three ₹111 reports come first",
           first_skus == ["sq_career", "sq_marriage_timing", "sq_wealth_business"], str(first_skus))
     state = pg.page.eval_on_selector_all(".modal.store .store-sec", "els => els.map(e => e.open)")
-    check("the first two sections are open, the rest folded", state == [True, True, False, False, False], str(state))
+    check("the first two sections are open, the rest folded", state == [True, True, False, False, False, False], str(state))
     m = pg.page.evaluate("""() => { const modal = document.querySelector('.modal');
         const top = modal.getBoundingClientRect().top;
         const end = (s) => document.querySelector('.store-sec[data-sec=' + s + ']').getBoundingClientRect().bottom - top + modal.scrollTop;

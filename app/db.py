@@ -476,6 +476,11 @@ class Order(Base):
     delivered_path: Mapped[str] = mapped_column(String(255), default="")
     birth_id: Mapped[int | None] = mapped_column(ForeignKey("birth_profiles.id"), nullable=True)
     report_topic: Mapped[str | None] = mapped_column(String(64), nullable=True, default=None)
+    # DIVASTRO-156: per-order data a product needs that is not a saved chart, as JSON
+    # text ("" when none). The Kundali Milan report keeps both people's birth details
+    # here, with the address its PDF is emailed to (milan_report.order_data). Personal
+    # data: only the order's owner (and the admin) can read it back.
+    order_data: Mapped[str] = mapped_column(Text, default="")
 
     # --- manual UPI collection -------------------------------------------
     # What the customer claims, and who checked it.
@@ -500,6 +505,17 @@ class Order(Base):
 
     created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     paid_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # --- guest checkout (DIVASTRO-158) -----------------------------------
+    # Set only on an order placed WITHOUT signing in (app/guest_checkout.py). The
+    # order still belongs to a user (the account that address already has, or a
+    # provider="guest" placeholder adopted on the first sign-in with it), but
+    # delivery goes to `guest_email`, the address the buyer typed. `guest_json`
+    # carries what the product needs after payment ({"birth": BirthData.to_dict(),
+    # "lang", "visitor"}); the birth is personal data and is dropped once used.
+    guest_email: Mapped[str | None] = mapped_column(String(255), nullable=True, default=None)
+    guest_phone: Mapped[str | None] = mapped_column(String(20), nullable=True, default=None)
+    guest_json: Mapped[str | None] = mapped_column(Text, nullable=True, default=None)
 
     __table_args__ = (
         # A gateway payment id may only ever be recorded once, so a replayed
@@ -610,6 +626,10 @@ class EmailedAnswerJob(Base):
     question_id: Mapped[int | None] = mapped_column(
         ForeignKey("questions.id", ondelete="SET NULL"), nullable=True, default=None)
     visitor: Mapped[str] = mapped_column(String(16), default="")      # analytics hash, or ""
+    # DIVASTRO-158: the guest order whose credit this question spent (entered with the
+    # order's token, not from the chat). NULL for a question asked in the app.
+    order_id: Mapped[int | None] = mapped_column(
+        ForeignKey("orders.id", ondelete="SET NULL"), nullable=True, default=None, index=True)
     created_at: Mapped[dt.datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, index=True)
     started_at: Mapped[dt.datetime | None] = mapped_column(

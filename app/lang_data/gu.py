@@ -468,6 +468,20 @@ SEO_TEXT = {
     "km.band2": "સારું",
     # EN: Excellent
     "km.band3": "ઉત્તમ",
+    # EN: Detailed matching report
+    "km.rpt.title": "વિગતવાર મિલન અહેવાલ",
+    # EN: guna by guna, Manglik dosh, compatibility
+    "km.rpt.sub": "ગુણવાર, મંગળ દોષ, સુસંગતતા",
+    # EN: A PDF for your two charts: the 8 kootas one by one, Manglik dosh for both, the key planetary links and the wedding dates of the coming months. Enter both birth details in the matching tool, see the score, then get the report.
+    "km.rpt.how": "તમારી બંને કુંડળીઓની PDF: આઠેય કૂટ એક પછી એક, બંનેનો મંગળ દોષ, મુખ્ય ગ્રહ-સંબંધો અને આવનારા મહિનાઓના લગ્ન મુહૂર્ત. મિલન સાધનમાં બંનેની જન્મ વિગતો ભરો, ગુણ જુઓ, પછી અહેવાલ લો.",
+    # EN: Get the detailed report
+    "km.rpt.btn": "વિગતવાર અહેવાલ લો",
+    # EN: See a sample
+    "km.rpt.sample": "નમૂનો જુઓ",
+    # EN: Regular price
+    "km.rpt.was": "નિયમિત કિંમત",
+    # EN: now
+    "km.rpt.now": "હવે",
 }
 
 # app/seo_text.py FAQ["gu"] — the seven free-kundali FAQ pairs (plain text)  [7]

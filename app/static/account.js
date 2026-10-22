@@ -78,6 +78,7 @@ async function loadAccount() {
     acct.astrologer = p.astrologer || "";
     acct.turnaround = p.turnaround_days || 10;
     acct.emailMinutes = p.email_answer_minutes || 30;     // DIVASTRO-155: the Starter's promise
+    acct.guestSkus = p.guest_checkout || [];               // DIVASTRO-158: buyable without signing in
   } catch { /* catalogue is optional for rendering the app */ }
 
   try {
@@ -108,6 +109,7 @@ async function loadAccount() {
 
   await resumeHostedCheckout();
   await resumePayuReturn();
+  resumeGuestLink();
   return acct.user;
 }
 
@@ -124,10 +126,17 @@ async function resumeHostedCheckout() {
 
   const orderId = Number(sessionStorage.getItem("da_pending_order") || 0);
   sessionStorage.removeItem("da_pending_order");
+  const guestToken = sessionStorage.getItem("da_pending_guest") || "";   // DIVASTRO-158
+  sessionStorage.removeItem("da_pending_guest");
 
   ["payment_id", "payment_request_id", "payment_status"].forEach((k) => params.delete(k));
   history.replaceState({}, "", location.pathname +
     (params.toString() ? `?${params}` : ""));
+
+  if (guestToken) {
+    await guestConfirm(guestToken, { payment_id: paymentId, payment_request_id: requestId });
+    return;
+  }
 
   try {
     await confirmPayment(orderId || null, {
@@ -147,11 +156,20 @@ async function resumePayuReturn() {
   if (!params.has("payu")) return;
   const ok = params.get("payu") === "ok";
   const orderId = Number(params.get("order") || 0);
+  // DIVASTRO-158: a guest order. The server adds its token only to a verified return of
+  // a paid order, so its presence is what opens the order page (a failed payment has
+  // none and ends with the usual "could not be confirmed").
+  const guestToken = params.get("gt") || "";
 
-  params.delete("payu"); params.delete("order");
+  params.delete("payu"); params.delete("order"); params.delete("gt");
   history.replaceState({}, "", location.pathname +
     (params.toString() ? `?${params}` : ""));
 
+  if (guestToken && !acct.user) {
+    if (ok) window.daTrack?.("paid", (guestParked(orderId) || {}).sku || "");
+    openGuestOrder(guestToken);
+    return;
+  }
   if (!ok) { toast(at("payFailed") || "Payment could not be confirmed.", true); return; }
 
   try {
@@ -303,12 +321,23 @@ function openSignIn(onDone, ctx) {
   const title = keepAsking ? at("signInKeepTitle").replace("{n}", acct.freeQuestions)
     : at(asking ? "signInAskTitle" : "signInTitle");
 
+  // DIVASTRO-158: after the free answer (or the sign-up card under it), the Starter can be
+  // bought right here with only an email address; signing in stays below as the alternative.
+  // Not before the visitor has read an answer: a first question is never met with a price.
+  const gp = (asking || ctx === "guest") && guestAnswerUsed() && state.sessionId
+    ? guestProduct(STARTER_SKU) : null;
+  const guestPay = gp ? `<div class="guest-pay-offer">
+      <p class="guest-pay-line"><b>${escapeHtml(at("starterTitle"))}</b> · ${money(gp.rupees)}</p>
+      <button type="button" class="primary" id="guest-pay-open">${escapeHtml(at("guestPayBtn")).replace("{price}", money(gp.rupees))}</button>
+    </div>
+    <p class="signin-or"><span>${escapeHtml(at("orDivider"))}</span></p>` : "";
   const emailBtn = emailOn ? `<button type="button" class="oauth-btn${asking ? " primary-choice" : ""}" id="email-open">
             ${PROVIDER_MARK.email}<span>${escapeHtml(at("emailContinue"))}</span></button>` : "";
   const back = modal(`
     <h2 class="modal-title">${escapeHtml(title)}</h2>
     <p class="modal-sub">${escapeHtml(at(asking ? "signInAskSub" : "signInSub"))}${freeLine}</p>
     <div id="signin-choices">
+      ${guestPay}
       <div class="oauth-list" id="oauth-list">
         ${asking ? emailBtn : ""}
         ${buttons}
@@ -395,6 +424,11 @@ function openSignIn(onDone, ctx) {
   const errBox = back.querySelector(".modal-error");
   const showErr = (msg) => { errBox.textContent = authErr(msg) || at("signInFailed"); errBox.hidden = false; };
   const choices = back.querySelector("#signin-choices");
+  const gpBtn = back.querySelector("#guest-pay-open");
+  if (gpBtn) {
+    window.daTrack?.("starter_shown", "guest");
+    gpBtn.onclick = () => openGuestCheckout(STARTER_SKU, { onSignIn: () => openSignIn(onDone, ctx) });
+  }
 
   back.querySelectorAll(".oauth-btn[data-provider]").forEach((b) => {
     b.onclick = async () => {
@@ -693,7 +727,8 @@ async function refreshProducts() {
 /* DIVASTRO-151: the four reports that are written by the engine have a free sample PDF
    (/samples/<sku>.pdf, Hindi with ?lang=hi). The hand-written kundali products do not,
    and are not listed here: no automatic sample can exist for them. */
-const SAMPLE_SKUS = new Set(["sq_career", "sq_marriage_timing", "sq_wealth_business", "life_book"]);
+const SAMPLE_SKUS = new Set(["sq_career", "sq_marriage_timing", "sq_wealth_business", "life_book",
+  "milan_report"]);
 const sampleHref = (sku) => `/samples/${sku}.pdf${state.lang === "hi" ? "?lang=hi" : ""}`;
 
 /* ---------- DIVASTRO-155: the Starter (3 detailed answers by email, once per account) ----------
@@ -708,6 +743,7 @@ const starterText = (key) => at(key).replace("{minutes}", acct.emailMinutes || 3
 
 /* After paying for the Starter: what they now have and what happens next. */
 function showStarterBought(n) {
+  document.querySelectorAll("#thread .starter-inline").forEach((e) => e.remove());
   const back = modal(`<h2 class="modal-title">${escapeHtml(at("starterBoughtTitle"))}</h2>
     <p class="modal-sub starter-bought">${escapeHtml(starterText("starterBought").replace("{n}", n || 3))}</p>
     <button type="button" class="primary" id="starter-ok">${escapeHtml(at("gotIt"))}</button>`);
@@ -759,6 +795,7 @@ function renderQueuedAnswer(data) {
 
 function packCard(p) {
   if (p.kind === "email_answers") return starterCard(p);
+  if (p.kind === MILAN_SKU) return milanStoreCard(p);
   const cp = couponFor(p.sku);
   const applied = !!acct.coupon;
 
@@ -838,21 +875,25 @@ function focusStoreProduct(back, sku) {
   card.scrollIntoView({ block: "center" });
 }
 
-function openStore(outOfCredits = false, focusSku = null) {
-  if (!acct.user) return openSignIn(() => openStore(outOfCredits, focusSku));
+function openStore(outOfCredits = false, focusSku = null, from = null) {
+  // DIVASTRO-158: a product sold without signing in opens its guest checkout instead.
+  if (!acct.user && focusSku && guestProduct(focusSku)) return openGuestCheckout(focusSku);
+  if (!acct.user) return openSignIn(() => openStore(outOfCredits, focusSku, from));
   window.daTrack?.("store_open", outOfCredits ? "credits" : "browse");
   acct.coupon = null;
   acct.storeFocus = focusSku || null;
   const packs = acct.products.filter((p) => p.kind === "questions");
   const singleReports = acct.products.filter((p) => p.kind === "single_question");
   const lifeBooks = acct.products.filter((p) => p.kind === "kundali_book");
+  const milanReports = acct.products.filter((p) => p.kind === MILAN_SKU);      // DIVASTRO-156
   const kundalis = acct.products.filter((p) => p.kind === "kundali");
   // DIVASTRO-155: the Starter is offered once the free/instant questions are used up (the
   // paywall, or the store opened at 0 left), and leads the sheet then; also when the
   // one-question-left nudge opens the store at it. Otherwise the store is unchanged.
   const outNow = outOfCredits || !(acct.user.credits > 0);
   const starter = outNow || focusSku === STARTER_SKU ? starterOffer() : null;
-  const starterCtx = outOfCredits ? "paywall" : focusSku === STARTER_SKU ? "nudge" : "store";
+  // `from` "inline": opened by the Starter line under a free answer (DIVASTRO-157).
+  const starterCtx = outOfCredits ? "paywall" : focusSku === STARTER_SKU ? (from || "nudge") : "store";
 
   // The three ₹111 reports are the easiest first purchase, so they come first;
   // then the question packs, the Life Book and the hand-written kundali. The first
@@ -861,6 +902,8 @@ function openStore(outOfCredits = false, focusSku = null) {
     { kind: "single_question", items: singleReports, title: at("singleQuestionTitle"),
       sub: at("singleQuestionSub"), open: true },
     { kind: "questions", items: packs, title: at("packsTitle"), sub: "", open: true },
+    { kind: MILAN_SKU, items: milanReports, title: at("milanRptSection"), sub: "",
+      open: focusSku === MILAN_SKU || !!window.daMilanPair },
     { kind: "kundali_book", items: lifeBooks, title: at("lifeBookTitle"),
       sub: at("lifeBookSub"), open: false },
     { kind: "kundali", items: kundalis, title: at("kundaliTitle"),
@@ -915,6 +958,16 @@ function openStore(outOfCredits = false, focusSku = null) {
     back.querySelectorAll(".buy-btn").forEach((b) => {
       b.onclick = () => {
         if (b.dataset.sku === STARTER_SKU) window.daTrack?.("starter_click", starterCtx);
+        if (b.dataset.sku === MILAN_SKU) {
+          window.daTrack?.("milan_report_click", "store");
+          // DIVASTRO-156: no match on screen, so nothing to write the report for yet: go and match.
+          if (b.dataset.open === "milan" || !window.daMilanPair) {
+            closeModal();
+            if (typeof showStage === "function") showStage("stage-milan");
+            return;
+          }
+          return startCheckout(MILAN_SKU, back, { milan: window.daMilanPair });
+        }
         startCheckout(b.dataset.sku, back);
       };
     });
@@ -974,8 +1027,9 @@ function openStore(outOfCredits = false, focusSku = null) {
 
   repaint();
   if (focusSku) focusStoreProduct(back, focusSku);
-  // (Opened from the nudge: that card already reported starter_shown "nudge".)
-  if (starter && starterCtx !== "nudge") window.daTrack?.("starter_shown", starterCtx);
+  // (Opened from the nudge: that card already reported starter_shown "nudge"; from the
+  // line under an answer: that one reported starter_inline_shown.)
+  if (starter && starterCtx !== "nudge" && starterCtx !== "inline") window.daTrack?.("starter_shown", starterCtx);
 
   // DIVASTRO-152: read the catalogue again with the server's clock. A page left open past the end
   // of the offer then shows the regular prices (what checkout charges) instead of the stale ones.
@@ -988,7 +1042,7 @@ function openStore(outOfCredits = false, focusSku = null) {
   });
 }
 
-async function startCheckout(sku, back) {
+async function startCheckout(sku, back, extra = null) {
   const err = back.querySelector(".modal-error");
   const buttons = back.querySelectorAll(".buy-btn");
   buttons.forEach((b) => { b.disabled = true; });
@@ -996,7 +1050,7 @@ async function startCheckout(sku, back) {
 
   // Only send the code for a sku it is actually valid on — the server
   // re-validates regardless and would reject the order outright.
-  const body = { sku };
+  const body = { sku, ...(extra || {}) };
   if (couponFor(sku)) body.coupon_code = acct.coupon.code;
 
   try {
@@ -1084,7 +1138,7 @@ async function openCashfree(orderId, c) {
 /* Manual UPI. There is no gateway and no callback: the customer pays into the
    VPA, tells us the UTR, and a human matches it against the bank statement.
    Submitting the reference grants nothing — the admin panel does. */
-function openUpiInstructions(orderId, c, back) {
+function openUpiInstructions(orderId, c, back, claim = null) {
   const body = back.querySelector(".modal") || back;
   body.innerHTML = `
     <button class="modal-x" aria-label="${escapeHtml(at("close"))}">&times;</button>
@@ -1123,12 +1177,14 @@ function openUpiInstructions(orderId, c, back) {
     const btn = ev.target.querySelector("button");
     btn.disabled = true;
     try {
-      const res = await fetch("/api/orders/upi-claim", {
+      const utr = body.querySelector("#utr-last5").value;
+      // DIVASTRO-158: a guest order claims with its token instead of the session.
+      const res = claim ? await claim(utr) : await fetch("/api/orders/upi-claim", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order_id: orderId, utr_last5: body.querySelector("#utr-last5").value }),
+        body: JSON.stringify({ order_id: orderId, utr_last5: utr }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || at("upiFailed"));
+      if (!res.ok) throw new Error((data.detail && data.detail.message) || data.detail || at("upiFailed"));
       closeModal();
       toast(at("upiThanks"));
     } catch (ex) {
@@ -1237,7 +1293,9 @@ async function confirmPayment(orderId, payload) {
    person can read and a Try again button, never a blank JSON page. */
 
 const REPORT_SKUS = ["sq_career", "sq_marriage_timing", "sq_wealth_business", "life_book"];
-const isReportSku = (sku) => REPORT_SKUS.includes(sku);
+/* DIVASTRO-156: the Kundali Milan report is delivered too, but from the ORDER (both people's
+   birth details are on it), not from a chart: see the milan block below. */
+const isReportSku = (sku) => REPORT_SKUS.includes(sku) || sku === MILAN_SKU;
 /* The server prints reports in English or Hindi; any other app language gets the
    English one, and the panel says so. */
 const reportLangFor = (lang) => (lang === "hi" ? "hi" : "en");
@@ -1393,6 +1451,7 @@ function mountReportDownload(host, sku, { autostart = false } = {}) {
 /* Right after a purchase of a report or the Life Book. */
 async function showReportReady(order) {
   if (!order || !isReportSku(order.sku)) return;
+  if (order.sku === MILAN_SKU) return showMilanReady(order);
   if (acct.user && !(state.births || []).length) { try { await loadSavedCharts(); } catch { /* none saved */ } }
   const p = productBySku(order.sku);
   const title = p ? loc(p, "title") : order.title;
@@ -1404,6 +1463,138 @@ async function showReportReady(order) {
     </div>`);
   window.daTrack?.("report_ready", order.sku);
   mountReportDownload(back.querySelector(".rpt-host"), order.sku);
+  back.querySelector(".rpt-orders-link").onclick = () => { closeModal(); openOrders(); };
+}
+
+/* ---------- DIVASTRO-156: the detailed Kundali Milan report (₹51) ----------
+   Sold under a match result (tools.js calls mountMilanReport with the two people exactly as the
+   matching form posted them). The order carries both birth details, so the PDF is written from
+   the ORDER: /api/pdf/milan/<order id>?lang=, any time, from My orders; it is also emailed to the
+   order's address. Price, struck list price and Save N% come from /api/products only. */
+const MILAN_SKU = "milan_report";
+
+/* The two people of the match on screen ({groom, bride, lang}) or null. Set by mountMilanReport. */
+window.daMilanPair = window.daMilanPair || null;
+
+function milanPairLabel(pair) {
+  const n = [pair?.groom?.name, pair?.bride?.name].map((x) => (x || "").trim()).filter(Boolean);
+  return n.join(" & ");
+}
+
+/* The report in the store: it can only be bought for a match, so with none on screen its Buy
+   button takes the person to Kundali Milan (data-open), where the card under the result sells it. */
+function milanStoreCard(p) {
+  const focus = acct.storeFocus === p.sku;
+  const pair = window.daMilanPair;
+  const who = milanPairLabel(pair);
+  const action = pair
+    ? `${who ? `<p class="pack-unit mr-for">${escapeHtml(at("milanRptForPair").replace("{pair}", who))}</p>` : ""}
+       <button class="primary buy-btn" data-sku="${p.sku}">${escapeHtml(at("buy"))} ${money(p.rupees)}</button>`
+    : `<p class="pack-unit mr-for">${escapeHtml(at("milanRptStore"))}</p>
+       <button class="primary buy-btn" data-sku="${p.sku}" data-open="milan"
+         title="${escapeHtml(at("milanRptOpen"))}">${escapeHtml(at("buy"))} ${money(p.rupees)}</button>`;
+  return `<div class="pack milan-pack${focus ? " focus" : ""}${offerOn(p) ? " has-offer" : ""}" data-sku="${p.sku}">
+    <h4>${escapeHtml(loc(p, "title"))}</h4>
+    <div class="pack-price"><span class="pp-line">${priceHtml(p)}</span>${saveBadge(p)}</div>
+    <p class="pack-blurb">${escapeHtml(loc(p, "blurb"))}</p>
+    ${action}
+    <a class="pack-sample" href="${sampleHref(p.sku)}" target="_blank" rel="noopener"
+      data-sample="${p.sku}" title="${escapeHtml(at("sampleNote"))}">${escapeHtml(at("sampleView"))}</a>
+  </div>`;
+}
+
+/* The card under the match result: "Detailed matching report — guna by guna, Manglik dosh,
+   compatibility — ₹51" (struck list price while the offer is live), a sample link, and Buy. */
+async function mountMilanReport(host, pair) {
+  if (!host || !pair) return;
+  window.daMilanPair = pair;
+  if (!productBySku(MILAN_SKU)) await refreshProducts();
+  const p = productBySku(MILAN_SKU);
+  if (!p || !host.isConnected) return;
+  const mail = acct.user && acct.user.email_deliverable && acct.user.email
+    ? ` ${at("milanRptMail").replace("{email}", acct.user.email)}` : "";
+  host.innerHTML = `<div class="card milan-rpt" data-sku="${MILAN_SKU}">
+      <p class="mr-head"><b>${escapeHtml(at("milanRptTitle"))}</b> — ${escapeHtml(at("milanRptSub"))} —
+        <span class="mr-price">${priceHtml(p)}</span>${saveBadge(p)}</p>
+      <p class="mr-how">${escapeHtml(at("milanRptHow"))}</p>
+      <div class="mr-actions">
+        <button type="button" class="primary buy-btn" data-sku="${MILAN_SKU}">${escapeHtml(at("milanRptBuy"))} ${money(p.rupees)}</button>
+        <a class="pack-sample" href="${sampleHref(MILAN_SKU)}" target="_blank" rel="noopener"
+          data-sample="${MILAN_SKU}" title="${escapeHtml(at("sampleNote"))}">${escapeHtml(at("sampleView"))}</a>
+      </div>
+      <p class="mr-kept">${escapeHtml(at("milanRptKept") + mail)}</p>
+      <p class="modal-error" hidden></p>
+    </div>`;
+  const card = host.querySelector(".milan-rpt");
+  window.daTrack?.("milan_report_shown", "app");
+  card.querySelector(".buy-btn").onclick = () => {
+    window.daTrack?.("milan_report_click", "app");
+    const go = () => startCheckout(MILAN_SKU, card, { milan: pair });
+    if (!acct.user) return openSignIn(go, "milan_report");
+    go();
+  };
+}
+window.mountMilanReport = mountMilanReport;
+
+/* Fetch the report of one paid order and hand it to the browser: {ok} or {ok: false, message}. */
+async function downloadMilan(orderId, lang) {
+  let res;
+  try { res = await fetch(`/api/pdf/milan/${encodeURIComponent(orderId)}?lang=${encodeURIComponent(lang)}`); }
+  catch { return { ok: false, message: at("rptNetwork") }; }
+  if (!res.ok) {
+    window.daTrack?.("report_download_failed", `${MILAN_SKU}:${res.status}`);
+    return { ok: false, status: res.status, message: reportErrorText(res.status) };
+  }
+  const blob = await res.blob();
+  const m = /filename="?([^";]+)"?/i.exec(res.headers.get("Content-Disposition") || "");
+  saveBlob(blob, m ? m[1] : "kundali-milan-report.pdf");
+  window.daTrack?.("report_downloaded", MILAN_SKU);
+  return { ok: true };
+}
+
+/* English / हिन्दी and one Download PDF button for one order. */
+function mountMilanDownload(host, orderId, { autostart = false } = {}) {
+  if (!host) return;
+  let lang = reportLangFor(state.lang);
+  host.classList.add("rpt-panel");
+  host.dataset.sku = MILAN_SKU;
+  const note = !["en", "hi"].includes(state.lang) ? `<p class="rpt-note">${escapeHtml(at("rptOnlyEnHi"))}</p>` : "";
+  host.innerHTML = `${note}<div class="rpt-langs" role="group" aria-label="${escapeHtml(at("rptLangLabel"))}">
+      ${["en", "hi"].map((c) => `<button type="button" class="ghost-btn rpt-lang" data-lang="${c}"
+        aria-pressed="${c === lang}" lang="${c}">${c === "en" ? "English" : "हिन्दी"}</button>`).join("")}
+    </div>
+    <div class="rpt-row"><button type="button" class="offer-go rpt-dl">${escapeHtml(at("rptDownload"))}</button></div>
+    <p class="rpt-msg" role="status" aria-live="polite" hidden></p>`;
+  const msg = host.querySelector(".rpt-msg");
+  const btn = host.querySelector(".rpt-dl");
+  host.querySelectorAll(".rpt-lang").forEach((b) => {
+    b.onclick = () => { lang = b.dataset.lang; host.querySelectorAll(".rpt-lang").forEach(
+      (x) => x.setAttribute("aria-pressed", String(x === b))); };
+  });
+  const run = async () => {
+    btn.disabled = true; msg.hidden = false; msg.classList.remove("rpt-bad"); msg.textContent = at("rptWorking");
+    const out = await downloadMilan(orderId, lang);
+    btn.disabled = false;
+    msg.classList.toggle("rpt-bad", !out.ok);
+    msg.textContent = out.ok ? at("rptDone") : out.message;
+    if (!out.ok) btn.textContent = at("rptRetry");
+  };
+  btn.onclick = run;
+  if (autostart) run();
+}
+
+/* Right after paying for it. */
+function showMilanReady(order) {
+  const p = productBySku(MILAN_SKU);
+  const title = p ? loc(p, "title") : order.title;
+  const back = modal(`<div class="rpt-ready" data-sku="${MILAN_SKU}">
+      <h2 class="modal-title rpt-ready-title">${escapeHtml(at("rptReadyTitle").replace("{title}", title))}</h2>
+      <p class="modal-sub">${escapeHtml(at("milanRptReady"))}${order.pair ? ` <b>${escapeHtml(order.pair)}</b>` : ""}</p>
+      <div class="rpt-host"></div>
+      <p class="rpt-orders"><button type="button" class="ghost-btn rpt-orders-link">${escapeHtml(at("orders"))}</button></p>
+    </div>`);
+  window.daTrack?.("report_ready", MILAN_SKU);
+  mountMilanDownload(back.querySelector(".rpt-host"), order.id);
   back.querySelector(".rpt-orders-link").onclick = () => { closeModal(); openOrders(); };
 }
 
@@ -1512,13 +1703,16 @@ async function openOrders() {
   if (acct.user && !(state.births || []).length) { try { await loadSavedCharts(); } catch { /* none saved */ } }
   const rowHtml = (o) => {
     const p = productBySku(o.sku);
-    const title = p ? loc(p, "title") : o.title;
+    const title = (p ? loc(p, "title") : o.title) + (o.pair ? ` · ${o.pair}` : "");
     const paid = o.status === "paid";
     const hand = o.fulfilment !== "not_applicable";      // a hand-written kundali: an astrologer fulfils it
     const meta = [escapeHtml(o.created_at), escapeHtml(statusText(o.status))];
     let extra = "";
     if (paid && hand) {
       extra = `<div class="hist-meta ord-hand">${escapeHtml(at("orderHandNote").replace("{status}", statusText(o.fulfilment)))}</div>`;
+    } else if (paid && o.sku === MILAN_SKU) {
+      extra = `<button type="button" class="offer-go ord-milan">${escapeHtml(at("rptDownload"))}</button>
+        <div class="ord-host"></div>`;
     } else if (paid && isReportSku(o.sku)) {
       extra = `<button type="button" class="offer-go ord-dl">${escapeHtml(at("rptDownload"))}</button>
         <div class="ord-host"></div>`;
@@ -1531,6 +1725,8 @@ async function openOrders() {
   const back = modal(`<h2 class="modal-title">${escapeHtml(at("orders"))}</h2>
     <div class="hist">${orders.length ? orders.map(rowHtml).join("") : "<p class='modal-sub'>—</p>"}</div>`);
   back.querySelectorAll(".ord-row").forEach((row) => {
+    const mb = row.querySelector(".ord-milan");
+    if (mb) mb.onclick = () => mountMilanDownload(row.querySelector(".ord-host"), Number(row.dataset.order), { autostart: true });
     const btn = row.querySelector(".ord-dl");
     if (!btn) return;
     // Only the chart already on screen is used without asking; any other case
@@ -1817,6 +2013,8 @@ const offerAllowed = () => !!acct.user && acct.user.credits > 0;
    matches the topic of the question. */
 async function maybeOfferAfterAnswer(result, bubble) {
   try {
+    // DIVASTRO-157: a free answer carries the Starter line, and then nothing else.
+    if (starterInlineAfterAnswer(result, bubble)) return;
     if (!offerAllowed() || !bubble) return;
     const msg = bubble.closest(".msg") || bubble;
     let card = null;
@@ -1854,6 +2052,51 @@ async function maybeOfferAfterAnswer(result, bubble) {
     msg.after(card);
     if (typeof scrollThread === "function") scrollThread();
   } catch (ex) { console.warn("offer:", ex); }
+}
+
+/* ---------- DIVASTRO-157: the Starter under a free answer ----------
+   One compact line under every answer from the free allowance (and under the guest
+   answer), in the words of that question's topic: "Want the full picture on your
+   marriage timing? Get 3 detailed answers by email for ₹21." The server decides when
+   it is due (result.starter_inline: a free answer, the Starter still buyable) and the
+   topic (result.offer_topic, from the engine's routing). Only one is ever on screen:
+   the previous one goes whenever a new answer arrives. Tapping it opens the same
+   store the other Starter offers open (sign-in first when signed out). */
+const STARTER_INLINE_TOPICS = ["marriage", "career", "money", "health", "timing", "general"];
+
+function starterInlineAfterAnswer(result, bubble) {
+  document.querySelectorAll("#thread .starter-inline").forEach((e) => e.remove());
+  try {
+    if (!result || !result.starter_inline || !bubble) return false;
+    const p = productBySku(STARTER_SKU);
+    if (!p) return false;
+    // Bought (or claimed) in this page since the answer was written: not again.
+    if (acct.user && !(acct.user.starter && acct.user.starter.available)) return false;
+    const topic = STARTER_INLINE_TOPICS.includes(result.offer_topic) ? result.offer_topic : "general";
+    const msg = bubble.closest(".msg") || bubble;
+    if (!msg.isConnected) return false;
+    const el = document.createElement("div");
+    el.className = "offer-card starter-inline";
+    el.setAttribute("role", "note");
+    el.dataset.offer = "starter_inline";
+    el.dataset.topic = topic;
+    const text = escapeHtml(at(`starterInline_${topic}`)).replace("{price}", () => `<b>${money(p.rupees)}</b>`);
+    el.innerHTML = `<p class="offer-text">${text}</p>
+      <button type="button" class="offer-go">${escapeHtml(at("offerStarterBtn"))}</button>
+      <button type="button" class="offer-x" aria-label="${escapeHtml(at("close"))}">&times;</button>`;
+    el.querySelector(".offer-go").onclick = () => {
+      window.daTrack?.("starter_inline_click", topic);
+      el.remove();
+      openStore(false, STARTER_SKU, "inline");
+    };
+    el.querySelector(".offer-x").onclick = () => el.remove();
+    // Under the answer, or under the guest's sign-up line when there is one.
+    const after = msg.nextElementSibling?.classList.contains("guest-cta") ? msg.nextElementSibling : msg;
+    after.after(el);
+    window.daTrack?.("starter_inline_shown", topic);
+    if (typeof scrollThread === "function") scrollThread();
+    return true;
+  } catch (ex) { console.warn("starter line:", ex); return false; }
 }
 
 /* After a chart is cast and the dashboard opens: one line about the Life Book. */
@@ -2005,6 +2248,7 @@ function guestAfterAnswer(result, bubble, question, text) {
     <button type="button" class="offer-go">${escapeHtml(at("guestSignUp"))}</button>`;
   el.querySelector(".offer-go").onclick = () => openSignIn(null, "guest");
   msg.after(el);
+  starterInlineAfterAnswer(result, bubble);      // DIVASTRO-157: under the sign-up line
   if (typeof scrollThread === "function") scrollThread();
 }
 
@@ -2042,6 +2286,266 @@ function handleAskRejection(status, detail, question) {
     return true;
   }
   return false;
+}
+
+/* ---------- DIVASTRO-158: buying without signing in ----------
+   A product in /api/products guest_checkout (the Starter) can be paid for with only an
+   email address. The server (app/guest_checkout.py) attaches the order to the account
+   that address already has, or keeps it under that address until the first sign-in
+   with it, and never signs anyone in. After payment the order is reached with its
+   signed token (never its id): this tab keeps it for the PayU round trip, PayU's
+   verified return carries it, and the buyer is emailed a link with it (?gt=...). */
+const GUEST_PARK = "da_guest_order";        // sessionStorage: {token, orderId, sku, q}
+const GUEST_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+function guestProduct(sku) {
+  if (acct.user || !(acct.guestSkus || []).includes(sku)) return null;
+  return productBySku(sku) || null;
+}
+
+function guestParked(orderId) {
+  try {
+    const v = JSON.parse(sessionStorage.getItem(GUEST_PARK) || "null");
+    return v && (!orderId || v.orderId === orderId) ? v : null;
+  } catch { return null; }
+}
+
+/* The server answers {detail: {code, message}}; the code is worded here. */
+function guestErrText(detail) {
+  const code = detail && typeof detail === "object" ? detail.code : "";
+  const words = {
+    email: at("guestErrEmail"), typo: at("guestErrTypo").replace("{s}", (detail && detail.s) || ""),
+    phone: at("guestErrPhone"), rate: at("guestErrRate"), refused: at("guestErrRefused"),
+    unavailable: at("guestErrUnavailable"), gateway: at("guestErrGateway"), chart: at("guestNeedChart"),
+    token: at("guestErrToken"), used: at("guestErrUsed"), too_long: at("guestErrTooLong"),
+    no_questions: at("guestErrNoQuestions"),
+  };
+  return words[code] || (typeof detail === "string" ? detail : at("guestErrGeneric"));
+}
+
+async function guestPost(url, body) {
+  const res = await fetch(url, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+  });
+  let data = {};
+  try { data = await res.json(); } catch { /* not JSON */ }
+  if (!res.ok) throw new Error(guestErrText(data.detail));
+  return data;
+}
+
+/* The sheet: email (required), phone (optional), pay; "Sign in instead" below. */
+function openGuestCheckout(sku, { onSignIn = null } = {}) {
+  const p = guestProduct(sku);
+  if (!p) return openSignIn();
+  window.daTrack?.("starter_click", "guest");
+  const legal = escapeHtml(at("legalLine"))
+    .replace("{terms}", `<a href="/terms" target="_blank" rel="noopener">${escapeHtml(at("terms"))}</a>`)
+    .replace("{privacy}", `<a href="/privacy" target="_blank" rel="noopener">${escapeHtml(at("privacy"))}</a>`);
+  const needChart = p.kind === "email_answers" && !state.sessionId;
+  const back = modal(`
+    <h2 class="modal-title">${escapeHtml(at("starterTitle"))}</h2>
+    <p class="modal-sub">${escapeHtml(starterText("starterSub"))} <b>${money(p.rupees)}</b></p>
+    ${acct.live ? "" : `<p class="test-banner">${escapeHtml(at("testMode"))}</p>`}
+    ${needChart ? `<p class="modal-sub">${escapeHtml(at("guestNeedChart"))}</p>
+      <button type="button" class="primary" id="gp-chart">${escapeHtml(at("guestMakeChart"))}</button>` : `
+    <form id="gp-form" novalidate>
+      <div class="field">
+        <label for="gp-email">${escapeHtml(at("emailLabel"))}</label>
+        <input id="gp-email" type="email" inputmode="email" autocomplete="email" required
+               autocapitalize="off" spellcheck="false" maxlength="128" placeholder="${escapeHtml(at("emailPlaceholder"))}" />
+      </div>
+      <p class="field-note">${escapeHtml(at("guestEmailHint"))}</p>
+      <div class="field">
+        <label for="gp-phone">${escapeHtml(at("guestPhoneLabel"))}</label>
+        <input id="gp-phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" />
+      </div>
+      <button type="submit" class="primary" id="gp-pay">${escapeHtml(at("guestPayBtn")).replace("{price}", money(p.rupees))}</button>
+      <p class="modal-error" hidden></p>
+    </form>`}
+    <p class="signin-or"><span>${escapeHtml(at("orDivider"))}</span></p>
+    <button type="button" class="ghost-btn guest-signin" id="gp-signin">${escapeHtml(at("guestSignInInstead"))}</button>
+    <p class="legal-line">${legal}</p>`);
+  back.querySelector(".modal").classList.add("guest-pay");
+  back.querySelector("#gp-signin").onclick = () => (onSignIn ? onSignIn() : openSignIn(null, "guest_pay"));
+  const chartBtn = back.querySelector("#gp-chart");
+  if (chartBtn) {
+    chartBtn.onclick = () => { closeModal(); if (typeof showStage === "function") showStage("stage-birth"); };
+    return back;
+  }
+  const form = back.querySelector("#gp-form");
+  const err = form.querySelector(".modal-error");
+  const pay = form.querySelector("#gp-pay");
+  const showErr = (m) => { err.textContent = m; err.hidden = false; };
+  form.onsubmit = async (ev) => {
+    ev.preventDefault();
+    err.hidden = true;
+    const email = form.querySelector("#gp-email").value.trim();
+    const phone = form.querySelector("#gp-phone").value.trim();
+    if (!GUEST_EMAIL_RE.test(email)) { showErr(at("guestErrEmail")); form.querySelector("#gp-email").focus(); return; }
+    if (phone && !/^\+?[0-9\s\-()]{7,20}$/.test(phone)) { showErr(at("guestErrPhone")); return; }
+    pay.disabled = true;
+    try {
+      const data = await guestPost("/api/guest/checkout", {
+        sku, email, phone, session_id: state.sessionId || "", lang: state.lang,
+      });
+      try {
+        sessionStorage.setItem(GUEST_PARK, JSON.stringify({
+          token: data.token, orderId: data.order.id, sku, q: acct.pendingQuestion || "" }));
+      } catch { /* private mode: PayU's return still carries the token */ }
+      window.daTrack?.("checkout_start", sku);
+      await guestPay(data, back);
+    } catch (ex) {
+      showErr(ex.message);
+      pay.disabled = false;
+    }
+  };
+  setTimeout(() => form.querySelector("#gp-email")?.focus(), 50);
+  return back;
+}
+
+/* Open the gateway for a guest order (the same modes as startCheckout). */
+async function guestPay(data, back) {
+  const c = data.checkout;
+  const token = data.token;
+  if (c.mode === "test") return guestConfirm(token, {});
+  if (c.mode === "razorpay") {
+    await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+    return new Promise((resolve) => {
+      const rz = new window.Razorpay({
+        key: c.key_id, amount: c.amount, currency: c.currency, name: "Divine Astro",
+        order_id: c.order_id, prefill: c.prefill, theme: { color: "#f0c674" },
+        handler: async (resp) => { await guestConfirm(token, resp); resolve(); },
+        modal: { ondismiss: () => resolve() },
+      });
+      rz.on("payment.failed", () => toast(at("payFailed"), true));
+      rz.open();
+    });
+  }
+  if (c.mode === "cashfree") {
+    await loadScript("https://sdk.cashfree.com/js/v3/cashfree.js");
+    const cf = window.Cashfree({ mode: c.sandbox ? "sandbox" : "production" });
+    await cf.checkout({ paymentSessionId: c.payment_session_id, redirectTarget: "_modal" });
+    return guestConfirm(token, { order_id: c.order_id });
+  }
+  if (c.mode === "payu") { openPayu(c); return; }      // PayU's return lands back on /?payu=...&gt=...
+  if (c.mode === "instamojo") {
+    sessionStorage.setItem("da_pending_guest", token);
+    location.assign(c.url);
+    return;
+  }
+  if (c.mode === "upi_manual") {
+    return openUpiInstructions(data.order.id, c, back,
+      (utr) => fetch("/api/guest/upi-claim", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, utr_last5: utr }),
+      }));
+  }
+  throw new Error(at("guestErrGateway"));
+}
+
+async function guestConfirm(token, payload) {
+  try {
+    const data = await guestPost("/api/guest/confirm", { token, payload });
+    if (data.paid) window.daTrack?.("paid", (data.order && data.order.sku) || "");
+    openGuestOrder(token, data);
+  } catch (ex) { toast(ex.message, true); }
+}
+
+/* The emailed link (/?gt=<token>) opens the order page. */
+function resumeGuestLink() {
+  const params = new URLSearchParams(location.search);
+  const token = params.get("gt");
+  if (!token) return;
+  params.delete("gt");
+  history.replaceState({}, "", location.pathname + (params.toString() ? `?${params}` : ""));
+  openGuestOrder(token);
+}
+
+/* The order page: payment status, then the questions (up to the number bought) and how
+   each one is getting on. Only this order is ever shown; the answers go by email. */
+async function openGuestOrder(token, data = null, polls = 0) {
+  if (!data) {
+    try { data = await guestPost("/api/guest/order", { token }); }
+    catch (ex) { toast(ex.message, true); return; }
+  }
+  const parked = guestParked(data.order && data.order.id) || {};
+  const email = data.email || "";
+  const mins = data.minutes || acct.emailMinutes || 30;
+  const left = data.questions_left || 0;
+  const asked = data.questions || [];
+  const emailHtml = `<b class="q-email">${escapeHtml(email)}</b>`;
+  const fill = (key) => escapeHtml(at(key)).replace("{n}", left).replace("{minutes}", mins)
+    .replace("{email}", () => emailHtml);
+  const statusOf = (q) => (q.status === "done" ? at("histEmailDone").replace("{time}", localTime(q.delivered))
+    : q.status === "failed" ? at("guestQFailed")
+      : at("histEmailPending").replace("{time}", localTime(q.due)));
+  const fields = [];
+  for (let i = 0; i < left; i++) {
+    fields.push(`<div class="field">
+      <label for="gq-${i}">${escapeHtml(at("guestQLabel")).replace("{i}", i + 1)}</label>
+      <textarea id="gq-${i}" class="gq" rows="2" maxlength="1000"
+        placeholder="${escapeHtml(at("guestQPlaceholder"))}">${i === 0 && !asked.length ? escapeHtml(parked.q || "") : ""}</textarea>
+    </div>`);
+  }
+  const body = !data.paid ? `
+      <h2 class="modal-title">${escapeHtml(at("guestWaitingTitle"))}</h2>
+      <p class="modal-sub" role="status">${fill("guestWaiting")}</p>
+      <button type="button" class="primary" id="gq-refresh">${escapeHtml(at("guestRefresh"))}</button>`
+    : `
+      <h2 class="modal-title">${escapeHtml(at(left ? "guestPaidTitle" : "guestSentTitle"))}</h2>
+      <p class="modal-sub" role="status">${fill(left ? "guestPaidSub" : "guestSent")}</p>
+      ${data.chart && data.chart.name ? `<p class="field-note">${escapeHtml(at("guestChart")).replace("{name}", escapeHtml(data.chart.name))}</p>` : ""}
+      ${asked.length ? `<ol class="guest-asked">${asked.map((q) => `<li><span class="gq-text">${escapeHtml(q.question)}</span>
+        <span class="gq-status">${escapeHtml(statusOf(q))}</span></li>`).join("")}</ol>` : ""}
+      ${left ? `<form id="gq-form">${fields.join("")}
+        <button type="submit" class="primary" id="gq-send">${escapeHtml(at("guestSend"))}</button>
+        <p class="modal-error" hidden></p></form>` : ""}
+      <p class="field-note">${escapeHtml(at("guestLinkNote"))}</p>
+      <p class="field-note guest-keep">${fill("guestKeep")}</p>
+      <button type="button" class="ghost-btn guest-signin" id="gq-signin">${escapeHtml(at("signIn"))}</button>`;
+  const back = modal(body);
+  back.querySelector(".modal").classList.add("guest-order");
+  const refresh = back.querySelector("#gq-refresh");
+  if (refresh) refresh.onclick = () => openGuestOrder(token);
+  const signin = back.querySelector("#gq-signin");
+  if (signin) signin.onclick = () => openSignIn(null, "guest_order");
+  const form = back.querySelector("#gq-form");
+  if (form) {
+    const err = form.querySelector(".modal-error");
+    form.onsubmit = async (ev) => {
+      ev.preventDefault();
+      err.hidden = true;
+      const questions = [...form.querySelectorAll(".gq")].map((t) => t.value.trim()).filter(Boolean);
+      if (!questions.length) { err.textContent = at("guestErrNoQuestions"); err.hidden = false; return; }
+      const btn = form.querySelector("#gq-send");
+      btn.disabled = true;
+      try {
+        const fresh = await guestPost("/api/guest/questions", { token, questions, lang: state.lang });
+        acct.pendingQuestion = null;
+        // The question the sign-in sheet parked is asked now: never again after a sign-in.
+        if (typeof takeParkedQuestion === "function") takeParkedQuestion();
+        try {
+          const v = guestParked();
+          if (v) { v.q = ""; sessionStorage.setItem(GUEST_PARK, JSON.stringify(v)); }
+        } catch { /* ignore */ }
+        openGuestOrder(token, fresh);
+      } catch (ex) {
+        err.textContent = ex.message; err.hidden = false;
+        btn.disabled = false;
+      }
+    };
+  }
+  // Still being confirmed (a webhook or the UPI check settles it): look again shortly.
+  if (!data.paid && data.pending && polls < 24) {
+    setTimeout(async () => {
+      if (!back.isConnected) return;
+      try {
+        const fresh = await guestPost("/api/guest/order", { token });
+        if (back.isConnected) openGuestOrder(token, fresh, polls + 1);
+      } catch { /* the button still works */ }
+    }, 5000);
+  }
+  return back;
 }
 
 loadAccount();

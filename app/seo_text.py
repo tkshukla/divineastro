@@ -2167,6 +2167,82 @@ TEXT: dict[str, dict[str, str]] = {
 TEXT["en"].update({f"km.band{i}": b[1].capitalize() for i, b in enumerate(matching.SCORE_BANDS)})
 TEXT["hi"].update({f"km.band{i}": b[1] for i, b in enumerate(matching.SCORE_BANDS_HI)})
 
+# DIVASTRO-156: the ₹51 Kundali Milan report card (milan_card.py) on /kundali-milan and
+# under a /naam-se-kundali-milan result. Plain text (escaped by the code). The price is
+# not here: it is the catalogue's. pa/ne/as/mr/gu: app/lang_data/<code>.py SEO_TEXT.
+TEXT["en"].update({
+    "km.rpt.title": "Detailed matching report",
+    "km.rpt.sub": "guna by guna, Manglik dosh, compatibility",
+    "km.rpt.how": "A PDF for your two charts: the 8 kootas one by one, Manglik dosh for both, the key planetary links and the wedding dates of the coming months. Enter both birth details in the matching tool, see the score, then get the report.",
+    "km.rpt.btn": "Get the detailed report",
+    "km.rpt.sample": "See a sample",
+    "km.rpt.was": "Regular price",
+    "km.rpt.now": "now",
+})
+TEXT["hi"].update({
+    "km.rpt.title": "विस्तृत मिलान रिपोर्ट",
+    "km.rpt.sub": "गुण-दर-गुण, मांगलिक दोष, अनुकूलता",
+    "km.rpt.how": "आपकी दोनों कुंडलियों की PDF: आठों कूट एक-एक करके, दोनों का मांगलिक दोष, मुख्य ग्रह-संबंध और आने वाले महीनों के विवाह मुहूर्त। मिलान टूल में दोनों के जन्म विवरण भरें, गुण देखें, फिर रिपोर्ट लें।",
+    "km.rpt.btn": "विस्तृत रिपोर्ट लें",
+    "km.rpt.sample": "नमूना देखें",
+    "km.rpt.was": "सामान्य कीमत",
+    "km.rpt.now": "अब",
+})
+TEXT["kn"].update({
+    "km.rpt.title": "ವಿವರವಾದ ಹೊಂದಾಣಿಕೆ ವರದಿ",
+    "km.rpt.sub": "ಗುಣದಿಂದ ಗುಣಕ್ಕೆ, ಕುಜ ದೋಷ, ಹೊಂದಾಣಿಕೆ",
+    "km.rpt.how": "ನಿಮ್ಮ ಎರಡು ಜಾತಕಗಳ PDF: ಎಂಟು ಕೂಟಗಳು ಒಂದೊಂದಾಗಿ, ಇಬ್ಬರ ಕುಜ ದೋಷ, ಮುಖ್ಯ ಗ್ರಹ ಸಂಬಂಧಗಳು ಮತ್ತು ಮುಂದಿನ ತಿಂಗಳುಗಳ ವಿವಾಹ ಮುಹೂರ್ತಗಳು. ಹೊಂದಾಣಿಕೆ ಉಪಕರಣದಲ್ಲಿ ಇಬ್ಬರ ಜನ್ಮ ವಿವರಗಳನ್ನು ನಮೂದಿಸಿ, ಅಂಕ ನೋಡಿ, ನಂತರ ವರದಿ ಪಡೆಯಿರಿ.",
+    "km.rpt.btn": "ವಿವರವಾದ ವರದಿ ಪಡೆಯಿರಿ",
+    "km.rpt.sample": "ಮಾದರಿ ನೋಡಿ",
+    "km.rpt.was": "ಸಾಮಾನ್ಯ ಬೆಲೆ",
+    "km.rpt.now": "ಈಗ",
+})
+TEXT["te"].update({
+    "km.rpt.title": "వివరమైన పొంతన నివేదిక",
+    "km.rpt.sub": "గుణం వారీగా, కుజ దోషం, అనుకూలత",
+    "km.rpt.how": "మీ ఇద్దరి జాతకాల PDF: ఎనిమిది కూటాలు ఒక్కొక్కటిగా, ఇద్దరి కుజ దోషం, ముఖ్య గ్రహ సంబంధాలు మరియు రాబోయే నెలల వివాహ ముహూర్తాలు. పొంతన సాధనంలో ఇద్దరి జనన వివరాలు నమోదు చేసి, స్కోరు చూసి, ఆపై నివేదిక పొందండి.",
+    "km.rpt.btn": "వివరమైన నివేదిక పొందండి",
+    "km.rpt.sample": "నమూనా చూడండి",
+    "km.rpt.was": "సాధారణ ధర",
+    "km.rpt.now": "ఇప్పుడు",
+})
+TEXT["ta"].update({
+    "km.rpt.title": "விரிவான பொருத்த அறிக்கை",
+    "km.rpt.sub": "குணம் குணமாக, செவ்வாய் தோஷம், பொருத்தம்",
+    "km.rpt.how": "உங்கள் இருவரின் ஜாதகங்களுக்கான PDF: எட்டு கூடங்களும் ஒவ்வொன்றாக, இருவரின் செவ்வாய் தோஷம், முக்கிய கிரக உறவுகள், வரும் மாதங்களின் திருமண முகூர்த்தங்கள். பொருத்தக் கருவியில் இருவரின் பிறப்பு விவரங்களையும் உள்ளிட்டு, மதிப்பெண்ணைப் பார்த்து, பிறகு அறிக்கையைப் பெறுங்கள்.",
+    "km.rpt.btn": "விரிவான அறிக்கையைப் பெறுக",
+    "km.rpt.sample": "மாதிரியைப் பார்க்க",
+    "km.rpt.was": "வழக்கமான விலை",
+    "km.rpt.now": "இப்போது",
+})
+TEXT["ml"].update({
+    "km.rpt.title": "വിശദമായ പൊരുത്ത റിപ്പോർട്ട്",
+    "km.rpt.sub": "ഗുണം ഗുണമായി, ചൊവ്വാദോഷം, പൊരുത്തം",
+    "km.rpt.how": "നിങ്ങളുടെ രണ്ട് ജാതകങ്ങൾക്കുള്ള PDF: എട്ട് കൂടങ്ങൾ ഓരോന്നായി, ഇരുവരുടെയും ചൊവ്വാദോഷം, പ്രധാന ഗ്രഹബന്ധങ്ങൾ, വരുന്ന മാസങ്ങളിലെ വിവാഹ മുഹൂർത്തങ്ങൾ. പൊരുത്ത ഉപകരണത്തിൽ ഇരുവരുടെയും ജനന വിവരങ്ങൾ നൽകി, സ്കോർ കണ്ട്, തുടർന്ന് റിപ്പോർട്ട് നേടൂ.",
+    "km.rpt.btn": "വിശദമായ റിപ്പോർട്ട് നേടൂ",
+    "km.rpt.sample": "മാതൃക കാണുക",
+    "km.rpt.was": "സാധാരണ വില",
+    "km.rpt.now": "ഇപ്പോൾ",
+})
+TEXT["bn"].update({
+    "km.rpt.title": "বিস্তারিত যোটক রিপোর্ট",
+    "km.rpt.sub": "গুণ ধরে ধরে, মাঙ্গলিক দোষ, সামঞ্জস্য",
+    "km.rpt.how": "আপনাদের দুজনের কুষ্ঠির PDF: আটটি কূট একে একে, দুজনেরই মাঙ্গলিক দোষ, প্রধান গ্রহ-সম্পর্ক এবং আগামী মাসগুলির বিবাহের শুভ দিন। যোটক বিচারের টুলে দুজনের জন্মের বিবরণ দিন, গুণ দেখুন, তারপর রিপোর্ট নিন।",
+    "km.rpt.btn": "বিস্তারিত রিপোর্ট নিন",
+    "km.rpt.sample": "নমুনা দেখুন",
+    "km.rpt.was": "নিয়মিত দাম",
+    "km.rpt.now": "এখন",
+})
+TEXT["or"].update({
+    "km.rpt.title": "ବିସ୍ତୃତ ମିଳନ ରିପୋର୍ଟ",
+    "km.rpt.sub": "ଗୁଣ ପରେ ଗୁଣ, ମାଙ୍ଗଳିକ ଦୋଷ, ସାମଞ୍ଜସ୍ୟ",
+    "km.rpt.how": "ଆପଣଙ୍କ ଦୁଇଟି କୁଣ୍ଡଳୀର PDF: ଆଠଟି କୂଟ ଗୋଟି ଗୋଟି କରି, ଦୁହିଁଙ୍କ ମାଙ୍ଗଳିକ ଦୋଷ, ମୁଖ୍ୟ ଗ୍ରହ ସମ୍ପର୍କ ଏବଂ ଆଗାମୀ ମାସଗୁଡ଼ିକର ବିବାହ ମୁହୂର୍ତ୍ତ। ମିଳନ ଟୁଲରେ ଦୁହିଁଙ୍କ ଜନ୍ମ ବିବରଣୀ ଦିଅନ୍ତୁ, ଗୁଣ ଦେଖନ୍ତୁ, ତା'ପରେ ରିପୋର୍ଟ ନିଅନ୍ତୁ।",
+    "km.rpt.btn": "ବିସ୍ତୃତ ରିପୋର୍ଟ ନିଅନ୍ତୁ",
+    "km.rpt.sample": "ନମୁନା ଦେଖନ୍ତୁ",
+    "km.rpt.was": "ସାଧାରଣ ମୂଲ୍ୟ",
+    "km.rpt.now": "ବର୍ତ୍ତମାନ",
+})
+
 # The free-kundali FAQ: (question, answer) pairs, plain text. Shown on the page
 # and marked up as FAQPage JSON-LD from this one list.
 FAQ: dict[str, tuple[tuple[str, str], ...]] = {

@@ -489,7 +489,24 @@ EVENT_NAMES = frozenset({
     "starter_click",   # ...and its buy button was tapped (same detail)
     "email_answer_queued",     # a question was queued for an emailed answer
     "email_answer_delivered",  # ...and its answer was emailed
+    # DIVASTRO-157: the Starter line under a free answer (detail: its topic, one of
+    # marriage, career, money, health, timing, general)
+    "starter_inline_shown",
+    "starter_inline_click",
+    # DIVASTRO-158: buying without signing in, both recorded by the server (detail: the sku)
+    "guest_checkout_start",    # a signed-out visitor opened a payment with their email
+    "guest_checkout_paid",     # ...and that guest order was paid
+    # DIVASTRO-156: the ₹51 Kundali Milan report card under a match result
+    # (detail: "app" the in-app matching screen, "page" /kundali-milan, "naam"
+    # a /naam-se-kundali-milan result; a click may also be "store", the store)
+    "milan_report_shown",      # the card was shown
+    "milan_report_click",      # ...and its button was tapped (same detail)
 })
+
+# users.signup_source values that are not a sign-up on the site: a customer an admin
+# recorded by hand, and the placeholder account a guest checkout makes (DIVASTRO-158;
+# it becomes a sign-up, with its real source, when its owner first signs in).
+NOT_SIGNUPS = ("manual", "guest_checkout")
 MAX_EVENT_BYTES = 512
 
 
@@ -718,9 +735,15 @@ APP_FUNNEL = (   # (label, event name, detail or None)
     ("Asked the AI a question", "ask_sent", None),
     ("Saw the prices", "pricing_view", None),
     ("Tapped an in-app offer", "offer_click", None),
+    ("Saw the Starter under a free answer", "starter_inline_shown", None),
+    ("Tapped the Starter under a free answer", "starter_inline_click", None),
+    ("Saw the Kundali Milan report offer", "milan_report_shown", None),     # DIVASTRO-156
+    ("Tapped the Kundali Milan report", "milan_report_click", None),
     ("Opened the store", "store_open", None),
     ("Started checkout", "checkout_start", None),
     ("Paid", "paid", None),
+    ("Started checkout without signing in", "guest_checkout_start", None),   # DIVASTRO-158
+    ("Paid without signing in", "guest_checkout_paid", None),
 )
 
 
@@ -839,8 +862,42 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("starter_click", "store"): "Tapped Buy on the Starter in the store",
     ("starter_click", "paywall"): "Tapped Buy on the Starter when out of questions",
     ("starter_click", "nudge"): "Tapped Buy on the Starter after the one-question-left offer",
+    ("starter_click", "inline"): "Tapped Buy on the Starter after the line under a free answer",
+    # DIVASTRO-157: the Starter line under a free answer, by the question's topic
+    ("starter_inline_shown", ""): "Saw the Starter line under a free answer",
+    ("starter_inline_shown", "marriage"): "Saw the Starter line under a free answer (marriage)",
+    ("starter_inline_shown", "career"): "Saw the Starter line under a free answer (career)",
+    ("starter_inline_shown", "money"): "Saw the Starter line under a free answer (money)",
+    ("starter_inline_shown", "health"): "Saw the Starter line under a free answer (health)",
+    ("starter_inline_shown", "timing"): "Saw the Starter line under a free answer (timing / muhurat)",
+    ("starter_inline_shown", "general"): "Saw the Starter line under a free answer (general)",
+    ("starter_inline_click", ""): "Tapped the Starter line under a free answer",
+    ("starter_inline_click", "marriage"): "Tapped the Starter line under a free answer (marriage)",
+    ("starter_inline_click", "career"): "Tapped the Starter line under a free answer (career)",
+    ("starter_inline_click", "money"): "Tapped the Starter line under a free answer (money)",
+    ("starter_inline_click", "health"): "Tapped the Starter line under a free answer (health)",
+    ("starter_inline_click", "timing"): "Tapped the Starter line under a free answer (timing / muhurat)",
+    ("starter_inline_click", "general"): "Tapped the Starter line under a free answer (general)",
+    ("starter_shown", "guest"): "Starter offered without signing in (sign-in sheet)",
+    ("starter_click", "guest"): "Opened the Starter's pay-without-signing-in sheet",
     ("email_answer_queued", ""): "Asked a question to be answered by email",
     ("email_answer_delivered", ""): "An emailed answer was delivered",
+    # DIVASTRO-158: buying without signing in
+    ("guest_checkout_start", ""): "Started paying without signing in",
+    ("guest_checkout_start", "starter_email3"): "Started paying for the Starter without signing in",
+    ("guest_checkout_paid", ""): "Paid without signing in",
+    ("guest_checkout_paid", "starter_email3"): "Paid for the Starter without signing in",
+    # DIVASTRO-156: the Kundali Milan report (₹51) under a match result
+    ("milan_report_shown", ""): "The Kundali Milan report was offered",
+    ("milan_report_shown", "app"): "Kundali Milan report offered under an in-app match",
+    ("milan_report_shown", "page"): "Kundali Milan report offered on /kundali-milan",
+    ("milan_report_shown", "naam"): "Kundali Milan report offered under a naam milan result",
+    ("milan_report_click", ""): "Tapped the Kundali Milan report",
+    ("milan_report_click", "app"): "Tapped Buy on the Kundali Milan report under an in-app match",
+    ("milan_report_click", "page"): "Tapped the Kundali Milan report on /kundali-milan",
+    ("milan_report_click", "naam"): "Tapped the Kundali Milan report under a naam milan result",
+    ("milan_report_click", "store"): "Tapped the Kundali Milan report in the store",
+    ("sample_view", "milan_report"): "Opened the sample Kundali Milan report",
 }
 
 
@@ -869,7 +926,7 @@ def day_report(db: Session, day: dt.date, now: dt.datetime | None = None) -> dic
     users = db.execute(
         select(User.created_at).where(
             User.created_at >= t_start, User.created_at < end,
-            or_(User.signup_source.is_(None), User.signup_source != "manual"))).all()
+            or_(User.signup_source.is_(None), User.signup_source.notin_(NOT_SIGNUPS)))).all()
 
     per_day_visitors: dict[dt.date, set] = defaultdict(set)
     per_day_views: Counter = Counter()
@@ -957,7 +1014,7 @@ def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict
     users = db.execute(
         select(User.created_at, User.signup_source, User.signup_campaign, User.provider)
         .where(User.created_at >= start_utc,
-               or_(User.signup_source.is_(None), User.signup_source != "manual"))).all()
+               or_(User.signup_source.is_(None), User.signup_source.notin_(NOT_SIGNUPS)))).all()
 
     pageviews: Counter = Counter()
     per_day_visitors: dict[dt.date, set] = defaultdict(set)
@@ -1030,7 +1087,7 @@ def summary(db: Session, days: int = 30, now: dt.datetime | None = None) -> dict
     live_now = db.execute(select(func.count(func.distinct(Visit.visitor)))
                           .where(Visit.ts >= live_cut)).scalar_one() or 0
     users_total = db.execute(select(func.count(User.id)).where(
-        or_(User.signup_source.is_(None), User.signup_source != "manual"))).scalar_one() or 0
+        or_(User.signup_source.is_(None), User.signup_source.notin_(NOT_SIGNUPS)))).scalar_one() or 0
 
     return {
         "range": {"days": n, "from": daily[0]["date"], "to": daily[-1]["date"], "tz": "Asia/Kolkata"},

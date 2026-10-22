@@ -28,7 +28,8 @@ from tests.e2e.harness import DESKTOPS, Checker, Page, server  # noqa: E402
 check = Checker()
 PHONE = {"viewport": {"width": 390, "height": 844}, "is_mobile": True, "has_touch": True,
          "device_scale_factor": 2}
-SAMPLED = ["sq_career", "sq_marriage_timing", "sq_wealth_business", "life_book"]
+SAMPLED = ["sq_career", "sq_marriage_timing", "sq_wealth_business", "life_book",
+           "milan_report"]                       # DIVASTRO-156
 HAND_WRITTEN = ["k3", "k5", "k3q3"]
 SHOTS = os.environ.get("SAMPLES_SHOT_DIR")
 
@@ -135,7 +136,7 @@ def store(browser, base: str) -> None:
               and "noopener" in a.get_attribute("rel") and a.get_attribute("href") == f"/samples/{sku}.pdf")
     for sku in ["q10", "q50", "q100", *HAND_WRITTEN]:
         check(f"{sku}: no sample link", pg.page.locator(f'.modal.store .pack[data-sku="{sku}"] a[data-sample]').count() == 0)
-    check("exactly four sample links in the store", pg.page.locator(".modal.store a[data-sample]").count() == 4)
+    check("exactly five sample links in the store", pg.page.locator(".modal.store a[data-sample]").count() == 5)
     r, body = fetch_pdf(pg, "/samples/life_book.pdf", base)
     check("the Life Book sample is a PDF", r.ok and body.startswith(b"%PDF-"), str(r.status))
     check("no console errors", not pg.console_errors, "; ".join(pg.console_errors[:3]))

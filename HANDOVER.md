@@ -219,6 +219,33 @@ property returning the effective price, so every old reader keeps working.
   can get one more answer the next day; the global caps bound the cost.
   Tests: `tests/test_guest_answer.py`, `tests/e2e/test_guest_answer.py`.
 
+## Kundali Milan report (DIVASTRO-156)
+
+**What it is.** A ₹51 PDF (Diwali offer; ₹91 list, `billing.MILAN_SKU = milan_report`,
+kind `milan_report`) for TWO people: the 8 kootas one by one with what each measures,
+the total and its band, Manglik dosh for both and the pair verdict (cancelled when both
+are Manglik), both D1 charts and the key placements / lord friendships, and the vivah
+dates of the next 15 months (the /muhurat/vivah engine, New Delhi). Written by the rule
+engine only (`app/milan_report.py`), no model, English or Hindi.
+
+**Where it is sold.** A card under the in-app match result (`account.js
+mountMilanReport`, called by `tools.js renderMilan`), the store (with no match on
+screen its button opens Kundali Milan), /pricing, and a card on the public
+/kundali-milan pages and under a /naam-se-kundali-milan result (`app/milan_card.py`,
+words `seo_text` `km.rpt.*`; its button opens the app's matching tool). Sample:
+/samples/milan_report.pdf (a fictional pair, `sample_reports.DEMO_PAIR`).
+
+**Data and delivery.** `/api/orders {sku: "milan_report", milan: {groom, bride, lang}}`
+checks both people (both charts must cast and match) and freezes them on
+`orders.order_data` (JSON text, migration `f4b6d8e0a2c3`) with the address the PDF goes
+to (`milan_report.order_email`: a per-order `email` column, if one is added for guest
+checkout, wins). On payment (`billing.mark_paid`) the PDF is built in a background
+thread and emailed to that address once (`order_data.emailed_at`); it is always
+downloadable by the owner from My orders (`GET /api/pdf/milan/<order id>?lang=`).
+An admin manual sale of it is refused (no birth details). Events:
+`milan_report_shown` / `milan_report_click` (detail `app`, `page`, `naam`; a click also `store`).
+Tests: `tests/test_milan_report.py`, `tests/e2e/test_milan_report.py`.
+
 ## Starter: emailed answers (DIVASTRO-155)
 
 **What the customer gets.** When the free (instant) questions run out, the paywall
@@ -321,6 +348,42 @@ Anthropic. To stop selling while fixing: `ASTRO_STARTER_ENABLED=0` and redeploy.
 
 Tests: `tests/test_emailed_answers.py` (fake Ollama `tests/fake_ollama.py` + fake
 `anthropic`), `tests/e2e/test_starter_email.py`.
+
+## Buying without signing in (DIVASTRO-158)
+
+A signed-out visitor can pay for a product in `billing.GUEST_CHECKOUT_SKUS` (today only
+the Starter) with an email address and an optional phone: "Pay ₹21 with UPI / card —
+no sign-in needed" in the sign-in sheet that the question after the free answer opens,
+and wherever the app calls `openStore(…, STARTER_SKU)` for a signed-out visitor. The
+whole design and its security reasoning are in `app/guest_checkout.py`'s docstring; in
+short:
+
+* **Order → user.** The order is credited to the account that address already has
+  (Google/Apple/dev, email-code, manual, or an earlier guest order), else to a
+  placeholder `users` row (`provider="guest"`, `signup_source="guest_checkout"`, no
+  password, never signed in to, not counted as a sign-up). The first email-code or
+  Google/Apple sign-in with that address adopts it (welcome questions and the sign-up
+  recorded then); a Microsoft sign-in does not. Nothing is ever signed in and nothing
+  of an existing account is shown; a refusal (Starter already bought, suspended) is one
+  generic sentence.
+* **Money.** Same `billing.create_order` (price frozen on the order, once per account),
+  same PayU return with its amount check, same webhook and `mark_paid`. The gateway sees
+  the typed address and phone, never the account's name. New columns `orders.guest_email`,
+  `guest_phone`, `guest_json` and `emailed_answer_jobs.order_id` (migration `f3b5d7e9a1c4`).
+* **The questions.** The checkout carries the chart the guest cast (birth details from
+  the server's own chart session). After payment the buyer types the 3 questions on an
+  order page reached by a signed token (`?gt=…`, 60 days): in the checkout reply, on
+  PayU's verified return, and emailed to the buyer once paid (any path: return, webhook,
+  the admin's UPI check). Each question is an ordinary emailed-answer job to the
+  order's address; the page shows statuses, never answer text.
+* **Limits.** 10 checkouts an hour per IP (IPv6 /64), 5 an hour and 10 a day per address.
+* **Analytics.** `guest_checkout_start` / `guest_checkout_paid` (server-side, detail = sku),
+  in the app funnel.
+* **Another product** (e.g. a PDF report): add its sku to `GUEST_CHECKOUT_SKUS` and deliver
+  to `billing.order_email(order, user)`; `guest_checkout.on_paid` only emails the
+  questions link for `email_answers` products.
+
+Tests: `tests/test_guest_checkout.py`, `tests/e2e/test_guest_checkout.py`.
 
 ## Working notes
 
