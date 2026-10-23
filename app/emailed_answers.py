@@ -335,7 +335,7 @@ def _analyse(job: EmailedAnswerJob) -> dict:
     instant answer gets (main.ask_stream): analyse() + the Vedic context."""
     from .chart_service import BirthData, build
     from .interpret import analyse
-    from .main import _engine_lang, _vedic_context
+    from .main import _about_person, _engine_lang, _vedic_context
 
     birth = BirthData(**json.loads(job.birth_json))
     session = build(birth)
@@ -346,7 +346,7 @@ def _analyse(job: EmailedAnswerJob) -> dict:
     result = analyse(session, job.question, when, language=_engine_lang(job.language)).to_dict()
     result["vedic"] = _vedic_context(session)
     result["answer_engine"] = result["answer"]
-    result["birth_date"] = birth.date
+    result.update(_about_person(session, when))       # birth_date (also read below), as_of
     return result
 
 

@@ -449,6 +449,10 @@ def part4_worker() -> None:
           and len(CLAUDE["streams"]) == 1 and not CLAUDE["translations"]
           and "Hindi" in CLAUDE["streams"][0]["system"], f"{j.model_used} {j.route_reason}")
     check("...and it is emailed", len(mails_to("down@example.com")) == 1)
+    # DIVASTRO-161: the emailed answer's prompt knows the asker's age too.
+    user_turn = CLAUDE["streams"][0]["messages"][0]["content"] if CLAUDE["streams"] else ""
+    check("...and its prompt carries the asker's age",
+          re.search(r"they are \d+ years old", user_turn) is not None, user_turn[:300])
 
     # Ollama errors mid-call -> Claude.
     reset_claude()

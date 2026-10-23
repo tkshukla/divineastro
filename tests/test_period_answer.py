@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import os
 import random
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -163,6 +164,10 @@ def main() -> int:
               f"{before} -> {after}")
         check("the prompt the model saw carries the window facts",
               seen_prompts and "Date-window evidence" in seen_prompts[-1])
+        # DIVASTRO-161: main.ask_stream hands the narration the asker's birth date.
+        check("the prompt the model saw carries the asker's age",
+              seen_prompts and re.search(r"they are \d+ years old", seen_prompts[-1]) is not None,
+              seen_prompts[-1][:300] if seen_prompts else "no prompt")
 
         print("\n5. A failed rewrite leaves the engine text in the log")
         q2 = "how is october for me"
