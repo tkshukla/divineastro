@@ -904,7 +904,7 @@
     });
     // DIVASTRO-162: the Kundali Milan names are optional too; same words as the birth form.
     qa('.milan-card [data-f="name"]').forEach((el) => {
-      el.placeholder = tr('nameOptPh', 'Optional — a nickname is fine');
+      el.placeholder = tr('nameOptPh', 'Nickname is fine');
     });
     qa('#mu-event option').forEach((o) => {
       if (MU_EVENTS[o.value]) o.textContent = tr(MU_EVENTS[o.value], o.textContent);

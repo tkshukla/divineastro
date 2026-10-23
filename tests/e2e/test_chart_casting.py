@@ -164,7 +164,7 @@ def name_field_is_optional(p, browser, base: str) -> None:
     ctx.close()
 
 
-NAME_PH_EN = "Optional — a nickname is fine"
+NAME_PH_EN = "Nickname is fine"
 NAME_HINT_EN = ("Not needed for the reading — date, time and place are enough. "
                 "Leave it blank to stay anonymous.")
 
