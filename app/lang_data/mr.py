@@ -563,7 +563,7 @@ CHROME = {
     "disclaimer": "ज्योतिषीय भविष्य मार्गदर्शन आणि मनोरंजनासाठी दिले आहे. तो वैद्यकीय, कायदेशीर किंवा आर्थिक सल्ला नाही.",
 }
 
-# app/stay_strip.py TEXT["mr"] — the 'Stay in touch' strip at the foot of the pages  [8]
+# app/stay_strip.py TEXT["mr"] — the 'Stay in touch' strip at the foot of the pages  [9]
 STAY_STRIP = {
     # EN: Stay in touch
     "head": "संपर्कात राहा",
@@ -581,6 +581,8 @@ STAY_STRIP = {
     "channel": "आमच्या WhatsApp चॅनेलमध्ये सामील व्हा",
     # EN: Share this page on WhatsApp
     "share": "हे पान WhatsApp वर शेअर करा",
+    # EN: Forward to family
+    "forward": "कुटुंबाला पाठवा",
 }
 
 # app/seo_city_names.py CITIES["mr"] — the 114 cities as that language's newspapers spell them (key = URL slug)  [114]

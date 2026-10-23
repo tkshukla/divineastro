@@ -499,6 +499,7 @@ def render(slug: str, year: int, city_slug: str, lang: str) -> HTMLResponse:
         f"<h1>{_e(h1)}</h1>"
         f'<p class="date">{_e(_t(L, "date_line", city=cname, state=state))}</p>'
         f'<div class="box answer"><p><strong>{_e(answer_html)}</strong></p></div>'
+        + seo_pages._top_bar(lang=lang, path=path, title=title) +
         f"<h2>{_e(_t(L, 'table_h2', name=name, year=year, city=cname))}</h2>"
         f'<div class="box"><ul class="timings">{timings}</ul></div>'
         f"<h2>{_e(_t(L, 'diff_h2', city=cname))}</h2>"

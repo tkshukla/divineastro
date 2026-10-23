@@ -188,7 +188,9 @@ def main() -> int:
             check("--no-card: text only", code == 0 and "image_base64" not in stub.posts[-1], out)
 
             stub.fail_image = True
-            code, out = run(["--date", "2026-10-07"])
+            # a day whose post fits the caption limit, so the card is tried at all
+            # (2026-10-07 no longer does since DIVASTRO-164's forward line)
+            code, out = run(["--date", "2026-10-05", "--force"])
             stub.fail_image = False
             check("image upload fails: falls back to ONE text-only post",
                   code == 0 and "image_base64" not in stub.posts[-1]

@@ -317,6 +317,13 @@ def _strip(*, lang: str, path: str, title: str) -> str:
     return stay_strip(lang=lang, path=path, title=title)
 
 
+def _top_bar(*, lang: str, path: str, title: str) -> str:
+    """DIVASTRO-164: "Forward to family" + "Join our WhatsApp channel", placed by each
+    page builder straight under its answer box (see stay_strip.top_bar)."""
+    from .stay_strip import top_bar
+    return top_bar(lang=lang, path=path, title=title)
+
+
 def _footer_sections(lang: str) -> str:
     """DIVASTRO-133: a compact block of plain links to the top sections and the
     crawlable /sitemap hub, so every server-rendered page links to them."""
@@ -640,6 +647,7 @@ def _panchang_page(city: City, lang: str = EN) -> HTMLResponse:
 {_tx("p.sub", lang, **v)}
 {_when_heading(city, day, p, lang)}
 {_tx("p.box", lang, **v)}
+{_top_bar(lang=lang, path=_path("panchang", city, lang), title=title)}
 {_vrat_block(city, day, lang)}
 <div class="scroll"><table>{table}</table></div>
 {_tx("p.note", lang, **v)}
@@ -957,6 +965,7 @@ def _kundali_milan_page(lang: str = EN) -> HTMLResponse:
     body = f"""
 {_tx("km.intro", lang, total=total)}
 {_cta("kundali-milan", _tx("km.cta1", lang), lang)}
+{_top_bar(lang=lang, path=_prefix(lang) + "/kundali-milan", title=title)}
 {milan_card.card(lang, "page", now)}
 {_tx("km.naam", lang, href=_prefix(lang) + "/naam-se-kundali-milan")}
 {_tx("km.kootas_h2", lang)}

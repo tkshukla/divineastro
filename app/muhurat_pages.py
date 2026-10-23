@@ -389,7 +389,8 @@ def _page(kind_slug: str, year: int, lang: str) -> HTMLResponse:
     place = _tx("place", lang, city=seo_cities.city_name(CITY, lang), label=seo_cities.place(CITY, lang))
     body = (f"<h1>{_e(h1)}</h1>{_tx('sub', lang, **esc)}"
             f'<p class="date">{_e(place)}</p>'
-            f'{intro}<div class="box">{note}</div>{cta_html}'
+            f'{intro}<div class="box">{note}</div>'
+            + seo_pages._top_bar(lang=lang, path=path, title=title) + cta_html
             + (_rules_section(kind, year, lang) if kind_slug in RULES_KINDS else "")
             + _periods_section(kind, year, data, lang)
             + "".join(_month_section(kind, year, m, data, lang) for m in range(1, 13))

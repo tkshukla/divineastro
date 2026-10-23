@@ -372,7 +372,12 @@ def _story(slug: str, lang: str) -> HTMLResponse:
                             f'{_e(ui["all"])}</a></p>',
                        lang=lang, status=404, cache=False)
     t = s.text(lang)
-    paras = "".join(f"<p>{_html(p)}</p>" for p in (*t.teaser, *t.rest))
+    title = f"{t.title}{ui['title_suffix']} | Divine Astro"
+    # DIVASTRO-164: the forward / channel bar after the story's first paragraph,
+    # so it is on the first screen (the whole teaser runs to two or three)
+    paras = [f"<p>{_html(p)}</p>" for p in (*t.teaser, *t.rest)]
+    paras.insert(1, seo_pages._top_bar(lang=lang, path=page_path(slug, lang), title=title))
+    paras = "".join(paras)
     links = "".join(f'<li><a href="{_e(ln[1] if lang == HI else ln[3])}">'
                     f'{_e(ln[0] if lang == HI else ln[2])}</a></li>' for ln in s.links)
     # DIVASTRO-165: three questions answered from the story file itself (summary,
@@ -400,7 +405,7 @@ def _story(slug: str, lang: str) -> HTMLResponse:
                "url": SITE_URL + page_path(slug, lang),
                "publisher": {"@type": "Organization", "name": seo_pages.BRAND,
                              "url": SITE_URL + "/"}}
-    return _render(title=f"{t.title}{ui['title_suffix']} | Divine Astro",
+    return _render(title=title,
                    description=f"{t.title}: {t.summary} {ui['source']}: {t.source}.",
                    path=page_path(slug, lang), alt=page_path(slug, EN if lang == HI else HI),
                    crumbs=[(ui["crumb"], page_path(None, lang)), (t.title, page_path(slug, lang))],
