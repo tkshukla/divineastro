@@ -13,7 +13,10 @@ IndexNow asks for) and the CLI can submit URLs:
 Panchang / Rahu Kaal / Choghadiya pages of the default city and the 20 biggest
 cities, the Rashifal pages, the Vrat hub and this year's recurring-vrat pages (Purnima,
 Amavasya, ...: their "next date" answer moves daily), in every translated language, plus
-the katha index, tonight's katha pick and any katha story not submitted before.
+the katha index, tonight's katha pick and any katha story not submitted before,
+and - once - every page whose content changed on a known date (seo_pages.CONTENT_CHANGED:
+the DIVASTRO-165 FAQ blocks on /kundali-milan, /naam-se-kundali-milan, /muhurat,
+/nakshatra/<slug>, /vrat-tyohar and the katha stories).
 The other city pages change daily too but are left to the sitemap: a few hundred
 changed URLs a day is the honest signal, three thousand is noise.
 
@@ -154,8 +157,40 @@ def new_stories() -> list[str]:
     return [s for s in STORIES if s not in seen]
 
 
+def _sent_changes() -> set[str]:
+    seen = daily_state.recall(JOB, "changes")
+    return set(seen) if isinstance(seen, list) else set()
+
+
+def pending_changes(day: dt.date) -> list[str]:
+    """Sitemap paths whose content changed once (seo_pages.CONTENT_CHANGED, e.g. the
+    DIVASTRO-165 FAQ blocks) on or before `day` and were not submitted yet: sent
+    once by --daily, then recorded by their change date (job cache "changes")."""
+    from . import i18n
+    from .seo_pages import content_changed, sitemap_ordered
+    done, today = _sent_changes(), day.isoformat()
+    out = []
+    for p in sitemap_ordered():
+        when = content_changed(p)
+        # The /vrat-tyohar/<city> pages change every day anyway and, like the other
+        # city pages, are left to the sitemap (~1,400 URLs would be noise here).
+        parts = [x for x in i18n.strip_prefix(p)[1].split("/") if x]
+        if parts[:1] == ["vrat-tyohar"] and len(parts) > 1:
+            continue
+        if when and when <= today and when not in done:
+            out.append(p)
+    return out
+
+
+def change_dates(day: dt.date) -> list[str]:
+    """Every content-change date due by `day` (what --daily records once it has sent)."""
+    from .seo_pages import CONTENT_CHANGED
+    return sorted({d for d in CONTENT_CHANGED.values() if d <= day.isoformat()} | _sent_changes())
+
+
 def daily_paths(day: dt.date) -> list[str]:
-    """The paths whose content is rebuilt for `day` (see the module docstring)."""
+    """The paths whose content is rebuilt for `day` (see the module docstring), plus
+    any page whose content changed once and has not been submitted (pending_changes)."""
     from . import katha, rashifal_pages, recurring_pages, seo_cities, vrat_pages
     from .seo_pages import TOOLS, TRANSLATED, _path
 
@@ -178,6 +213,8 @@ def daily_paths(day: dt.date) -> list[str]:
     for lang in (katha.HI, katha.EN):
         out.append(katha.page_path(None, lang))
         out += [katha.page_path(s, lang) for s in slugs]
+    seen = set(out)
+    out += [p for p in pending_changes(day) if p not in seen]
     return out
 
 
@@ -230,9 +267,11 @@ def main(argv: list[str] | None = None, *, transport: Transport | None = None) -
     try:
         if args.all:
             daily_state.remember(JOB, "all_done", day.isoformat())
+            daily_state.remember(JOB, "changes", change_dates(day))   # the whole sitemap went
         else:
             from .katha import STORIES
             daily_state.remember(JOB, "stories", sorted(STORIES))
+            daily_state.remember(JOB, "changes", change_dates(day))
             daily_state.mark(JOB, day, part, res["sent"])
     except Exception as exc:                             # e.g. the state dir is not writable
         print(f"indexnow: sent, but could not record it: {type(exc).__name__}", file=sys.stderr)

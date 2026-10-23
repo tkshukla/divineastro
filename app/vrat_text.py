@@ -2427,6 +2427,68 @@ RULES: dict[str, dict[str, str]] = {
     },
 }
 
+# DIVASTRO-165: the question-and-answer block (and its FAQPage JSON-LD) on /vrat-tyohar
+# and /vrat-tyohar/<city>. Plain text: {city} {date} (today); {list} today's observances
+# with their first timing, or the next ones with their days ("Diwali — 8 Nov, Sunday; ...");
+# {days} the look-ahead (30). "No vrat today" reuses today.none / today.next, and the
+# "same in every city?" answer is top_note.
+TEXT["en"].update({
+    "hub.faq.today_q": "Which vrat or festival is today in {city}?",
+    "hub.faq.today_a": "Today, {date}, in {city}: {list}.",
+    "hub.faq.next_q": "What are the next vrat and festivals in {city}?",
+    "hub.faq.next_a": "In the next {days} days in {city}: {list}.",
+    "hub.faq.city_q": "Are vrat dates and timings the same in every city?",
+})
+TEXT["hi"].update({
+    "hub.faq.today_q": "आज {city} में कौन-सा व्रत या त्योहार है?",
+    "hub.faq.today_a": "आज, {date}, {city} में: {list}।",
+    "hub.faq.next_q": "{city} में अगले व्रत और त्योहार कौन-से हैं?",
+    "hub.faq.next_a": "{city} में अगले {days} दिनों में: {list}।",
+    "hub.faq.city_q": "क्या व्रत की तिथि और समय हर शहर में एक जैसे होते हैं?",
+})
+TEXT["or"].update({  # DIVASTRO-165
+    'hub.faq.today_q': 'ଆଜି {city}ରେ କେଉଁ ବ୍ରତ ବା ପର୍ବ ଅଛି?',
+    'hub.faq.today_a': 'ଆଜି, {date}, {city}ରେ: {list}।',
+    'hub.faq.next_q': '{city}ରେ ପରବର୍ତ୍ତୀ ବ୍ରତ ଓ ପର୍ବ କେଉଁଗୁଡ଼ିକ?',
+    'hub.faq.next_a': '{city}ରେ ଆଗାମୀ {days} ଦିନରେ: {list}।',
+    'hub.faq.city_q': "ବ୍ରତର ତାରିଖ ଓ ସମୟ କ'ଣ ସବୁ ସହରରେ ସମାନ?",
+})
+TEXT["bn"].update({  # DIVASTRO-165
+    'hub.faq.today_q': 'আজ {city} শহরে কোন ব্রত বা উৎসব?',
+    'hub.faq.today_a': 'আজ, {date}, {city} শহরে: {list}।',
+    'hub.faq.next_q': '{city} শহরে পরবর্তী ব্রত ও উৎসব কী কী?',
+    'hub.faq.next_a': '{city} শহরে আগামী {days} দিনে: {list}।',
+    'hub.faq.city_q': 'ব্রতের তারিখ ও সময় কি সব শহরে একই হয়?',
+})
+TEXT["kn"].update({  # DIVASTRO-165
+    'hub.faq.today_q': 'ಇಂದು {city} ನಗರದಲ್ಲಿ ಯಾವ ವ್ರತ ಅಥವಾ ಹಬ್ಬ ಇದೆ?',
+    'hub.faq.today_a': 'ಇಂದು, {date}, {city} ನಗರದಲ್ಲಿ: {list}.',
+    'hub.faq.next_q': '{city} ನಗರದಲ್ಲಿ ಮುಂದಿನ ವ್ರತ ಮತ್ತು ಹಬ್ಬಗಳು ಯಾವುವು?',
+    'hub.faq.next_a': '{city} ನಗರದಲ್ಲಿ ಮುಂದಿನ {days} ದಿನಗಳಲ್ಲಿ: {list}.',
+    'hub.faq.city_q': 'ವ್ರತದ ದಿನಾಂಕ ಮತ್ತು ಸಮಯಗಳು ಎಲ್ಲಾ ನಗರಗಳಲ್ಲಿ ಒಂದೇ ಆಗಿರುತ್ತವೆಯೇ?',
+})
+TEXT["te"].update({  # DIVASTRO-165
+    'hub.faq.today_q': 'ఈరోజు {city}లో ఏ వ్రతం లేదా పండుగ ఉంది?',
+    'hub.faq.today_a': 'ఈరోజు, {date}, {city}లో: {list}.',
+    'hub.faq.next_q': '{city}లో రాబోయే వ్రతాలు, పండుగలు ఏవి?',
+    'hub.faq.next_a': '{city}లో రాబోయే {days} రోజుల్లో: {list}.',
+    'hub.faq.city_q': 'వ్రతాల తేదీలు, సమయాలు అన్ని నగరాల్లో ఒకేలా ఉంటాయా?',
+})
+TEXT["ta"].update({  # DIVASTRO-165
+    'hub.faq.today_q': 'இன்று {city} நகரில் என்ன விரதம் அல்லது பண்டிகை?',
+    'hub.faq.today_a': 'இன்று, {date}, {city} நகரில்: {list}.',
+    'hub.faq.next_q': '{city} நகரில் அடுத்து வரும் விரதங்கள், பண்டிகைகள் எவை?',
+    'hub.faq.next_a': 'அடுத்த {days} நாட்களில் {city} நகரில்: {list}.',
+    'hub.faq.city_q': 'விரதத் தேதிகளும் நேரங்களும் எல்லா ஊர்களிலும் ஒன்றாக இருக்குமா?',
+})
+TEXT["ml"].update({  # DIVASTRO-165
+    'hub.faq.today_q': 'ഇന്ന് {city} നഗരത്തിൽ ഏത് വ്രതമോ ഉത്സവമോ ആണ്?',
+    'hub.faq.today_a': 'ഇന്ന്, {date}, {city} നഗരത്തിൽ: {list}.',
+    'hub.faq.next_q': '{city} നഗരത്തിൽ അടുത്ത വ്രതങ്ങളും ഉത്സവങ്ങളും ഏതൊക്കെ?',
+    'hub.faq.next_a': 'അടുത്ത {days} ദിവസത്തിനുള്ളിൽ {city} നഗരത്തിൽ: {list}.',
+    'hub.faq.city_q': 'വ്രതങ്ങളുടെ തീയതിയും സമയവും എല്ലാ നഗരങ്ങളിലും ഒരുപോലെയാണോ?',
+})
+
 # DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py; overlaid here as if written inline.
 from . import lang_data  # noqa: E402
 lang_data.merge("VRAT_TEXT", TEXT)

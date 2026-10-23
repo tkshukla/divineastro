@@ -187,7 +187,9 @@ def main() -> int:
     for resp, secret in ((r, secret_en), (r_hi, secret_hi)):
         html = resp.text
         shares = re.findall(r'class="share-wa" href="([^"]+)"', html)
-        check("result keeps the WhatsApp button", len(shares) == 1)
+        # the top-right button, and DIVASTRO-164's bar under the score ("Forward to
+        # family" + "Join our WhatsApp channel")
+        check("result keeps the WhatsApp button", len(shares) == 3, str(len(shares)))
         check("share link carries no name and no query from the form",
               all(secret not in s and "boy" not in s and "girl" not in s for s in shares))
         check("result is no-store", resp.headers.get("cache-control") == "no-store")

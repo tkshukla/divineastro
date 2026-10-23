@@ -634,6 +634,91 @@ for _k, _p in PERIODS.items():
     TEXT["en"][f"period.{_k}"], TEXT["en"][f"period_about.{_k}"] = _p.name_en, _p.about_en
     TEXT["hi"][f"period.{_k}"], TEXT["hi"][f"period_about.{_k}"] = _p.name_hi, _p.about_hi
 
+# DIVASTRO-165: the question-and-answer block (and its FAQPage JSON-LD). Plain text.
+# Kind placeholders as above ({name} {name_lower} {noun} ...) and {year}; computed:
+#   faq.dates_a  {count} the number of dates, {first} the first few ("21 Jan (Wednesday), ...")
+#   faq.how_a    {periods} the excluded periods ("Chaturmas, Kharmas, ..."), {naks} the
+#                nakshatras every listed date falls in
+#   faq.none_a   {months} the months with no date, {periods} why (from the computed runs);
+#                faq.none_a_plain when no period explains them
+TEXT["en"].update({
+    "faq.dates_q": "What are the {name} {year} dates?",
+    "faq.dates_a": "There are {count} {name_lower} dates in {year} for New Delhi. The first ones: {first}.",
+    "faq.how_q": "How are these {name_lower} dates chosen?",
+    "faq.how_a": ("Each date passes the classical checks on the sunrise tithi, nakshatra, weekday, "
+                  "yoga and Bhadra for New Delhi, and lies outside {periods}. Only days in these "
+                  "nakshatras are listed: {naks}."),
+    "faq.none_q": "In which months of {year} is there no {name_lower}?",
+    "faq.none_a": "There are no {name_lower} dates in {months}, because of {periods}.",
+    "faq.none_a_plain": ("There are no {name_lower} dates in {months}: no day in them passes the "
+                         "tithi, nakshatra, weekday and yoga checks."),
+})
+TEXT["hi"].update({
+    "faq.dates_q": "{year} में {name} की तिथियां कौन-सी हैं?",
+    "faq.dates_a": "{year} में नई दिल्ली के लिए {name} की {count} तिथियां हैं। पहली तिथियां: {first}।",
+    "faq.how_q": "{name} की ये तिथियां कैसे चुनी गई हैं?",
+    "faq.how_a": ("हर तिथि नई दिल्ली के सूर्योदय के तिथि, नक्षत्र, वार, योग और भद्रा के शास्त्रीय नियमों से "
+                  "जांची गई है और {periods} की अवधि से बाहर है। केवल इन नक्षत्रों वाले दिन लिए गए हैं: {naks}।"),
+    "faq.none_q": "{year} में किन महीनों में {name} नहीं है?",
+    "faq.none_a": "{months} में {name} की कोई तिथि नहीं है, क्योंकि तब {periods} है।",
+    "faq.none_a_plain": ("{months} में {name} की कोई तिथि नहीं है: इनमें कोई दिन तिथि, नक्षत्र, वार व योग की "
+                         "शर्तें पूरी नहीं करता।"),
+})
+TEXT["or"].update({  # DIVASTRO-165
+    'faq.dates_q': "{name} {year}ର ତାରିଖଗୁଡ଼ିକ କ'ଣ?",
+    'faq.dates_a': '{year}ରେ ନୂଆଦିଲ୍ଲୀ ପାଇଁ {count}ଟି {name_lower}ର ଦିନ ଅଛି। ପ୍ରଥମ କିଛି ଦିନ: {first}।',
+    'faq.how_q': '{name_lower}ର ଏହି ଦିନଗୁଡ଼ିକ କିପରି ବଛାଯାଏ?',
+    'faq.how_a': 'ପ୍ରତ୍ୟେକ ଦିନ ନୂଆଦିଲ୍ଲୀର ସୂର୍ଯ୍ୟୋଦୟ ସମୟର ତିଥି, ନକ୍ଷତ୍ର, ବାର, ଯୋଗ ଓ ଭଦ୍ରାର ଶାସ୍ତ୍ରୀୟ ନିୟମ ପୂରଣ କରେ, ଏବଂ {periods}ର ବାହାରେ ପଡ଼େ। କେବଳ ଏହି ନକ୍ଷତ୍ରଗୁଡ଼ିକର ଦିନ ତାଲିକାରେ ଦିଆଯାଇଛି: {naks}।',
+    'faq.none_q': '{year}ର କେଉଁ ମାସରେ {name_lower} ନାହିଁ?',
+    'faq.none_a': '{months}ରେ {name_lower}ର କୌଣସି ଦିନ ନାହିଁ, {periods} ଯୋଗୁଁ।',
+    'faq.none_a_plain': '{months}ରେ {name_lower}ର କୌଣସି ଦିନ ନାହିଁ: ଏହି ମାସଗୁଡ଼ିକର କୌଣସି ଦିନ ତିଥି, ନକ୍ଷତ୍ର, ବାର ଓ ଯୋଗର ସର୍ତ୍ତ ପୂରଣ କରେ ନାହିଁ।',
+})
+TEXT["bn"].update({  # DIVASTRO-165
+    'faq.dates_q': '{year} সালে {name} কবে কবে?',
+    'faq.dates_a': 'নয়াদিল্লির জন্য {year} সালে {name_lower} হিসেবে {count}টি দিন আছে। প্রথম দিনগুলি: {first}।',
+    'faq.how_q': '{name_lower} হিসেবে এই দিনগুলি কীভাবে বাছা হয়?',
+    'faq.how_a': 'প্রতিটি দিন নয়াদিল্লির সূর্যোদয়কালীন তিথি, নক্ষত্র, বার, যোগ ও ভদ্রার শাস্ত্রীয় নিয়মে যাচাই করা, এবং {periods}-এর বাইরে। শুধু এই নক্ষত্রগুলির দিনই তালিকায় রাখা হয়েছে: {naks}।',
+    'faq.none_q': '{year} সালের কোন মাসগুলিতে কোনো {name_lower} নেই?',
+    'faq.none_a': '{months} মাসে কোনো {name_lower} নেই, কারণ তখন {periods}।',
+    'faq.none_a_plain': '{months} মাসে কোনো {name_lower} নেই: এই মাসগুলিতে কোনো দিনই তিথি, নক্ষত্র, বার ও যোগের শর্ত পূরণ করে না।',
+})
+TEXT["kn"].update({  # DIVASTRO-165
+    'faq.dates_q': '{name} {year} ದಿನಾಂಕಗಳು ಯಾವುವು?',
+    'faq.dates_a': '{year}ರಲ್ಲಿ ನವದೆಹಲಿಗೆ {count} {name_lower} ದಿನಾಂಕಗಳಿವೆ. ಮೊದಲ ದಿನಾಂಕಗಳು: {first}.',
+    'faq.how_q': 'ಈ {name_lower} ದಿನಾಂಕಗಳನ್ನು ಹೇಗೆ ಆರಿಸಲಾಗಿದೆ?',
+    'faq.how_a': 'ಪ್ರತಿ ದಿನಾಂಕವೂ ನವದೆಹಲಿಯ ಸೂರ್ಯೋದಯದ ತಿಥಿ, ನಕ್ಷತ್ರ, ವಾರ, ಯೋಗ ಮತ್ತು ಭದ್ರಾ ಕುರಿತ ಶಾಸ್ತ್ರೀಯ ನಿಯಮಗಳನ್ನು ಪೂರೈಸುತ್ತದೆ, ಮತ್ತು {periods} ಅವಧಿಗಳ ಹೊರಗಿದೆ. ಈ ನಕ್ಷತ್ರಗಳ ದಿನಗಳನ್ನು ಮಾತ್ರ ಪಟ್ಟಿ ಮಾಡಲಾಗಿದೆ: {naks}.',
+    'faq.none_q': '{year}ರ ಯಾವ ತಿಂಗಳುಗಳಲ್ಲಿ {name_lower} ಇಲ್ಲ?',
+    'faq.none_a': '{periods} ಕಾರಣದಿಂದ {months}ರಲ್ಲಿ {name_lower} ದಿನಾಂಕಗಳಿಲ್ಲ.',
+    'faq.none_a_plain': '{months}ರಲ್ಲಿ {name_lower} ದಿನಾಂಕಗಳಿಲ್ಲ: ಅವುಗಳಲ್ಲಿ ಯಾವ ದಿನವೂ ತಿಥಿ, ನಕ್ಷತ್ರ, ವಾರ ಮತ್ತು ಯೋಗದ ನಿಯಮಗಳನ್ನು ಪೂರೈಸುವುದಿಲ್ಲ.',
+})
+TEXT["te"].update({  # DIVASTRO-165
+    'faq.dates_q': '{name} {year} తేదీలు ఏవి?',
+    'faq.dates_a': '{year}లో న్యూఢిల్లీకి {count} {name_lower} ఉన్నాయి. మొదటి తేదీలు: {first}.',
+    'faq.how_q': 'ఈ {name_lower} తేదీలను ఎలా ఎంచుకున్నారు?',
+    'faq.how_a': 'ప్రతి తేదీ న్యూఢిల్లీలో సూర్యోదయ సమయంలోని తిథి, నక్షత్రం, వారం, యోగం, భద్ర గురించిన శాస్త్రీయ నియమాలకు సరిపోతుంది, {periods} కాలాలకు వెలుపల ఉంటుంది. ఈ నక్షత్రాల రోజులను మాత్రమే జాబితాలో చేర్చాం: {naks}.',
+    'faq.none_q': '{year}లో ఏ నెలల్లో {name_lower} లేవు?',
+    'faq.none_a': '{periods} కారణంగా {months}లో {name_lower} లేవు.',
+    'faq.none_a_plain': '{months}లో {name_lower} లేవు: ఆ నెలల్లో ఏ రోజూ తిథి, నక్షత్రం, వారం, యోగ నియమాలకు సరిపోదు.',
+})
+TEXT["ta"].update({  # DIVASTRO-165
+    'faq.dates_q': '{year} {name} நாட்கள் எவை?',
+    'faq.dates_a': '{year} இல் புது தில்லிக்கு {count} {name_lower} நாட்கள் உள்ளன. முதல் நாட்கள்: {first}.',
+    'faq.how_q': 'இந்த {name_lower} நாட்கள் எப்படித் தேர்ந்தெடுக்கப்படுகின்றன?',
+    'faq.how_a': 'ஒவ்வொரு நாளும் புது தில்லியின் சூரிய உதய நேரத் திதி, நட்சத்திரம், கிழமை, யோகம், பத்திரை ஆகிய சாஸ்திர விதிகளின்படி சரிபார்க்கப்பட்டது; அது {periods} காலங்களுக்கு வெளியே உள்ளது. இந்த நட்சத்திரங்களில் வரும் நாட்கள் மட்டுமே பட்டியலில் உள்ளன: {naks}.',
+    'faq.none_q': '{year} இல் எந்த மாதங்களில் {name_lower} இல்லை?',
+    'faq.none_a': '{months} இல் {name_lower} நாட்கள் இல்லை; காரணம்: {periods}.',
+    'faq.none_a_plain': '{months} இல் {name_lower} நாட்கள் இல்லை: அவற்றில் எந்த நாளும் திதி, நட்சத்திரம், கிழமை, யோக விதிகளைப் பூர்த்தி செய்யவில்லை.',
+})
+TEXT["ml"].update({  # DIVASTRO-165
+    'faq.dates_q': '{year}-ലെ {name} തീയതികൾ ഏതൊക്കെ?',
+    'faq.dates_a': '{year}-ൽ ന്യൂഡൽഹിക്ക് {count} {name_lower} തീയതികളുണ്ട്. ആദ്യത്തേവ: {first}.',
+    'faq.how_q': 'ഈ {name_lower} തീയതികൾ എങ്ങനെയാണ് തിരഞ്ഞെടുക്കുന്നത്?',
+    'faq.how_a': 'ഓരോ തീയതിയും ന്യൂഡൽഹിയിലെ സൂര്യോദയ സമയത്തെ തിഥി, നക്ഷത്രം, ആഴ്ച, യോഗം, ഭദ്ര എന്നീ ശാസ്ത്രനിയമങ്ങൾ പാലിക്കുന്നതാണ്; കൂടാതെ {periods} എന്നീ കാലങ്ങൾക്ക് പുറത്തുമാണ്. ഈ നക്ഷത്രങ്ങളിലുള്ള ദിവസങ്ങൾ മാത്രമേ പട്ടികയിലുള്ളൂ: {naks}.',
+    'faq.none_q': '{year}-ൽ ഏതൊക്കെ മാസങ്ങളിൽ {name_lower} ഇല്ല?',
+    'faq.none_a': '{months}-ൽ {name_lower} തീയതികളില്ല; കാരണം: {periods}.',
+    'faq.none_a_plain': '{months}-ൽ {name_lower} തീയതികളില്ല: അവയിലെ ഒരു ദിവസവും തിഥി, നക്ഷത്രം, ആഴ്ച, യോഗം എന്നീ നിയമങ്ങൾ പാലിക്കുന്നില്ല.',
+})
+
 # Month names where this page spells them differently from names_<code>.MONTHS
 # (the Hindi pages have always printed "फरवरी" without the nukta).
 MONTHS: dict[str, tuple[str, ...]] = {

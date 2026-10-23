@@ -912,6 +912,82 @@ TEXT: dict[str, dict[str, str]] = {
 TEXT["en"].update({f"humour.{h}": h for h in matching.NADI_HUMOUR_HI})
 TEXT["hi"].update({f"humour.{h}": v for h, v in matching.NADI_HUMOUR_HI.items()})
 
+# DIVASTRO-165: the question-and-answer block (and its FAQPage JSON-LD) on
+# /nakshatra/<slug>. Plain text: {name} {span} {signs} (its rashi or rashis) {lord}
+# {years} (the mahadasha) {deity} {gana} {yoni} {nadi} {syl} (the four syllables in
+# the page's script) {lat} (the same in Latin letters; English only, like the fact
+# table: the other languages leave it out).
+TEXT["en"].update({
+    "nak.faq.rashi_q": "Which rashi is {name} nakshatra in, and who rules it?",
+    "nak.faq.rashi_a": ("{name} spans {span}, so it falls in {signs}. Its lord is {lord} "
+                        "({years}-year mahadasha) and its deity is {deity}."),
+    "nak.faq.gana_q": "What are the gana, yoni and nadi of {name} nakshatra?",
+    "nak.faq.gana_a": ("{name} has {gana} gana, {yoni} yoni and {nadi} nadi. These are three of the "
+                       "eight kootas compared in Kundali Milan."),
+    "nak.faq.syl_q": "What are the name letters of {name} nakshatra?",
+    "nak.faq.syl_a": ("One syllable for each of its four padas: {syl} ({lat}). By tradition a name "
+                      "beginning with one of them belongs to {name}."),
+})
+TEXT["hi"].update({
+    "nak.faq.rashi_q": "{name} नक्षत्र किस राशि में है और इसका स्वामी कौन है?",
+    "nak.faq.rashi_a": ("{name} {span} तक फैला है, इसलिए यह {signs} में आता है। इसका स्वामी {lord} "
+                        "(महादशा {years} वर्ष) और देवता {deity} हैं।"),
+    "nak.faq.gana_q": "{name} नक्षत्र का गण, योनि और नाड़ी क्या है?",
+    "nak.faq.gana_a": ("{name} का गण {gana}, योनि {yoni} और नाड़ी {nadi} है। ये कुंडली मिलान के आठ कूटों में "
+                       "से तीन हैं।"),
+    "nak.faq.syl_q": "{name} नक्षत्र के नामाक्षर कौन-से हैं?",
+    "nak.faq.syl_a": ("चारों चरणों का एक-एक अक्षर: {syl}। परंपरा से इनमें से किसी अक्षर से शुरू होने "
+                      "वाला नाम {name} नक्षत्र का माना जाता है।"),
+})
+TEXT["or"].update({  # DIVASTRO-165
+    'nak.faq.rashi_q': '{name} ନକ୍ଷତ୍ର କେଉଁ ରାଶିରେ ଅଛି, ଏବଂ ଏହାର ଅଧିପତି କିଏ?',
+    'nak.faq.rashi_a': '{name}ର ବିସ୍ତାର {span}, ତେଣୁ ଏହା {signs}ରେ ପଡ଼େ। ଏହାର ଅଧିପତି {lord} (ମହାଦଶା {years} ବର୍ଷ) ଏବଂ ଦେବତା {deity}।',
+    'nak.faq.gana_q': "{name} ନକ୍ଷତ୍ରର ଗଣ, ଯୋନି ଓ ନାଡ଼ୀ କ'ଣ?",
+    'nak.faq.gana_a': '{name}ର ଗଣ {gana}, ଯୋନି {yoni} ଏବଂ ନାଡ଼ୀ {nadi}। କୁଣ୍ଡଳୀ ମିଳନରେ ତୁଳନା କରାଯାଉଥିବା ଆଠଟି କୂଟ ମଧ୍ୟରୁ ଏଗୁଡ଼ିକ ତିନୋଟି।',
+    'nak.faq.syl_q': '{name} ନକ୍ଷତ୍ରର ନାମାକ୍ଷର କେଉଁଗୁଡ଼ିକ?',
+    'nak.faq.syl_a': 'ଏହାର ଚାରି ପାଦର ପ୍ରତ୍ୟେକର ଗୋଟିଏ ଅକ୍ଷର: {syl}। ପରମ୍ପରା ଅନୁସାରେ ଏଥିମଧ୍ୟରୁ କୌଣସି ଅକ୍ଷରରେ ଆରମ୍ଭ ହେଉଥିବା ନାମ {name} ନକ୍ଷତ୍ରର ବୋଲି ଧରାଯାଏ।',
+})
+TEXT["bn"].update({  # DIVASTRO-165
+    'nak.faq.rashi_q': '{name} নক্ষত্র কোন রাশিতে, আর এর অধিপতি কে?',
+    'nak.faq.rashi_a': '{name} নক্ষত্রের বিস্তার {span}, তাই এটি {signs} রাশিতে পড়ে। এর অধিপতি {lord} (মহাদশা {years} বছর) এবং দেবতা {deity}।',
+    'nak.faq.gana_q': '{name} নক্ষত্রের গণ, যোনি ও নাড়ী কী?',
+    'nak.faq.gana_a': '{name} নক্ষত্রের গণ {gana}, যোনি {yoni} এবং নাড়ী {nadi}। যোটক বিচারে যে আটটি কূট তুলনা করা হয়, এগুলি তার তিনটি।',
+    'nak.faq.syl_q': '{name} নক্ষত্রের নামাক্ষর কী কী?',
+    'nak.faq.syl_a': 'চারটি পাদের প্রতিটির একটি করে অক্ষর: {syl}। প্রথা অনুযায়ী এগুলির কোনো একটি দিয়ে শুরু হওয়া নাম {name} নক্ষত্রের বলে ধরা হয়।',
+})
+TEXT["kn"].update({  # DIVASTRO-165
+    'nak.faq.rashi_q': '{name} ನಕ್ಷತ್ರ ಯಾವ ರಾಶಿಯಲ್ಲಿದೆ, ಅದರ ಅಧಿಪತಿ ಯಾರು?',
+    'nak.faq.rashi_a': '{name} ನಕ್ಷತ್ರದ ವ್ಯಾಪ್ತಿ {span}, ಆದ್ದರಿಂದ ಇದು ಈ ರಾಶಿಯಲ್ಲಿ ಬರುತ್ತದೆ: {signs}. ಇದರ ಅಧಿಪತಿ {lord} ({years} ವರ್ಷಗಳ ಮಹಾದಶೆ) ಮತ್ತು ದೇವತೆ {deity}.',
+    'nak.faq.gana_q': '{name} ನಕ್ಷತ್ರದ ಗಣ, ಯೋನಿ ಮತ್ತು ನಾಡಿ ಯಾವುವು?',
+    'nak.faq.gana_a': '{name} ನಕ್ಷತ್ರದ ಗಣ {gana}, ಯೋನಿ {yoni} ಮತ್ತು ನಾಡಿ {nadi}. ಇವು ಜಾತಕ ಹೊಂದಾಣಿಕೆಯಲ್ಲಿ ಹೋಲಿಸುವ ಎಂಟು ಕೂಟಗಳಲ್ಲಿ ಮೂರು.',
+    'nak.faq.syl_q': '{name} ನಕ್ಷತ್ರದ ಹೆಸರಿನ ಅಕ್ಷರಗಳು ಯಾವುವು?',
+    'nak.faq.syl_a': 'ನಾಲ್ಕು ಪಾದಗಳಿಗೆ ತಲಾ ಒಂದು ಅಕ್ಷರ: {syl}. ಸಂಪ್ರದಾಯದಂತೆ ಇವುಗಳಲ್ಲಿ ಯಾವುದಾದರೂ ಅಕ್ಷರದಿಂದ ಆರಂಭವಾಗುವ ಹೆಸರು {name} ನಕ್ಷತ್ರಕ್ಕೆ ಸೇರುತ್ತದೆ.',
+})
+TEXT["te"].update({  # DIVASTRO-165
+    'nak.faq.rashi_q': '{name} నక్షత్రం ఏ రాశిలో ఉంటుంది, దాని అధిపతి ఎవరు?',
+    'nak.faq.rashi_a': '{name} నక్షత్రం విస్తృతి {span}, కాబట్టి ఇది ఈ రాశిలో వస్తుంది: {signs}. దీని అధిపతి {lord} ({years} సంవత్సరాల మహాదశ), దేవత {deity}.',
+    'nak.faq.gana_q': '{name} నక్షత్రం గణం, యోని, నాడి ఏమిటి?',
+    'nak.faq.gana_a': '{name} నక్షత్రానికి గణం {gana}, యోని {yoni}, నాడి {nadi}. ఇవి జాతక పొంతనలో పోల్చే ఎనిమిది కూటాలలో మూడు.',
+    'nak.faq.syl_q': '{name} నక్షత్రం పేరు అక్షరాలు ఏవి?',
+    'nak.faq.syl_a': 'నాలుగు పాదాలకు ఒక్కో అక్షరం: {syl}. సంప్రదాయం ప్రకారం వీటిలో ఏదో ఒక అక్షరంతో మొదలయ్యే పేరు {name} నక్షత్రానికి చెందుతుంది.',
+})
+TEXT["ta"].update({  # DIVASTRO-165
+    'nak.faq.rashi_q': '{name} நட்சத்திரம் எந்த ராசியில் உள்ளது, அதன் அதிபதி யார்?',
+    'nak.faq.rashi_a': '{name} நட்சத்திரத்தின் பரப்பு {span}; எனவே இது அடங்கும் ராசி: {signs}. இதன் அதிபதி {lord} ({years} ஆண்டு மகா தசை), தெய்வம் {deity}.',
+    'nak.faq.gana_q': '{name} நட்சத்திரத்தின் கணம், யோனி, நாடி என்ன?',
+    'nak.faq.gana_a': '{name} நட்சத்திரத்துக்கு {gana} கணம், {yoni} யோனி, {nadi} நாடி. ஜாதகப் பொருத்தத்தில் ஒப்பிடப்படும் எட்டு கூடங்களில் இவை மூன்று.',
+    'nak.faq.syl_q': '{name} நட்சத்திரத்தின் பெயர் எழுத்துகள் என்ன?',
+    'nak.faq.syl_a': 'நான்கு பாதங்களுக்கும் ஒவ்வொரு எழுத்து: {syl}. இவற்றில் ஒன்றில் தொடங்கும் பெயர் {name} நட்சத்திரத்துக்கு உரியது என்பது மரபு.',
+})
+TEXT["ml"].update({  # DIVASTRO-165
+    'nak.faq.rashi_q': '{name} നക്ഷത്രം ഏത് രാശിയിലാണ്, അതിന്റെ അധിപൻ ആര്?',
+    'nak.faq.rashi_a': '{name} നക്ഷത്രത്തിന്റെ വ്യാപ്തി {span}; അതിനാൽ ഇത് ഉൾപ്പെടുന്ന രാശി: {signs}. ഇതിന്റെ അധിപൻ {lord} ({years} വർഷത്തെ മഹാദശ), ദേവത {deity}.',
+    'nak.faq.gana_q': '{name} നക്ഷത്രത്തിന്റെ ഗണം, യോനി, നാഡി ഏതാണ്?',
+    'nak.faq.gana_a': '{name} നക്ഷത്രത്തിന് {gana} ഗണം, {yoni} യോനി, {nadi} നാഡി. ജാതകപ്പൊരുത്തത്തിൽ താരതമ്യം ചെയ്യുന്ന എട്ടു കൂടങ്ങളിൽ മൂന്നെണ്ണമാണ് ഇവ.',
+    'nak.faq.syl_q': '{name} നക്ഷത്രത്തിന്റെ നാമാക്ഷരങ്ങൾ ഏതൊക്കെ?',
+    'nak.faq.syl_a': 'നാലു പാദങ്ങൾക്കും ഓരോ അക്ഷരം: {syl}. ഇവയിലൊന്നിൽ തുടങ്ങുന്ന പേര് {name} നക്ഷത്രത്തിന്റേതാണെന്നാണ് പാരമ്പര്യം.',
+})
+
 # DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py; overlaid here as if written inline.
 from . import lang_data  # noqa: E402
 lang_data.merge("NAKSHATRA_PAGE_TEXT", TEXT)

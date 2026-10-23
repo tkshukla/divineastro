@@ -220,14 +220,19 @@ def promo_lines(day: dt.date, lang: str, channel: str) -> list[str]:
     link = utm_url(path, channel, day).replace("utm_campaign=daily-", "utm_campaign=promo-")
     if page == "/" and hi:
         link = link.replace("/?", "/?lang=hi&", 1)   # the app honours ?lang=hi
+    if channel == "whatsapp":                      # DIVASTRO-164: forward it, with the channel link
+        from .stay_strip import forward_line
+        last = forward_line(lang)
+    else:
+        last = ("🙏 यह चैनल अपने परिवार और मित्रों के साथ साझा करें।" if hi else
+                "🙏 Share this channel with your family and friends.")
     return [
         "",
         "━━━━━━━━━━",
         text,
         "👉 " + link,
         "",
-        "🙏 यह चैनल अपने परिवार और मित्रों के साथ साझा करें।" if hi else
-        "🙏 Share this channel with your family and friends.",
+        last,
     ]
 
 

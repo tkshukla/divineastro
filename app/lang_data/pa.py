@@ -482,6 +482,23 @@ SEO_TEXT = {
     "km.rpt.was": "ਆਮ ਕੀਮਤ",
     # EN: now
     "km.rpt.now": "ਹੁਣ",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'km.faq.gunas_q': 'ਵਿਆਹ ਲਈ ਕਿੰਨੇ ਗੁਣ ਮਿਲਣੇ ਚਾਹੀਦੇ ਹਨ?',
+    'km.faq.gunas_a': 'ਕੁੱਲ {total} ਗੁਣਾਂ ਵਿੱਚੋਂ {min} ਗੁਣ ਰਵਾਇਤੀ ਘੱਟੋ-ਘੱਟ ਹੱਦ ਹੈ। ਆਮ ਮਤਲਬ: {bands}। ਉੱਚੇ ਅੰਕਾਂ ਦੇ ਬਾਵਜੂਦ ਜੇ ਨਾੜੀ ਜਾਂ ਭਕੂਟ ਦੋਸ਼ ਕੱਟਿਆ ਨਾ ਗਿਆ ਹੋਵੇ ਤਾਂ ਮਿਲਾਨ ਸਾਵਧਾਨੀ ਨਾਲ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।',
+    'km.faq.mangal_q': 'ਮੰਗਲੀਕ ਦੋਸ਼ ਕੀ ਹੈ ਅਤੇ ਇਹ ਕਦੋਂ ਕੱਟਿਆ ਜਾਂਦਾ ਹੈ?',
+    'km.faq.mangal_a': 'ਕੁੰਡਲੀ ਮੰਗਲੀਕ ਉਦੋਂ ਹੁੰਦੀ ਹੈ ਜਦੋਂ ਲਗਨ, ਚੰਦਰਮਾ ਜਾਂ ਸ਼ੁੱਕਰ ਤੋਂ ਗਿਣਨ ’ਤੇ ਮੰਗਲ ਭਾਵ {houses} ਵਿੱਚ ਹੋਵੇ; ਇਸ ਦੀ ਜਾਂਚ {total} ਗੁਣਾਂ ਤੋਂ ਵੱਖਰੀ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। ਜਦੋਂ ਦੋਵੇਂ ਜੀਅ ਮੰਗਲੀਕ ਹੋਣ ਤਾਂ ਰਵਾਇਤ ਅਨੁਸਾਰ ਦੋਸ਼ ਕੱਟਿਆ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਮੰਗਲ ਦੀਆਂ ਕੁਝ ਰਾਸ਼ੀ ਸਥਿਤੀਆਂ ਨੂੰ ਸ਼ਾਸਤਰਾਂ ਵਿੱਚ ਛੋਟ ਦਿੱਤੀ ਗਈ ਹੈ।',
+    'km.faq.time_q': 'ਕੀ ਜਨਮ ਦੇ ਸਮੇਂ ਤੋਂ ਬਿਨਾਂ ਕੁੰਡਲੀ ਮਿਲਾਨ ਹੋ ਸਕਦਾ ਹੈ?',
+    'km.faq.time_a': '{total} ਗੁਣਾਂ ਲਈ ਹਾਂ: ਅੱਠੇ ਕੂਟ ਚੰਦਰਮਾ ਦੀ ਰਾਸ਼ੀ ਅਤੇ ਨਕਸ਼ਤਰ ਤੋਂ ਪੜ੍ਹੇ ਜਾਂਦੇ ਹਨ, ਜਿਨ੍ਹਾਂ ਲਈ ਜਨਮ ਦੀ ਤਾਰੀਖ਼ ਅਤੇ ਥਾਂ ਚਾਹੀਦੀ ਹੈ, ਪਰ ਜਨਮ ਦੇ ਸਮੇਂ ’ਤੇ ਇਹ ਮੁਸ਼ਕਿਲ ਨਾਲ ਹੀ ਨਿਰਭਰ ਕਰਦੇ ਹਨ। ਮੰਗਲ ਦੋਸ਼ ਲਗਨ ਤੋਂ ਵੀ ਵੇਖਿਆ ਜਾਂਦਾ ਹੈ, ਇਸ ਲਈ ਉਸ ਵਾਸਤੇ ਜਨਮ ਦਾ ਭਰੋਸੇਯੋਗ ਸਮਾਂ ਚਾਹੀਦਾ ਹੈ।',
+    'km.faq.name_q': 'ਕੀ ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ ਹੋ ਸਕਦਾ ਹੈ?',
+    'km.faq.name_a': 'ਹਾਂ। ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ ਵਿੱਚ ਹਰ ਵਿਅਕਤੀ ਦਾ ਨਕਸ਼ਤਰ ਉਸ ਦੇ ਨਾਂ ਦੇ ਪਹਿਲੇ ਅੱਖਰ ਤੋਂ ਲਿਆ ਜਾਂਦਾ ਹੈ ਅਤੇ ਉਹੀ {total} ਗੁਣ ਗਿਣੇ ਜਾਂਦੇ ਹਨ। ਇਹ ਇੱਕ ਰਵਾਇਤੀ ਛੋਟਾ ਰਾਹ ਹੈ; ਜਨਮ ਦੇ ਵੇਰਵੇ ਤੋਂ ਮਿਲਾਨ ਵੱਧ ਸਹੀ ਹੁੰਦਾ ਹੈ।',
+    'p.faq.tithi_q': 'ਅੱਜ {city} ਵਿੱਚ ਕਿਹੜੀ ਤਿਥੀ ਹੈ?',
+    'p.faq.tithi_a': '{date} ਨੂੰ {city} ਵਿੱਚ ਤਿਥੀ: {tithi} (ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ {paksha_full})।',
+    'p.faq.nak_q': 'ਅੱਜ {city} ਵਿੱਚ ਕਿਹੜਾ ਨਕਸ਼ਤਰ ਹੈ?',
+    'p.faq.nak_a': '{date} ਨੂੰ {city} ਵਿੱਚ ਨਕਸ਼ਤਰ: {nakshatra}। ਚੰਦਰਮਾ {moon_sign} ਵਿੱਚ ਹੈ।',
+    'p.faq.rahu_q': 'ਅੱਜ {city} ਵਿੱਚ ਰਾਹੂ ਕਾਲ ਦਾ ਸਮਾਂ ਕੀ ਹੈ?',
+    'p.faq.rahu_a': '{date} ਨੂੰ {city} ਵਿੱਚ ਰਾਹੂ ਕਾਲ {rahu} ਹੈ; ਇਸ ਸਮੇਂ ਕੋਈ ਨਵਾਂ ਕੰਮ ਸ਼ੁਰੂ ਨਾ ਕਰੋ। ਯਮਗੰਡ {yama} ਅਤੇ ਗੁਲਿਕ ਕਾਲ {gulika} ਹੈ।',
+    'p.faq.sun_q': 'ਅੱਜ {city} ਵਿੱਚ ਸੂਰਜ ਚੜ੍ਹਨ ਅਤੇ ਛਿਪਣ ਦਾ ਸਮਾਂ ਕੀ ਹੈ?',
+    'p.faq.sun_a': '{date} ਨੂੰ {city} ਵਿੱਚ ਸੂਰਜ {sunrise} ’ਤੇ ਚੜ੍ਹਦਾ ਹੈ ਅਤੇ {sunset} ’ਤੇ ਛਿਪਦਾ ਹੈ (IST)।',
 }
 
 # app/seo_text.py FAQ["pa"] — the seven free-kundali FAQ pairs (plain text)  [7]
@@ -546,7 +563,7 @@ CHROME = {
     "disclaimer": "ਜੋਤਿਸ਼ੀ ਫਲ ਮਾਰਗ-ਦਰਸ਼ਨ ਅਤੇ ਮਨੋਰੰਜਨ ਲਈ ਦਿੱਤੇ ਜਾਂਦੇ ਹਨ। ਇਹ ਡਾਕਟਰੀ, ਕਾਨੂੰਨੀ ਜਾਂ ਵਿੱਤੀ ਸਲਾਹ ਨਹੀਂ ਹਨ।",
 }
 
-# app/stay_strip.py TEXT["pa"] — the 'Stay in touch' strip at the foot of the pages  [8]
+# app/stay_strip.py TEXT["pa"] — the 'Stay in touch' strip at the foot of the pages  [9]
 STAY_STRIP = {
     # EN: Stay in touch
     "head": "ਸਾਡੇ ਨਾਲ ਜੁੜੇ ਰਹੋ",
@@ -564,6 +581,8 @@ STAY_STRIP = {
     "channel": "ਸਾਡੇ WhatsApp ਚੈਨਲ ਨਾਲ ਜੁੜੋ",
     # EN: Share this page on WhatsApp
     "share": "ਇਸ ਪੰਨੇ ਨੂੰ WhatsApp ’ਤੇ ਸਾਂਝਾ ਕਰੋ",
+    # EN: Forward to family
+    "forward": "ਪਰਿਵਾਰ ਨੂੰ ਭੇਜੋ",
 }
 
 # app/seo_city_names.py CITIES["pa"] — the 114 cities as that language's newspapers spell them (key = URL slug)  [114]
@@ -1068,6 +1087,13 @@ RASHIFAL_TEXT = {
     "house.11": "ਗਿਆਰ੍ਹਵੇਂ",
     # EN: 12th
     "house.12": "ਬਾਰ੍ਹਵੇਂ",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    's.faq.today_q': 'ਅੱਜ ਦਾ {local} ਰਾਸ਼ੀਫਲ ਕੀ ਕਹਿੰਦਾ ਹੈ?',
+    's.faq.today_a': '{tone}: {weekday}, {date} ਨੂੰ ਚੰਦਰਮਾ {local} ਤੋਂ ਤੁਹਾਡੇ {house} ਭਾਵ ਵਿੱਚ ਹੈ। {moon}',
+    's.faq.period_q': 'ਇਹ {local} ਰਾਸ਼ੀਫਲ ਕਿਸ ਦਿਨ ਦਾ ਹੈ?',
+    's.faq.period_a': '{weekday}, {date} (IST) ਦਾ; ਇਹ ਹਰ ਰੋਜ਼ ਨਵੇਂ ਸਿਰਿਓਂ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ। ਇਸ ਵਿੱਚ ਦਿਨ ਦਾ ਚੰਦਰ ਗੋਚਰ ਅਤੇ ਸ਼ਨੀ, ਬ੍ਰਿਹਸਪਤੀ, ਰਾਹੂ ਤੇ ਕੇਤੂ ਦੇ ਹੌਲੀ ਗੋਚਰ ਵੇਖੇ ਜਾਂਦੇ ਹਨ, {local} ਨੂੰ ਚੰਦਰ ਰਾਸ਼ੀ ਮੰਨ ਕੇ ਗਿਣੇ ਹੋਏ।',
+    's.faq.sade_q': 'ਕੀ {local} ਰਾਸ਼ੀ ’ਤੇ ਸਾੜ੍ਹਸਾਤੀ ਚੱਲ ਰਹੀ ਹੈ?',
+    's.faq.sade_a': 'ਸ਼ਨੀ {sat_sign} ਵਿੱਚ ਹੈ, ਜੋ {local} ਤੋਂ {sat_house} ਭਾਵ ਹੈ। {status}',
 }
 
 # app/rashifal_text.py MORE_LINKS["pa"] — 'More free tools' links: keep every href, translate the text; the first href is '{twin:en}' (this page in English)  [6]
@@ -1463,6 +1489,12 @@ VRAT_TEXT = {
     # EN: The date follows the rule: {rule}. In {year} that is {when} (New Delhi).
     # keep: {rule} {when} {year}
     "faq.why_a": "ਤਾਰੀਖ਼ ਦਾ ਨਿਯਮ ਇਹ ਹੈ: {rule}। {year} ਵਿੱਚ ਇਹ {when} ਨੂੰ ਪੈਂਦੀ ਹੈ (ਨਵੀਂ ਦਿੱਲੀ)।",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'hub.faq.today_q': 'ਅੱਜ {city} ਵਿੱਚ ਕਿਹੜਾ ਵਰਤ ਜਾਂ ਤਿਉਹਾਰ ਹੈ?',
+    'hub.faq.today_a': 'ਅੱਜ, {date}, {city} ਵਿੱਚ: {list}।',
+    'hub.faq.next_q': '{city} ਵਿੱਚ ਅਗਲੇ ਵਰਤ ਅਤੇ ਤਿਉਹਾਰ ਕਿਹੜੇ ਹਨ?',
+    'hub.faq.next_a': '{city} ਵਿੱਚ ਅਗਲੇ {days} ਦਿਨਾਂ ਵਿੱਚ: {list}।',
+    'hub.faq.city_q': 'ਕੀ ਵਰਤ ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ ਅਤੇ ਸਮੇਂ ਹਰ ਸ਼ਹਿਰ ਵਿੱਚ ਇੱਕੋ ਜਿਹੇ ਹੁੰਦੇ ਹਨ?',
 }
 
 # app/vrat_text.py ABOUT["pa"] — what each of the 47 festivals / vrats is (key = festival slug)  [47]
@@ -1967,6 +1999,13 @@ NAKSHATRA_PAGE_TEXT = {
     "humour.Pitta": "ਪਿੱਤ",
     # EN: Kapha
     "humour.Kapha": "ਕਫ਼",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'nak.faq.rashi_q': '{name} ਨਕਸ਼ਤਰ ਕਿਹੜੀ ਰਾਸ਼ੀ ਵਿੱਚ ਹੈ ਅਤੇ ਇਸ ਦਾ ਸੁਆਮੀ ਕੌਣ ਹੈ?',
+    'nak.faq.rashi_a': '{name} {span} ਵਿੱਚ ਫੈਲਿਆ ਹੈ, ਇਸ ਲਈ ਇਹ {signs} ਵਿੱਚ ਆਉਂਦਾ ਹੈ। ਇਸ ਦਾ ਸੁਆਮੀ {lord} ({years} ਸਾਲ ਦੀ ਮਹਾਦਸ਼ਾ) ਅਤੇ ਦੇਵਤਾ {deity} ਹੈ।',
+    'nak.faq.gana_q': '{name} ਨਕਸ਼ਤਰ ਦਾ ਗਣ, ਯੋਨੀ ਅਤੇ ਨਾੜੀ ਕੀ ਹੈ?',
+    'nak.faq.gana_a': '{name} ਦਾ ਗਣ {gana}, ਯੋਨੀ {yoni} ਅਤੇ ਨਾੜੀ {nadi} ਹੈ। ਇਹ ਕੁੰਡਲੀ ਮਿਲਾਨ ਵਿੱਚ ਮਿਲਾਏ ਜਾਂਦੇ ਅੱਠ ਕੂਟਾਂ ਵਿੱਚੋਂ ਤਿੰਨ ਹਨ।',
+    'nak.faq.syl_q': '{name} ਨਕਸ਼ਤਰ ਦੇ ਨਾਂ ਦੇ ਅੱਖਰ ਕਿਹੜੇ ਹਨ?',
+    'nak.faq.syl_a': 'ਚਾਰੇ ਚਰਣਾਂ ਦਾ ਇੱਕ-ਇੱਕ ਅੱਖਰ: {syl}। ਰਵਾਇਤ ਅਨੁਸਾਰ ਇਨ੍ਹਾਂ ਵਿੱਚੋਂ ਕਿਸੇ ਅੱਖਰ ਨਾਲ ਸ਼ੁਰੂ ਹੋਣ ਵਾਲਾ ਨਾਂ {name} ਨਕਸ਼ਤਰ ਦਾ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ।',
 }
 
 # app/nakshatra_text.py NAKSHATRA_TRAITS["pa"] — character paragraph of each of the 27 nakshatras (key = slug)  [27]
@@ -2503,6 +2542,16 @@ NAAM_MILAN_TEXT = {
     #     href="{href}">all 27 nakshatras</a>.</p>
     # keep: {abhijit} {href} {syllables}
     "explainer": " <h2>ਨਾਂ ਨਾਲ ਮਿਲਾਨ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ</h2><p>27 ਨਕਸ਼ਤਰਾਂ ਵਿੱਚੋਂ ਹਰ ਇੱਕ ਦੇ ਚਾਰ ਚਰਣ ਹਨ, ਅਤੇ ਹਰ ਚਰਣ ਦਾ ਇੱਕ ਅੱਖਰ (ਨਾਮਾਕਸ਼ਰ) ਹੈ — ਕੁੱਲ 108। ਨਾਂ ਜਿਸ ਚਰਣ ਦੇ ਅੱਖਰ ਨਾਲ <strong>ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ</strong>, ਉਹੀ ਉਸ ਵਿਅਕਤੀ ਦਾ ਨਕਸ਼ਤਰ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਉਸ ਦੀ ਰਾਸ਼ੀ ਉਸ ਦੀ ਚੰਦਰ ਰਾਸ਼ੀ। ਫਿਰ ਇਨ੍ਹਾਂ ਦੋ ਨਕਸ਼ਤਰਾਂ ਤੋਂ ਓਹੀ <strong>ਅਸ਼ਟਕੂਟ (36 ਗੁਣ)</strong> ਮਿਲਾਨ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ ਜੋ ਜਨਮ ਕੁੰਡਲੀਆਂ ਨਾਲ ਹੁੰਦਾ ਹੈ — ਵਰਣ, ਵਸ਼ਯ, ਤਾਰਾ, ਯੋਨੀ, ਗ੍ਰਹਿ ਮੈਤਰੀ, ਗਣ, ਭਕੂਟ ਅਤੇ ਨਾੜੀ — ਸਾਡੇ ਕੁੰਡਲੀ ਮਿਲਾਨ ਟੂਲ ਦੇ ਓਸੇ ਇੰਜਣ ਨਾਲ।</p><h3>ਪਹਿਲਾ ਅੱਖਰ ਕਿਵੇਂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ</h3><ul><li>ਪਹਿਲੇ ਅੱਖਰ ਦਾ ਪਹਿਲਾ ਵਿਅੰਜਨ ਅਤੇ ਉਸ ਦੀ ਸੁਰ: <strong>ਪ੍ਰਿਯਾ → ਪੀ</strong>, <strong>ਕ੍ਸ਼ਿਤਿਜ → ਕੀ</strong>। ਛੋਟੀਆਂ ਤੇ ਵੱਡੀਆਂ ਸੁਰਾਂ ਨੂੰ ਇੱਕੋ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ (ਇ/ਈ, ਉ/ਊ); ਐ ਨੂੰ ਏ ਅਤੇ ਔ ਨੂੰ ਓ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ।</li><li>‘ਬ’ ਨੂੰ ‘ਵ’ ਵਜੋਂ, ਅਤੇ ‘ਸ਼’ ਨੂੰ ਮੂਰਧਨੀ ‘ਸ਼’ (ਅ-ਸੁਰ ਸਮੇਤ) ਜਾਂ ‘ਸ’ ਵਜੋਂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ; ਰਿ-ਸੁਰ ਨੂੰ ਰੀ।</li><li>ਅਭਿਜੀਤ ਦੇ ਅੱਖਰ ({abhijit}) ਉੱਤਰਾ ਆਸ਼ਾੜ੍ਹਾ ਦੇ ਚੌਥੇ ਚਰਣ ਵਿੱਚ ਗਿਣੇ ਜਾਂਦੇ ਹਨ।</li><li>ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਲਿਖੇ ਨਾਂ ਲਿਪੀਅੰਤਰ ਕਰਕੇ ਪੜ੍ਹੇ ਜਾਂਦੇ ਹਨ; T, D, N, Th ਅਤੇ Dh ਵਰਗੇ ਅੱਖਰ ਦੋ ਵੱਖ ਅੱਖਰਾਂ (ਤ/ਟ, ਦ/ਡ) ਦੀ ਥਾਂ ਹੋ ਸਕਦੇ ਹਨ, ਇਸ ਲਈ ਨਤੀਜਾ ਦੱਸਦਾ ਹੈ ਕਿ ਕਿਹੜਾ ਅੱਖਰ ਲਿਆ ਗਿਆ ਅਤੇ ਤੁਹਾਨੂੰ ਹੋਰ ਚੁਣਨ ਦਿੰਦਾ ਹੈ। ਹਿੰਦੀ (ਦੇਵਨਾਗਰੀ) ਵਿੱਚ ਲਿਖਿਆ ਨਾਂ ਹੂਬਹੂ ਪੜ੍ਹਿਆ ਜਾਂਦਾ ਹੈ।</li></ul><h3>ਰਾਸ਼ੀ ਮੁਤਾਬਕ ਨਾਂ ਦੇ ਅੱਖਰ</h3>{syllables}<p>ਹਰ ਨਕਸ਼ਤਰ ਦੇ ਅੱਖਰਾਂ, ਦੇਵਤੇ, ਗਣ ਅਤੇ ਨਾੜੀ ਲਈ <a href=\"{href}\">ਸਾਰੇ 27 ਨਕਸ਼ਤਰ</a> ਵੇਖੋ।</p>",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'faq.how_q': 'ਨਾਂ ਤੋਂ ਕੁੰਡਲੀ ਮਿਲਾਨ ਕਿਵੇਂ ਹੁੰਦਾ ਹੈ?',
+    'faq.how_a': '27 ਨਕਸ਼ਤਰਾਂ ਵਿੱਚੋਂ ਹਰ ਇੱਕ ਦੇ ਚਾਰ ਚਰਣ ਹਨ ਅਤੇ ਹਰ ਚਰਣ ਦਾ ਇੱਕ ਅੱਖਰ ਹੈ — ਕੁੱਲ {padas}। ਨਾਂ ਜਿਸ ਚਰਣ ਦੇ ਅੱਖਰ ਨਾਲ ਸ਼ੁਰੂ ਹੁੰਦਾ ਹੈ, ਉਸੇ ਤੋਂ ਵਿਅਕਤੀ ਦਾ ਨਕਸ਼ਤਰ ਅਤੇ ਚੰਦਰ ਰਾਸ਼ੀ ਮਿਲਦੀ ਹੈ, ਅਤੇ ਫਿਰ ਦੋਵਾਂ ਤੋਂ ਉਹੀ {total} ਗੁਣਾਂ ਦਾ ਅਸ਼ਟਕੂਟ ਮਿਲਾਨ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ ਜੋ ਜਨਮ ਕੁੰਡਲੀ ਨਾਲ ਹੁੰਦਾ ਹੈ।',
+    'faq.accurate_q': 'ਕੀ ਨਾਂ ਤੋਂ ਮਿਲਾਨ ਜਨਮ ਕੁੰਡਲੀ ਦੇ ਮਿਲਾਨ ਜਿੰਨਾ ਸਹੀ ਹੈ?',
+    'faq.accurate_a': 'ਨਹੀਂ। ਇਹ ਮੰਨ ਕੇ ਚੱਲਦਾ ਹੈ ਕਿ ਹਰ ਨਾਂ ਵਿਅਕਤੀ ਦੇ ਜਨਮ ਨਕਸ਼ਤਰ ਦੇ ਅੱਖਰ ਤੋਂ ਰੱਖਿਆ ਗਿਆ ਸੀ, ਜੋ ਅੱਜਕੱਲ੍ਹ ਅਕਸਰ ਨਹੀਂ ਹੁੰਦਾ; ਜਨਮ ਦੀ ਤਾਰੀਖ਼, ਸਮੇਂ ਅਤੇ ਥਾਂ ਤੋਂ ਮਿਲਾਨ ਕਿਤੇ ਵੱਧ ਸਹੀ ਹੈ।',
+    'faq.mangal_q': 'ਕੀ ਨਾਂ ਤੋਂ ਮਿਲਾਨ ਵਿੱਚ ਮੰਗਲ ਦੋਸ਼ ਵੇਖਿਆ ਜਾ ਸਕਦਾ ਹੈ?',
+    'faq.score_q': 'ਇਸ ਜੋੜੀ ਦੇ ਕਿੰਨੇ ਗੁਣ ਮਿਲਦੇ ਹਨ?',
+    'faq.score_a': '{maximum} ਵਿੱਚੋਂ {score} ਗੁਣ — {verdict}। ਮੁੰਡੇ ਦੇ ਨਾਂ ਤੋਂ {nak1} ਨਕਸ਼ਤਰ ਦਾ ਚਰਣ {pada1} ({rashi1}) ਅਤੇ ਕੁੜੀ ਦੇ ਨਾਂ ਤੋਂ {nak2} ਨਕਸ਼ਤਰ ਦਾ ਚਰਣ {pada2} ({rashi2}) ਆਉਂਦਾ ਹੈ।',
+    'faq.dosha_q': 'ਕੀ ਇਸ ਮਿਲਾਨ ਵਿੱਚ ਨਾੜੀ ਜਾਂ ਭਕੂਟ ਦੋਸ਼ ਹੈ?',
+    'faq.dosha_a': 'ਨਾੜੀ ਦੇ {nadi_max} ਵਿੱਚੋਂ {nadi} ਅਤੇ ਭਕੂਟ ਦੇ {bhakoot_max} ਵਿੱਚੋਂ {bhakoot} ਅੰਕ ਹਨ। 0 ਅੰਕ ਦਾ ਮਤਲਬ ਹੈ ਕਿ ਉਹ ਦੋਸ਼ ਮੌਜੂਦ ਹੈ ਅਤੇ ਕੱਟਿਆ ਨਹੀਂ ਗਿਆ; ਕੱਟੇ ਗਏ ਦੋਸ਼ ਦੇ ਅੰਕ ਵਾਪਸ ਮਿਲ ਜਾਂਦੇ ਹਨ।',
 }
 
 # app/naam_milan_text.py ENGINE["pa"] — score-band notes and the convention note of a naam-milan result  [5]
@@ -2631,6 +2680,14 @@ MUHURAT_TEXT = {
     "period.guru_asta": "ਗੁਰੂ ਅਸਤ",
     # EN: Jupiter combust (too close to the Sun to be seen), with 3 days either side
     "period_about.guru_asta": "ਬ੍ਰਿਹਸਪਤੀ ਅਸਤ ਹੈ (ਸੂਰਜ ਦੇ ਇੰਨਾ ਨੇੜੇ ਕਿ ਦਿਸਦਾ ਨਹੀਂ), ਦੋਵੇਂ ਪਾਸੇ 3 ਦਿਨ ਸਮੇਤ",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'faq.dates_q': '{name} {year} ਦੀਆਂ ਤਾਰੀਖ਼ਾਂ ਕਿਹੜੀਆਂ ਹਨ?',
+    'faq.dates_a': '{year} ਵਿੱਚ ਨਵੀਂ ਦਿੱਲੀ ਲਈ {name_lower} ਦੀਆਂ {count} ਤਾਰੀਖ਼ਾਂ ਹਨ। ਪਹਿਲੀਆਂ ਤਾਰੀਖ਼ਾਂ: {first}।',
+    'faq.how_q': '{name_lower} ਦੀਆਂ ਇਹ ਤਾਰੀਖ਼ਾਂ ਕਿਵੇਂ ਚੁਣੀਆਂ ਜਾਂਦੀਆਂ ਹਨ?',
+    'faq.how_a': 'ਹਰ ਤਾਰੀਖ਼ ਨਵੀਂ ਦਿੱਲੀ ਲਈ ਸੂਰਜ ਚੜ੍ਹਨ ਵੇਲੇ ਦੀ ਤਿਥੀ, ਨਕਸ਼ਤਰ, ਵਾਰ, ਯੋਗ ਅਤੇ ਭਦਰਾ ਦੀਆਂ ਸ਼ਾਸਤਰੀ ਜਾਂਚਾਂ ਪਾਸ ਕਰਦੀ ਹੈ, ਅਤੇ {periods} ਤੋਂ ਬਾਹਰ ਹੈ। ਸਿਰਫ਼ ਇਨ੍ਹਾਂ ਨਕਸ਼ਤਰਾਂ ਵਾਲੇ ਦਿਨ ਦਿੱਤੇ ਗਏ ਹਨ: {naks}।',
+    'faq.none_q': '{year} ਦੇ ਕਿਹੜੇ ਮਹੀਨਿਆਂ ਵਿੱਚ ਕੋਈ {name_lower} ਨਹੀਂ ਹੈ?',
+    'faq.none_a': '{months} ਵਿੱਚ {name_lower} ਦੀ ਕੋਈ ਤਾਰੀਖ਼ ਨਹੀਂ ਹੈ, ਕਿਉਂਕਿ ਉਦੋਂ {periods} ਹੈ।',
+    'faq.none_a_plain': '{months} ਵਿੱਚ {name_lower} ਦੀ ਕੋਈ ਤਾਰੀਖ਼ ਨਹੀਂ ਹੈ: ਇਨ੍ਹਾਂ ਦਾ ਕੋਈ ਵੀ ਦਿਨ ਤਿਥੀ, ਨਕਸ਼ਤਰ, ਵਾਰ ਅਤੇ ਯੋਗ ਦੀਆਂ ਜਾਂਚਾਂ ਪਾਸ ਨਹੀਂ ਕਰਦਾ।',
 }
 
 # app/muhurat_text.py MUNDAN["pa"] — the mundan (first haircut) muhurat's own wording  [5]

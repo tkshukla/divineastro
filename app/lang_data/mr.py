@@ -482,6 +482,23 @@ SEO_TEXT = {
     "km.rpt.was": "नेहमीची किंमत",
     # EN: now
     "km.rpt.now": "आता",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'km.faq.gunas_q': 'लग्नासाठी किती गुण जुळायला हवेत?',
+    'km.faq.gunas_a': 'एकूण {total} गुणांपैकी {min} गुण ही प्रचलित किमान मर्यादा आहे. साधारण अर्थ: {bands}. जास्त गुण असूनही नाडी किंवा भकूट दोषाचा परिहार झाला नसेल तर सावधगिरीने पाहिले जाते.',
+    'km.faq.mangal_q': 'मांगलिक दोष म्हणजे काय आणि तो कधी रद्द होतो?',
+    'km.faq.mangal_a': 'लग्न, चंद्र किंवा शुक्र यांपासून मोजल्यास मंगळ {houses} यांपैकी एखाद्या भावात असेल तर कुंडली मांगलिक मानली जाते; हा दोष {total} गुणांपेक्षा वेगळा तपासला जातो. दोघेही जोडीदार मांगलिक असतील तर परंपरेने दोष रद्द झाला असे मानले जाते, आणि मंगळाच्या काही राशीस्थितींना शास्त्रात अपवाद मानले आहे.',
+    'km.faq.time_q': 'जन्मवेळेशिवाय कुंडली मिलन करता येते का?',
+    'km.faq.time_a': '{total} गुणांसाठी हो: आठही कूट चंद्राच्या राशीवरून आणि नक्षत्रावरून पाहिले जातात, त्यासाठी जन्मतारीख आणि जन्मस्थान लागते, पण जन्मवेळेवर ते फारसे अवलंबून नसतात. मंगळ दोष लग्नावरूनही पाहिला जातो, म्हणून त्यासाठी विश्वासार्ह जन्मवेळ आवश्यक आहे.',
+    'km.faq.name_q': 'नावावरून कुंडली जुळवता येते का?',
+    'km.faq.name_a': 'हो. नावावरून कुंडली मिलनात प्रत्येकाच्या नावाच्या पहिल्या अक्षरावरून त्याचे नक्षत्र घेतले जाते आणि तेच {total} गुण जुळवले जातात. हा एक पारंपरिक सोपा मार्ग आहे; जन्मतपशिलावरून केलेली जुळवणी अधिक अचूक असते.',
+    'p.faq.tithi_q': 'आज {city} मध्ये कोणती तिथी आहे?',
+    'p.faq.tithi_a': '{date} रोजी {city} मधील तिथी: {tithi} (सूर्योदयाला {paksha_full}).',
+    'p.faq.nak_q': 'आज {city} मध्ये कोणते नक्षत्र आहे?',
+    'p.faq.nak_a': '{date} रोजी {city} मधील नक्षत्र: {nakshatra}. चंद्र {moon_sign} राशीत आहे.',
+    'p.faq.rahu_q': 'आज {city} मध्ये राहुकाळ किती वाजता आहे?',
+    'p.faq.rahu_a': '{date} रोजी {city} मध्ये राहुकाळ {rahu} आहे; या वेळेत कोणतेही नवीन काम सुरू करू नका. यमगंड {yama} आणि गुलिक काळ {gulika} आहे.',
+    'p.faq.sun_q': 'आज {city} मध्ये सूर्योदय आणि सूर्यास्त किती वाजता आहे?',
+    'p.faq.sun_a': '{date} रोजी {city} मध्ये सूर्योदय {sunrise} वाजता आणि सूर्यास्त {sunset} वाजता होतो (IST).',
 }
 
 # app/seo_text.py FAQ["mr"] — the seven free-kundali FAQ pairs (plain text)  [7]
@@ -546,7 +563,7 @@ CHROME = {
     "disclaimer": "ज्योतिषीय भविष्य मार्गदर्शन आणि मनोरंजनासाठी दिले आहे. तो वैद्यकीय, कायदेशीर किंवा आर्थिक सल्ला नाही.",
 }
 
-# app/stay_strip.py TEXT["mr"] — the 'Stay in touch' strip at the foot of the pages  [8]
+# app/stay_strip.py TEXT["mr"] — the 'Stay in touch' strip at the foot of the pages  [9]
 STAY_STRIP = {
     # EN: Stay in touch
     "head": "संपर्कात राहा",
@@ -564,6 +581,8 @@ STAY_STRIP = {
     "channel": "आमच्या WhatsApp चॅनेलमध्ये सामील व्हा",
     # EN: Share this page on WhatsApp
     "share": "हे पान WhatsApp वर शेअर करा",
+    # EN: Forward to family
+    "forward": "कुटुंबाला पाठवा",
 }
 
 # app/seo_city_names.py CITIES["mr"] — the 114 cities as that language's newspapers spell them (key = URL slug)  [114]
@@ -1068,6 +1087,13 @@ RASHIFAL_TEXT = {
     "house.11": "अकराव्या",
     # EN: 12th
     "house.12": "बाराव्या",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    's.faq.today_q': 'आजचे {local} राशिभविष्य काय सांगते?',
+    's.faq.today_a': '{tone}: {weekday}, {date} रोजी चंद्र {local} राशीपासून तुमच्या {house} भावात आहे. {moon}',
+    's.faq.period_q': 'हे {local} राशिभविष्य कोणत्या दिवसाचे आहे?',
+    's.faq.period_a': '{weekday}, {date} (IST) चे; ते दररोज नव्याने मोजले जाते. यात दिवसाचे चंद्राचे गोचर आणि शनी, गुरू, राहू व केतू यांचे संथ गोचर {local} ही चंद्र रास मानून मोजले जाते.',
+    's.faq.sade_q': '{local} राशीला साडेसाती सुरू आहे का?',
+    's.faq.sade_a': 'शनी {sat_sign} मध्ये आहे, म्हणजे {local} पासून {sat_house} भावात. {status}',
 }
 
 # app/rashifal_text.py MORE_LINKS["mr"] — 'More free tools' links: keep every href, translate the text; the first href is '{twin:en}' (this page in English)  [6]
@@ -1463,6 +1489,12 @@ VRAT_TEXT = {
     # EN: The date follows the rule: {rule}. In {year} that is {when} (New Delhi).
     # keep: {rule} {when} {year}
     "faq.why_a": "तारीख या नियमानुसार ठरते: {rule}. {year} मध्ये ती {when} रोजी येते (नवी दिल्ली).",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'hub.faq.today_q': 'आज {city} मध्ये कोणते व्रत किंवा सण आहे?',
+    'hub.faq.today_a': 'आज, {date}, {city} मध्ये: {list}.',
+    'hub.faq.next_q': '{city} मध्ये पुढील व्रते आणि सण कोणते?',
+    'hub.faq.next_a': '{city} मध्ये पुढील {days} दिवसांत: {list}.',
+    'hub.faq.city_q': 'व्रताच्या तारखा आणि वेळा प्रत्येक शहरात सारख्याच असतात का?',
 }
 
 # app/vrat_text.py ABOUT["mr"] — what each of the 47 festivals / vrats is (key = festival slug)  [47]
@@ -1967,6 +1999,13 @@ NAKSHATRA_PAGE_TEXT = {
     "humour.Pitta": "पित्त",
     # EN: Kapha
     "humour.Kapha": "कफ",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'nak.faq.rashi_q': '{name} नक्षत्र कोणत्या राशीत येते आणि त्याचा स्वामी कोण?',
+    'nak.faq.rashi_a': '{name} {span} पर्यंत पसरलेले आहे, म्हणून ते {signs} मध्ये येते. त्याचा स्वामी {lord} ({years} वर्षांची महादशा) आणि देवता {deity} आहे.',
+    'nak.faq.gana_q': '{name} नक्षत्राचा गण, योनी आणि नाडी कोणती?',
+    'nak.faq.gana_a': '{name} चा गण {gana}, योनी {yoni} आणि नाडी {nadi} आहे. कुंडली मिलनात तुलना केल्या जाणाऱ्या आठ कूटांपैकी हे तीन आहेत.',
+    'nak.faq.syl_q': '{name} नक्षत्राची नामाक्षरे कोणती?',
+    'nak.faq.syl_a': 'चारही चरणांचे एक-एक अक्षर: {syl}. परंपरेनुसार यांपैकी एखाद्या अक्षराने सुरू होणारे नाव {name} नक्षत्राचे मानले जाते.',
 }
 
 # app/nakshatra_text.py NAKSHATRA_TRAITS["mr"] — character paragraph of each of the 27 nakshatras (key = slug)  [27]
@@ -2503,6 +2542,16 @@ NAAM_MILAN_TEXT = {
     #     href="{href}">all 27 nakshatras</a>.</p>
     # keep: {abhijit} {href} {syllables}
     "explainer": " <h2>नावावरून जुळवणी कशी चालते</h2> <p>27 नक्षत्रांपैकी प्रत्येकाला चार चरण असतात, आणि प्रत्येक चरणाला एक अक्षर (नामाक्षर) असते — एकूण 108. ज्या चरणाच्या अक्षराने नावाची <strong>सुरुवात</strong> होते तो चरण त्या व्यक्तीचे नक्षत्र म्हणून घेतला जातो, आणि त्याची रास तिची चंद्र रास. जन्मकुंडलीसाठी वापरली जाणारी तीच <strong>अष्टकूट (36 गुण)</strong> जुळवणी — वर्ण, वश्य, तारा, योनी, ग्रहमैत्री, गण, भकूट आणि नाडी — त्या दोन नक्षत्रांवरून काढली जाते, आमच्या कुंडली मिलन साधनामागील त्याच इंजिनद्वारे.</p> <h3>पहिले अक्षर कसे वाचले जाते</h3> <ul> <li>पहिल्या अक्षरातील पहिले व्यंजन आणि त्याचा स्वर: <strong>प्रिया → पी</strong>, <strong>क्षितिज → की</strong>. ह्रस्व आणि दीर्घ स्वर सारखेच मानले जातात (इ/ई, उ/ऊ); ऐ हा ए आणि औ हा ओ मानला जातो.</li> <li>ब हा व म्हणून वाचला जातो, आणि श हा ष (अ-स्वरासह) किंवा स म्हणून; ऋ हा री म्हणून.</li> <li>अभिजितची अक्षरे ({abhijit}) उत्तराषाढा चरण 4 मध्ये गणली जातात.</li> <li>इंग्रजीत टाइप केलेल्या नावांचे लिप्यंतर केले जाते; काही इंग्रजी अक्षरे दोन देवनागरी अक्षरांसाठी येऊ शकतात (उदा. त/ट, द/ड), म्हणून निकालात कोणते अक्षर वापरले ते दाखवले जाते आणि तुम्हाला दुसरे निवडू देते. मराठी/हिंदी (देवनागरी) लेखन जसे आहे तसे वाचले जाते.</li> </ul> <h3>राशीनुसार नामाक्षरे</h3> {syllables} <p>प्रत्येक नक्षत्राची अक्षरे, देवता, गण आणि नाडी पाहण्यासाठी <a href=\"{href}\">सर्व 27 नक्षत्रे</a> पाहा.</p>",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'faq.how_q': 'नावावरून कुंडली मिलन कसे होते?',
+    'faq.how_a': '27 नक्षत्रांपैकी प्रत्येकाचे चार चरण असतात आणि प्रत्येक चरणाचे एक अक्षर — एकूण {padas} अक्षरे. नाव ज्या अक्षराने सुरू होते त्या चरणावरून त्या व्यक्तीचे नक्षत्र आणि चंद्र रास ठरते, आणि दोघांच्या यावरून जन्मकुंडलीप्रमाणेच तेच {total} गुणांचे अष्टकूट मिलन केले जाते.',
+    'faq.accurate_q': 'नावावरून केलेले मिलन जन्मकुंडलीच्या मिलनाइतके अचूक असते का?',
+    'faq.accurate_a': 'नाही. यात असे गृहीत धरले जाते की प्रत्येकाचे नाव जन्मनक्षत्राच्या अक्षरावरून ठेवले आहे, जे आजकाल बऱ्याचदा नसते; जन्मतारीख, वेळ आणि ठिकाण यांवरून केलेली जुळवणी कितीतरी अधिक अचूक असते.',
+    'faq.mangal_q': 'नावावरून मिलन करताना मंगळ दोष पाहता येतो का?',
+    'faq.score_q': 'या जोडीचे किती गुण जुळतात?',
+    'faq.score_a': '{maximum} पैकी {score} गुण — {verdict}. वराच्या नावावरून {nak1} चरण {pada1} ({rashi1}) आणि वधूच्या नावावरून {nak2} चरण {pada2} ({rashi2}) येते.',
+    'faq.dosha_q': 'या मिलनात नाडी किंवा भकूट दोष आहे का?',
+    'faq.dosha_a': 'नाडीचे {nadi_max} पैकी {nadi} आणि भकूटचे {bhakoot_max} पैकी {bhakoot} गुण आहेत. 0 गुण म्हणजे तो दोष आहे आणि त्याचा परिहार झालेला नाही; परिहार झाल्यास त्याचे गुण परत मिळतात.',
 }
 
 # app/naam_milan_text.py ENGINE["mr"] — score-band notes and the convention note of a naam-milan result  [5]
@@ -2631,6 +2680,14 @@ MUHURAT_TEXT = {
     "period.guru_asta": "गुरू अस्त",
     # EN: Jupiter combust (too close to the Sun to be seen), with 3 days either side
     "period_about.guru_asta": "गुरू सूर्याच्या अगदी जवळ येऊन दिसेनासा होणे (अस्त), दोन्ही बाजूंच्या 3 दिवसांसह",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'faq.dates_q': '{name} {year} च्या तारखा कोणत्या?',
+    'faq.dates_a': 'नवी दिल्लीसाठी {year} मध्ये {name_lower} च्या {count} तारखा आहेत. पहिल्या तारखा: {first}.',
+    'faq.how_q': '{name_lower} च्या या तारखा कशा निवडल्या जातात?',
+    'faq.how_a': 'प्रत्येक तारीख नवी दिल्लीच्या सूर्योदयाची तिथी, नक्षत्र, वार, योग आणि भद्रा यांच्या शास्त्रीय तपासण्यांतून पार पडते, आणि {periods} यांच्या बाहेर येते. फक्त या नक्षत्रांचे दिवस दिले आहेत: {naks}.',
+    'faq.none_q': '{year} मध्ये कोणत्या महिन्यांत {name_lower} नाही?',
+    'faq.none_a': '{months} मध्ये {periods} यांमुळे {name_lower} च्या तारखा नाहीत.',
+    'faq.none_a_plain': '{months} मध्ये {name_lower} च्या तारखा नाहीत: त्या महिन्यांतील एकही दिवस तिथी, नक्षत्र, वार आणि योगाच्या तपासण्यांत बसत नाही.',
 }
 
 # app/muhurat_text.py MUNDAN["mr"] — the mundan (first haircut) muhurat's own wording  [5]
