@@ -36,7 +36,7 @@ from . import seo_text
 from .naam_milan_text import ENGINE, TEXT
 from .nakshatra_pages import (RASHIS, kundali_cta, milan_path, nak_path, rashi_path, shell)
 from .nakshatra_pages import _nak_label, _rashi_pill, _sign_name
-from .seo_pages import BRAND, _e
+from .seo_pages import BRAND, _e, faq_ld, faq_section, plain
 
 router = APIRouter()
 
@@ -223,6 +223,7 @@ def render(lang: str, boy: str | None, girl: str | None, boy_pada: str | None,
     if asked:
         gm, bm = resolve(boy, boy_pada or ""), resolve(girl, girl_pada or "")
         result = _result(boy, girl, gm, bm, lang)
+    faq_html, faq = _faq(gm, bm, lang)
     body = f"""
 {_tx("h1", lang)}
 {_tx("sub", lang)}
@@ -231,6 +232,7 @@ def render(lang: str, boy: str | None, girl: str | None, boy_pada: str | None,
 {result}
 {'' if asked else _caveat(lang)}
 {_explainer(lang)}
+{faq_html}
 <a class="cta" href="{_e(i18n.app_link(lang, 'open=milan'))}">{_e(_tx("open_milan", lang))}</a>
 {kundali_cta(lang)}"""
     crumbs = [(_tx("crumb", lang), milan_path(lang))]
@@ -241,7 +243,32 @@ def render(lang: str, boy: str | None, girl: str | None, boy_pada: str | None,
                              '<meta name="robots" content="noindex"/>\n' + _STRIP_QUERY + "\n",
                   headers={"Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex"})
     return shell(lang=lang, en_path=milan_path("en"), hi_path=milan_path("hi"), title=title,
-                 description=description, crumbs=crumbs, body=body, **kw)
+                 description=description, crumbs=crumbs, body=body, extra_ld=faq_ld(faq), **kw)
+
+
+def _faq(gm: Match | None, bm: Match | None, lang: str) -> tuple[str, dict | None]:
+    """DIVASTRO-165: how name matching works, how far to trust it, Mangal dosha —
+    and, on a result, this pair's score and Nadi/Bhakoot points from the same
+    engine call the result table prints (no names: they are personal data)."""
+    v = {"total": f"{matching.MAXIMUM_POINTS:g}", "padas": len(all_padas())}
+    items = []
+    if gm and bm:
+        res = compute(gm, bm, lang)
+        k = {x["key"]: x for x in res["kootas"]}
+        items += [
+            (_tx("faq.score_q", lang),
+             _tx("faq.score_a", lang, score=f"{res['total']:g}", maximum=f"{res['maximum']:g}",
+                 verdict=_verdict(res, lang)[0],
+                 nak1=_nak_label(gm.nakshatra, lang), pada1=gm.pada, rashi1=_sign_label(gm.sign, lang),
+                 nak2=_nak_label(bm.nakshatra, lang), pada2=bm.pada, rashi2=_sign_label(bm.sign, lang))),
+            (_tx("faq.dosha_q", lang),
+             _tx("faq.dosha_a", lang, nadi=f"{k['nadi']['score']:g}", nadi_max=f"{k['nadi']['max']:g}",
+                 bhakoot=f"{k['bhakoot']['score']:g}", bhakoot_max=f"{k['bhakoot']['max']:g}")),
+        ]
+    items += [(_tx("faq.how_q", lang), _tx("faq.how_a", lang, **v)),
+              (_tx("faq.accurate_q", lang), _tx("faq.accurate_a", lang)),
+              (_tx("faq.mangal_q", lang), plain(_tx("mangal", lang)))]
+    return faq_section(items, lang)
 
 
 # No max_length on the parameters: a 422 would echo the name back in its JSON

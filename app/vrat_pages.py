@@ -499,6 +499,7 @@ def render_hub(lang: str, today: dt.date | None = None, city: City = CITY) -> HT
     description = ((_tx("hub.desc_today", lang, date=long_date, names=names) if names
                     else _tx("hub.desc_none", lang, date=long_date))
                    + _tx("hub.desc_rest", lang, city=cname))
+    faq_html, faq = _hub_faq(city, today, todays, later, lang)
     body = (f"<h1>{_e(h1)}</h1>{_tx('hub.sub', lang)}"
             f'<p class="date">{_e(_day_label(today, lang, year=True))} · '
             f'{_e(_city_label(city, lang))}</p>'
@@ -506,7 +507,7 @@ def render_hub(lang: str, today: dt.date | None = None, city: City = CITY) -> HT
             + _today_block(today, todays, nxt, lang)
             + f"<h2>{_e(_tx('hub.upcoming', lang))}</h2>"
             + (_table(later, lang, city) if later else "<p>—</p>")
-            + _city_note(lang, city) + _cta(lang) + _city_tools(city, lang)
+            + _city_note(lang, city) + _cta(lang) + faq_html + _city_tools(city, lang)
             + _festival_links(today.year if today.year in YEARS else YEARS[0], lang)
             + _city_index(lang, city)
             + _more_links(lang, skip=path))
@@ -514,7 +515,39 @@ def render_hub(lang: str, today: dt.date | None = None, city: City = CITY) -> HT
     if not default:
         crumbs.append((cname, path))
     return _render(title=title, description=description, path=path, alt=alt, crumbs=crumbs,
-                   body=body, lang=lang)
+                   body=body, lang=lang, extra_ld=seo_pages.faq_ld(faq))
+
+
+HUB_FAQ_NEXT = 5       # observances named in the "what is next" answer
+
+
+def _hub_faq(city: City, today: dt.date, todays: list[dict], later: list[dict],
+             lang: str) -> tuple[str, dict | None]:
+    """DIVASTRO-165: today's observances, the next few, and whether dates differ by
+    city — from the same `todays` / `later` lists the box and the table print (each
+    with its first timing for this city, as the table shows it)."""
+    cname = _city(city, lang)
+    v = {"city": cname, "date": _long_date(today, lang), "days": UPCOMING_DAYS}
+
+    def item(o: dict, when: str) -> str:
+        return f"{_name(o, lang)} — {when}" if when else _name(o, lang)
+
+    if todays:
+        today_a = _tx("hub.faq.today_a", lang, **v, list="; ".join(
+            item(o, _timings(o, lang, first_only=True)) for o in todays))
+    else:
+        nxt = later[0] if later else None
+        today_a = seo_pages.plain(
+            _tx("today.none", lang)
+            + (_tx("today.next", lang, name=_e(_name(nxt, lang)), day=_e(_day_label(_date(nxt), lang)))
+               if nxt else ""))
+    items = [(_tx("hub.faq.today_q", lang, **v), today_a)]
+    if later:
+        items.append((_tx("hub.faq.next_q", lang, **v), _tx("hub.faq.next_a", lang, **v, list="; ".join(
+            item(o, _day_label(_date(o), lang)) for o in later[:HUB_FAQ_NEXT]))))
+    items.append((_tx("hub.faq.city_q", lang, **v),
+                  seo_pages.plain(_tx("top_note", lang, city=_e(cname)))))
+    return seo_pages.faq_section(items, lang)
 
 
 def render_year(year: int, lang: str) -> HTMLResponse:

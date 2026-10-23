@@ -485,6 +485,23 @@ SEO_TEXT = {
     "km.rpt.was": "সাধাৰণ মূল্য",
     # EN: now
     "km.rpt.now": "এতিয়া",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'km.faq.gunas_q': 'বিয়াৰ বাবে কিমান গুণ মিলিব লাগে?',
+    'km.faq.gunas_a': "মুঠ {total} গুণৰ ভিতৰত {min} হ'ল প্ৰচলিত সৰ্বনিম্ন নম্বৰ। সাধাৰণ অৰ্থ: {bands}। বেছি নম্বৰ হ'লেও নাড়ী বা ভকূট দোষ নকটা হৈ থাকিলে সাৱধানে চোৱা হয়।",
+    'km.faq.mangal_q': 'মাংগলিক দোষ কি, আৰু কেতিয়া ই কাটি যায়?',
+    'km.faq.mangal_a': "লগ্ন, চন্দ্ৰ বা শুক্ৰৰ পৰা গণনা কৰি মঙ্গল {houses} ঘৰত থাকিলে কুণ্ডলীটো মাংগলিক বুলি ধৰা হয়; ইয়াক {total} গুণৰ পৰা বেলেগকৈ চোৱা হয়। বৰ আৰু কইনা দুয়ো মাংগলিক হ'লে পৰম্পৰা অনুসৰি দোষ কাটি যোৱা বুলি ধৰা হয়, আৰু মঙ্গলৰ কিছুমান ৰাশি-অৱস্থানক শাস্ত্ৰত ব্যতিক্ৰম বুলি কোৱা হৈছে।",
+    'km.faq.time_q': 'জন্মৰ সময় নাজানিলে কুণ্ডলী মিলন কৰিব পাৰিনে?',
+    'km.faq.time_a': '{total} গুণৰ বাবে পাৰি: আঠোটা কূট চন্দ্ৰৰ ৰাশি আৰু নক্ষত্ৰৰ পৰা চোৱা হয়, যাৰ বাবে জন্মৰ তাৰিখ আৰু স্থান লাগে, কিন্তু জন্মৰ সময়ৰ ওপৰত এইবোৰ বৰ কমহে নিৰ্ভৰ কৰে। মঙ্গল দোষ লগ্নৰ পৰাও চোৱা হয়, গতিকে তাৰ বাবে জন্মৰ সঠিক সময় লাগে।',
+    'km.faq.name_q': 'নামেৰে কুণ্ডলী মিলন কৰিব পাৰিনে?',
+    'km.faq.name_a': 'পাৰি। নামেৰে কুণ্ডলী মিলনত প্ৰতিজনৰ নামৰ প্ৰথম আখৰৰ পৰা নক্ষত্ৰ লোৱা হয় আৰু সেই একেটা {total} গুণ মিলোৱা হয়। ই এক পৰম্পৰাগত চমু পদ্ধতি; জন্মৰ বিৱৰণেৰে কৰা মিলন অধিক নিৰ্ভুল।',
+    'p.faq.tithi_q': 'আজি {city} চহৰত কোনটো তিথি?',
+    'p.faq.tithi_a': '{date} তাৰিখে {city} চহৰত তিথি: {tithi} (সূৰ্যোদয়ত {paksha_full})।',
+    'p.faq.nak_q': 'আজি {city} চহৰত কোনটো নক্ষত্ৰ?',
+    'p.faq.nak_a': '{date} তাৰিখে {city} চহৰত নক্ষত্ৰ: {nakshatra}। চন্দ্ৰ {moon_sign} ৰাশিত আছে।',
+    'p.faq.rahu_q': 'আজি {city} চহৰত ৰাহুকাল কেতিয়া?',
+    'p.faq.rahu_a': '{date} তাৰিখে {city} চহৰত ৰাহুকাল {rahu}; এই সময়ছোৱাত নতুন কোনো কাম আৰম্ভ নকৰিব। যমগণ্ড {yama} আৰু গুলিক কাল {gulika}।',
+    'p.faq.sun_q': 'আজি {city} চহৰত সূৰ্যোদয় আৰু সূৰ্যাস্ত কেতিয়া?',
+    'p.faq.sun_a': '{date} তাৰিখে {city} চহৰত সূৰ্যোদয় {sunrise} আৰু সূৰ্যাস্ত {sunset} (ভাৰতীয় সময়)।',
 }
 
 # app/seo_text.py FAQ["as"] — the seven free-kundali FAQ pairs (plain text)  [7]
@@ -1071,6 +1088,13 @@ RASHIFAL_TEXT = {
     "house.11": "একাদশ",
     # EN: 12th
     "house.12": "দ্বাদশ",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    's.faq.today_q': 'আজিৰ {local} ৰাশিফলে কি কৈছে?',
+    's.faq.today_a': '{tone}: {weekday}, {date} তাৰিখে চন্দ্ৰ আপোনাৰ ৰাশি {local}ৰ পৰা {house} ভাৱত আছে। {moon}',
+    's.faq.period_q': 'এই {local} ৰাশিফল কোনদিনাৰ?',
+    's.faq.period_a': '{weekday}, {date} (ভাৰতীয় সময়); ইয়াক প্ৰতিদিনে নতুনকৈ গণনা কৰা হয়। ইয়াত দিনটোৰ চন্দ্ৰ গোচৰ আৰু শনি, বৃহস্পতি, ৰাহু আৰু কেতুৰ লেহেমীয়া গোচৰ চোৱা হয়, {local}ক চন্দ্ৰ ৰাশি বুলি ধৰি গণনা কৰি।',
+    's.faq.sade_q': '{local} ৰাশিৰ সাড়ে সাতি চলি আছেনে?',
+    's.faq.sade_a': 'শনি {sat_sign} ৰাশিত আছে, {local}ৰ পৰা {sat_house} ভাৱত। {status}',
 }
 
 # app/rashifal_text.py MORE_LINKS["as"] — 'More free tools' links: keep every href, translate the text; the first href is '{twin:en}' (this page in English)  [6]
@@ -1466,6 +1490,12 @@ VRAT_TEXT = {
     # EN: The date follows the rule: {rule}. In {year} that is {when} (New Delhi).
     # keep: {rule} {when} {year}
     "faq.why_a": "তাৰিখৰ নিয়ম: {rule}। {year} চনত সেয়া পৰিছে {when} (নতুন দিল্লী)।",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'hub.faq.today_q': 'আজি {city} চহৰত কোনটো ব্ৰত বা উৎসৱ?',
+    'hub.faq.today_a': 'আজি, {date}, {city} চহৰত: {list}।',
+    'hub.faq.next_q': '{city} চহৰত অহা ব্ৰত আৰু উৎসৱবোৰ কি কি?',
+    'hub.faq.next_a': '{city} চহৰত আগন্তুক {days} দিনত: {list}।',
+    'hub.faq.city_q': 'ব্ৰতৰ তাৰিখ আৰু সময় সকলো চহৰতে একে হয়নে?',
 }
 
 # app/vrat_text.py ABOUT["as"] — what each of the 47 festivals / vrats is (key = festival slug)  [47]
@@ -1970,6 +2000,13 @@ NAKSHATRA_PAGE_TEXT = {
     "humour.Pitta": "পিত্ত",
     # EN: Kapha
     "humour.Kapha": "কফ",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'nak.faq.rashi_q': '{name} নক্ষত্ৰ কোনটো ৰাশিত, আৰু ইয়াৰ অধিপতি কোন?',
+    'nak.faq.rashi_a': '{name} নক্ষত্ৰৰ বিস্তাৰ {span}, গতিকে ই {signs} ৰাশিত পৰে। ইয়াৰ অধিপতি {lord} (মহাদশা {years} বছৰ) আৰু দেৱতা {deity}।',
+    'nak.faq.gana_q': '{name} নক্ষত্ৰৰ গণ, যোনি আৰু নাড়ী কি?',
+    'nak.faq.gana_a': '{name} নক্ষত্ৰৰ গণ {gana}, যোনি {yoni} আৰু নাড়ী {nadi}। কুণ্ডলী মিলনত তুলনা কৰা আঠোটা কূটৰ ভিতৰত এইবোৰ তিনিটা।',
+    'nak.faq.syl_q': '{name} নক্ষত্ৰৰ নামাক্ষৰ কি কি?',
+    'nak.faq.syl_a': 'চাৰিওটা পাদৰ প্ৰতিটোৰ এটাকৈ আখৰ: {syl}। পৰম্পৰা অনুসৰি ইয়াৰে কোনো এটা আখৰেৰে আৰম্ভ হোৱা নাম {name} নক্ষত্ৰৰ বুলি ধৰা হয়।',
 }
 
 # app/nakshatra_text.py NAKSHATRA_TRAITS["as"] — character paragraph of each of the 27 nakshatras (key = slug)  [27]
@@ -2506,6 +2543,16 @@ NAAM_MILAN_TEXT = {
     #     href="{href}">all 27 nakshatras</a>.</p>
     # keep: {abhijit} {href} {syllables}
     "explainer": " <h2>নামেৰে মিলন কেনেকৈ হয়</h2> <p>27 টা নক্ষত্ৰৰ প্ৰতিটোৰ চাৰিটা পাদ, আৰু প্ৰতিটো পাদৰ এটা আখৰ (নামাক্ষৰ) — মুঠ 108 টা। নামটো যি পাদৰ আখৰেৰে <strong>আৰম্ভ হয়</strong>, সেইটোৱেই সেই ব্যক্তিৰ নক্ষত্ৰ, আৰু ইয়াৰ ৰাশিয়েই চন্দ্ৰ ৰাশি বুলি ধৰা হয়। তাৰ পিছত এই দুটা নক্ষত্ৰৰ পৰা সেই একেটা <strong>অষ্টকূট (36 গুণ)</strong> মিলন কৰা হয়, যিটো জন্মকুণ্ডলীৰে কৰা হয় — বৰ্ণ, বশ্য, তাৰা, যোনি, গ্ৰহ মৈত্ৰী, গণ, ভকূট আৰু নাড়ী — আমাৰ কুণ্ডলী মিলন সঁজুলিৰ সেই একে গণনা-পদ্ধতিৰে।</p> <h3>প্ৰথম আখৰ কেনেকৈ পঢ়া হয়</h3> <ul> <li>প্ৰথম আখৰৰ প্ৰথম ব্যঞ্জন আৰু তাৰ স্বৰচিহ্ন লোৱা হয়: <strong>Priya → পী</strong>, <strong>Kshitij → কী</strong>। হ্ৰস্ব আৰু দীঘল স্বৰ একে ধৰা হয় (ই/ঈ, উ/ঊ); ঐক এ আৰু ঔক ও ধৰা হয়।</li> <li>‘ব’ক ‘ৱ’ হিচাপে, আৰু ‘শ’ক ‘ষ’ (অ-কাৰসহ) বা ‘স’ হিচাপে পঢ়া হয়; ঋক ৰী।</li> <li>অভিজিৎ নক্ষত্ৰৰ আখৰ ({abhijit}) উত্তৰাষাঢ়াৰ চতুৰ্থ পাদত গণনা কৰা হয়।</li> <li>ইংৰাজীত লিখা নাম লিপ্যন্তৰ কৰি পঢ়া হয়; T, D, N, Th, Dh ৰ দৰে আখৰে দুটা বেলেগ আখৰ বুজাব পাৰে (ত/ট, দ/ড), সেয়ে ফলাফলত দেখুওৱা হয় কোনটো আখৰ ধৰা হ'ল, আৰু আপুনি আন এটা বাছিব পাৰে। হিন্দী (দেৱনাগৰী) আখৰেৰে লিখা নাম হুবহু পঢ়া হয়।</li> </ul> <h3>ৰাশি অনুসৰি নামাক্ষৰ</h3> {syllables} <p>প্ৰতিটো নক্ষত্ৰৰ আখৰ, দেৱতা, গণ আৰু নাড়ী জানিবলৈ চাওক <a href=\"{href}\">27 টা নক্ষত্ৰৰ তালিকা</a>।</p>",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'faq.how_q': 'নামেৰে কুণ্ডলী মিলন কেনেকৈ হয়?',
+    'faq.how_a': '27 টা নক্ষত্ৰৰ প্ৰতিটোৰ চাৰিটা পাদ, আৰু প্ৰতিটো পাদৰ এটা আখৰ — মুঠ {padas} টা। নামটো যি পাদৰ আখৰেৰে আৰম্ভ হয়, তাৰ পৰাই সেই ব্যক্তিৰ নক্ষত্ৰ আৰু চন্দ্ৰ ৰাশি পোৱা যায়, আৰু এই দুয়োটাৰ পৰা জন্মকুণ্ডলীৰে কৰা সেই একেটা {total} গুণৰ অষ্টকূট মিলন গণনা কৰা হয়।',
+    'faq.accurate_q': 'নামেৰে মিলন জন্মকুণ্ডলীৰে মিলনৰ দৰেই নিৰ্ভুলনে?',
+    'faq.accurate_a': 'নহয়। ই ধৰি লয় যে প্ৰতিজনৰ নাম জন্ম নক্ষত্ৰৰ আখৰৰ পৰা ৰখা হৈছিল, কিন্তু আজিকালি প্ৰায়ে তেনে নহয়; জন্মৰ তাৰিখ, সময় আৰু স্থানেৰে কৰা মিলন বহু বেছি নিৰ্ভুল।',
+    'faq.mangal_q': 'নামেৰে মিলনত মাংগলিক দোষ চাব পাৰিনে?',
+    'faq.score_q': 'এই যোৰাৰ কিমান গুণ মিলে?',
+    'faq.score_a': '{maximum}ৰ ভিতৰত {score} গুণ — {verdict}। বৰৰ নামৰ পৰা {nak1} নক্ষত্ৰৰ পাদ {pada1} ({rashi1}) আৰু কইনাৰ নামৰ পৰা {nak2} নক্ষত্ৰৰ পাদ {pada2} ({rashi2}) পোৱা যায়।',
+    'faq.dosha_q': 'এই মিলনত নাড়ী বা ভকূট দোষ আছেনে?',
+    'faq.dosha_a': "নাড়ীত {nadi_max}ৰ ভিতৰত {nadi} আৰু ভকূটত {bhakoot_max}ৰ ভিতৰত {bhakoot} গুণ। 0 গুণৰ অৰ্থ হ'ল সেই দোষ আছে আৰু ই কটা হোৱা নাই; দোষ কাটি গ'লে তাৰ গুণ ঘূৰাই পোৱা যায়।",
 }
 
 # app/naam_milan_text.py ENGINE["as"] — score-band notes and the convention note of a naam-milan result  [5]
@@ -2634,6 +2681,14 @@ MUHURAT_TEXT = {
     "period.guru_asta": "গুৰু অস্ত",
     # EN: Jupiter combust (too close to the Sun to be seen), with 3 days either side
     "period_about.guru_asta": "বৃহস্পতি অস্তমিত (সূৰ্যৰ অতি ওচৰত থকা বাবে দেখা নাযায়), দুয়োফালে 3 দিনসহ",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'faq.dates_q': '{year} চনৰ {name}ৰ তাৰিখবোৰ কি কি?',
+    'faq.dates_a': 'নতুন দিল্লীৰ বাবে {year} চনত {name_lower}ৰ {count} টা তাৰিখ আছে। প্ৰথম তাৰিখকেইটা: {first}।',
+    'faq.how_q': '{name_lower}ৰ এই তাৰিখবোৰ কেনেকৈ বাছি লোৱা হয়?',
+    'faq.how_a': 'প্ৰতিটো তাৰিখে নতুন দিল্লীৰ সূৰ্যোদয়ৰ তিথি, নক্ষত্ৰ, বাৰ, যোগ আৰু ভদ্ৰাৰ শাস্ত্ৰীয় পৰীক্ষা পাৰ হয়, আৰু {periods}ৰ বাহিৰত পৰে। কেৱল এই নক্ষত্ৰবোৰৰ দিনহে তালিকাত দিয়া হৈছে: {naks}।',
+    'faq.none_q': '{year} চনৰ কোনবোৰ মাহত {name_lower} নাই?',
+    'faq.none_a': '{months}ত {name_lower}ৰ কোনো তাৰিখ নাই, কাৰণ তেতিয়া {periods}।',
+    'faq.none_a_plain': '{months}ত {name_lower}ৰ কোনো তাৰিখ নাই: সেই মাহবোৰৰ কোনো দিনেই তিথি, নক্ষত্ৰ, বাৰ আৰু যোগৰ পৰীক্ষা পাৰ নহয়।',
 }
 
 # app/muhurat_text.py MUNDAN["as"] — the mundan (first haircut) muhurat's own wording  [5]

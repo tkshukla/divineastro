@@ -47,7 +47,9 @@ def main() -> int:
     by = {l: e for l, e in zip(locs, entries)}
     check("daily tool pages carry lastmod, legal/static pages do not",
           "<lastmod>" in by[SITE + "/panchang/pune"] and "<lastmod>" in by[SITE + "/rashifal"]
-          and "<lastmod>" not in by[SITE + "/terms"] and "<lastmod>" not in by[SITE + "/kundali-milan"])
+          and "<lastmod>" not in by[SITE + "/terms"]
+          # DIVASTRO-165: a page whose content changed once carries that day, not "today"
+          and f"<lastmod>{seo_pages.FAQ_RELEASE}</lastmod><priority>" in by[SITE + "/kundali-milan"])
     check("a top city ranks above a small one, English above regional",
           seo_pages.sitemap_priority("/panchang/mumbai") > seo_pages.sitemap_priority("/panchang/" + seo_cities.CITIES[-1].slug)
           and seo_pages.sitemap_priority("/kn/panchang") < seo_pages.sitemap_priority("/panchang"))

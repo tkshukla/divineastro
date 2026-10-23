@@ -309,7 +309,12 @@ _UI = {
          "all": "सभी कथाएँ देखें",
          "cta_h": "कथा पढ़ ली — अब अपनी कुंडली देखें",
          "cta_p": "जन्म तिथि, समय और स्थान से मुफ़्त कुंडली, दशा और ग्रह स्थिति। AI ज्योतिषी से पहले {free} सवाल फ्री — कोई कार्ड नहीं चाहिए।",
-         "cta_kundali": "मुफ़्त कुंडली बनाएँ", "cta_panchang": "आज का पंचांग देखें"},
+         "cta_kundali": "मुफ़्त कुंडली बनाएँ", "cta_panchang": "आज का पंचांग देखें",
+         # DIVASTRO-165: the story's FAQ (plain text): {title} {source}
+         "faq_about_q": "“{title}” की कथा किस बारे में है?",
+         "faq_source_q": "“{title}” की कथा किस ग्रंथ से है?",
+         "faq_source_a": "यह कथा {source} से ली गई है।",
+         "faq_lesson_q": "“{title}” की कथा से क्या सीख मिलती है?"},
     EN: {"index": "Stories from the Puranas", "crumb": "Kathas", "source": "Source",
          "lesson": "What this story teaches", "next": "Read next", "more": "More stories",
          "intro": "Famous stories from the Ramayana, the Mahabharata, the Puranas and the vrat "
@@ -321,7 +326,11 @@ _UI = {
          "cta_h": "You have read the story — now see your own chart",
          "cta_p": "A free kundali with your dashas and planetary positions from your birth date, time and place. "
                   "Your first {free} questions to the AI astrologer are free — no card needed.",
-         "cta_kundali": "Make my free kundali", "cta_panchang": "See today's Panchang"},
+         "cta_kundali": "Make my free kundali", "cta_panchang": "See today's Panchang",
+         "faq_about_q": "What is the story “{title}” about?",
+         "faq_source_q": "Where does the story “{title}” come from?",
+         "faq_source_a": "It is retold from {source}.",
+         "faq_lesson_q": "What does the story “{title}” teach?"},
 }
 
 
@@ -366,11 +375,19 @@ def _story(slug: str, lang: str) -> HTMLResponse:
     paras = "".join(f"<p>{_html(p)}</p>" for p in (*t.teaser, *t.rest))
     links = "".join(f'<li><a href="{_e(ln[1] if lang == HI else ln[3])}">'
                     f'{_e(ln[0] if lang == HI else ln[2])}</a></li>' for ln in s.links)
+    # DIVASTRO-165: three questions answered from the story file itself (summary,
+    # source, message), the same text the index, the heading and the page print.
+    faq_html, faq = seo_pages.faq_section([
+        (ui["faq_about_q"].format(title=t.title), t.summary),
+        (ui["faq_source_q"].format(title=t.title), ui["faq_source_a"].format(source=t.source)),
+        (ui["faq_lesson_q"].format(title=t.title), _BOLD.sub(r"\1", t.message)),
+    ], lang)
     body = (f"<h1>{_e(t.title)}</h1>"
             f'<p class="date">{_e(ui["source"])}: {_e(t.source)}</p>'
             f"{paras}"
             f"<h2>{_e(ui['lesson'])}</h2><p>{_html(t.message)}</p>"
             + (f"<p>{_html(t.note)}</p>" if t.note else "")
+            + faq_html
             + f"<h2>{_e(ui['cta_h'])}</h2><p>{_e(_free_line(ui['cta_p']))}</p>"
             + seo_pages._cta("free-kundali", ui["cta_kundali"], lang, big=True)
             + f'<p><a href="{_e(i18n.prefix(lang))}/panchang">{_e(ui["cta_panchang"])}</a></p>'
@@ -387,7 +404,7 @@ def _story(slug: str, lang: str) -> HTMLResponse:
                    description=f"{t.title}: {t.summary} {ui['source']}: {t.source}.",
                    path=page_path(slug, lang), alt=page_path(slug, EN if lang == HI else HI),
                    crumbs=[(ui["crumb"], page_path(None, lang)), (t.title, page_path(slug, lang))],
-                   body=body, lang=lang, extra_ld=(article,), x_default=HI,
+                   body=body, lang=lang, extra_ld=(article, *seo_pages.faq_ld(faq)), x_default=HI,
                    translated=TRANSLATED, lang_paths=_lang_paths(slug))
 
 

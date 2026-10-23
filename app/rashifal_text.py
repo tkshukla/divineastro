@@ -1648,6 +1648,80 @@ KETU_LINE[False].update(
     ml="നിങ്ങളുടെ {n} ഭാവത്തിലെ കേതു ശാന്തവും ഉൾമുഖവുമായ സ്വാധീനമാണ് — ആത്മചിന്തനത്തിനും "
        "ആത്മീയസാധനയ്ക്കും നല്ലത്, ആവേശത്തിലുള്ള നീക്കങ്ങൾക്ക് അത്ര നല്ലതല്ല.")
 
+# DIVASTRO-165: the question-and-answer block (and its FAQPage JSON-LD) on
+# /rashifal/<sign>. Plain text. The sign: {name} {english} {name_hi} {local} (as in
+# s.title). {weekday} {date} the day; {house} (house word, as s.summary) {tone} (the
+# day's tone label) {moon} (the Moon-house sentence the page prints); {sat_sign}
+# {sat_house} where Saturn is; {status} the page's Sade Sati sentence.
+TEXT["en"].update({
+    "s.faq.today_q": "What does today's {name} rashifal say?",
+    "s.faq.today_a": ("{tone}: on {weekday}, {date} the Moon is in your {house} house from {name}. "
+                      "{moon}"),
+    "s.faq.period_q": "Which day does this {name} rashifal cover?",
+    "s.faq.period_a": ("{weekday}, {date} (IST); it is recalculated every day. It reads the day's "
+                       "Moon transit and the slow transits of Saturn, Jupiter, Rahu and Ketu, counted "
+                       "from {name} as the Moon sign."),
+    "s.faq.sade_q": "Is Sade Sati running for {name}?",
+    "s.faq.sade_a": "Saturn is in {sat_sign}, the {sat_house} house from {name}. {status}",
+})
+TEXT["hi"].update({
+    "s.faq.today_q": "आज का {local} राशिफल क्या कहता है?",
+    "s.faq.today_a": "{tone}: {weekday}, {date} को चंद्रमा आपकी राशि से {house} भाव में है। {moon}",
+    "s.faq.period_q": "यह {local} राशिफल किस दिन का है?",
+    "s.faq.period_a": ("{weekday}, {date} (IST) का; यह रोज़ नए सिरे से गणना होता है। इसमें दिन का चंद्र "
+                       "गोचर और शनि, गुरु, राहु व केतु का धीमा गोचर {local} को चंद्र राशि मानकर गिना जाता है।"),
+    "s.faq.sade_q": "क्या {local} राशि पर साढ़ेसाती चल रही है?",
+    "s.faq.sade_a": "शनि {sat_sign} में हैं, {local} से {sat_house} भाव में। {status}",
+})
+TEXT["or"].update({  # DIVASTRO-165
+    's.faq.today_q': "ଆଜିର {local} ରାଶିଫଳ କ'ଣ କହୁଛି?",
+    's.faq.today_a': '{tone}: {weekday}, {date} ଦିନ ଚନ୍ଦ୍ର {local} ରାଶିରୁ ଆପଣଙ୍କ {house} ଭାବରେ ଅଛନ୍ତି। {moon}',
+    's.faq.period_q': 'ଏହି {local} ରାଶିଫଳ କେଉଁ ଦିନର?',
+    's.faq.period_a': '{weekday}, {date} (ଭାରତୀୟ ସମୟ); ଏହା ପ୍ରତିଦିନ ନୂଆ କରି ଗଣନା କରାଯାଏ। ଏଥିରେ {local}କୁ ଚନ୍ଦ୍ର ରାଶି ଧରି ଦିନର ଚନ୍ଦ୍ର ଗୋଚର ଏବଂ ଶନି, ବୃହସ୍ପତି, ରାହୁ ଓ କେତୁଙ୍କ ଧୀର ଗୋଚର ଦେଖାଯାଏ।',
+    's.faq.sade_q': '{local} ରାଶିରେ ସାଢ଼େସାତି ଚାଲିଛି କି?',
+    's.faq.sade_a': 'ଶନି {sat_sign}ରେ ଅଛନ୍ତି, {local}ରୁ {sat_house} ଭାବରେ। {status}',
+})
+TEXT["bn"].update({  # DIVASTRO-165
+    's.faq.today_q': 'আজকের {local} রাশিফল কী বলছে?',
+    's.faq.today_a': '{tone}: {weekday}, {date} তারিখে চন্দ্র আপনার রাশি {local} থেকে {house} ভাবে আছে। {moon}',
+    's.faq.period_q': 'এই {local} রাশিফল কোন দিনের?',
+    's.faq.period_a': '{weekday}, {date} (ভারতীয় সময়); এটি প্রতিদিন নতুন করে গণনা হয়। এতে দিনের চন্দ্র গোচর এবং শনি, বৃহস্পতি, রাহু ও কেতুর ধীর গোচর দেখা হয়, {local}-কে চন্দ্র রাশি ধরে গুনে।',
+    's.faq.sade_q': '{local} রাশির কি সাড়েসাতি চলছে?',
+    's.faq.sade_a': 'শনি {sat_sign} রাশিতে, {local} থেকে {sat_house} ভাবে। {status}',
+})
+TEXT["kn"].update({  # DIVASTRO-165
+    's.faq.today_q': 'ಇಂದಿನ {local} ರಾಶಿ ಭವಿಷ್ಯ ಏನು ಹೇಳುತ್ತದೆ?',
+    's.faq.today_a': '{tone}: {weekday}, {date} ರಂದು ಚಂದ್ರ {local} ರಾಶಿಯಿಂದ ನಿಮ್ಮ {house} ಮನೆಯಲ್ಲಿದ್ದಾನೆ. {moon}',
+    's.faq.period_q': 'ಈ {local} ರಾಶಿ ಭವಿಷ್ಯ ಯಾವ ದಿನದ್ದು?',
+    's.faq.period_a': '{weekday}, {date} (IST); ಇದನ್ನು ಪ್ರತಿದಿನ ಹೊಸದಾಗಿ ಲೆಕ್ಕಹಾಕಲಾಗುತ್ತದೆ. {local} ರಾಶಿಯನ್ನು ಚಂದ್ರ ರಾಶಿಯಾಗಿ ತೆಗೆದುಕೊಂಡು, ದಿನದ ಚಂದ್ರ ಗೋಚಾರ ಮತ್ತು ಶನಿ, ಗುರು, ರಾಹು, ಕೇತುಗಳ ನಿಧಾನ ಗೋಚಾರವನ್ನು ಇದರಲ್ಲಿ ಎಣಿಸಲಾಗುತ್ತದೆ.',
+    's.faq.sade_q': '{local} ರಾಶಿಗೆ ಸಾಡೇಸಾತಿ ನಡೆಯುತ್ತಿದೆಯೇ?',
+    's.faq.sade_a': 'ಶನಿ {sat_sign} ರಾಶಿಯಲ್ಲಿದ್ದಾನೆ — {local} ರಾಶಿಯಿಂದ {sat_house} ಮನೆ. {status}',
+})
+TEXT["te"].update({  # DIVASTRO-165
+    's.faq.today_q': 'ఈరోజు {local} రాశి ఫలాలు ఏమి చెబుతున్నాయి?',
+    's.faq.today_a': '{tone}: {weekday}, {date}న చంద్రుడు {local} రాశి నుండి మీ {house} స్థానంలో ఉన్నాడు. {moon}',
+    's.faq.period_q': 'ఈ {local} రాశి ఫలాలు ఏ రోజువి?',
+    's.faq.period_a': '{weekday}, {date} (IST); ఇవి ప్రతిరోజూ కొత్తగా లెక్కించబడతాయి. {local} రాశిని చంద్ర రాశిగా తీసుకుని, ఆ రోజు చంద్ర గోచారం, శని, గురువు, రాహు, కేతువుల నెమ్మదైన గోచారాన్ని ఇందులో లెక్కిస్తారు.',
+    's.faq.sade_q': '{local} రాశికి ఏలినాటి శని నడుస్తోందా?',
+    's.faq.sade_a': 'శని {sat_sign}లో ఉన్నాడు, {local} రాశి నుండి {sat_house} స్థానంలో. {status}',
+})
+TEXT["ta"].update({  # DIVASTRO-165
+    's.faq.today_q': 'இன்றைய {local} ராசி பலன் என்ன சொல்கிறது?',
+    's.faq.today_a': '{tone}: {weekday}, {date} அன்று சந்திரன் {local} ராசிக்கு {house} வீட்டில் இருக்கிறார். {moon}',
+    's.faq.period_q': 'இந்த {local} ராசி பலன் எந்த நாளுக்கானது?',
+    's.faq.period_a': '{weekday}, {date} (IST) நாளுக்கானது; இது தினமும் புதிதாகக் கணிக்கப்படுகிறது. அன்றைய சந்திர கோசாரமும் சனி, குரு, ராகு, கேது ஆகியவற்றின் மெதுவான பெயர்ச்சிகளும் {local} ராசியைச் சந்திர ராசியாகக் கொண்டு எண்ணிப் பார்க்கப்படுகின்றன.',
+    's.faq.sade_q': '{local} ராசிக்கு ஏழரைச் சனி நடக்கிறதா?',
+    's.faq.sade_a': 'சனி {sat_sign} ராசியில், {local} ராசிக்கு {sat_house} வீட்டில் இருக்கிறார். {status}',
+})
+TEXT["ml"].update({  # DIVASTRO-165
+    's.faq.today_q': 'ഇന്നത്തെ {local} രാശിഫലം എന്താണ് പറയുന്നത്?',
+    's.faq.today_a': '{tone}: {weekday}, {date}-ന് ചന്ദ്രൻ {local} രാശിയിൽ നിന്ന് {house} ഭാവത്തിലാണ്. {moon}',
+    's.faq.period_q': 'ഈ {local} രാശിഫലം ഏത് ദിവസത്തേതാണ്?',
+    's.faq.period_a': '{weekday}, {date} (IST) ദിവസത്തേത്; ഇത് ദിവസവും പുതുതായി കണക്കാക്കുന്നു. അന്നത്തെ ചന്ദ്രഗോചരവും ശനി, വ്യാഴം, രാഹു, കേതു എന്നിവയുടെ മന്ദഗതിയിലുള്ള ഗോചരവും {local} ചന്ദ്രരാശിയായി എടുത്ത് എണ്ണിയാണ് നോക്കുന്നത്.',
+    's.faq.sade_q': '{local} രാശിക്ക് ഏഴരശ്ശനി നടക്കുന്നുണ്ടോ?',
+    's.faq.sade_a': 'ശനി {sat_sign} രാശിയിലാണ്, {local} രാശിയിൽ നിന്ന് {sat_house} ഭാവത്തിൽ. {status}',
+})
+
 # DIVASTRO-143: pa/ne/as/mr/gu live in app/lang_data/<code>.py; overlaid here as if written inline.
 from . import lang_data  # noqa: E402
 lang_data.merge("RASHIFAL_TEXT", TEXT)

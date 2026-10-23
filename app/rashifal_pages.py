@@ -64,7 +64,7 @@ from .astro import panchang as panchang_engine
 from .chart_service import SIGNS
 from .seo_pages import (
     ADSENSE_CLIENT, BRAND, IST, SITE_URL, _STYLE, _cache_headers, _e,
-    _footer, _panchang, _strip, _today, page_language_bits,
+    _footer, _panchang, _strip, _today, faq_ld, faq_section, page_language_bits, plain,
 )
 from .seo_text import TEXT as SEO_TEXT
 # DIVASTRO-123: every word of these pages, and the phrase bank, is data in rashifal_text.
@@ -339,7 +339,7 @@ def _planet(planet: str, lang: str) -> str:
 
 def _shell(*, lang: str, rashi: Rashi | None, title: str, description: str,
            crumbs: list[tuple[str, str]], body: str, day: dt.date,
-           status: int = 200, cache: bool = True) -> HTMLResponse:
+           status: int = 200, cache: bool = True, extra_ld: tuple = ()) -> HTMLResponse:
     canonical = SITE_URL + path(rashi, lang)
     bits = page_language_bits(lang=lang, path=path(rashi, lang), has_twin=status == 200,
                               translated=TRANSLATED, region=True)
@@ -359,6 +359,7 @@ def _shell(*, lang: str, rashi: Rashi | None, title: str, description: str,
             {"@type": "BreadcrumbList", "itemListElement": [
                 {"@type": "ListItem", "position": i + 1, "name": name, "item": SITE_URL + href}
                 for i, (name, href) in enumerate(trail)]},
+            *extra_ld,
         ],
     }
     jsonld = json.dumps(graph, ensure_ascii=False).replace("</", "<\\/")
@@ -457,13 +458,7 @@ def _backdrop_section(r: dict, s: dict, lang: str) -> str:
     ketu = i18n.pick(KETU_LINE[r["ketu"] in NODE_FAVOURABLE], lang).format(n=_house_word(r["ketu"], lang))
     row("Ketu", s["ketu"]["sign"], r["ketu"], ketu)
 
-    phase = r["sade_sati_phase"]
-    if phase:
-        status = _tx("sade.running", lang, phase=_tx(f"phase.{phase}", lang))
-    elif r["dhaiya"]:
-        status = _tx("sade.dhaiya", lang)
-    else:
-        status = _tx("sade.none", lang)
+    status = _sade_status(r, lang)
     return (f"<h2>{_tx('back.head', lang)}</h2>{_tx('back.intro', lang)}"
             f"<div class=\"scroll\"><table>{''.join(rows)}</table></div>"
             f'<div class="box"><p>{status}</p></div>')
@@ -504,6 +499,7 @@ def _sign_page(day: dt.date, slug: str, lang: str) -> tuple[str, str, str, str]:
         + _tx("s.summary", lang, house=_house_word(main, lang), name=_e(rashi.name))
         + "</p></div>")
     about = _tx("s.about_rashi", lang, **rv)
+    faq_html, faq = _sign_faq(rashi, r, s, day, lang)
     body = f"""
 <h1>{_e(h1)}</h1>
 <p class="hi" lang="{_tx('sub_lang', lang)}">{_e(sub)}</p>
@@ -515,10 +511,35 @@ def _sign_page(day: dt.date, slug: str, lang: str) -> tuple[str, str, str, str]:
 {_personal_line(lang)}
 {_cta(lang)}
 <p><a href="{i18n.prefix(lang)}/rashi/{rashi.slug}">{_e(about)}</a></p>
+{faq_html}
 {_sign_links(rashi, lang)}
 {_method_note(lang)}
 {_more_links(rashi, lang)}"""
-    return title, description, body, _tx("sign_crumb", lang, **rv)
+    return title, description, body, _tx("sign_crumb", lang, **rv), faq
+
+
+def _sade_status(r: dict, lang: str) -> str:
+    """The Sade Sati / Dhaiya box (HTML), as _backdrop_section prints it."""
+    phase = r["sade_sati_phase"]
+    if phase:
+        return _tx("sade.running", lang, phase=_tx(f"phase.{phase}", lang))
+    return _tx("sade.dhaiya", lang) if r["dhaiya"] else _tx("sade.none", lang)
+
+
+def _sign_faq(rashi: Rashi, r: dict, s: dict, day: dt.date, lang: str) -> tuple[str, dict | None]:
+    """DIVASTRO-165: what today's reading says, which day it covers, and Sade Sati,
+    answered from the same reading() / sky() the sections above print (the main
+    Moon house and tone of the summary box, its phrase-bank line, Saturn's sign
+    and house, the Sade Sati box). Cached with the page, per (date, sign, lang)."""
+    main = r["main_house"]
+    v = {**_rashi_vars(rashi, lang), "date": _date_text(day, lang), "weekday": _weekday(day, lang),
+         "house": _house_word(main, lang), "tone": i18n.pick(TONE_LABEL, lang)[r["tone"]],
+         "moon": i18n.pick(MOON_HOUSE[main], lang),
+         "sat_sign": _sign_label(s["saturn"]["sign"], lang),
+         "sat_house": _house_word(r["saturn"], lang),
+         "status": plain(_sade_status(r, lang))}
+    return faq_section([(_tx(f"s.faq.{k}_q", lang, **v), _tx(f"s.faq.{k}_a", lang, **v))
+                        for k in ("today", "period", "sade")], lang)
 
 
 @functools.lru_cache(maxsize=8)
@@ -579,9 +600,10 @@ def render_index(lang: str, day: dt.date | None = None) -> HTMLResponse:
 def render_sign(slug: str, lang: str, day: dt.date | None = None) -> HTMLResponse:
     day = day or _today()
     rashi = BY_SLUG[slug]
-    title, description, body, crumb = _sign_page(day, slug, lang)
+    title, description, body, crumb, faq = _sign_page(day, slug, lang)
     return _shell(lang=lang, rashi=rashi, title=title, description=description,
-                  crumbs=[_crumb_root(lang), (crumb, path(rashi, lang))], body=body, day=day)
+                  crumbs=[_crumb_root(lang), (crumb, path(rashi, lang))], body=body, day=day,
+                  extra_ld=faq_ld(faq))
 
 
 def _resolve(slug: str, lang: str) -> HTMLResponse | RedirectResponse:

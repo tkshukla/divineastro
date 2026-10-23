@@ -41,6 +41,7 @@ import functools
 import html
 import json
 import math
+import re
 from xml.sax.saxutils import escape as xml_escape
 from zoneinfo import ZoneInfo
 
@@ -633,6 +634,7 @@ def _panchang_page(city: City, lang: str = EN) -> HTMLResponse:
     description = _tx("p.desc", lang, **raw)
     v = {**_esc(cv), **_esc(names), "rahu": rahu, "place": _e(seo_cities.place(city, lang)),
          "lat": f"{city.latitude:.4f}", "lon": f"{city.longitude:.4f}"}
+    faq_html, faq = _panchang_faq(city, day, p, lang, names, rows)
     body = f"""
 {_tx("p.h1", lang, **v)}
 {_tx("p.sub", lang, **v)}
@@ -643,11 +645,32 @@ def _panchang_page(city: City, lang: str = EN) -> HTMLResponse:
 {_tx("p.note", lang, **v)}
 {_cta("panchang", _tx("p.cta", lang), lang)}
 {_tx("p.limbs", lang)}
+{faq_html}
 {_city_links("panchang", city, lang)}
 {_tool_links(city, "panchang", lang)}"""
     return _render(title=title, description=description, path=_path("panchang", city, lang),
                    lang=lang, alt=_path("panchang", city, HI),
-                   crumbs=_tool_crumbs("panchang", city, lang), body=body)
+                   crumbs=_tool_crumbs("panchang", city, lang), body=body, extra_ld=faq_ld(faq))
+
+
+def _panchang_faq(city: City, day: dt.date, p: dict, lang: str, names: dict,
+                  rows: list[tuple[str, str]]) -> tuple[str, dict | None]:
+    """DIVASTRO-165: today's tithi / nakshatra / Rahu Kaal / sunrise as questions,
+    answered with the very strings the table above prints (its `rows`, as plain
+    text), so the answer and the table cannot disagree. Rebuilt per request like
+    the rest of the page; the response is never cached past IST midnight
+    (_cache_headers), so the JSON-LD is always today's."""
+    row = {k: plain(v) for k, v in rows}
+    v = {"city": seo_cities.city_name(city, lang), "date": _long_date(day, lang),
+         # the table's rows without the English page's Hindi gloss in brackets
+         "tithi": plain(_limb_rows(p["tithi"], day, "TITHI", lang)),
+         "paksha_full": names["paksha_full"],
+         "nakshatra": plain(_limb_rows(p["nakshatra"], day, "NAKSHATRAS", lang)),
+         "moon_sign": row["p.r_moon_sign"],
+         "rahu": row["p.r_rahu"], "yama": row["p.r_yama"], "gulika": row["p.r_gulika"],
+         "sunrise": row["p.r_sunrise"], "sunset": row["p.r_sunset"]}
+    return faq_section([(_tx(f"p.faq.{k}_q", lang, **v), _tx(f"p.faq.{k}_a", lang, **v))
+                        for k in ("tithi", "nak", "rahu", "sun")], lang)
 
 
 @router.get("/panchang", response_class=HTMLResponse)
@@ -884,14 +907,31 @@ def _score_bands(lang: str = EN) -> str:
     """The bands are read straight from the engine's table (upper bounds are
     exclusive ceilings, the last one 36.01), so the page and the verdict the
     tool prints can never disagree."""
+    return "".join(f"<tr><td>{rng}</td><td>{_e(verdict)}</td></tr>"
+                   for rng, verdict in _band_list(lang))
+
+
+def _band_list(lang: str) -> list[tuple[str, str]]:
+    """[("Below 18", "Not recommended"), ("18–24", "Acceptable"), ...] from the engine."""
     total = int(matching.MAXIMUM_POINTS)
     bands, low = [], 0
     for i, (ceiling, _verdict, _detail) in enumerate(matching.SCORE_BANDS):
         top = min(math.ceil(ceiling) - 1, total)
         rng = _tx("km.below", lang, n=top + 1) if low == 0 else f"{low}–{top}"
-        bands.append(f"<tr><td>{rng}</td><td>{_e(_tx(f'km.band{i}', lang))}</td></tr>")
+        bands.append((rng, _tx(f"km.band{i}", lang)))
         low = top + 1
-    return "".join(bands)
+    return bands
+
+
+def _kundali_milan_faq(lang: str, total: int, houses: str) -> tuple[str, dict | None]:
+    """DIVASTRO-165: the four questions people ask about matching, answered from
+    the engine's own numbers (points, score bands, Mars's houses) and the rules
+    this page already states (Moon-based kootas; Mangal from the Lagna too)."""
+    v = {"total": total, "houses": houses,
+         "min": int(matching.SCORE_BANDS[0][0]),
+         "bands": "; ".join(f"{rng}: {verdict}" for rng, verdict in _band_list(lang))}
+    return faq_section([(_tx(f"km.faq.{k}_q", lang, **v), _tx(f"km.faq.{k}_a", lang, **v))
+                        for k in ("gunas", "mangal", "time", "name")], lang)
 
 
 @router.get("/kundali-milan", response_class=HTMLResponse)
@@ -913,6 +953,7 @@ def _kundali_milan_page(lang: str = EN) -> HTMLResponse:
     houses = ", ".join(ords[:-1]) + _tx("km.or", lang) + ords[-1]
     title = _tx("km.title", lang, total=total, brand=BRAND)
     description = _tx("km.desc", lang, total=total)
+    faq_html, faq = _kundali_milan_faq(lang, total, houses)
     body = f"""
 {_tx("km.intro", lang, total=total)}
 {_cta("kundali-milan", _tx("km.cta1", lang), lang)}
@@ -928,10 +969,12 @@ def _kundali_milan_page(lang: str = EN) -> HTMLResponse:
 {_tx("km.mangal", lang, houses=houses)}
 {_tx("km.how", lang, total=total)}
 {_cta("kundali-milan", _tx("km.cta2", lang), lang)}
+{faq_html}
 {_tool_links(seo_cities.DEFAULT, "kundali-milan", lang)}"""
     path = _prefix(lang) + "/kundali-milan"
     resp = _render(title=title, description=description, path=path, lang=lang,
-                   alt="/hi/kundali-milan", crumbs=[(_tx("km.crumb", lang), path)], body=body)
+                   alt="/hi/kundali-milan", crumbs=[(_tx("km.crumb", lang), path)], body=body,
+                   extra_ld=faq_ld(faq))
     # The card prints the offer price: never cache it past the offer's end (as /pricing).
     resp.headers["Cache-Control"] = pricing_pages._cache_control(
         milan_card.offer(now), now, resp.headers["Cache-Control"])
@@ -970,6 +1013,35 @@ def _faq(items: tuple) -> tuple[str, dict]:
         {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}}
         for q, a in items]}
     return f'<div class="faq">{html_part}</div>', ld
+
+
+_TAG = re.compile(r"<[^>]+>")
+
+
+def plain(fragment: str) -> str:
+    """The text of an HTML fragment, for a FAQ answer: tags dropped, entities
+    decoded, whitespace collapsed. Lets an answer reuse a sentence the page
+    already prints (and every language already translates) word for word."""
+    return " ".join(html.unescape(_TAG.sub("", fragment)).split())
+
+
+def faq_section(items, lang: str) -> tuple[str, dict | None]:
+    """DIVASTRO-165: the visible "Frequently asked questions" block and its FAQPage
+    JSON-LD, from one list of (question, answer) plain-text pairs (`_faq`, so the
+    two can never differ). A pair with an empty side is dropped, and no pairs
+    give ("", None): a page never carries an empty FAQPage. The heading is the
+    festival pages' (vrat_text "fest.faq_h2"), the same words on every page."""
+    items = tuple((q, a) for q, a in items if q and a)
+    if not items:
+        return "", None
+    from . import vrat_text
+    faq_html, ld = _faq(items)
+    return f"<h2>{_e(i18n.t('fest.faq_h2', lang, vrat_text.TEXT))}</h2>{faq_html}", ld
+
+
+def faq_ld(ld: dict | None) -> tuple:
+    """`extra_ld` for a page whose FAQ may be empty."""
+    return (ld,) if ld else ()
 
 
 @router.get("/free-kundali", response_class=HTMLResponse)
@@ -1146,9 +1218,38 @@ def sitemap_priority(path: str) -> float:
     return round(score - (0.1 if lang not in (EN, HI) else 0.0), 1)
 
 
+# DIVASTRO-165: pages whose content changed once (the FAQ block), not every day.
+# Their <lastmod> is the date of that change, so a crawler re-reads each once, and
+# `python -m app.indexnow --daily` submits them once (indexnow.pending_changes).
+# When a page type's content changes again, set its date here to the release day.
+FAQ_RELEASE = "2026-10-24"
+CONTENT_CHANGED: dict[str, str] = {
+    "kundali-milan": FAQ_RELEASE, "naam-se-kundali-milan": FAQ_RELEASE,
+    "muhurat": FAQ_RELEASE, "nakshatra": FAQ_RELEASE, "vrat-tyohar": FAQ_RELEASE,
+    "katha": FAQ_RELEASE,
+}
+
+
+def content_changed(path: str) -> str | None:
+    """The date `path`'s content last changed (CONTENT_CHANGED), or None. Only the
+    pages that got the change: /nakshatra/<slug> and /katha/<slug>, not their
+    indexes; the /vrat-tyohar hub and city pages, not the /vrat-tyohar/<year> lists."""
+    parts = _segments(path)
+    if not parts or parts[0] not in CONTENT_CHANGED:
+        return None
+    root = parts[0]
+    if root in ("nakshatra", "katha") and len(parts) < 2:
+        return None
+    if root == "vrat-tyohar" and len(parts) > 1 and parts[1].isdigit():
+        return None
+    return CONTENT_CHANGED[root]
+
+
 def sitemap_lastmod(path: str, today: str) -> str | None:
     parts = _segments(path)
-    return today if parts and parts[0] in DAILY_ROOTS else None
+    if parts and parts[0] in DAILY_ROOTS:
+        return today
+    return content_changed(path)
 
 
 def sitemap_ordered() -> list[str]:
@@ -1170,17 +1271,30 @@ def _rank(paths: tuple[str, ...]) -> tuple[tuple[str, float], ...]:
     return tuple(ranked)
 
 
+@functools.lru_cache(maxsize=4)
+def _sitemap_rows(ranked: tuple[tuple[str, float], ...]) -> tuple[tuple[str, bool, str | None, str], ...]:
+    """(<loc>, rebuilt daily?, fixed content-change date, <priority>) per URL: everything
+    but today's date, worked out once per path list (sitemap_lastmod's rule)."""
+    out = []
+    for path, priority in ranked:
+        parts = _segments(path)
+        out.append((f"<loc>{xml_escape(SITE_URL + path)}</loc>",
+                    bool(parts) and parts[0] in DAILY_ROOTS, content_changed(path),
+                    f"<priority>{priority:.1f}</priority>"))
+    return tuple(out)
+
+
 @router.get("/sitemap.xml")
 def sitemap() -> Response:
     today = _today().isoformat()
     urls = []
-    for path, priority in _ranked():
-        fields = f"<loc>{xml_escape(SITE_URL + path)}</loc>"
-        lastmod = sitemap_lastmod(path, today)
-        if lastmod:
-            fields += f"<lastmod>{lastmod}</lastmod><changefreq>daily</changefreq>"
-        fields += f"<priority>{priority:.1f}</priority>"
-        urls.append(f"<url>{fields}</url>")
+    for loc, daily, changed, prio in _sitemap_rows(_ranked()):
+        if daily:
+            urls.append(f"<url>{loc}<lastmod>{today}</lastmod><changefreq>daily</changefreq>{prio}</url>")
+        elif changed:
+            urls.append(f"<url>{loc}<lastmod>{changed}</lastmod>{prio}</url>")
+        else:
+            urls.append(f"<url>{loc}{prio}</url>")
     xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
            + "\n".join(urls) + "\n</urlset>\n")
