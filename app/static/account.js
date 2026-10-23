@@ -1319,7 +1319,8 @@ function reportCharts() {
   const open = state.sessionId ? state.currentBirthData : null;
   if (state.sessionId) {
     const meta = state.chart?.meta || {};
-    out.push({ open: true, label: meta.name || open?.name || at("rptThisChart"),
+    // DIVASTRO-162: meta.name is "Native" for an unnamed chart; show the typed name or "This chart".
+    out.push({ open: true, label: (open ? (open.name || "").trim() : meta.name) || at("rptThisChart"),
                sub: meta.local_time || "", sid: state.sessionId });
   }
   for (const b of state.births || []) {
