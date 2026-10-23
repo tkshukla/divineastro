@@ -168,7 +168,8 @@ def free_answers(browser, base: str) -> None:
           {"name": "starter_inline_click", "detail": "health"} in events, str(events))
     check("the line is gone once tapped", pg.page.locator(LINE).count() == 0)
     check("the store's own starter_shown is not double-counted",
-          not [e for e in events if e.get("name") == "starter_shown"], str(events))
+          # (the home Plans strip's own starter_shown "home", DIVASTRO-160, is a different offer)
+          not [e for e in events if e.get("name") == "starter_shown" and e.get("detail") != "home"], str(events))
     pg.page.click(f'.modal.store .pack[data-sku="{SKU}"] .buy-btn')
     pg.page.wait_for_selector(".starter-done", timeout=10000)
     check("buying from it reports starter_click 'inline'",
