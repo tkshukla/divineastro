@@ -879,6 +879,8 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("starter_inline_click", "timing"): "Tapped the Starter line under a free answer (timing / muhurat)",
     ("starter_inline_click", "general"): "Tapped the Starter line under a free answer (general)",
     ("starter_shown", "guest"): "Starter offered without signing in (sign-in sheet)",
+    ("starter_shown", "home"): "Starter offered at the top of the home Plans section",
+    ("starter_click", "home"): "Tapped the Starter on the home Plans section",
     ("starter_click", "guest"): "Opened the Starter's pay-without-signing-in sheet",
     ("email_answer_queued", ""): "Asked a question to be answered by email",
     ("email_answer_delivered", ""): "An emailed answer was delivered",

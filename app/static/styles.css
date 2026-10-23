@@ -2746,6 +2746,16 @@ html[lang="ne"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetic
 .plan-hw-text { font-size: 12.5px; color: var(--ink-dim); line-height: 1.45; overflow-wrap: anywhere; }
 .plan-hw-go { font-size: 13px; color: var(--gold-soft); padding: 4px 0; }
 [data-theme="light"] .plan-hw { background: rgba(20, 30, 80, 0.045); }
+/* DIVASTRO-160: the ₹21 Starter strip at the top of the home Plans section */
+.plan-starter {
+  display: flex; flex-direction: column; gap: 4px; margin: 4px 0 12px; padding: 14px 16px; min-height: 44px;
+  border: 1px solid rgba(var(--gold-rgb), 0.55); border-radius: 14px; background: rgba(var(--gold-rgb), 0.10);
+  color: var(--ink); text-decoration: none;
+}
+.plan-starter:hover { background: rgba(var(--gold-rgb), 0.16); }
+.plan-starter-head { font-size: 15px; font-weight: 600; line-height: 1.35; color: var(--gold); overflow-wrap: anywhere; }
+.plan-starter-text { font-size: 13px; color: var(--ink-dim); line-height: 1.45; overflow-wrap: anywhere; }
+.plan-starter-go { font-size: 14px; font-weight: 600; color: var(--gold-soft); padding: 4px 0; overflow-wrap: anywhere; }
 [data-theme="light"] .plan { background: rgba(20, 30, 80, 0.045); }
 
 /* DIVASTRO-152: the Diwali offer. Shown only while /api/products says it is live (account.js
