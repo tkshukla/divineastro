@@ -2746,7 +2746,7 @@ html[lang="ne"] { --sans: "Segoe UI", Inter, system-ui, -apple-system, "Helvetic
 .plan-hw-text { font-size: 12.5px; color: var(--ink-dim); line-height: 1.45; overflow-wrap: anywhere; }
 .plan-hw-go { font-size: 13px; color: var(--gold-soft); padding: 4px 0; }
 [data-theme="light"] .plan-hw { background: rgba(20, 30, 80, 0.045); }
-/* DIVASTRO-159: the ₹21 Starter strip at the top of the home Plans section */
+/* DIVASTRO-160: the ₹21 Starter strip at the top of the home Plans section */
 .plan-starter {
   display: flex; flex-direction: column; gap: 4px; margin: 4px 0 12px; padding: 14px 16px; min-height: 44px;
   border: 1px solid rgba(var(--gold-rgb), 0.55); border-radius: 14px; background: rgba(var(--gold-rgb), 0.10);

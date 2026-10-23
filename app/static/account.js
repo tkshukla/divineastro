@@ -2184,7 +2184,7 @@ function renderPlans() {
     box.addEventListener("click", (e) => {
       const a = e.target.closest("[data-plans]");
       if (a) window.daTrack?.("plans_click", a.dataset.plans);
-      // DIVASTRO-159: the Starter strip opens its own sheet (guest checkout when signed out).
+      // DIVASTRO-160: the Starter strip opens its own sheet (guest checkout when signed out).
       if (a && a.dataset.plans === "starter") {
         e.preventDefault();
         window.daTrack?.("starter_click", "home");

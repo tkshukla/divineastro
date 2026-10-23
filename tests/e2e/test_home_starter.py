@@ -1,4 +1,4 @@
-"""DIVASTRO-159 in a browser: the Rs 21 Starter at the top of the home Plans section.
+"""DIVASTRO-160 in a browser: the Rs 21 Starter at the top of the home Plans section.
 
   a. Signed out on a 390px phone: the strip is in #plans with ₹21 and "no sign-in
      needed"; it is reported once as starter_shown home; tapping it reports
