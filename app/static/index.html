@@ -409,7 +409,7 @@
         <h2 id="milan-groom-h">Groom</h2>
         <div class="field">
           <label>Name <span class="opt">optional</span></label>
-          <input type="text" data-f="name" placeholder="Name" />
+          <input type="text" data-f="name" placeholder="Optional — a nickname is fine" />
         </div>
         <div class="row">
           <div class="field"><label>Date of birth</label>
@@ -434,7 +434,7 @@
         <h2 id="milan-bride-h">Bride</h2>
         <div class="field">
           <label>Name <span class="opt">optional</span></label>
-          <input type="text" data-f="name" placeholder="Name" />
+          <input type="text" data-f="name" placeholder="Optional — a nickname is fine" />
         </div>
         <div class="row">
           <div class="field"><label>Date of birth</label>
@@ -619,7 +619,8 @@
     <div class="row">
       <div class="field">
         <label for="f-name">Name <span class="opt">optional</span></label>
-        <input id="f-name" name="name" type="text" placeholder="Who is this chart for?" />
+        <input id="f-name" name="name" type="text" placeholder="Optional — a nickname is fine"
+               aria-describedby="name-hint" />
       </div>
       <div class="field">
         <label for="f-gender" data-i18n="gender">Gender <span class="opt">optional</span></label>
@@ -631,6 +632,10 @@
         </select>
       </div>
     </div>
+    <!-- DIVASTRO-162: full width under the Name/Gender row (a half-width column would
+         wrap it to five lines on a phone). Says the name is not needed; it is not a
+         promise that it goes nowhere (PDF reports use it when given). -->
+    <p class="name-hint" id="name-hint">Not needed for the reading — date, time and place are enough. Leave it blank to stay anonymous.</p>
 
     <button type="submit" class="primary" id="cast">
       <span class="label">Show my reading</span>

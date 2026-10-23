@@ -763,7 +763,8 @@ function applyLanguage() {
   }
   set("#cast .label", t("cast"));
   set('[data-i18n="narration"]', t("narration"));
-  ph("#f-name", t("namePh"));
+  ph("#f-name", t("nameOptPh"));
+  set("#name-hint", t("nameHint"));
   ph("#f-place", t("pobPh"));
   ph("#q", t("askPh"));
   set("#fs-label", t("textSize"));
@@ -1425,13 +1426,21 @@ $("#f-quick-saved")?.addEventListener("change", (e) => {
 /* ------------------------------------------------------------
    Stage 2 — reading
    ------------------------------------------------------------ */
+/* DIVASTRO-162: the name is optional. A blank one reaches the server as "Native"
+   (meta.name, which the reports and prompts use); on screen it reads "My chart"
+   in the visitor's language instead, never an empty line or the jargon. */
+function chartDisplayName(meta) {
+  const typed = state.currentBirthData ? state.currentBirthData.name : meta?.name;
+  return String(typed || "").trim() || t("myChart");
+}
+
 function renderReading(data) {
   const c = data.chart;
   const meta = c.meta;
 
   showStage("stage-chat");
 
-  $("#who-name").textContent = meta.name;
+  $("#who-name").textContent = chartDisplayName(meta);
   $("#who-detail").textContent =
     `${meta.local_time} · ${meta.place} · ${meta.timezone} (UTC${meta.utc_offset.slice(0, 3)}:${meta.utc_offset.slice(3)})`;
 
@@ -1491,7 +1500,7 @@ function openingRead(c) {
   const asc = c.objects.ASC, sun = c.objects.Sun, moon = c.objects.Moon;
   const d = c.distribution;
   return (
-    `**${meta.name}** — chart cast for ${meta.local_time}, ${meta.place}.\n\n` +
+    `**${chartDisplayName(meta)}** — chart cast for ${meta.local_time}, ${meta.place}.\n\n` +
     `Ascendant **${asc.sign} ${asc.dms}**, Sun in **${sun.sign}** (${ordinal(sun.house)} house), ` +
     `Moon in **${moon.sign}** (${ordinal(moon.house)} house). ` +
     `This is a **${meta.sect === "day" ? "day" : "night"} chart**, dominantly **${d.dominant_element}** ` +
@@ -2338,7 +2347,7 @@ async function loadAndShowDashboard() {
   
   // Update name and details in header
   const meta = state.chart.meta;
-  $("#dash-name").textContent = meta.name || "Native";
+  $("#dash-name").textContent = chartDisplayName(meta);
   $("#dash-birth-details").textContent = 
     `${meta.local_time} · ${meta.place} · ${meta.timezone}`;
     

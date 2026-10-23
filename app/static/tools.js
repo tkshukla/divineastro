@@ -902,6 +902,10 @@
     qa('#pa-place, #mu-place, #cho-place').forEach((el) => {
       el.placeholder = tr('todayCityPh', 'Start typing a city…');
     });
+    // DIVASTRO-162: the Kundali Milan names are optional too; same words as the birth form.
+    qa('.milan-card [data-f="name"]').forEach((el) => {
+      el.placeholder = tr('nameOptPh', 'Optional — a nickname is fine');
+    });
     qa('#mu-event option').forEach((o) => {
       if (MU_EVENTS[o.value]) o.textContent = tr(MU_EVENTS[o.value], o.textContent);
     });

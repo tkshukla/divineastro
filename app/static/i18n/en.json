@@ -616,5 +616,8 @@
   "acct.milanRptSection": "Kundali Milan report",
   "acct.milanRptStore": "For two people: enter both birth details in Kundali Milan, see the score, then get the report under it.",
   "acct.milanRptOpen": "Open Kundali Milan",
-  "acct.milanRptForPair": "For the match on screen: {pair}"
+  "acct.milanRptForPair": "For the match on screen: {pair}",
+  "nameOptPh": "Optional — a nickname is fine",
+  "nameHint": "Not needed for the reading — date, time and place are enough. Leave it blank to stay anonymous.",
+  "myChart": "My chart"
 }
