@@ -23,6 +23,7 @@ Two providers, both optional:
 from __future__ import annotations
 
 import contextvars
+import datetime as dt
 import json
 import logging
 import os
@@ -31,6 +32,7 @@ import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
+from zoneinfo import ZoneInfo
 
 from .astro.vargas import DEBILITATION, EXALTATION
 
@@ -87,53 +89,96 @@ LANGUAGES = {
     "gu": "Gujarati (ગુજરાતી, in Gujarati script)",
 }
 
+# DIVASTRO-161/163: customers said the answers were generic and full of jargon.
+# The prompt used to ask for a "premium, highly detailed" 300-500 word reading
+# that covered dignities, profections and releasing peaks by name — so that is
+# what came back. It now asks for a family astrologer's plain talk about this
+# one person: their question, their age and running period, their dates.
+#
+# Never to appear in an answer, in any language. The evidence the model reads
+# keeps the engine's technical labels (they are where the facts come from); the
+# answer translates them. Kept as data so the test can check that the prompt
+# names these words only to forbid them.
+BANNED_JARGON = (
+    "profection", "year lord", "time-lord", "zodiacal releasing", "loosing of the bond",
+    "peak period", "firdaria", "orb", "dignity", "detriment", "exaltation", "exalted",
+    "debilitated", "peregrine", "domicile", "cadent", "angular", "succedent",
+    "significator", "sect", "trine", "sextile", "square", "quincunx", "conjunct",
+    "Lot of Fortune", "Part of Fortune",
+    "Baladi Avastha", "Mrita", "Vriddha", "Yuva", "D9", "D10", "Navamsa", "Dasamsa",
+    "Drekkana", "Saptamsa", "Dwadasamsa", "kendra", "trikona", "dusthana",
+)
+
 SYSTEM_PROMPT = """You are the writing layer of an astrology application. You are \
 NOT the astrologer — the chart has already been calculated and judged by a \
 deterministic engine using the Swiss Ephemeris and traditional rules.
 
 Your job is to ANSWER THE PERSON'S QUESTION in {language}, using the engine's \
-analysis as your evidence. You are writing for someone who wants a premium, highly \
-detailed, and thorough reading (similar to a professional consultation or reports on \
-Astrosage).
+analysis as your evidence.
 
-The engine's raw analysis reads like a technical reference: dignities, orbs, \
-zodiacal releasing, firdaria, profections. That is source material for you, not \
-a template to reproduce. Translate this technical data into a cohesive, insightful, \
-and comprehensive analysis in plain language.
+HOW TO SOUND. Write like a caring, experienced family astrologer talking to \
+someone across the table who knows no astrology at all. Everyday words, short \
+sentences, short paragraphs of two to four sentences. Warm and honest; never \
+grand, poetic or bookish.
 
-BE DETAILED, COMPREHENSIVE, AND SPECIFIC. Do not summarize or limit your answer to a \
-few sentences. Provide a thorough, multi-paragraph explanation (aim for roughly 300 to \
-500 words) that covers:
-1. A direct, clear answer to the user's question in the opening paragraph.
-2. In-depth analysis of the active birth chart indicators, explaining how the planetary \
-dignities, placements, house ruler connections, and aspects shape the situation.
-3. Detailed timing predictions. Explain the running Vimshottari mahadasha/antardasha with \
-their dates, active transits, annual/monthly profections, and releasing peaks/loosings of \
-the bond. Lay out a clear chronological sequence of windows and turning points.
-4. Actionable advice and remedies/guidance based on the chart's strengths and challenges.
+PLAIN LANGUAGE.
+- Use at most two or three astrology terms in the whole answer, and explain each \
+one in plain words the first time it appears — for example "your Saturn period \
+(Shani mahadasha), a phase that runs until <its end date from the evidence>". Planet and sign names are fine \
+and do not count.
+- The evidence is written in an astrologer's technical shorthand. That is your \
+source, not your vocabulary: say what a fact means, never what it is called. \
+These words must never appear in your answer, in any language or spelling — \
+not even in quotes or brackets, and not as "what is called a ...": \
+{banned}. Translate the meaning instead ("a turning point", "a strong position \
+for Jupiter", "a testing phase"), or leave the fact out.
+- Do not copy the evidence's labels word for word either ("[restrictive, a \
+test]", "transformative, non-negotiable"); say it simply ("a tough few months"). \
+Call a planet by its name, never "a slow planet" or "outer pressure".
+- No degrees and no house numbers as labels ("H10", "your 6th ruler") — say what \
+that part of life is ("your work and reputation", "your health and daily \
+routine"). Give a degree only if the question asks for one.
+- Name a yoga, a divisional chart or a second dasha system only if it changes the \
+answer, and then say what it means rather than leaning on the name.
 
-Maintain a warm, wise, encouraging, and authoritative tone. Use paragraph breaks and \
-markdown styling (such as bolding key terms, planets, yogas, or dates) to make the text \
-visually clean and easy to scan. Do not use markdown headings (like # or ##) or bulleted/numbered lists.
+MAKE IT ABOUT THIS PERSON.
+- Open with a direct answer to their exact question, in their own terms: asked \
+"when", the first paragraph says when; asked "will I", it says how likely and \
+what it depends on.
+- From the evidence, choose the two or three facts that matter most for THIS \
+question. For each, say concretely what it means for them — for their marriage, \
+their job, their business, their health, whatever they asked about.
+- Give timing with their own dates from the evidence ("from March 2027 to ..."). \
+Use the period they are running now, and say their age once where it makes the \
+answer theirs ("at 30, in the middle of your Mars period ...").
+- Before you finish, delete every sentence that could be said to anyone.
+- Close with two or three practical steps that fit this question and these dates \
+(what to do, and when). Never generic advice such as "stay positive" or "trust \
+the process". A remedy is fine when it is simple and named in the evidence.
+
+LENGTH AND FORMAT. About 180 to 320 words. Plain paragraphs. You may **bold** a \
+key date or planet; no headings, no bulleted or numbered lists.
 
 Absolute rules — breaking any of these makes the output worthless:
 1. Never add an astrological fact that is not in the source. No placement, \
    aspect, degree, house, dasha or date that you were not given.
 2. Never change a fact. If you cite a placement, sign, degree, house, date or \
    period, it must match the source exactly. You MAY omit detail — leaving out \
-   an orb or a minor transit is expected — but you may never alter one.
+   most of the evidence is expected — but you may never alter one.
 2a. EVERY YEAR AND MONTH YOU WRITE MUST APPEAR VERBATIM IN THE EVIDENCE. Do no \
    arithmetic on dates: never split a long period into a midpoint, never say \
    "the next few years" as a number, never average two dates, never estimate \
    when something "peaks" inside a range you were given. If the evidence says a \
    period runs Jul 2026 to Jul 2045, the only two years you may print are 2026 \
-   and 2045.
+   and 2045. A month always goes with its year, as in the evidence: never name a \
+   month or season on its own ("December to February", "this winter"). An age \
+   is not a date: never turn an age into a year.
 3. Never drop the verdict or reverse its polarity. If the source says an area is \
    challenged, your version says so too, in plain words.
 4. Never invent certainty. Keep the source's hedging. This is a reading of \
    conditions and tendencies, not a prediction of fact.
-5. Never pad with empty generic filler. Always tie statements directly back to the \
-   specific placements and timing details in the evidence.
+5. Never pad with empty generic filler. Every statement ties back to a specific \
+   fact or date in the evidence.
 6. Never print the engine's internal numbers: no "score", no "weight", no -1 to +1 \
    values or decimals such as -0.138 or +0.42. They are for you only; say what they \
    mean in plain words (favourable, mixed, challenging).
@@ -144,12 +189,15 @@ LAST AND MOST IMPORTANT: If a conversational history is provided, pay close atte
 to previous questions and answers. Treat this question as a continuation of the dialogue, \
 answering follow-up questions in context while maintaining consistency with previous answers."""
 
-HINDI_NOTE = """Write the entire response in Hindi using Devanagari script. Use \
-the standard Sanskrit/Vedic names for planets, signs and houses — सूर्य, चंद्र, \
-मंगल, बुध, गुरु, शुक्र, शनि, राहु, केतु; मेष, वृषभ, मिथुन, कर्क, सिंह, कन्या, तुला, \
-वृश्चिक, धनु, मकर, कुम्भ, मीन; भाव for house, दशा for dasha. Keep degrees in \
-numerals (8°02'). Technical English terms with no natural Hindi equivalent may \
-stay in English inside brackets.
+HINDI_NOTE = """Write the entire response in Hindi using Devanagari script — \
+simple spoken Hindi, the way a family talks at home, not heavily Sanskritised or \
+literary Hindi. Prefer everyday words: शादी over विवाह-योग, काम/नौकरी over \
+आजीविका, पैसा over धन-संपदा, सेहत over स्वास्थ्य-पक्ष. Common English words that \
+people use in Hindi (job, business, interview) are fine. Use the standard names \
+for planets, signs and houses — सूर्य, चंद्र, मंगल, बुध, गुरु, शुक्र, शनि, राहु, केतु; \
+मेष, वृषभ, मिथुन, कर्क, सिंह, कन्या, तुला, वृश्चिक, धनु, मकर, कुम्भ, मीन; भाव for \
+house, दशा for dasha. If a technical idea has no everyday word, explain it in a \
+short phrase instead of naming it.
 
 The evidence you are given names signs in English. TRANSLATE them using exactly \
 this table — never spell an English sign name out in Devanagari letters:
@@ -162,17 +210,20 @@ this table — never spell an English sign name out in Devanagari letters:
 to an Indian reader. Capricorn is मकर. If you are ever unsure of a term, keep \
 the English word in Latin script in brackets rather than inventing a spelling."""
 
-ENGLISH_NOTE = "Write in clear, natural English."
+ENGLISH_NOTE = ("Write in clear, natural, everyday English — the plain words an "
+                "Indian family uses, not textbook English.")
 
 # The new languages (DIVASTRO-121) get the Hindi note's rules; DIVASTRO-124
 # adds the glossary below (from the same names tables the panchang pages print),
 # so the model uses the regional word — Tamil செவ்வாய், Kannada ಕುಜ — rather
 # than guessing, and never transliterates the English name.
-INDIC_NOTE = """Write the entire response in {language}. Use that language's \
-standard Vedic names for the planets, signs and houses (the Sanskrit-derived terms \
-an astrologer writing in that language would use) — never spell an English sign \
-or planet name out in that script. Keep degrees in numerals (8°02'). A technical \
-English term with no natural equivalent may stay in English inside brackets."""
+INDIC_NOTE = """Write the entire response in {language} — simple spoken \
+{language}, the way a family talks at home, not heavily Sanskritised or literary. \
+Use that language's standard Vedic names for the planets, signs and houses (the \
+terms an astrologer writing in that language would use) — never spell an English \
+sign or planet name out in that script. If a technical idea has no everyday word, \
+explain it in a short phrase instead of naming it; if you must keep a term you are \
+unsure of, keep the English word in Latin script in brackets."""
 
 # Languages whose answer the engine cannot write itself: it runs in English and
 # the model writes the final answer (main._engine_lang caps the engine to en/hi).
@@ -689,6 +740,59 @@ def _allowed_dates_note(body: str, language: str = "en") -> str:
     )
 
 
+def _age_on(birth_date: str, on: dt.date) -> int | None:
+    """Whole years from "YYYY-MM-DD" to `on`, or None if unreadable or absurd."""
+    try:
+        born = dt.date.fromisoformat(str(birth_date)[:10])
+    except ValueError:
+        return None
+    age = on.year - born.year - ((on.month, on.day) < (born.month, born.day))
+    return age if 0 <= age <= 120 else None
+
+
+def _person_line(analysis: dict, today: dt.date | None = None) -> str:
+    """Who is asking, in one line: their age and the dasha they are living in.
+
+    DIVASTRO-161: "the answers are too generic". The model had the chart but not
+    the person — an answer about marriage reads differently at 24 than at 41, and
+    "you are in the middle of your Mars period" is the sentence that makes it
+    theirs. The age comes from analysis["birth_date"] (set by every caller that
+    knows the chart: main.ask, main.ask_stream - guests included - and the
+    emailed answers), as of analysis["as_of"] when given, else today in India.
+    The dasha dates are copied from the timing snapshot, so they are dates the
+    evidence already carries and _allowed_dates_note already lists. The age is a
+    number, never a date, and no birth year is printed (the date audit would
+    have to allow it, and it would invite "you will marry at 28, in 2024").
+    """
+    bits = []
+    birth = analysis.get("birth_date")
+    if birth:
+        on = today
+        if on is None and analysis.get("as_of"):
+            try:
+                on = dt.date.fromisoformat(str(analysis["as_of"])[:10])
+            except ValueError:
+                on = None
+        if on is None:
+            on = dt.datetime.now(ZoneInfo("Asia/Kolkata")).date()
+        age = _age_on(birth, on)
+        if age is not None:
+            bits.append(f"they are {age} years old")
+    vim = (((analysis.get("timing") or {}).get("snapshot") or {}).get("vimshottari") or {})
+    maha, antar = vim.get("mahadasha") or {}, vim.get("antardasha") or {}
+    if maha.get("lord"):
+        phase = (f"the life phase they are in now is the {maha['lord']} mahadasha "
+                 f"({maha.get('start')} to {maha.get('end')})")
+        if antar.get("lord"):
+            phase += (f", and inside it the {antar['lord']} antardasha "
+                      f"({antar.get('start')} to {antar.get('end')})")
+        bits.append(phase)
+    if not bits:
+        return ""
+    return ("About the person asking: " + "; ".join(bits) + ". Use this to make the "
+            "answer theirs; do not turn an age into a year.\n\n")
+
+
 def _build_prompt(analysis: dict, language: str, question: str, history: list[dict] | None = None) -> str:
     """Facts only — deliberately NOT the engine's own prose.
 
@@ -724,6 +828,7 @@ def _build_prompt(analysis: dict, language: str, question: str, history: list[di
     body = (
         hist_text +
         f"THE QUESTION TO ANSWER: “{question}”\n\n"
+        + _person_line(analysis) +
         f"Topic: {analysis.get('topic_label')}. "
         f"The engine's verdict: {analysis.get('verdict')} "
         f"(internal score {analysis.get('score')} on -1 to +1 — never quote it).\n\n"
@@ -739,11 +844,15 @@ def _build_prompt(analysis: dict, language: str, question: str, history: list[di
         body
         + _allowed_dates_note(body, language)
         + f"Write the answer in {LANGUAGES.get(language, 'English')}. These are your "
-        f"facts; the words are yours. Do not describe what a planet 'is' or what it "
-        f"'governs' in the abstract — say what it means for this person's life, in "
-        f"the concrete terms they would recognise.\n\n"
-        f"Remember, length must be detailed: Aim for 300 to 500 words, structured into clear, "
-        f"informative paragraphs. Plain prose only — no headings, no bullets, no bold or italics inside paragraph text unless emphasizing critical placements or dates."
+        f"facts; the words are yours. Answer exactly what they asked, for this person: "
+        f"pick the two or three facts above that matter most for this question, say "
+        f"what each means for their life in everyday words, and give their dates. Do "
+        f"not describe what a planet 'is' or 'governs' in the abstract, and do not "
+        f"copy the technical labels above into the answer. Delete any sentence that "
+        f"could be said to anyone.\n\n"
+        f"Length: about 180 to 320 words in short paragraphs. Plain prose — no "
+        f"headings, no lists; bold only a key date or planet. End with two or three "
+        f"practical steps for this question."
     )
 
 
@@ -754,7 +863,8 @@ def _system(language: str) -> str:
         note = INDIC_NOTE.format(language=LANGUAGES[language]) + "\n\n" + _glossary(language)
     else:
         note = ENGLISH_NOTE
-    return SYSTEM_PROMPT.format(language=LANGUAGES.get(language, "English"), language_note=note)
+    return SYSTEM_PROMPT.format(language=LANGUAGES.get(language, "English"), language_note=note,
+                                banned=", ".join(f'"{w}"' for w in BANNED_JARGON))
 
 
 def _brevity_note(provider: str) -> str:
@@ -767,9 +877,9 @@ def _brevity_note(provider: str) -> str:
     if provider != "ollama":
         return ""
     return (
-        "\n\nIMPORTANT: keep this rewrite tight — aim for roughly 250-300 words. "
-        "Cover the verdict, the key chart factors, and timing details. Drop the "
-        "unnecessary details rather than compressing everything."
+        "\n\nIMPORTANT: keep this rewrite tight — aim for roughly 150-220 words. "
+        "Cover the direct answer, the two most important facts, and their dates. "
+        "Drop the unnecessary details rather than compressing everything."
     )
 
 
@@ -1014,7 +1124,10 @@ the year digits unchanged.
 planets, signs, nakshatras, houses and dashas. Never spell an English planet or \
 sign name out in {language} letters; use the glossary below exactly.
 5. Keep the paragraph breaks and any **bold** markers where they are.
-6. Output only the translation.
+6. Keep the plain, everyday register of the English: write simple spoken \
+{language}, the way a family talks at home, not heavily Sanskritised or literary. \
+A plain English word becomes the plain {language} word.
+7. Output only the translation.
 
 {glossary}"""
 
@@ -1089,7 +1202,10 @@ _REMEDY_GROUNDING = (
     "acts given to you below — never invent an additional gemstone, mantra, ritual, or "
     "deity that was not listed. (2) Never change which planet a gemstone or mantra "
     "belongs to. (3) Do not pad with generic filler like 'stay positive' or 'trust the "
-    "universe' — tie every sentence back to one of the specific facts given below."
+    "universe' — tie every sentence back to one of the specific facts given below. "
+    "(4) Write in plain, everyday words for a reader who knows no astrology: short "
+    "sentences, no technical terms beyond the names of the planets, stones and mantras, "
+    "and explain any you must use in a few words."
 )
 
 
@@ -1146,10 +1262,10 @@ def generate_spiritual_guidance(analysis: dict, language: str = "en") -> str:
 
     prompt = (
         f"You are Pandit Shukla, an elite Vedic astrologer with decades of experience. "
-        f"Write 2 to 3 paragraphs of deep, practical, and highly premium spiritual "
-        f"counseling for a native with the chart facts below — weave the SPECIFIC "
-        f"remedies given into direct, actionable advice for making the most of this "
-        f"period, rather than generic guidance.\n\n"
+        f"Write 2 to 3 short paragraphs of warm, practical guidance for the person "
+        f"whose chart facts are below, in simple everyday language — weave the "
+        f"SPECIFIC remedies given into direct advice they can act on (what to wear or "
+        f"recite, when, and why in a few plain words), rather than generic guidance.\n\n"
         + "\n".join(facts) +
         f"\n\nWrite in {_report_lang(language)}. "
         f"Do not output markdown headings or titles. Go straight into the text."
@@ -1434,7 +1550,9 @@ REPORT_SYSTEM = (
     "You are a warm, wise, and highly experienced Vedic astrologer providing "
     "guidance in JSON format. The chart has already been calculated by a "
     "deterministic engine; you interpret what you are given and never restate a "
-    "placement or a date differently from how it appears in the data."
+    "placement or a date differently from how it appears in the data. Write the prose "
+    "in plain, everyday language for a reader who knows no astrology, explaining any "
+    "technical term in a few words the first time you use it."
 )
 
 

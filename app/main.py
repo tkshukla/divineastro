@@ -449,6 +449,7 @@ def ask(req: AskRequest, request: Request) -> dict:
         session = _session(req.session_id, request)
         result = analyse(session, question, when, language=_engine_lang(req.language)).to_dict()
         result["vedic"] = _vedic_context(session)
+        result.update(_about_person(session, when))
 
         # The engine's own wording is always kept, so the UI can show both and
         # the user can see exactly what the model changed.
@@ -571,6 +572,7 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
         # sade sati, vargottama — despite /api/ask setting it correctly. See
         # _vedic_block()'s own docstring for why that content matters.
         result["vedic"] = _vedic_context(session)
+        result.update(_about_person(session, when))
     except Exception:
         guest.release(claim)            # no answer was produced: the allowance is not spent
         raise
@@ -643,6 +645,19 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
     if claim is not None:
         guest.set_cookie(resp, request)     # this browser's guest answer is spent
     return resp
+
+
+def _about_person(session, when) -> dict:
+    """The asker's birth date and the day they asked, for the narration prompt's
+    "they are 30 years old" line (DIVASTRO-161, llm._person_line). Every path
+    that narrates an answer sets these: /api/ask, /api/ask/stream (guests too)
+    and the emailed answers."""
+    out = {"birth_date": session.birth.date}
+    try:
+        out["as_of"] = when.date().isoformat()
+    except AttributeError:
+        pass
+    return out
 
 
 def _vedic_context(session) -> dict:
