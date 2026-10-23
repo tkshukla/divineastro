@@ -2128,6 +2128,23 @@ function handwrittenStrip(page) {
     </a>`;
 }
 
+/* The ₹21 Starter at the top of the home Plans section, for whoever can still buy it:
+   a signed-out visitor (it opens the pay-without-signing-in sheet) or an account the
+   server says may still buy it (/api/me user.starter.available). */
+let homeStarterSeen = false;
+function homeStarter() {
+  const p = acct.user ? starterOffer() : (typeof guestProduct === "function" ? guestProduct(STARTER_SKU) : null);
+  if (!p) return "";
+  if (!homeStarterSeen) { homeStarterSeen = true; window.daTrack?.("starter_shown", "home"); }
+  const btn = acct.user ? at("offerStarterBtn") : at("guestPayBtn").replace("{price}", money(p.rupees));
+  return `
+    <a class="plan-starter" href="#" data-plans="starter">
+      <span class="plan-starter-head">${escapeHtml(at("starterTitle"))} · <b>${money(p.rupees)}</b></span>
+      <span class="plan-starter-text">${escapeHtml(starterText("starterSub"))}</span>
+      <span class="plan-starter-go">${escapeHtml(btn)} &rsaquo;</span>
+    </a>`;
+}
+
 /* The home screen's Plans section. */
 const PLAN_PICKS = ["sq_career", "q10", "q50", "life_book"];
 let plansSeen = false;
@@ -2144,6 +2161,7 @@ function renderPlans() {
     <h2 class="plans-title" id="plans-title">${escapeHtml(at("plansTitle"))}</h2>
     ${offerBanner()}
     ${acct.freeKnown ? `<p class="plans-free">${escapeHtml(at(acct.guestFree > 0 ? "plansFreeGuest" : "plansFree").replace("{n}", acct.freeQuestions))}</p>` : ""}
+    ${homeStarter()}
     <div class="plans-grid">${picks.map((p) => `
       <div class="plan-cell">
       <a class="plan${p.sku === "q50" ? " featured" : ""}${SAMPLE_SKUS.has(p.sku) ? " has-sample" : ""}" href="${page}#${p.sku}" data-plans="${p.sku}">
@@ -2166,6 +2184,13 @@ function renderPlans() {
     box.addEventListener("click", (e) => {
       const a = e.target.closest("[data-plans]");
       if (a) window.daTrack?.("plans_click", a.dataset.plans);
+      // DIVASTRO-159: the Starter strip opens its own sheet (guest checkout when signed out).
+      if (a && a.dataset.plans === "starter") {
+        e.preventDefault();
+        window.daTrack?.("starter_click", "home");
+        openStore(false, STARTER_SKU, "home");
+        return;
+      }
       // Signed in: the hand-written strip opens the store at that product; signed out: /pricing#handwritten.
       if (a && a.dataset.plans === "handwritten" && acct.user) {
         e.preventDefault();

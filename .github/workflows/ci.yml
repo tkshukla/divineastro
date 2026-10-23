@@ -198,7 +198,7 @@ jobs:
           for m in \
             test_account test_ask_question test_chart_casting test_chart_panel \
             test_chat_layout test_dashboard_widgets test_feedback_admin \
-            test_first_run test_guest_answer test_guest_checkout test_home test_language_picker test_milan test_mobile_screens test_offer \
+            test_first_run test_guest_answer test_guest_checkout test_home test_home_starter test_language_picker test_milan test_mobile_screens test_offer \
             test_panchang_tools test_panchang_hindi test_pdfs_and_account test_purchase_funnel test_push_optin test_report_delivery test_samples test_share test_site_chrome test_starter_email test_starter_inline test_store test_milan_report; do
             echo "::group::$m"
             python -u -m tests.e2e.$m
