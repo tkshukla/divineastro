@@ -36,7 +36,7 @@ from . import seo_text
 from .naam_milan_text import ENGINE, TEXT
 from .nakshatra_pages import (RASHIS, kundali_cta, milan_path, nak_path, rashi_path, shell)
 from .nakshatra_pages import _nak_label, _rashi_pill, _sign_name
-from .seo_pages import BRAND, _e
+from .seo_pages import BRAND, _e, _top_bar
 
 router = APIRouter()
 
@@ -139,7 +139,8 @@ def _person_row(label: str, raw: str, m: Match | None, lang: str) -> str:
             "</a></td></tr>")
 
 
-def _result(boy: str, girl: str, gm: Match | None, bm: Match | None, lang: str) -> str:
+def _result(boy: str, girl: str, gm: Match | None, bm: Match | None, lang: str,
+            bar: str = "") -> str:
     head = _tx("res.head", lang)
     people = (_person_row(_tx("boy", lang), boy, gm, lang)
               + _person_row(_tx("girl", lang), girl, bm, lang))
@@ -158,6 +159,7 @@ def _result(boy: str, girl: str, gm: Match | None, bm: Match | None, lang: str) 
         out.append(f'<div class="box"><p class="total"><strong>{_tx("total", lang)}: '
                    f'{_e(total)}</strong> — {_e(verdict)}</p><p>{_e(band_note)}</p>'
                    f"</div>")
+        out.append(bar)                    # DIVASTRO-164: right under the score
         out.append(f'<div class="scroll"><table>{th}{rows}</table></div>')
         out.append(f'<p class="note">{_e(conv_note)}</p>')
         out.append(f'<div class="box"><p>{_tx("mangal", lang)}</p></div>')
@@ -220,14 +222,18 @@ def render(lang: str, boy: str | None, girl: str | None, boy_pada: str | None,
     description = _tx("desc", lang)
     gm = bm = None
     result = ""
+    # DIVASTRO-164: under the score once there is one, else under the form. The
+    # link is the bare page: never the names in the URL.
+    bar = _top_bar(lang=lang, path=i18n.localized_path(milan_path("en"), lang), title=title)
     if asked:
         gm, bm = resolve(boy, boy_pada or ""), resolve(girl, girl_pada or "")
-        result = _result(boy, girl, gm, bm, lang)
+        result = _result(boy, girl, gm, bm, lang, bar=bar)
     body = f"""
 {_tx("h1", lang)}
 {_tx("sub", lang)}
 {_tx("intro", lang)}
 {_form(lang, boy, girl, gm, bm, show_pick=asked)}
+{'' if gm and bm else bar}
 {result}
 {'' if asked else _caveat(lang)}
 {_explainer(lang)}

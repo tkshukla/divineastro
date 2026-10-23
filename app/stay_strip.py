@@ -15,6 +15,10 @@ Copy lives in TEXT below, per language, like every other page module's table:
 add a language by adding its dict (any key left out falls back to English).
 Clicks are counted by static/strip.js through window.daTrack
 (analytics.EVENT_NAMES: strip_push, strip_channel, strip_share).
+
+DIVASTRO-164: `top_bar` repeats the share and channel links right under the
+answer box of the festival / vrat / muhurat / katha / panchang / milan pages,
+counted with detail "top".
 """
 
 from __future__ import annotations
@@ -39,6 +43,7 @@ TEXT: dict[str, dict[str, str]] = {
         "denied": "Notifications are blocked for this site in your browser settings.",
         "channel": "Join our WhatsApp channel",
         "share": "Share this page on WhatsApp",
+        "forward": "Forward to family",          # DIVASTRO-164: the bar under the answer
     },
     "hi": {
         "head": "जुड़े रहें",
@@ -49,6 +54,7 @@ TEXT: dict[str, dict[str, str]] = {
         "denied": "आपके ब्राउज़र में इस साइट की सूचनाएं बंद हैं।",
         "channel": "हमारे WhatsApp चैनल से जुड़ें",
         "share": "इस पेज को WhatsApp पर शेयर करें",
+        "forward": "परिवार को भेजें",
     },
     "kn": {
         "head": "ಸಂಪರ್ಕದಲ್ಲಿರಿ",
@@ -59,6 +65,7 @@ TEXT: dict[str, dict[str, str]] = {
         "denied": "ನಿಮ್ಮ ಬ್ರೌಸರ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಈ ಸೈಟ್‌ನ ಅಧಿಸೂಚನೆಗಳು ನಿರ್ಬಂಧಿತವಾಗಿವೆ.",
         "channel": "ನಮ್ಮ WhatsApp ಚಾನಲ್‌ಗೆ ಸೇರಿ",
         "share": "ಈ ಪುಟವನ್ನು WhatsApp ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ",
+        "forward": "ಕುಟುಂಬಕ್ಕೆ ಕಳುಹಿಸಿ",
     },
     "te": {
         "head": "మాతో కనెక్ట్ అయి ఉండండి",
@@ -69,6 +76,7 @@ TEXT: dict[str, dict[str, str]] = {
         "denied": "మీ బ్రౌజర్ సెట్టింగ్‌లలో ఈ సైట్‌కు నోటిఫికేషన్లు బ్లాక్ చేయబడ్డాయి.",
         "channel": "మా WhatsApp ఛానల్‌లో చేరండి",
         "share": "ఈ పేజీని WhatsAppలో షేర్ చేయండి",
+        "forward": "కుటుంబానికి పంపండి",
     },
     "ta": {
         "head": "தொடர்பில் இருங்கள்",
@@ -79,6 +87,7 @@ TEXT: dict[str, dict[str, str]] = {
         "denied": "உங்கள் உலாவி அமைப்புகளில் இந்தத் தளத்தின் அறிவிப்புகள் தடுக்கப்பட்டுள்ளன.",
         "channel": "எங்கள் WhatsApp சேனலில் சேருங்கள்",
         "share": "இந்தப் பக்கத்தை WhatsApp-இல் பகிருங்கள்",
+        "forward": "குடும்பத்துக்கு அனுப்புங்கள்",
     },
     "ml": {
         "head": "ബന്ധം നിലനിർത്തൂ",
@@ -89,6 +98,7 @@ TEXT: dict[str, dict[str, str]] = {
         "denied": "നിങ്ങളുടെ ബ്രൗസർ ക്രമീകരണങ്ങളിൽ ഈ സൈറ്റിന്റെ അറിയിപ്പുകൾ തടഞ്ഞിരിക്കുന്നു.",
         "channel": "ഞങ്ങളുടെ WhatsApp ചാനലിൽ ചേരൂ",
         "share": "ഈ പേജ് WhatsApp-ൽ ഷെയർ ചെയ്യൂ",
+        "forward": "കുടുംബത്തിന് അയക്കൂ",
     },
     "bn": {
         "head": "যোগাযোগে থাকুন",
@@ -99,6 +109,7 @@ TEXT: dict[str, dict[str, str]] = {
         "denied": "আপনার ব্রাউজার সেটিংসে এই সাইটের বিজ্ঞপ্তি বন্ধ করা আছে।",
         "channel": "আমাদের WhatsApp চ্যানেলে যোগ দিন",
         "share": "এই পাতাটি WhatsApp-এ শেয়ার করুন",
+        "forward": "পরিবারকে পাঠান",
     },
     "or": {
         "head": "ଯୋଗାଯୋଗରେ ରୁହନ୍ତୁ",
@@ -109,6 +120,7 @@ TEXT: dict[str, dict[str, str]] = {
         "denied": "ଆପଣଙ୍କ ବ୍ରାଉଜର ସେଟିଂସରେ ଏହି ସାଇଟ୍‌ର ବିଜ୍ଞପ୍ତି ବ୍ଲକ୍ ହୋଇଛି।",
         "channel": "ଆମର WhatsApp ଚ୍ୟାନେଲରେ ଯୋଗ ଦିଅନ୍ତୁ",
         "share": "ଏହି ପୃଷ୍ଠାକୁ WhatsAppରେ ସେୟାର କରନ୍ତୁ",
+        "forward": "ପରିବାରକୁ ପଠାନ୍ତୁ",
     },
 }
 
@@ -142,3 +154,36 @@ def stay_strip(*, lang: str, path: str, title: str) -> str:
         '</ul>'
         '<script src="/static/strip.js" defer></script>'
         '</aside>')
+
+
+# --------------------------------------------------------------------------
+# DIVASTRO-164: the same two WhatsApp actions near the TOP of the page
+# --------------------------------------------------------------------------
+
+TOP_CAMPAIGN = "top-share"
+
+
+def top_bar(*, lang: str, path: str, title: str) -> str:
+    """Two buttons placed straight under a page's answer box: forward the page
+    (the strip's share text — the page title, which carries the answer — tagged
+    utm_campaign=top-share) and join the channel. Plain links: static/strip.js
+    (loaded by the strip lower down) counts taps as strip_share / strip_channel
+    with detail "top". Styling: .share-wa and .seo .wa-top in static/styles.css."""
+    e = html.escape
+    share = whatsapp_href(title, share_url(path, TOP_CAMPAIGN))
+    return (
+        '<div class="wa-top">'
+        f'<a class="share-wa" href="{e(share)}" target="_blank" rel="noopener" '
+        f'data-strip="strip_share" data-detail="top">{_ICON}<span>{e(_tx("forward", lang))}</span></a>'
+        f'<a class="share-wa" href="{e(CHANNEL_URL)}" target="_blank" rel="noopener" '
+        f'data-strip="strip_channel" data-detail="top">{_ICON}<span>{e(_tx("channel", lang))}</span></a>'
+        '</div>')
+
+
+def forward_line(lang: str = "hi") -> str:
+    """The last line of the daily WhatsApp channel post (daily_message.promo_lines):
+    ask to forward it to family, with the channel's link for whoever receives it.
+    Kept short: a post over whatsapp_channel.CAPTION_LIMIT goes out without its card."""
+    if lang == "hi":
+        return f"🙏 परिवार को भी भेजें। चैनल: {CHANNEL_URL}"
+    return f"🙏 Forward to your family. Channel: {CHANNEL_URL}"

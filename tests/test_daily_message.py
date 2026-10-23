@@ -42,6 +42,7 @@ from PIL import Image  # noqa: E402
 
 from app import daily_message as D  # noqa: E402
 from app import daily_state, mail, social_card, telegram_daily, whatsapp_pack  # noqa: E402
+from app.stay_strip import CHANNEL_URL  # noqa: E402
 from app.astro import festivals  # noqa: E402
 
 failures: list[str] = []
@@ -155,8 +156,11 @@ def test_links() -> None:
             check(f"{channel}/{lang}: every daily link tagged", all(u.endswith("?" + tag) for u in daily),
                   str(daily))
             ptag = f"utm_source={channel}&utm_medium=channel&utm_campaign=promo-2026-10-03"
+            # DIVASTRO-164: the WhatsApp post ends with the channel link (forward line)
+            extra = [CHANNEL_URL] if channel == "whatsapp" else []
             check(f"{channel}/{lang}: exactly one promo link, tagged promo-<date>",
-                  len(promo) == 1 and promo[0].endswith(ptag) and len(urls) == 4, str(urls))
+                  len(promo) == 1 and promo[0].endswith(ptag)
+                  and len(urls) == 4 + len(extra) and urls[4:] == extra, str(urls))
     tg = D.channel_message(JITIYA, lang="hi", channel="telegram")
     check("telegram: & escaped for HTML parse mode", "&amp;utm_medium" in tg and
           "&utm_medium" not in tg.replace("&amp;", ""))

@@ -549,7 +549,7 @@ CHROME = {
     "disclaimer": "জ্যোতিষ শাস্ত্ৰৰ ভৱিষ্যদ্বাণী কেৱল পথ-প্ৰদৰ্শন আৰু মনোৰঞ্জনৰ বাবে দিয়া হৈছে। ই চিকিৎসা, আইনী বা বিত্তীয় পৰামৰ্শ নহয়।",
 }
 
-# app/stay_strip.py TEXT["as"] — the 'Stay in touch' strip at the foot of the pages  [8]
+# app/stay_strip.py TEXT["as"] — the 'Stay in touch' strip at the foot of the pages  [9]
 STAY_STRIP = {
     # EN: Stay in touch
     "head": "আমাৰ লগত যোগাযোগত থাকক",
@@ -567,6 +567,8 @@ STAY_STRIP = {
     "channel": "আমাৰ হোৱাটছএপ চেনেলত যোগ দিয়ক",
     # EN: Share this page on WhatsApp
     "share": "এই পৃষ্ঠাটো হোৱাটছএপত শ্বেয়াৰ কৰক",
+    # EN: Forward to family
+    "forward": "পৰিয়ালক পঠিয়াওক",
 }
 
 # app/seo_city_names.py CITIES["as"] — the 114 cities as that language's newspapers spell them (key = URL slug)  [114]

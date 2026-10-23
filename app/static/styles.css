@@ -2453,6 +2453,13 @@ button.free-badge:focus-visible { outline: 3px solid var(--gold); outline-offset
   .seo > .share-wa { float: none; display: flex; width: fit-content; max-width: 100%;
                      margin: 0 0 12px auto; white-space: normal; text-align: center; }
 }
+/* DIVASTRO-164: "Forward to family" + "Join our WhatsApp channel" under a content
+   page's answer box (app/stay_strip.py top_bar). Side by side from ~350px of
+   content (a 390px phone; a long label wraps inside its pill), stacked below. */
+.seo .wa-top { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 18px; }
+.seo .wa-top .share-wa { flex: 1 1 150px; min-width: 0; box-sizing: border-box; padding: 6px 12px;
+                         border-radius: 22px; font-size: 14px; line-height: 1.25; white-space: normal;
+                         text-align: center; color: var(--ink); text-decoration: none; }
 /* DIVASTRO-123: SEO page tables on a phone. The fact tables (th scope=row:
    nakshatra, rashi, panchang, koota) must fit the screen: a label column that
    never wraps pushed them sideways. Labels wrap, cells break long words, and

@@ -546,7 +546,7 @@ CHROME = {
     "disclaimer": "જ્યોતિષીય વાચન માર્ગદર્શન અને મનોરંજન માટે આપવામાં આવે છે. તે તબીબી, કાનૂની કે નાણાકીય સલાહ નથી.",
 }
 
-# app/stay_strip.py TEXT["gu"] — the 'Stay in touch' strip at the foot of the pages  [8]
+# app/stay_strip.py TEXT["gu"] — the 'Stay in touch' strip at the foot of the pages  [9]
 STAY_STRIP = {
     # EN: Stay in touch
     "head": "સંપર્કમાં રહો",
@@ -564,6 +564,8 @@ STAY_STRIP = {
     "channel": "અમારી WhatsApp ચેનલ સાથે જોડાઓ",
     # EN: Share this page on WhatsApp
     "share": "આ પેજ WhatsApp પર શેર કરો",
+    # EN: Forward to family
+    "forward": "પરિવારને મોકલો",
 }
 
 # app/seo_city_names.py CITIES["gu"] — the 114 cities as that language's newspapers spell them (key = URL slug)  [114]

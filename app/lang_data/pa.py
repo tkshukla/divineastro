@@ -546,7 +546,7 @@ CHROME = {
     "disclaimer": "ਜੋਤਿਸ਼ੀ ਫਲ ਮਾਰਗ-ਦਰਸ਼ਨ ਅਤੇ ਮਨੋਰੰਜਨ ਲਈ ਦਿੱਤੇ ਜਾਂਦੇ ਹਨ। ਇਹ ਡਾਕਟਰੀ, ਕਾਨੂੰਨੀ ਜਾਂ ਵਿੱਤੀ ਸਲਾਹ ਨਹੀਂ ਹਨ।",
 }
 
-# app/stay_strip.py TEXT["pa"] — the 'Stay in touch' strip at the foot of the pages  [8]
+# app/stay_strip.py TEXT["pa"] — the 'Stay in touch' strip at the foot of the pages  [9]
 STAY_STRIP = {
     # EN: Stay in touch
     "head": "ਸਾਡੇ ਨਾਲ ਜੁੜੇ ਰਹੋ",
@@ -564,6 +564,8 @@ STAY_STRIP = {
     "channel": "ਸਾਡੇ WhatsApp ਚੈਨਲ ਨਾਲ ਜੁੜੋ",
     # EN: Share this page on WhatsApp
     "share": "ਇਸ ਪੰਨੇ ਨੂੰ WhatsApp ’ਤੇ ਸਾਂਝਾ ਕਰੋ",
+    # EN: Forward to family
+    "forward": "ਪਰਿਵਾਰ ਨੂੰ ਭੇਜੋ",
 }
 
 # app/seo_city_names.py CITIES["pa"] — the 114 cities as that language's newspapers spell them (key = URL slug)  [114]
