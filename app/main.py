@@ -92,6 +92,35 @@ app.add_middleware(
     https_only=os.environ.get("ASTRO_COOKIE_SECURE", "0") == "1",
     max_age=600,
 )
+
+
+class _HeadAsGet:
+    """Answer HEAD like GET without the body (RFC 9110). FastAPI's GET routes
+    otherwise reply 405 to HEAD, which is what crawlers and validators (the
+    AdSense ads.txt check among them) may send for /, /ads.txt, /robots.txt
+    and /sitemap.xml. API routes are left alone: a HEAD to them is not a
+    browser or crawler request worth serving."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http" or scope["method"] != "HEAD" or scope["path"].startswith("/api/"):
+            await self.app(scope, receive, send)
+            return
+        scope = dict(scope, method="GET")
+
+        async def send_headers_only(message):
+            if message["type"] == "http.response.body":
+                if message.get("more_body", False):
+                    return  # drop every chunk until the last one
+                message = {"type": "http.response.body", "body": b"", "more_body": False}
+            await send(message)
+
+        await self.app(scope, receive, send_headers_only)
+
+
+app.add_middleware(_HeadAsGet)
 init_db()
 app.include_router(account_router)
 app.include_router(feedback_router)
