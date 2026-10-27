@@ -36,7 +36,7 @@ from . import seo_text
 from .naam_milan_text import ENGINE, TEXT
 from .nakshatra_pages import (RASHIS, kundali_cta, milan_path, nak_path, rashi_path, shell)
 from .nakshatra_pages import _nak_label, _rashi_pill, _sign_name
-from .seo_pages import BRAND, _e, _top_bar, faq_ld, faq_section, plain
+from .seo_pages import BRAND, _ask_strip, _e, _top_bar, faq_ld, faq_section, plain
 
 router = APIRouter()
 
@@ -225,6 +225,7 @@ def render(lang: str, boy: str | None, girl: str | None, boy_pada: str | None,
     # DIVASTRO-164: under the score once there is one, else under the form. The
     # link is the bare page: never the names in the URL.
     bar = _top_bar(lang=lang, path=i18n.localized_path(milan_path("en"), lang), title=title)
+    bar += _ask_strip(lang=lang, kind="naam-milan")      # DIVASTRO-167: right after it
     if asked:
         gm, bm = resolve(boy, boy_pada or ""), resolve(girl, girl_pada or "")
         result = _result(boy, girl, gm, bm, lang, bar=bar)

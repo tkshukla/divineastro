@@ -586,6 +586,22 @@ STAY_STRIP = {
     "share": "এই পৃষ্ঠাটো হোৱাটছএপত শ্বেয়াৰ কৰক",
     # EN: Forward to family
     "forward": "পৰিয়ালক পঠিয়াওক",
+    # EN: Have a question about your own chart?
+    "ask_head": "নিজৰ কুষ্ঠীৰ বিষয়ে কিবা প্ৰশ্ন আছে নেকি?",
+    # EN: Ask free, no sign-in
+    "ask_free": "বিনামূলীয়াকৈ সোধক, ছাইন-ইন নালাগে",
+    # EN: Ask the AI astrologer
+    "ask_go": "এআই জ্যোতিষীক সোধক",
+    # EN: When will I get married?
+    "ask_q_marriage": "মোৰ বিয়া কেতিয়া হ’ব?",
+    # EN: How will my married life be?
+    "ask_q_married_life": "মোৰ বৈবাহিক জীৱন কেনেকুৱা হ’ব?",
+    # EN: Do I have Mangal dosha?
+    "ask_q_manglik": "মোৰ কুষ্ঠীত মংগল দোষ আছে নেকি?",
+    # EN: How will the coming year be for me?
+    "ask_q_year": "অহা বছৰটো মোৰ বাবে কেনেকুৱা হ’ব?",
+    # EN: When will my career pick up?
+    "ask_q_career": "মোৰ কেৰিয়াৰ কেতিয়া আগবাঢ়িব?",
 }
 
 # app/seo_city_names.py CITIES["as"] — the 114 cities as that language's newspapers spell them (key = URL slug)  [114]

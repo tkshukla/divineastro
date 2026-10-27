@@ -324,6 +324,14 @@ def _top_bar(*, lang: str, path: str, title: str) -> str:
     return top_bar(lang=lang, path=path, title=title)
 
 
+def _ask_strip(*, lang: str, kind: str) -> str:
+    """DIVASTRO-167: "Have a question about your own chart? Ask free, no sign-in" with
+    two or three question chips, placed straight after _top_bar on the festival and
+    matching pages (see stay_strip.ask_strip). `kind`: milan / naam-milan / tyohar."""
+    from .stay_strip import ask_strip
+    return ask_strip(lang=lang, kind=kind)
+
+
 def _footer_sections(lang: str) -> str:
     """DIVASTRO-133: a compact block of plain links to the top sections and the
     crawlable /sitemap hub, so every server-rendered page links to them."""
@@ -966,6 +974,7 @@ def _kundali_milan_page(lang: str = EN) -> HTMLResponse:
 {_tx("km.intro", lang, total=total)}
 {_cta("kundali-milan", _tx("km.cta1", lang), lang)}
 {_top_bar(lang=lang, path=_prefix(lang) + "/kundali-milan", title=title)}
+{_ask_strip(lang=lang, kind="milan")}
 {milan_card.card(lang, "page", now)}
 {_tx("km.naam", lang, href=_prefix(lang) + "/naam-se-kundali-milan")}
 {_tx("km.kootas_h2", lang)}

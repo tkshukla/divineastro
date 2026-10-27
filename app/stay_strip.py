@@ -19,6 +19,9 @@ Clicks are counted by static/strip.js through window.daTrack
 DIVASTRO-164: `top_bar` repeats the share and channel links right under the
 answer box of the festival / vrat / muhurat / katha / panchang / milan pages,
 counted with detail "top".
+
+DIVASTRO-167: `ask_strip`, placed right after that bar on the festival and matching
+pages, offers two or three questions that open the app's question-first flow.
 """
 
 from __future__ import annotations
@@ -44,6 +47,15 @@ TEXT: dict[str, dict[str, str]] = {
         "channel": "Join our WhatsApp channel",
         "share": "Share this page on WhatsApp",
         "forward": "Forward to family",          # DIVASTRO-164: the bar under the answer
+        # DIVASTRO-167: "Have a question about your own chart?" (ask_strip)
+        "ask_head": "Have a question about your own chart?",
+        "ask_free": "Ask free, no sign-in",
+        "ask_go": "Ask the AI astrologer",
+        "ask_q_marriage": "When will I get married?",
+        "ask_q_married_life": "How will my married life be?",
+        "ask_q_manglik": "Do I have Mangal dosha?",
+        "ask_q_year": "How will the coming year be for me?",
+        "ask_q_career": "When will my career pick up?",
     },
     "hi": {
         "head": "जुड़े रहें",
@@ -55,6 +67,14 @@ TEXT: dict[str, dict[str, str]] = {
         "channel": "हमारे WhatsApp चैनल से जुड़ें",
         "share": "इस पेज को WhatsApp पर शेयर करें",
         "forward": "परिवार को भेजें",
+        "ask_head": "अपनी कुंडली के बारे में कोई प्रश्न है?",
+        "ask_free": "मुफ़्त पूछें, साइन-इन की ज़रूरत नहीं",
+        "ask_go": "एआई ज्योतिषी से पूछें",
+        "ask_q_marriage": "मेरी शादी कब होगी?",
+        "ask_q_married_life": "मेरा वैवाहिक जीवन कैसा रहेगा?",
+        "ask_q_manglik": "क्या मेरी कुंडली में मंगल दोष है?",
+        "ask_q_year": "आने वाला साल मेरे लिए कैसा रहेगा?",
+        "ask_q_career": "मेरा करियर कब आगे बढ़ेगा?",
     },
     "kn": {
         "head": "ಸಂಪರ್ಕದಲ್ಲಿರಿ",
@@ -66,6 +86,14 @@ TEXT: dict[str, dict[str, str]] = {
         "channel": "ನಮ್ಮ WhatsApp ಚಾನಲ್‌ಗೆ ಸೇರಿ",
         "share": "ಈ ಪುಟವನ್ನು WhatsApp ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ",
         "forward": "ಕುಟುಂಬಕ್ಕೆ ಕಳುಹಿಸಿ",
+        "ask_head": "ನಿಮ್ಮ ಸ್ವಂತ ಜಾತಕದ ಬಗ್ಗೆ ಪ್ರಶ್ನೆ ಇದೆಯೇ?",
+        "ask_free": "ಉಚಿತವಾಗಿ ಕೇಳಿ, ಸೈನ್-ಇನ್ ಬೇಕಿಲ್ಲ",
+        "ask_go": "ಎಐ ಜ್ಯೋತಿಷಿಯನ್ನು ಕೇಳಿ",
+        "ask_q_marriage": "ನನ್ನ ಮದುವೆ ಯಾವಾಗ ಆಗುತ್ತದೆ?",
+        "ask_q_married_life": "ನನ್ನ ವೈವಾಹಿಕ ಜೀವನ ಹೇಗಿರುತ್ತದೆ?",
+        "ask_q_manglik": "ನನ್ನ ಜಾತಕದಲ್ಲಿ ಮಂಗಳ ದೋಷ ಇದೆಯೇ?",
+        "ask_q_year": "ಮುಂದಿನ ವರ್ಷ ನನಗೆ ಹೇಗಿರುತ್ತದೆ?",
+        "ask_q_career": "ನನ್ನ ವೃತ್ತಿ ಯಾವಾಗ ಮುಂದುವರಿಯುತ್ತದೆ?",
     },
     "te": {
         "head": "మాతో కనెక్ట్ అయి ఉండండి",
@@ -77,6 +105,14 @@ TEXT: dict[str, dict[str, str]] = {
         "channel": "మా WhatsApp ఛానల్‌లో చేరండి",
         "share": "ఈ పేజీని WhatsAppలో షేర్ చేయండి",
         "forward": "కుటుంబానికి పంపండి",
+        "ask_head": "మీ సొంత జాతకం గురించి ప్రశ్న ఉందా?",
+        "ask_free": "ఉచితంగా అడగండి, సైన్-ఇన్ అవసరం లేదు",
+        "ask_go": "ఏఐ జ్యోతిష్కుడిని అడగండి",
+        "ask_q_marriage": "నా పెళ్లి ఎప్పుడు అవుతుంది?",
+        "ask_q_married_life": "నా వైవాహిక జీవితం ఎలా ఉంటుంది?",
+        "ask_q_manglik": "నా జాతకంలో కుజ దోషం ఉందా?",
+        "ask_q_year": "రాబోయే సంవత్సరం నాకు ఎలా ఉంటుంది?",
+        "ask_q_career": "నా కెరీర్ ఎప్పుడు ముందుకు సాగుతుంది?",
     },
     "ta": {
         "head": "தொடர்பில் இருங்கள்",
@@ -88,6 +124,14 @@ TEXT: dict[str, dict[str, str]] = {
         "channel": "எங்கள் WhatsApp சேனலில் சேருங்கள்",
         "share": "இந்தப் பக்கத்தை WhatsApp-இல் பகிருங்கள்",
         "forward": "குடும்பத்துக்கு அனுப்புங்கள்",
+        "ask_head": "உங்கள் சொந்த ஜாதகம் பற்றி கேள்வி உள்ளதா?",
+        "ask_free": "இலவசமாகக் கேளுங்கள், உள்நுழைவு தேவையில்லை",
+        "ask_go": "ஏஐ ஜோதிடரிடம் கேளுங்கள்",
+        "ask_q_marriage": "எனக்கு எப்போது திருமணம் நடக்கும்?",
+        "ask_q_married_life": "என் திருமண வாழ்க்கை எப்படி இருக்கும்?",
+        "ask_q_manglik": "என் ஜாதகத்தில் செவ்வாய் தோஷம் உள்ளதா?",
+        "ask_q_year": "வரும் ஆண்டு எனக்கு எப்படி இருக்கும்?",
+        "ask_q_career": "என் தொழில் எப்போது முன்னேறும்?",
     },
     "ml": {
         "head": "ബന്ധം നിലനിർത്തൂ",
@@ -99,6 +143,14 @@ TEXT: dict[str, dict[str, str]] = {
         "channel": "ഞങ്ങളുടെ WhatsApp ചാനലിൽ ചേരൂ",
         "share": "ഈ പേജ് WhatsApp-ൽ ഷെയർ ചെയ്യൂ",
         "forward": "കുടുംബത്തിന് അയക്കൂ",
+        "ask_head": "നിങ്ങളുടെ സ്വന്തം ജാതകത്തെക്കുറിച്ച് ചോദ്യമുണ്ടോ?",
+        "ask_free": "സൗജന്യമായി ചോദിക്കൂ, സൈൻ ഇൻ വേണ്ട",
+        "ask_go": "എഐ ജ്യോതിഷിയോട് ചോദിക്കൂ",
+        "ask_q_marriage": "എന്റെ വിവാഹം എപ്പോൾ നടക്കും?",
+        "ask_q_married_life": "എന്റെ ദാമ്പത്യ ജീവിതം എങ്ങനെയായിരിക്കും?",
+        "ask_q_manglik": "എന്റെ ജാതകത്തിൽ ചൊവ്വാദോഷം ഉണ്ടോ?",
+        "ask_q_year": "വരുന്ന വർഷം എനിക്ക് എങ്ങനെയായിരിക്കും?",
+        "ask_q_career": "എന്റെ കരിയർ എപ്പോൾ മുന്നേറും?",
     },
     "bn": {
         "head": "যোগাযোগে থাকুন",
@@ -110,6 +162,14 @@ TEXT: dict[str, dict[str, str]] = {
         "channel": "আমাদের WhatsApp চ্যানেলে যোগ দিন",
         "share": "এই পাতাটি WhatsApp-এ শেয়ার করুন",
         "forward": "পরিবারকে পাঠান",
+        "ask_head": "নিজের কুষ্ঠি নিয়ে কোনো প্রশ্ন আছে?",
+        "ask_free": "বিনামূল্যে জিজ্ঞাসা করুন, সাইন-ইন লাগবে না",
+        "ask_go": "এআই জ্যোতিষীকে জিজ্ঞাসা করুন",
+        "ask_q_marriage": "আমার বিয়ে কবে হবে?",
+        "ask_q_married_life": "আমার বিবাহিত জীবন কেমন হবে?",
+        "ask_q_manglik": "আমার কুষ্ঠিতে কি মঙ্গল দোষ আছে?",
+        "ask_q_year": "আগামী বছর আমার কেমন যাবে?",
+        "ask_q_career": "আমার কেরিয়ার কবে এগোবে?",
     },
     "or": {
         "head": "ଯୋଗାଯୋଗରେ ରୁହନ୍ତୁ",
@@ -121,6 +181,14 @@ TEXT: dict[str, dict[str, str]] = {
         "channel": "ଆମର WhatsApp ଚ୍ୟାନେଲରେ ଯୋଗ ଦିଅନ୍ତୁ",
         "share": "ଏହି ପୃଷ୍ଠାକୁ WhatsAppରେ ସେୟାର କରନ୍ତୁ",
         "forward": "ପରିବାରକୁ ପଠାନ୍ତୁ",
+        "ask_head": "ନିଜ କୁଣ୍ଡଳୀ ବିଷୟରେ କିଛି ପ୍ରଶ୍ନ ଅଛି କି?",
+        "ask_free": "ମାଗଣାରେ ପଚାରନ୍ତୁ, ସାଇନ୍-ଇନ୍ ଦରକାର ନାହିଁ",
+        "ask_go": "ଏଆଇ ଜ୍ୟୋତିଷଙ୍କୁ ପଚାରନ୍ତୁ",
+        "ask_q_marriage": "ମୋର ବିବାହ କେବେ ହେବ?",
+        "ask_q_married_life": "ମୋର ବୈବାହିକ ଜୀବନ କିପରି ହେବ?",
+        "ask_q_manglik": "ମୋ କୁଣ୍ଡଳୀରେ ମଙ୍ଗଳ ଦୋଷ ଅଛି କି?",
+        "ask_q_year": "ଆଗାମୀ ବର୍ଷ ମୋ ପାଇଁ କିପରି ରହିବ?",
+        "ask_q_career": "ମୋ କ୍ୟାରିଅର କେବେ ଆଗକୁ ବଢ଼ିବ?",
     },
 }
 
@@ -178,6 +246,48 @@ def top_bar(*, lang: str, path: str, title: str) -> str:
         f'<a class="share-wa" href="{e(CHANNEL_URL)}" target="_blank" rel="noopener" '
         f'data-strip="strip_channel" data-detail="top">{_ICON}<span>{e(_tx("channel", lang))}</span></a>'
         '</div>')
+
+
+# --------------------------------------------------------------------------
+# DIVASTRO-167: "Have a question about your own chart?" under the top bar
+# --------------------------------------------------------------------------
+
+#: The questions offered on each kind of page (keys of TEXT): marriage on the two
+#: matching pages, general ones on the festival pages.
+ASK_QUESTIONS: dict[str, tuple[str, ...]] = {
+    "milan": ("ask_q_marriage", "ask_q_married_life", "ask_q_manglik"),
+    "naam-milan": ("ask_q_marriage", "ask_q_married_life", "ask_q_manglik"),
+    "tyohar": ("ask_q_year", "ask_q_career", "ask_q_marriage"),
+}
+ASK_MEDIUM = "ask"      # static/app.js reads utm_medium=ask as ask_start "page"
+
+
+def ask_href(question: str, lang: str, campaign: str) -> str:
+    """The app's question-first flow (static/app.js startAsk) with `question` filled in,
+    in the page's language. No utm_source on purpose: the visit stays "internal" in the
+    traffic tables; utm_medium / utm_campaign say which page sent it."""
+    from urllib.parse import urlencode
+    return "/?" + urlencode({"ask": question, "lang": lang,
+                             "utm_medium": ASK_MEDIUM, "utm_campaign": campaign})
+
+
+def ask_strip(*, lang: str, kind: str) -> str:
+    """A compact line placed straight after the top bar (top_bar above): "Have a
+    question about your own chart? Ask free, no sign-in" and two or three question
+    chips that open the app with that question (/?ask=...). Plain links, no script
+    (CSP). "free, no sign-in" only while app/guest.py gives a signed-out visitor an
+    answer; otherwise it just offers to ask. Styling: .seo .ask-strip in static/styles.css."""
+    from . import guest          # lazy: guest -> analytics -> page modules -> here
+    e = html.escape
+    free = _tx("ask_free" if guest.GUEST_ANSWERS > 0 else "ask_go", lang)
+    chips = "".join(
+        f'<a class="ask-strip-chip" href="{e(ask_href(_tx(k, lang), lang, kind))}">{e(_tx(k, lang))}</a>'
+        for k in ASK_QUESTIONS[kind])
+    return (
+        f'<nav class="ask-strip" aria-label="{e(_tx("ask_head", lang))}">'
+        f'<p class="ask-strip-head"><b>{e(_tx("ask_head", lang))}</b> <span>{e(free)}</span></p>'
+        f'<div class="ask-strip-chips">{chips}</div>'
+        '</nav>')
 
 
 def forward_line(lang: str = "hi") -> str:
