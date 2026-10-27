@@ -35,11 +35,15 @@ def run_profile(p, browser, base: str, name: str, args: dict, expect_n: int) -> 
     check(f"badge says the server's number ({expect_n})", str(expect_n) in main and "FREE" in main, repr(main))
     sub = pg.page.inner_text("#free-badge-sub")
     check("badge says no card is needed", "No card" in sub, repr(sub))
-    b, cta = pg.rect("#free-badge"), pg.rect("#home-cta")
+    b, cta, ask = pg.rect("#free-badge"), pg.rect("#home-cta"), pg.rect("#ask-box")
+    # DIVASTRO-167: the question box leads now; the kundali button (DIVASTRO-134's main
+    # button) and the badge follow it, and all three still fit the first screen.
+    check("the question box is visible without scrolling, and comes first (DIVASTRO-167)",
+          ask["bottom"] <= vh and ask["bottom"] <= cta["top"], f"box {ask['top']:.0f}-{ask['bottom']:.0f}, button {cta['top']:.0f}")
     check("badge is visible without scrolling", b["bottom"] <= vh, f"bottom {b['bottom']:.0f} of {vh}")
-    check("main button is visible without scrolling", cta["bottom"] <= vh, f"bottom {cta['bottom']:.0f} of {vh}")
-    check("main button comes first, the badge sits under it (DIVASTRO-134)", cta["bottom"] <= b["top"] + 1)
-    check("main button is big enough for a thumb", cta["height"] >= 48 and cta["width"] >= 200, str(cta))
+    check("kundali button is visible without scrolling", cta["bottom"] <= vh, f"bottom {cta['bottom']:.0f} of {vh}")
+    check("kundali button before the badge, the badge under it (DIVASTRO-134)", cta["bottom"] <= b["top"] + 1)
+    check("kundali button is big enough for a thumb", cta["height"] >= 48 and cta["width"] >= 200, str(cta))
 
     feats = pg.page.eval_on_selector_all("#feat-grid .feat span", "els => els.map(e => e.textContent.trim())")
     check(f"{FEATURES} feature tiles, all with text", len(feats) == FEATURES and all(feats), str(feats))

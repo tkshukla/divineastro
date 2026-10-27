@@ -473,7 +473,7 @@ EVENT_NAMES = frozenset({
     "checkout_start",  # an order was started (detail: the sku)
     "paid",            # an order was confirmed paid (detail: the sku)
     "lang",            # the language was changed (detail: the code)
-    "home_cta",        # the main kundali button on the home screen was tapped
+    "home_cta",        # the kundali button on the home screen was tapped (under the question box since DIVASTRO-167)
     "strip_push",      # tapped "get daily alert" in the stay-in-touch strip (content pages)
     "strip_channel",   # tapped "join our WhatsApp channel" in that strip
     "strip_share",     # tapped "share this page on WhatsApp" in that strip
@@ -503,6 +503,13 @@ EVENT_NAMES = frozenset({
     # a /naam-se-kundali-milan result; a click may also be "store", the store)
     "milan_report_shown",      # the card was shown
     "milan_report_click",      # ...and its button was tapped (same detail)
+    # DIVASTRO-167: question first. The home screen leads with a question box.
+    "ask_box_shown",   # the box came into view (detail "home")
+    "ask_chip",        # a topic chip under it was tapped (detail: marriage, career,
+                       #   money, health or muhurat)
+    "ask_start",       # a question was started (detail "home" the box or a chip,
+                       #   "page" a content page's question link (/?ask=..&utm_medium=ask),
+                       #   "link" any other /?ask= link); ask_sent follows once it is sent
 })
 
 # users.signup_source values that are not a sign-up on the site: a customer an admin
@@ -729,7 +736,11 @@ def funnel(db: Session, start_utc: dt.datetime, visitors: int, new_users: int) -
 
 
 APP_FUNNEL = (   # (label, event name, detail or None)
-    ("Tapped the main kundali button", "home_cta", None),
+    # DIVASTRO-167: the question-first path: box -> start -> (chart) -> asked
+    ("Saw the question box on the home screen", "ask_box_shown", None),
+    ("Tapped a topic under the question box", "ask_chip", None),
+    ("Started a question (home box, a page's question link, or a shared link)", "ask_start", None),
+    ("Tapped the kundali button", "home_cta", None),
     ("Opened the birth form", "screen", "birth"),
     ("Cast a chart", "chart_cast", None),
     ("Opened sign-in", "signin_open", None),
@@ -821,7 +832,7 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("screen", "dashboard"): "Opened the chart dashboard", ("screen", "panchang"): "Opened Panchang",
     ("screen", "milan"): "Opened Kundali Milan", ("screen", "muhurat"): "Opened Muhurat",
     ("screen", "choghadiya"): "Opened Choghadiya", ("screen", "home"): "Back on the home screen",
-    ("home_cta", ""): "Tapped the main kundali button",
+    ("home_cta", ""): "Tapped the kundali button",
     ("chart_cast", ""): "Cast a chart", ("ask_sent", ""): "Sent a question to the AI",
     ("signin_open", ""): "Sign-in sheet opened", ("signup", ""): "Signed up",
     ("store_open", "credits"): "Store opened (out of questions)",
@@ -906,6 +917,19 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("milan_report_click", "naam"): "Tapped the Kundali Milan report under a naam milan result",
     ("milan_report_click", "store"): "Tapped the Kundali Milan report in the store",
     ("sample_view", "milan_report"): "Opened the sample Kundali Milan report",
+    # DIVASTRO-167: question first
+    ("ask_box_shown", ""): "Saw the question box",
+    ("ask_box_shown", "home"): "Saw the question box on the home screen",
+    ("ask_chip", ""): "Tapped a topic under the question box",
+    ("ask_chip", "marriage"): "Tapped the Marriage topic under the question box",
+    ("ask_chip", "career"): "Tapped the Job / Career topic under the question box",
+    ("ask_chip", "money"): "Tapped the Money topic under the question box",
+    ("ask_chip", "health"): "Tapped the Health topic under the question box",
+    ("ask_chip", "muhurat"): "Tapped the Good time / Muhurat topic under the question box",
+    ("ask_start", ""): "Started a question",
+    ("ask_start", "home"): "Started a question from the home question box",
+    ("ask_start", "page"): "Started a question from a content page's question link",
+    ("ask_start", "link"): "Started a question from a shared /?ask= link",
 }
 
 
