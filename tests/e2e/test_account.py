@@ -47,7 +47,33 @@ def sign_in_and_out(p, browser, base: str) -> None:
     check("the session really is this account",
           (me.get("user") or {}).get("email") == "e2e-ui@example.com", str(me))
 
+    # DIVASTRO-168: the header shows a round initial, never the name or the address;
+    # the menu its owner opens says which account it is.
+    face = pg.page.inner_text("#btn-acct").replace("\u25be", "").strip()
+    check("the account button shows one initial, not the address", face == "E", repr(face))
+    check("the account button is labelled 'My account' for screen readers",
+          pg.page.get_attribute("#btn-acct", "aria-label") == "My account")
     pg.page.click("#btn-acct")
+    check("the open menu tells its owner which account this is",
+          "e2e-ui@example.com" in pg.page.inner_text(".acct-drop .drop-who"))
+
+    # A Google-style account with a full name: still only the initial in the header.
+    full_name = "Priyanka Sharma Gupta"
+    pg.page.context.request.post(f"{base}/api/auth/dev",
+                                 data={"email": "priyanka.g@example.com", "name": full_name})
+    pg.open_home()
+    pg.page.wait_for_selector("#btn-acct", timeout=10000)
+    face = pg.page.inner_text("#btn-acct").replace("\u25be", "").strip()
+    header = pg.page.inner_text("#account-bar")
+    check("a full Google name never reaches the header",
+          face == "P" and not any(w in header for w in full_name.split())
+          and "priyanka.g" not in header, f"{face!r} / {header!r}")
+    check("...nor the button's tooltip",
+          full_name not in (pg.page.get_attribute("#btn-acct", "title") or ""))
+    pg.page.click("#btn-acct")
+    drop = pg.page.inner_text(".acct-drop")
+    check("the owner's menu shows the address, not the full name",
+          "priyanka.g@example.com" in drop and full_name not in drop, drop[:120])
     pg.page.click('.acct-drop button[data-act="logout"]')
     pg.page.wait_for_selector("#btn-signin", timeout=10000)
     check("signed out: #btn-signin is back", pg.page.locator("#btn-signin").count() > 0)
@@ -139,10 +165,12 @@ def username_password_signup_and_login(p, browser, base: str) -> None:
     check("the account displays by the chosen username",
           me["user"]["name"] == username, me["user"]["name"])
 
+    acct_label = pg.page.inner_text("#btn-acct").replace("\u25be", "").strip()
+    check("the account button shows the username's initial only (DIVASTRO-168)",
+          acct_label == "E", acct_label)
     pg.page.click("#btn-acct")
-    acct_label = pg.page.inner_text("#btn-acct")
-    check("the account button shows the real username, not a generic 'Account' fallback",
-          username in acct_label, acct_label)
+    check("the open menu names the username for its owner",
+          username in pg.page.inner_text(".acct-drop .drop-who"), pg.page.inner_text(".acct-drop"))
     pg.page.click('.acct-drop button[data-act="logout"]')
     pg.page.wait_for_selector("#btn-signin", timeout=10000)
 
@@ -215,9 +243,9 @@ def email_code_sign_in(p, browser, base: str) -> None:
     check("signed in as an email account on that address",
           me["provider"] == "email" and me["email"] == addr, str(me)[:160])
     check("with the welcome bonus (3 since DIVASTRO-154)", me["credits"] == 3, str(me["credits"]))
-    label = pg.page.inner_text("#btn-acct")
-    check("the account button shows the address's name part only",
-          "e2e.email" in label and "@" not in label, label)
+    label = pg.page.inner_text("#btn-acct").replace("\u25be", "").strip()
+    check("the account button shows an initial only, no part of the address (DIVASTRO-168)",
+          label == "E", label)
 
     # The same flow in Hindi: every label on the email step is translated.
     pg.page.context.clear_cookies()

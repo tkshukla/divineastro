@@ -195,6 +195,14 @@ def phone_checks(p, browser, base: str, name: str, spec: dict) -> None:
         pg.page.wait_for_function(
             "document.querySelectorAll('.msg.bot').length >= 2", timeout=30000)
         check("an answer arrives", True)
+        # DIVASTRO-168: the opening read (name, birth date, place) has no Share row any
+        # more, so wait for the answer's own; the first bot bubble may be "thinking".
+        try:
+            pg.page.wait_for_selector(".msg.bot .msg-actions button", timeout=30000)
+        except Exception:
+            pass
+        check("the opening read (name and birth details) has no Copy / Share row",
+              pg.page.locator(".msg.bot").first.locator(".msg-actions").count() == 0)
         check("the answer has Copy and Share buttons",
               pg.page.locator(".msg.bot .msg-actions button").count() >= 2)
         ans = pg.rect(".msg.bot:last-of-type .bubble") or pg.rect(".msg.bot .bubble")

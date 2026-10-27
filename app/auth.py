@@ -331,8 +331,8 @@ def login_label(user: User) -> str:
     if user.provider == "password":
         return user.provider_sub
     # An email-code account is labelled by its address, exactly like a Google
-    # one: the header already shows only the part before the "@" (account.js),
-    # and the full address is what the owner's admin needs to see.
+    # one: the header shows only an initial (account.js, DIVASTRO-168), the menu
+    # its owner opens shows the address, and the admin needs to see it.
     if user.provider == "email":
         return user.email or user.provider_sub
     return user.email or ""
