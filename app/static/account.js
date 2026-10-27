@@ -2574,4 +2574,6 @@ async function openGuestOrder(token, data = null, polls = 0) {
   return back;
 }
 
-loadAccount();
+// DIVASTRO-167: app.js's question-first flow waits on this before it decides whether
+// a returning visitor already has a saved chart to answer on.
+window.daAcctReady = loadAccount();

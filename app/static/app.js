@@ -854,6 +854,7 @@ function applyLanguage() {
    badge stays hidden, so it can never claim something the server has not confirmed.
    Signed in, it shows what the person actually has left instead. */
 function renderFreeBadge() {
+  renderAskBox();         // DIVASTRO-167: its heading follows the same server numbers
   const box = $("#free-badge");
   if (!box) return;
   // Known = the server has told us: either the free allowance (signed out) or this
@@ -1098,6 +1099,8 @@ $("#birth-form").addEventListener("submit", async (e) => {
   try {
     await castChart(payload);
     saveBirth(payload);
+    // DIVASTRO-167: the visitor came here to ask something; ask it now.
+    if (state.pendingAsk) askNow();
   } catch (ex) {
     err.textContent = ex.message;
     err.hidden = false;
@@ -1120,6 +1123,9 @@ async function castChart(payload) {
   state.chart = data.chart;
   state.currentBirthData = payload;
   state.currentBirthId = state.selectedBirthId;
+  // DIVASTRO-167: this tab's chart, so a question asked later in the same browser
+  // session (home box, or a ?ask= link from a content page) needs no form again.
+  try { sessionStorage.setItem(SESSION_BIRTH, JSON.stringify(payload)); } catch { /* private mode */ }
   window.daTrack?.("chart_cast");
   renderReading(data);
   loadAndShowDashboard();
@@ -1137,6 +1143,8 @@ const savedBox = $("#saved-charts");
    an empty home screen. Parking the payload here lets us save it the moment an
    account exists. One slot: the chart they were last looking at. */
 const PENDING_BIRTH = "astro.pendingBirth";
+// DIVASTRO-167: the chart cast in this tab (sessionStorage), for the question-first flow.
+const SESSION_BIRTH = "astro.sessionBirth";
 
 /* The reading is already on screen by the time this runs: saving is a
    convenience for the next visit and must never hold up or break a cast. */
@@ -1245,6 +1253,9 @@ const STAGES = [
 ];
 
 function showStage(id) {
+  // DIVASTRO-167: a question waits only along its own path (birth form -> chart ->
+  // chat); going anywhere else drops it, so it is never asked out of the blue later.
+  if (state.pendingAsk && !["stage-birth", "stage-chat", "stage-dashboard"].includes(id)) clearPendingAsk();
   STAGES.forEach((s) => {
     const el = document.getElementById(s);
     if (el) el.classList.toggle("active", s === id);
@@ -1270,7 +1281,8 @@ $("#go-home")?.addEventListener("click", () => {
   }
 });
 $("#home-cta")?.addEventListener("click", () => {
-  window.daTrack?.("home_cta");     // DIVASTRO-134: the one primary button
+  window.daTrack?.("home_cta");     // DIVASTRO-134: the kundali button
+  clearPendingAsk();                // a chart for its own sake, no question waiting
   showStage("stage-birth");
 });
 
@@ -2692,4 +2704,183 @@ function renderHomeValue() {
 $("#sample-ask")?.addEventListener("click", () => {
   if (typeof acct !== "undefined" && acct.user) goToChat();
   else if (typeof openSignIn === "function") openSignIn();
+});
+
+/* ============================================================
+   DIVASTRO-167 — question first.
+   24–27 Oct: ~30 visitors a day, 4 charts in 4 days and no question to the AI at
+   all: a home page that led with "make your kundali" was left without a tap. The
+   first screen now asks "what do you want to know?". The question is kept while the
+   birth details are taken (only if there is no chart yet), then the chart is cast,
+   the chat opens and the question is sent — through the same #ask-form as a typed
+   one, so the guest answer (app/guest.py), its sign-up line and the Starter line under
+   it (DIVASTRO-154 / 157) and ask_sent all behave exactly as before.
+   Content pages link here as /?ask=<question> (stay_strip.ask_strip).
+   Everything here is a function: applyLanguage() calls renderAskBox() while this
+   file is still loading, before any const below a call site would exist.
+   ============================================================ */
+function askTopics() {
+  // topic -> [chip label key, question key]; the topic is the ask_chip detail
+  return {
+    marriage: ["askChipMarriage", "askQMarriage"],
+    career: ["askChipCareer", "askQCareer"],
+    money: ["askChipMoney", "askQMoney"],
+    health: ["askChipHealth", "askQHealth"],
+    muhurat: ["askChipMuhurat", "askQMuhurat"],
+  };
+}
+
+/* The heading's promise is the server's: "free, no sign-in" only while /api/me says
+   this browser still has its guest answer; signed in, the person's own balance (the
+   same number the free-questions badge shows); otherwise, or before /api/me has
+   answered, no promise at all. */
+function renderAskBox() {
+  const box = document.getElementById("ask-box");
+  if (!box) return;
+  const set = (sel, text) => { const el = $(sel); if (el) el.textContent = text; };
+  let title = t("askBoxTitle");
+  if (typeof acct !== "undefined") {
+    if (acct.user) {
+      if (acct.user.credits > 0) title = t("askBoxTitleLeft").replace("{n}", acct.user.credits);
+    } else if (acct.freeKnown && acct.guestLeft > 0) {
+      title = t("askBoxTitleGuest");
+    }
+  }
+  set("#ask-title", title);
+  set("#ask-home-label", t("askBoxLabel"));
+  set("#ask-home-go", t("askBoxGo"));
+  const input = $("#ask-home-q");
+  if (input) input.placeholder = t("askBoxPh");
+  $("#ask-chips")?.setAttribute("aria-label", t("askBoxTopics"));
+  const topics = askTopics();
+  $$("#ask-chips .ask-chip").forEach((b) => {
+    const keys = topics[b.dataset.topic];
+    if (keys) b.textContent = t(keys[0]);
+  });
+  set("#ask-pending-note", t("askPendingNote"));
+}
+
+function clearPendingAsk() {
+  state.pendingAsk = null;
+  const p = document.getElementById("ask-pending");
+  if (p) p.hidden = true;
+  document.getElementById("birth-form")?.classList.remove("ask-mode");
+}
+
+/* The chart is on screen: open the chat and send the waiting question. */
+function askNow() {
+  const question = state.pendingAsk;
+  clearPendingAsk();
+  if (!question || !state.sessionId) return;
+  showStage("stage-chat");
+  qBox.value = question;
+  autosizeQ();
+  if (!state.busy) $("#ask-form").requestSubmit();
+}
+
+function sessionBirth() {
+  try {
+    const v = JSON.parse(sessionStorage.getItem(SESSION_BIRTH) || "null");
+    return v && v.date && v.timezone ? v : null;
+  } catch { return null; }
+}
+
+/* The birth step, with the question above it. Only date, time and place: the
+   optional name and gender rows are folded away (.ask-mode) — they change nothing
+   about the answer. */
+function showAskBirth() {
+  $("#ask-pending-q").textContent = `“${state.pendingAsk}”`;
+  $("#ask-pending").hidden = false;
+  $("#birth-form").classList.add("ask-mode");
+  showStage("stage-birth");
+}
+
+let askStarting = false;
+async function startAsk(question, from) {
+  question = String(question || "").trim().slice(0, 500);
+  if (!question || askStarting) return;
+  window.daTrack?.("ask_start", from);
+  state.pendingAsk = question;
+  // A chart already open in this tab: straight to the answer.
+  if (state.sessionId && state.chart) { askNow(); return; }
+  askStarting = true;
+  const go = $("#ask-home-go");
+  go?.classList.add("busy");
+  try {
+    // A returning signed-in visitor: their most recent saved chart (GET /api/births
+    // lists the newest first). The account has to have loaded to know.
+    try { await window.daAcctReady; } catch { /* treated as signed out */ }
+    if (typeof acct !== "undefined" && acct.user) {
+      if (!(state.births || []).length) await loadSavedCharts();
+      const latest = (state.births || [])[0];
+      if (latest) {
+        await openSavedChart(latest);
+        if (state.sessionId && state.pendingAsk) { askNow(); return; }
+      }
+    }
+    // The chart cast earlier in this browser session (another page of the site sent
+    // them back here with ?ask=, say): cast it again, no form.
+    const kept = sessionBirth();
+    if (kept) {
+      try {
+        await castChart(kept);
+        if (state.pendingAsk) { askNow(); return; }
+      } catch { /* fall through to the form */ }
+    }
+    if (state.pendingAsk) showAskBirth();
+  } finally {
+    askStarting = false;
+    go?.classList.remove("busy");
+  }
+}
+
+$("#ask-home")?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const input = $("#ask-home-q");
+  const q = input.value.trim();
+  if (!q) { input.focus(); return; }
+  startAsk(q, "home");
+});
+$$("#ask-chips .ask-chip").forEach((b) => {
+  b.addEventListener("click", () => {
+    const keys = askTopics()[b.dataset.topic];
+    if (!keys) return;
+    const q = t(keys[1]);
+    $("#ask-home-q").value = q;
+    window.daTrack?.("ask_chip", b.dataset.topic);
+    startAsk(q, "home");
+  });
+});
+
+// ask_box_shown: once per page load, when the box is actually on screen.
+(() => {
+  const box = document.getElementById("ask-box");
+  if (!box) return;
+  let sent = false;
+  const shown = () => { if (!sent) { sent = true; window.daTrack?.("ask_box_shown", "home"); } };
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((x) => x.isIntersecting && x.target.offsetParent !== null)) { io.disconnect(); shown(); }
+    }, { threshold: 0.5 });
+    io.observe(box);
+  } else if ($("#stage-home").classList.contains("active")) {
+    shown();
+  }
+})();
+
+/* /?ask=<question>: the content pages' "Have a question about your own chart?"
+   chips (detail "page": their links carry utm_medium=ask), or any other link
+   ("link"). Run once every script has loaded (account.js's daAcctReady), and the
+   question is dropped from the address bar so a reload does not ask it twice. */
+window.addEventListener("DOMContentLoaded", () => {
+  const params = new URLSearchParams(location.search);
+  if (!params.has("ask")) return;
+  const q = (params.get("ask") || "").trim().slice(0, 500);
+  const from = params.get("utm_medium") === "ask" ? "page" : "link";
+  params.delete("ask");
+  history.replaceState({}, "", location.pathname + (params.toString() ? `?${params}` : ""));
+  if (!q) return;
+  const input = $("#ask-home-q");
+  if (input) input.value = q;
+  startAsk(q, from);
 });

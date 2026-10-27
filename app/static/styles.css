@@ -2460,6 +2460,20 @@ button.free-badge:focus-visible { outline: 3px solid var(--gold); outline-offset
 .seo .wa-top .share-wa { flex: 1 1 150px; min-width: 0; box-sizing: border-box; padding: 6px 12px;
                          border-radius: 22px; font-size: 14px; line-height: 1.25; white-space: normal;
                          text-align: center; color: var(--ink); text-decoration: none; }
+/* DIVASTRO-167: "Have a question about your own chart? Ask free, no sign-in" and two or
+   three question links, right after that bar (stay_strip.ask_strip). Small on purpose:
+   the page's own answer stays first. */
+.seo .ask-strip { margin: -6px 0 18px; padding: 8px 12px 10px; border-radius: 14px;
+                  border: 1px solid rgba(var(--gold-rgb), 0.45); background: rgba(var(--gold-rgb), 0.07); }
+.seo .ask-strip-head { margin: 0 0 6px; font-size: 14px; line-height: 1.4; color: var(--ink-dim); }
+.seo .ask-strip-head b { color: var(--ink); font-weight: 600; }
+.seo .ask-strip-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.seo .ask-strip-chip { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%;
+                       box-sizing: border-box; padding: 6px 12px; border-radius: 999px; font-size: 13.5px;
+                       line-height: 1.25; overflow-wrap: anywhere; text-decoration: none;
+                       color: var(--gold-soft); border: 1px solid rgba(var(--gold-rgb), 0.55);
+                       background: var(--card-bg, transparent); }
+.seo .ask-strip-chip:hover, .seo .ask-strip-chip:focus-visible { background: rgba(var(--gold-rgb), 0.18); }
 /* DIVASTRO-123: SEO page tables on a phone. The fact tables (th scope=row:
    nakshatra, rashi, panchang, koota) must fit the screen: a label column that
    never wraps pushed them sideways. Labels wrap, cells break long words, and
@@ -2871,3 +2885,54 @@ s.was {
 .guest-asked .gq-text { display: block; color: var(--ink); overflow-wrap: anywhere; }
 .guest-asked .gq-status { display: block; font-size: 13px; color: var(--gold-soft); }
 .guest-keep { margin-top: 10px; }
+
+/* ---------- DIVASTRO-167: question first ----------
+   The question box leads the home screen; the kundali button, the free-questions
+   badge and everything else follow it. On a phone the whole box (heading, field,
+   Ask, five topic chips) is on the first screen, 360x640 included. */
+.ask-box {
+  margin: 6px auto 16px; padding: 14px 14px 12px; max-width: 560px; text-align: left;
+  background: var(--card-bg); border: 1px solid var(--card-edge); border-radius: 18px;
+  box-shadow: 0 0 0 3px var(--card-bg), 0 0 0 4px #d4a017, 0 10px 24px var(--frame-glow, rgba(0,0,0,0.2));
+}
+.ask-title {
+  margin: 0 0 10px; font-family: var(--sans); font-size: 17px; font-weight: 700; line-height: 1.3;
+  color: var(--gold-soft); letter-spacing: 0; text-transform: none; text-align: center;
+}
+.ask-home { display: flex; gap: 8px; margin: 0; min-width: 0; }
+.ask-home input[type=text] {
+  flex: 1 1 auto; min-width: 0; min-height: 48px; font-size: 16px;    /* 16px: no iOS zoom on focus */
+  border: 1px solid rgba(var(--gold-rgb), 0.6);
+}
+.ask-home button.primary.ask-go {
+  width: auto; flex: none; min-height: 48px; padding: 0 20px; font-size: 16px; white-space: nowrap;
+}
+.ask-home button.ask-go.busy { opacity: 0.7; cursor: progress; }
+.ask-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin: 10px 0 0; }
+.ask-chip {
+  font-family: var(--sans); font-size: 14px; line-height: 1.2; padding: 8px 13px; min-height: 44px;
+  border-radius: 999px; cursor: pointer; max-width: 100%; overflow-wrap: anywhere;
+  border: 1px solid rgba(var(--gold-rgb), 0.55); background: rgba(var(--gold-rgb), 0.12); color: var(--gold-soft);
+  -webkit-tap-highlight-color: transparent;
+}
+.ask-chip:hover, .ask-chip:focus-visible { background: rgba(var(--gold-rgb), 0.24); }
+
+/* The birth step when a question is waiting: the question above the form, and
+   only date, time and place in it. */
+.ask-pending {
+  margin: 10px auto 0; max-width: 520px; padding: 10px 14px; border-radius: 14px; text-align: left;
+  border: 1px solid rgba(var(--gold-rgb), 0.55); background: rgba(var(--gold-rgb), 0.1);
+}
+.ask-pending[hidden] { display: none; }
+.ask-pending-note { margin: 0 0 4px; font-size: 13.5px; color: var(--ink-dim); }
+.ask-pending-q { margin: 0; font-size: 16px; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+#birth-form.ask-mode .opt-row, #birth-form.ask-mode #quick-saved-container { display: none !important; }
+
+@media (max-width: 700px) {
+  .ask-box { margin: 4px auto 12px; padding: 12px 12px 10px; }
+  .ask-title { font-size: 16.5px; margin-bottom: 8px; }
+  .ask-chip { font-size: 13.5px; padding: 7px 11px; min-height: 44px; }   /* a thumb: 44px */
+}
+@media (max-width: 340px) {
+  .ask-home button.primary.ask-go { padding: 0 14px; }
+}

@@ -506,6 +506,7 @@ def render_hub(lang: str, today: dt.date | None = None, city: City = CITY) -> HT
             + _top_note(city, lang)
             + _today_block(today, todays, nxt, lang)
             + seo_pages._top_bar(lang=lang, path=path, title=title)
+            + seo_pages._ask_strip(lang=lang, kind="tyohar")
             + f"<h2>{_e(_tx('hub.upcoming', lang))}</h2>"
             + (_table(later, lang, city) if later else "<p>—</p>")
             + _city_note(lang, city) + _cta(lang) + faq_html + _city_tools(city, lang)
@@ -640,6 +641,7 @@ def render_festival(slug: str, year: int, lang: str) -> HTMLResponse:
             f'<div class="box"><p>{when}</p>'
             + (f'<ul class="timings">{items}</ul>' if items else "") + "</div>"
             + seo_pages._top_bar(lang=lang, path=path, title=title)
+            + seo_pages._ask_strip(lang=lang, kind="tyohar")
             + (f"<h2>{_e(_tx('fest.about_h2', lang))}</h2><p>{_e(about)}</p>" if about else "")
             + f"<h2>{_e(_tx('fest.rule_h2', lang))}</h2><p>{_e(rule)}.</p>"
             + (f"<p><small>{_e(note)}</small></p>" if note else "")

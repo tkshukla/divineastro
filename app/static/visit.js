@@ -27,11 +27,23 @@
   };
   if (dnt) return;
 
+  // DIVASTRO-167: never the question a link carried (/?ask=...): it is what the
+  // visitor is about to ask, not where they came from, and it can be long.
+  function query() {
+    try {
+      const p = new URLSearchParams(location.search);
+      if (!p.has('ask')) return location.search || '';
+      p.delete('ask');
+      const s = p.toString();
+      return s ? `?${s}` : '';
+    } catch { return ''; }
+  }
+
   // Read now, before account.js strips ?welcome from the address bar.
   const body = JSON.stringify({
     path: location.pathname,
     ref: document.referrer || '',
-    q: location.search || '',
+    q: query(),
   });
 
   const send = () => {

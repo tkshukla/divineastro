@@ -83,6 +83,28 @@
       charts, and straight answers to your questions in Hindi or English.
     </p>
 
+    <!-- DIVASTRO-167: the first screen is a question. Visitors left a "make your
+         kundali" home page without starting; asking is what they came for. The heading's
+         promise follows the server (/api/me: the guest answer, or the person's own
+         balance) and says nothing until it is known (app.js renderAskBox). Asking keeps
+         the question, takes the birth details only if there is no chart yet, and sends it. -->
+    <section class="ask-box" id="ask-box" aria-labelledby="ask-title">
+      <h2 class="ask-title" id="ask-title">Ask your question</h2>
+      <form class="ask-home" id="ask-home" autocomplete="off">
+        <label class="sr-only" for="ask-home-q" id="ask-home-label">Your question</label>
+        <input type="text" id="ask-home-q" maxlength="500" enterkeyhint="go"
+               placeholder="When will I get married?" />
+        <button type="submit" class="primary ask-go" id="ask-home-go">Ask</button>
+      </form>
+      <div class="ask-chips" id="ask-chips" role="group" aria-label="Topics">
+        <button type="button" class="ask-chip" data-topic="marriage">Marriage</button>
+        <button type="button" class="ask-chip" data-topic="career">Job / Career</button>
+        <button type="button" class="ask-chip" data-topic="money">Money</button>
+        <button type="button" class="ask-chip" data-topic="health">Health</button>
+        <button type="button" class="ask-chip" data-topic="muhurat">Good time / Muhurat</button>
+      </div>
+    </section>
+
     <!-- DIVASTRO-134: ONE primary action. The kundali button comes first, then a
          one-line promise; the free-questions badge (number from the server) is the
          proof under it. Everything else on this screen is secondary. -->
@@ -575,6 +597,11 @@
   <div class="intro">
     <h1 id="birth-title">Your birth details</h1>
     <p class="tagline" id="birth-sub">Exact time and place — the chart is only as good as these.</p>
+    <!-- DIVASTRO-167: the question waiting for this chart (app.js startAsk) -->
+    <div class="ask-pending" id="ask-pending" hidden>
+      <p class="ask-pending-note" id="ask-pending-note">To answer, we need your birth details</p>
+      <p class="ask-pending-q" id="ask-pending-q"></p>
+    </div>
   </div>
 
   <form id="birth-form" class="card" autocomplete="off">
@@ -616,7 +643,7 @@
       <p id="place-chosen" class="chosen" hidden></p>
     </div>
 
-    <div class="row">
+    <div class="row opt-row">
       <div class="field">
         <label for="f-name">Name <span class="opt">optional</span></label>
         <input id="f-name" name="name" type="text" placeholder="Nickname is fine"
@@ -635,7 +662,7 @@
     <!-- DIVASTRO-162: full width under the Name/Gender row (a half-width column would
          wrap it to five lines on a phone). Says the name is not needed; it is not a
          promise that it goes nowhere (PDF reports use it when given). -->
-    <p class="name-hint" id="name-hint">Not needed for the reading — date, time and place are enough. Leave it blank to stay anonymous.</p>
+    <p class="name-hint opt-row" id="name-hint">Not needed for the reading — date, time and place are enough. Leave it blank to stay anonymous.</p>
 
     <button type="submit" class="primary" id="cast">
       <span class="label">Show my reading</span>

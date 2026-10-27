@@ -583,6 +583,22 @@ STAY_STRIP = {
     "share": "हे पान WhatsApp वर शेअर करा",
     # EN: Forward to family
     "forward": "कुटुंबाला पाठवा",
+    # EN: Have a question about your own chart?
+    "ask_head": "तुमच्या स्वतःच्या कुंडलीबद्दल प्रश्न आहे?",
+    # EN: Ask free, no sign-in
+    "ask_free": "मोफत विचारा, साइन-इनची गरज नाही",
+    # EN: Ask the AI astrologer
+    "ask_go": "एआय ज्योतिषाला विचारा",
+    # EN: When will I get married?
+    "ask_q_marriage": "माझे लग्न कधी होईल?",
+    # EN: How will my married life be?
+    "ask_q_married_life": "माझे वैवाहिक जीवन कसे असेल?",
+    # EN: Do I have Mangal dosha?
+    "ask_q_manglik": "माझ्या कुंडलीत मंगळ दोष आहे का?",
+    # EN: How will the coming year be for me?
+    "ask_q_year": "येणारे वर्ष माझ्यासाठी कसे असेल?",
+    # EN: When will my career pick up?
+    "ask_q_career": "माझे करिअर कधी पुढे जाईल?",
 }
 
 # app/seo_city_names.py CITIES["mr"] — the 114 cities as that language's newspapers spell them (key = URL slug)  [114]
