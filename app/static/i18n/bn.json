@@ -441,6 +441,8 @@
   "acct.emailNeedCode": "6 সংখ্যার কোডটি দিন।",
   "acct.signInFailed": "সাইন-ইন হয়নি। আবার চেষ্টা করুন।",
   "acct.account": "আমার অ্যাকাউন্ট",
+  "acct.myAccount": "আমার অ্যাকাউন্ট",
+  "acct.signedInAs": "{who} হিসেবে সাইন ইন",
   "acct.emailPlaceholder": "আপনার ইমেল ঠিকানা",
   "acct.legalLine": "এগিয়ে গেলে আপনি আমাদের {terms} ও {privacy} মেনে নিচ্ছেন।",
   "acct.terms": "শর্তাবলি",

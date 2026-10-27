@@ -441,6 +441,8 @@
   "acct.emailNeedCode": "6 இலக்கக் குறியீட்டை உள்ளிடவும்.",
   "acct.signInFailed": "உள்நுழைவு தோல்வி. மீண்டும் முயலவும்.",
   "acct.account": "கணக்கு",
+  "acct.myAccount": "எனது கணக்கு",
+  "acct.signedInAs": "{who} ஆக உள்நுழைந்துள்ளீர்கள்",
   "acct.emailPlaceholder": "உங்கள் மின்னஞ்சல்",
   "acct.legalLine": "தொடர்வதன் மூலம் எங்கள் {terms} மற்றும் {privacy}-ஐ ஏற்கிறீர்கள்.",
   "acct.terms": "விதிமுறைகள்",

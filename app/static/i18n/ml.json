@@ -441,6 +441,8 @@
   "acct.emailNeedCode": "6 അക്ക കോഡ് നൽകുക.",
   "acct.signInFailed": "സൈൻ ഇൻ പരാജയപ്പെട്ടു. വീണ്ടും ശ്രമിക്കുക.",
   "acct.account": "അക്കൗണ്ട്",
+  "acct.myAccount": "എന്റെ അക്കൗണ്ട്",
+  "acct.signedInAs": "{who} ആയി സൈൻ ഇൻ ചെയ്‌തു",
   "acct.emailPlaceholder": "നിങ്ങളുടെ ഇമെയിൽ",
   "acct.legalLine": "തുടരുന്നതിലൂടെ ഞങ്ങളുടെ {terms}, {privacy} എന്നിവ നിങ്ങൾ അംഗീകരിക്കുന്നു.",
   "acct.terms": "നിബന്ധനകൾ",

@@ -441,6 +441,8 @@
   "acct.emailNeedCode": "6 ਅੰਕਾਂ ਦਾ ਕੋਡ ਭਰੋ।",
   "acct.signInFailed": "ਸਾਈਨ ਇਨ ਨਹੀਂ ਹੋ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
   "acct.account": "ਖਾਤਾ",
+  "acct.myAccount": "ਮੇਰਾ ਖਾਤਾ",
+  "acct.signedInAs": "{who} ਵਜੋਂ ਸਾਈਨ ਇਨ",
   "acct.emailPlaceholder": "name@gmail.com",
   "acct.legalLine": "ਜਾਰੀ ਰੱਖ ਕੇ ਤੁਸੀਂ ਸਾਡੀਆਂ {terms} ਅਤੇ {privacy} ਨੂੰ ਮੰਨਦੇ ਹੋ।",
   "acct.terms": "ਸ਼ਰਤਾਂ",

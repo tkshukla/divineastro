@@ -263,6 +263,21 @@ body.admin-body {
 .acct-menu { position: relative; }
 .ghost-btn.has-menu { display: inline-flex; align-items: center; gap: 6px; }
 .caret { font-size: 12px; opacity: 0.7; line-height: 1; }
+/* DIVASTRO-168: the account button is a round initial, not the person's name. */
+.ghost-btn.has-menu { padding: 3px 9px 3px 3px; min-width: 44px; }
+/* The letter takes the pill's own ink (as the name did, so it reads in both
+   themes); only the ring is gold. */
+.acct-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%; flex: none;
+  color: inherit; border: 1.5px solid rgba(var(--gold-rgb), 0.8);
+  font-family: var(--sans); font-size: 13px; font-weight: 700; line-height: 1;
+}
+.drop-who {
+  padding: 8px 12px 9px; margin-bottom: 4px; border-bottom: 1px solid var(--line);
+  font-family: var(--sans); font-size: 12px; color: var(--ink-dim);
+  overflow-wrap: anywhere; max-width: 240px;
+}
 .acct-drop {
   position: absolute; top: calc(100% + 6px); left: 0;
   background: var(--surface-pop); border: 1px solid var(--line); border-radius: 12px;

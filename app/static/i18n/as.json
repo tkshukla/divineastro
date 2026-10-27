@@ -441,6 +441,8 @@
   "acct.emailNeedCode": "6 অংকৰ ক'ড লিখক।",
   "acct.signInFailed": "ছাইন-ইন বিফল হ'ল। অনুগ্ৰহ কৰি পুনৰ চেষ্টা কৰক।",
   "acct.account": "একাউণ্ট",
+  "acct.myAccount": "মোৰ একাউণ্ট",
+  "acct.signedInAs": "{who} হিচাপে ছাইন-ইন",
   "acct.emailPlaceholder": "name@gmail.com",
   "acct.legalLine": "আগবাঢ়িলে আপুনি আমাৰ {terms} আৰু {privacy} মানি লৈছে।",
   "acct.terms": "নিয়ম আৰু চৰ্তাৱলী",
