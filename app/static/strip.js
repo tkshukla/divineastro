@@ -10,13 +10,18 @@
 'use strict';
 
 (() => {
+  // DIVASTRO-164: the same links in the bar under the answer box (.wa-top) carry
+  // data-detail="top", so the report can tell top taps from bottom ones.
+  const track = (e) => {
+    const el = e.target.closest('[data-strip]');
+    if (el && typeof window.daTrack === 'function') window.daTrack(el.dataset.strip, el.dataset.detail);
+  };
+  document.querySelectorAll('.wa-top').forEach((bar) => bar.addEventListener('click', track));
+
   const strip = document.getElementById('stay-strip');
   if (!strip) return;
 
-  strip.addEventListener('click', (e) => {
-    const el = e.target.closest('[data-strip]');
-    if (el && typeof window.daTrack === 'function') window.daTrack(el.dataset.strip);
-  });
+  strip.addEventListener('click', track);
 
   const btn = document.getElementById('strip-push');
   if (!btn) return;

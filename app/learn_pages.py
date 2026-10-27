@@ -43,6 +43,7 @@ from .astro.namakshar import NAKSHATRA_LIST
 from .chart_service import SIGNS
 from .learn_text import CLAIMS, FIVE_LIMBS, PAGES, SLUGS, UI
 from .seo_pages import BRAND, _cta, _e, _long_date, _panchang, _path, _render, _span, _time, _today
+from .seo_pages import _faq as seo_faq
 
 router = APIRouter()
 
@@ -560,11 +561,8 @@ def _related(slug: str, cl: str) -> str:
 
 
 def _faq(items) -> tuple[str, dict]:
-    html_part = "".join(f"<h3>{_e(q)}</h3><p>{_e(a)}</p>" for q, a in items)
-    ld = {"@type": FAQ_TYPE, "mainEntity": [
-        {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}}
-        for q, a in items]}
-    return f'<div class="faq">{html_part}</div>', ld
+    """The FAQ markup and FAQPage JSON-LD: seo_pages' one helper (DIVASTRO-165)."""
+    return seo_faq(items)
 
 
 def _tool_name_for_note(slug: str, cl: str) -> str:

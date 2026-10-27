@@ -382,6 +382,7 @@ def render(slug: str, year: int, lang: str, today: dt.date | None = None) -> HTM
     body = (f"<h1>{_e(h1)}</h1>{sub}"
             f'<p class="date">{_e(_place(lang))}</p>'
             f'<div class="box answer"><p>{_answer(spec, year, items, which, ref, lang, name)}</p></div>'
+            + seo_pages._top_bar(lang=lang, path=p, title=title) +
             f"<h2>{_e(_tx('table.h2', lang, **v))}</h2>"
             + (_tx("months.note", lang) if krishna else "")
             + _table(spec, year, items, lang)

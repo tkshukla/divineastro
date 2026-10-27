@@ -477,6 +477,8 @@ EVENT_NAMES = frozenset({
     "strip_push",      # tapped "get daily alert" in the stay-in-touch strip (content pages)
     "strip_channel",   # tapped "join our WhatsApp channel" in that strip
     "strip_share",     # tapped "share this page on WhatsApp" in that strip
+                       #   (DIVASTRO-164: both also sent with detail "top" from the bar
+                       #   under the answer box; no detail = the strip at the foot)
     "pricing_view",    # DIVASTRO-149: the home "Plans" section scrolled into view (detail "home"),
                        #   or /pricing opened (detail "page")
     "plans_click",     # tapped a plan card or "See all plans" on the home screen, or "Start free" on /pricing
@@ -828,6 +830,10 @@ EVENT_LABELS = {          # the in-app actions, in plain words, for the day repo
     ("strip_push", ""): "Tapped Get daily alert on a content page",
     ("strip_channel", ""): "Tapped Join WhatsApp channel on a content page",
     ("strip_share", ""): "Tapped Share on WhatsApp on a content page",
+    # DIVASTRO-164: the same two links in the bar under the answer box (the ones
+    # above, with no detail, are the strip at the foot of the page)
+    ("strip_share", "top"): "Tapped Forward to family under the answer (top of a content page)",
+    ("strip_channel", "top"): "Tapped Join WhatsApp channel under the answer (top of a content page)",
     # DIVASTRO-149: the purchase funnel's new steps
     ("pricing_view", "home"): "Saw the Plans section on the home screen",
     ("pricing_view", "page"): "Opened the /pricing page",

@@ -482,6 +482,23 @@ SEO_TEXT = {
     "km.rpt.was": "નિયમિત કિંમત",
     # EN: now
     "km.rpt.now": "હવે",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'km.faq.gunas_q': 'લગ્ન માટે કેટલા ગુણ મળવા જોઈએ?',
+    'km.faq.gunas_a': 'કુલ {total} ગુણમાંથી {min} ગુણ પરંપરાગત ન્યૂનતમ છે. સામાન્ય અર્થ: {bands}. ઊંચા ગુણ હોય છતાં પરિહાર વગરનો નાડી કે ભકૂટ દોષ હોય તો મેળ સાવધાનીથી જોવાય છે.',
+    'km.faq.mangal_q': 'માંગલિક દોષ શું છે અને તે ક્યારે કપાય છે?',
+    'km.faq.mangal_a': 'લગ્ન, ચંદ્ર કે શુક્રથી ગણતાં મંગળ {houses} ભાવમાં હોય ત્યારે કુંડળી માંગલિક ગણાય છે; તે {total} ગુણથી અલગ તપાસાય છે. બંને પાત્રો માંગલિક હોય ત્યારે પરંપરા મુજબ દોષ કપાઈ ગયેલો ગણાય છે, અને મંગળની કેટલીક રાશિ-સ્થિતિઓને શાસ્ત્રોમાં છૂટ અપાઈ છે.',
+    'km.faq.time_q': 'શું જન્મના સમય વગર કુંડળી મિલન થઈ શકે?',
+    'km.faq.time_a': '{total} ગુણ માટે હા: આઠેય કૂટ ચંદ્રની રાશિ અને નક્ષત્ર પરથી જોવાય છે, જેના માટે જન્મની તારીખ અને સ્થળ જોઈએ, પણ જન્મના સમય પર તે ભાગ્યે જ આધાર રાખે છે. મંગળ દોષ લગ્ન પરથી પણ જોવાય છે, તેથી તેના માટે જન્મનો ભરોસાપાત્ર સમય જરૂરી છે.',
+    'km.faq.name_q': 'શું નામ પરથી કુંડળી મિલન થઈ શકે?',
+    'km.faq.name_a': 'હા. નામ પરથી કુંડળી મિલનમાં દરેક વ્યક્તિનું નક્ષત્ર તેના નામના પહેલા અક્ષર પરથી લેવાય છે અને એ જ {total} ગુણ ગણાય છે. આ એક પરંપરાગત ટૂંકો રસ્તો છે; જન્મની વિગતો પરથી મિલન વધુ ચોક્કસ હોય છે.',
+    'p.faq.tithi_q': 'આજે {city}માં કઈ તિથિ છે?',
+    'p.faq.tithi_a': '{date}ના રોજ {city}માં તિથિ: {tithi} (સૂર્યોદય સમયે {paksha_full}).',
+    'p.faq.nak_q': 'આજે {city}માં કયું નક્ષત્ર છે?',
+    'p.faq.nak_a': '{date}ના રોજ {city}માં નક્ષત્ર: {nakshatra}. ચંદ્ર {moon_sign}માં છે.',
+    'p.faq.rahu_q': 'આજે {city}માં રાહુકાળનો સમય શું છે?',
+    'p.faq.rahu_a': '{date}ના રોજ {city}માં રાહુકાળ {rahu} છે; આ સમયમાં કોઈ નવું કામ શરૂ ન કરો. યમગંડ {yama} અને ગુલિક કાળ {gulika} છે.',
+    'p.faq.sun_q': 'આજે {city}માં સૂર્યોદય અને સૂર્યાસ્ત કેટલા વાગ્યે છે?',
+    'p.faq.sun_a': '{date}ના રોજ {city}માં સૂર્યોદય {sunrise}એ અને સૂર્યાસ્ત {sunset}એ થાય છે (IST).',
 }
 
 # app/seo_text.py FAQ["gu"] — the seven free-kundali FAQ pairs (plain text)  [7]
@@ -546,7 +563,7 @@ CHROME = {
     "disclaimer": "જ્યોતિષીય વાચન માર્ગદર્શન અને મનોરંજન માટે આપવામાં આવે છે. તે તબીબી, કાનૂની કે નાણાકીય સલાહ નથી.",
 }
 
-# app/stay_strip.py TEXT["gu"] — the 'Stay in touch' strip at the foot of the pages  [8]
+# app/stay_strip.py TEXT["gu"] — the 'Stay in touch' strip at the foot of the pages  [9]
 STAY_STRIP = {
     # EN: Stay in touch
     "head": "સંપર્કમાં રહો",
@@ -564,6 +581,8 @@ STAY_STRIP = {
     "channel": "અમારી WhatsApp ચેનલ સાથે જોડાઓ",
     # EN: Share this page on WhatsApp
     "share": "આ પેજ WhatsApp પર શેર કરો",
+    # EN: Forward to family
+    "forward": "પરિવારને મોકલો",
 }
 
 # app/seo_city_names.py CITIES["gu"] — the 114 cities as that language's newspapers spell them (key = URL slug)  [114]
@@ -1068,6 +1087,13 @@ RASHIFAL_TEXT = {
     "house.11": "11મા",
     # EN: 12th
     "house.12": "12મા",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    's.faq.today_q': 'આજનું {local} રાશિફળ શું કહે છે?',
+    's.faq.today_a': '{tone}: {weekday}, {date}ના રોજ ચંદ્ર {local}થી તમારા {house} ભાવમાં છે. {moon}',
+    's.faq.period_q': 'આ {local} રાશિફળ કયા દિવસનું છે?',
+    's.faq.period_a': '{weekday}, {date} (IST)નું; તે દરરોજ નવેસરથી ગણાય છે. તેમાં દિવસનું ચંદ્ર ગોચર અને શનિ, ગુરુ, રાહુ તથા કેતુનાં ધીમાં ગોચર જોવાય છે, {local}ને ચંદ્ર રાશિ માનીને ગણેલાં.',
+    's.faq.sade_q': 'શું {local} રાશિ પર સાડાસાતી ચાલી રહી છે?',
+    's.faq.sade_a': 'શનિ {sat_sign}માં છે, જે {local}થી {sat_house} ભાવ છે. {status}',
 }
 
 # app/rashifal_text.py MORE_LINKS["gu"] — 'More free tools' links: keep every href, translate the text; the first href is '{twin:en}' (this page in English)  [6]
@@ -1463,6 +1489,12 @@ VRAT_TEXT = {
     # EN: The date follows the rule: {rule}. In {year} that is {when} (New Delhi).
     # keep: {rule} {when} {year}
     "faq.why_a": "તારીખ આ નિયમ મુજબ નક્કી થાય છે: {rule}. {year}માં તે {when} (નવી દિલ્હી) છે.",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'hub.faq.today_q': 'આજે {city}માં કયું વ્રત કે તહેવાર છે?',
+    'hub.faq.today_a': 'આજે, {date}, {city}માં: {list}.',
+    'hub.faq.next_q': '{city}માં આવનારાં વ્રત અને તહેવાર કયાં છે?',
+    'hub.faq.next_a': '{city}માં આવતા {days} દિવસમાં: {list}.',
+    'hub.faq.city_q': 'શું વ્રતની તારીખો અને સમય દરેક શહેરમાં સરખાં હોય છે?',
 }
 
 # app/vrat_text.py ABOUT["gu"] — what each of the 47 festivals / vrats is (key = festival slug)  [47]
@@ -1967,6 +1999,13 @@ NAKSHATRA_PAGE_TEXT = {
     "humour.Pitta": "પિત્ત",
     # EN: Kapha
     "humour.Kapha": "કફ",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'nak.faq.rashi_q': '{name} નક્ષત્ર કઈ રાશિમાં છે અને તેનો સ્વામી કોણ છે?',
+    'nak.faq.rashi_a': '{name} {span}માં ફેલાયેલું છે, તેથી તે {signs}માં આવે છે. તેનો સ્વામી {lord} ({years} વર્ષની મહાદશા) અને દેવતા {deity} છે.',
+    'nak.faq.gana_q': '{name} નક્ષત્રનો ગણ, યોનિ અને નાડી શું છે?',
+    'nak.faq.gana_a': '{name}નો ગણ {gana}, યોનિ {yoni} અને નાડી {nadi} છે. આ કુંડળી મિલનમાં સરખાવાતા આઠ કૂટમાંથી ત્રણ છે.',
+    'nak.faq.syl_q': '{name} નક્ષત્રના નામાક્ષર કયા છે?',
+    'nak.faq.syl_a': 'ચારેય ચરણનો એક-એક અક્ષર: {syl}. પરંપરા મુજબ આમાંથી કોઈ અક્ષરથી શરૂ થતું નામ {name} નક્ષત્રનું ગણાય છે.',
 }
 
 # app/nakshatra_text.py NAKSHATRA_TRAITS["gu"] — character paragraph of each of the 27 nakshatras (key = slug)  [27]
@@ -2503,6 +2542,16 @@ NAAM_MILAN_TEXT = {
     #     href="{href}">all 27 nakshatras</a>.</p>
     # keep: {abhijit} {href} {syllables}
     "explainer": "\n<h2>નામ પરથી મિલન કેવી રીતે થાય છે</h2> <p>27 નક્ષત્રમાંથી દરેકને ચાર ચરણ છે, અને દરેક ચરણનો એક અક્ષર (નામાક્ષર) છે — કુલ 108. જે ચરણના અક્ષરથી નામ <strong>શરૂ થાય</strong> તે ચરણ તે વ્યક્તિનું નક્ષત્ર ગણાય છે, અને તેની રાશિ તેની ચંદ્ર રાશિ. પછી જન્મકુંડળી સાથે વપરાતું એ જ <strong>અષ્ટકૂટ (36 ગુણ)</strong> મિલન — વર્ણ, વશ્ય, તારા, યોનિ, ગ્રહમૈત્રી, ગણ, ભકૂટ અને નાડી — આ બે નક્ષત્ર પરથી ગણાય છે, અમારા કુંડળી મિલન સાધન પાછળના એ જ એન્જિન વડે.</p> <h3>પહેલો અક્ષર કેવી રીતે વંચાય છે</h3> <ul> <li>પહેલા અક્ષરનો પહેલો વ્યંજન અને તેનો સ્વર: <strong>પ્રિયા → પી</strong>, <strong>ક્ષિતિજ → કી</strong>. હ્રસ્વ અને દીર્ઘ સ્વર સરખા ગણાય છે (ઇ/ઈ, ઉ/ઊ); ઐ ને એ અને ઔ ને ઓ ગણાય છે.</li> <li>બ ને વ, અને શ ને ષ (અ-સ્વર સાથે) અથવા સ વાંચવામાં આવે છે; ઋ ને રી.</li> <li>અભિજિતના અક્ષરો ({abhijit}) ઉત્તરાષાઢાના ચોથા ચરણમાં ગણાય છે.</li> <li>અંગ્રેજીમાં લખેલાં નામોનું લિપ્યંતર થાય છે; T, D, N, Th અને Dh જેવા અક્ષરો બે હિન્દી અક્ષર (ત/ટ, દ/ડ) માટે હોઈ શકે, તેથી પરિણામ બતાવે છે કે કયો અક્ષર વપરાયો અને બીજો પસંદ કરવા દે છે. હિન્દી (દેવનાગરી) લખાણ બરાબર વંચાય છે.</li> </ul> <h3>રાશિ પ્રમાણે નામના અક્ષર</h3> {syllables} <p>દરેક નક્ષત્રના અક્ષર, દેવતા, ગણ અને નાડી માટે <a href=\"{href}\">બધાં 27 નક્ષત્ર</a> જુઓ.</p>",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'faq.how_q': 'નામ પરથી કુંડળી મિલન કેવી રીતે થાય છે?',
+    'faq.how_a': '27 નક્ષત્રમાંથી દરેકને ચાર ચરણ છે અને દરેક ચરણનો એક અક્ષર છે — કુલ {padas}. નામ જે ચરણના અક્ષરથી શરૂ થાય તે ચરણ પરથી વ્યક્તિનું નક્ષત્ર અને ચંદ્ર રાશિ મળે છે, અને પછી બંને પરથી જન્મકુંડળી સાથે વપરાતું એ જ {total} ગુણનું અષ્ટકૂટ મિલન ગણાય છે.',
+    'faq.accurate_q': 'શું નામ પરથી મિલન જન્મકુંડળીના મિલન જેટલું ચોક્કસ છે?',
+    'faq.accurate_a': 'ના. તે માની લે છે કે દરેક નામ વ્યક્તિના જન્મ નક્ષત્રના અક્ષર પરથી પાડ્યું છે, જે આજે ઘણી વાર હોતું નથી; જન્મની તારીખ, સમય અને સ્થળ પરથી મિલન ઘણું વધારે ચોક્કસ છે.',
+    'faq.mangal_q': 'શું નામ પરથી મિલનમાં મંગળ દોષ જોઈ શકાય?',
+    'faq.score_q': 'આ જોડીના કેટલા ગુણ મળે છે?',
+    'faq.score_a': '{maximum}માંથી {score} ગુણ — {verdict}. છોકરાના નામ પરથી {nak1} નક્ષત્રનું ચરણ {pada1} ({rashi1}) અને છોકરીના નામ પરથી {nak2} નક્ષત્રનું ચરણ {pada2} ({rashi2}) આવે છે.',
+    'faq.dosha_q': 'શું આ મિલનમાં નાડી કે ભકૂટ દોષ છે?',
+    'faq.dosha_a': 'નાડીના {nadi_max}માંથી {nadi} અને ભકૂટના {bhakoot_max}માંથી {bhakoot} ગુણ છે. 0 ગુણનો અર્થ છે કે તે દોષ છે અને તેનો પરિહાર થયો નથી; પરિહાર થયેલા દોષના ગુણ પાછા મળે છે.',
 }
 
 # app/naam_milan_text.py ENGINE["gu"] — score-band notes and the convention note of a naam-milan result  [5]
@@ -2631,6 +2680,14 @@ MUHURAT_TEXT = {
     "period.guru_asta": "ગુરુ અસ્ત",
     # EN: Jupiter combust (too close to the Sun to be seen), with 3 days either side
     "period_about.guru_asta": "ગુરુ અસ્ત (સૂર્યની એટલો નજીક કે દેખાતો નથી), બંને બાજુ 3 દિવસ સાથે",
+    # DIVASTRO-165: the FAQ block (question / answer templates, plain text)
+    'faq.dates_q': '{name} {year}ની તારીખો કઈ છે?',
+    'faq.dates_a': '{year}માં નવી દિલ્હી માટે {name_lower}ની {count} તારીખો છે. પહેલી તારીખો: {first}.',
+    'faq.how_q': '{name_lower}ની આ તારીખો કેવી રીતે પસંદ થાય છે?',
+    'faq.how_a': 'દરેક તારીખ નવી દિલ્હી માટે સૂર્યોદયની તિથિ, નક્ષત્ર, વાર, યોગ અને ભદ્રાની શાસ્ત્રીય તપાસમાંથી પસાર થાય છે, અને {periods}ની બહાર આવે છે. ફક્ત આ નક્ષત્રોવાળા દિવસો જ આપ્યા છે: {naks}.',
+    'faq.none_q': '{year}ના કયા મહિનામાં {name_lower} નથી?',
+    'faq.none_a': '{months}માં {name_lower}ની કોઈ તારીખ નથી, કારણ કે ત્યારે {periods} છે.',
+    'faq.none_a_plain': '{months}માં {name_lower}ની કોઈ તારીખ નથી: તેમાં કોઈ દિવસ તિથિ, નક્ષત્ર, વાર અને યોગની તપાસમાં પાસ થતો નથી.',
 }
 
 # app/muhurat_text.py MUNDAN["gu"] — the mundan (first haircut) muhurat's own wording  [5]

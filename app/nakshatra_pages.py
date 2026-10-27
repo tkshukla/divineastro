@@ -44,7 +44,7 @@ from .nakshatra_page_text import TEXT
 from .nakshatra_text import FACTS, NAKSHATRA_TRAITS, RASHI_TRAITS
 from .rashifal_pages import BY_SLUG as RASHI_BY_SLUG, RASHIS, Rashi, path as rashifal_path
 from .seo_pages import (ADSENSE_CLIENT, BRAND, SITE_URL, _STYLE, _cache_headers, _e, _footer,
-                        _panchang, _strip, _today, page_language_bits)
+                        _panchang, _strip, _today, faq_ld, faq_section, page_language_bits)
 from .share import seo_share
 
 router = APIRouter()
@@ -245,7 +245,7 @@ _ADS = ('<script async src="https://pagead2.googlesyndication.com/pagead/js/adsb
 def shell(*, lang: str, en_path: str, hi_path: str, title: str, description: str,
           crumbs: list[tuple[str, str]], body: str, status: int = 200, cache: bool = True,
           head_first: str = "", ads: bool = True, share: bool = True,
-          headers: dict[str, str] | None = None) -> HTMLResponse:
+          headers: dict[str, str] | None = None, extra_ld: tuple = ()) -> HTMLResponse:
     """One page. `head_first` goes straight after <meta charset> (the Naam
     Milan result uses it for its referrer policy, which must precede every
     subresource). `ads=False` drops the AdSense script — never load a third
@@ -270,6 +270,7 @@ def shell(*, lang: str, en_path: str, hi_path: str, title: str, description: str
             {"@type": "BreadcrumbList", "itemListElement": [
                 {"@type": "ListItem", "position": i + 1, "name": name, "item": SITE_URL + href}
                 for i, (name, href) in enumerate(trail)]},
+            *extra_ld,
         ],
     }
     jsonld = json.dumps(graph, ensure_ascii=False).replace("</", "<\\/")
@@ -426,6 +427,12 @@ def _nak_page(day: dt.date, slug: str, lang: str) -> tuple[str, str, str]:
     title = _tx("nak.title", lang, **raw)
     description = _tx("nak.desc", lang, **raw)
     esc = {k: _e(v) for k, v in raw.items()}
+    # DIVASTRO-165: three questions answered from the fact table's own values.
+    fv = {**raw, "years": DASHA_YEARS[n.lord],
+          "signs": ", ".join(_sign_name(s, lang) for s in n.signs)}
+    faq_html, faq = faq_section(
+        [(_tx(f"nak.faq.{k}_q", lang, **fv), _tx(f"nak.faq.{k}_a", lang, **fv))
+         for k in ("rashi", "gana", "syl")], lang)
     body = f"""
 {_tx("nak.h1", lang, **esc)}
 {_tx("nak.sub", lang, **esc)}
@@ -435,10 +442,11 @@ def _nak_page(day: dt.date, slug: str, lang: str) -> tuple[str, str, str]:
 <p>{_e(i18n.pick(NAKSHATRA_TRAITS[n.slug], lang))}</p>
 {_tx("nak.trait_note", lang)}
 {_pada_table(n, lang)}
+{faq_html}
 {kundali_cta(lang)}
 {_related(n, lang)}
 {_nak_list(n, lang)}"""
-    return title, description, body
+    return title, description, body, faq
 
 
 @functools.lru_cache(maxsize=8)
@@ -483,10 +491,11 @@ def render_nak_index(lang: str, day: dt.date | None = None) -> HTMLResponse:
 
 def render_nak(slug: str, lang: str, day: dt.date | None = None) -> HTMLResponse:
     n = BY_SLUG[slug]
-    title, description, body = _nak_page(day or _today(), slug, lang)
+    title, description, body, faq = _nak_page(day or _today(), slug, lang)
     return shell(lang=lang, en_path=nak_path(n, "en"), hi_path=nak_path(n, "hi"),
                  title=title, description=description,
-                 crumbs=[_crumb_nak(lang), (_nak_label(n, lang), nak_path(n, lang))], body=body)
+                 crumbs=[_crumb_nak(lang), (_nak_label(n, lang), nak_path(n, lang))], body=body,
+                 extra_ld=faq_ld(faq))
 
 
 def _not_found(kind: str, slug: str, lang: str) -> HTMLResponse:

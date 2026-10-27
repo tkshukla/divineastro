@@ -272,6 +272,47 @@ def _rules_section(kind: Kind, year: int, lang: str) -> str:
     return f"<h2>{_tx('rules.h2', lang, name=kv['name'], year=year)}</h2>{text}"
 
 
+FAQ_FIRST = 5          # dates quoted in the "which dates" answer
+
+
+def _faq(kind: Kind, year: int, data: dict, lang: str) -> tuple[str, dict | None]:
+    """DIVASTRO-165: which dates, how they are chosen, which months have none —
+    answered from `_year_data` (the very rows the month tables print) and the
+    engine's rule for the event (its excluded periods and nakshatras)."""
+    n, en = i18n.names(lang), i18n.names("en")
+    kv = {**_kind_vars(kind, lang), "year": year, "count": data["count"]}
+    rows = [r for m in range(1, 13) for r in data["months"][m]]
+    first = ", ".join(f'{_d(r["date"], lang)} ({n.VARA.get(r["weekday"], r["weekday"])})'
+                      for r in rows[:FAQ_FIRST])
+    rule = muhurat.EVENT_RULES[kind.event]
+    naks = ", ".join(n.NAKSHATRAS.get(x, x) for x in en.NAKSHATRAS if x in rule.preferred_nakshatras)
+    items = []
+    if rows:
+        items.append((_tx("faq.dates_q", lang, **kv), _tx("faq.dates_a", lang, **kv, first=first)))
+    items.append((_tx("faq.how_q", lang, **kv),
+                  _tx("faq.how_a", lang, **kv, naks=naks,
+                      periods=_period_list(EVENT_PERIODS[kind.event], lang))))
+    empty = [m for m in range(1, 13) if not data["months"][m]]
+
+    def month_list(ms) -> str:
+        return ", ".join(i18n.month_name(m, lang, MONTHS.get(lang)) for m in ms)
+
+    # A month with no date says why exactly as its month section does (none.periods /
+    # none.plain): the periods it overlaps, or that no day passed the checks.
+    by_period = [m for m in empty if data["month_periods"][m]]
+    plain_months = [m for m in empty if not data["month_periods"][m]]
+    parts = []
+    if by_period:
+        why = set().union(*(data["month_periods"][m] for m in by_period))
+        parts.append(_tx("faq.none_a", lang, **kv, months=month_list(by_period),
+                         periods=_period_list(why, lang)))
+    if plain_months:
+        parts.append(_tx("faq.none_a_plain", lang, **kv, months=month_list(plain_months)))
+    if parts:
+        items.append((_tx("faq.none_q", lang, **kv), " ".join(parts)))
+    return seo_pages.faq_section(items, lang)
+
+
 _EXTRA_STYLE = """
   .seo .lang { float: right; font-size: 13px; }
   .seo .none { color: var(--ink-faint); }
@@ -344,14 +385,16 @@ def _page(kind_slug: str, year: int, lang: str) -> HTMLResponse:
     links.append(f'<li><a href="/kundali-milan">{_tx("link.milan", lang)}</a></li>')
 
     cta_html = f'<a class="cta" href="/?open=muhurat">{_e(_tx("cta", lang))}</a>'
+    faq_html, faq = _faq(kind, year, data, lang)
     place = _tx("place", lang, city=seo_cities.city_name(CITY, lang), label=seo_cities.place(CITY, lang))
     body = (f"<h1>{_e(h1)}</h1>{_tx('sub', lang, **esc)}"
             f'<p class="date">{_e(place)}</p>'
-            f'{intro}<div class="box">{note}</div>{cta_html}'
+            f'{intro}<div class="box">{note}</div>'
+            + seo_pages._top_bar(lang=lang, path=path, title=title) + cta_html
             + (_rules_section(kind, year, lang) if kind_slug in RULES_KINDS else "")
             + _periods_section(kind, year, data, lang)
             + "".join(_month_section(kind, year, m, data, lang) for m in range(1, 13))
-            + cta_html
+            + cta_html + faq_html
             + f'<h2>{_e(_tx("more", lang))}</h2><ul class="links">{"".join(links)}</ul>')
 
     crumb_html = " › ".join(
@@ -364,6 +407,7 @@ def _page(kind_slug: str, year: int, lang: str) -> HTMLResponse:
         {"@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": i + 1, "name": n, "item": SITE_URL + h}
             for i, (n, h) in enumerate(crumbs)]},
+        *seo_pages.faq_ld(faq),
     ]}
     jsonld = json.dumps(graph, ensure_ascii=False).replace("</", "<\\/")
     page = _SHELL.format(
