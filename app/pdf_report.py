@@ -54,6 +54,7 @@ except ImportError:                     # pragma: no cover - defensive
     typst = None                        # type: ignore[assignment]
 
 from . import pdf_i18n, report_text
+from .person_name import cover_subject, display_name, scrub_placeholder
 from .chart_service import SIDEREAL_YEAR, VIMSHOTTARI, dms, vimshottari, wheel_svg
 
 # --------------------------------------------------------------------------
@@ -1869,10 +1870,12 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
     for name, svg in _vedic_svgs(session, language=language).items():
         files[f"{name}.svg"] = svg
 
+    # DIVASTRO-168: no name row at all for a chart cast without a name.
+    name = display_name(meta)
     birth_rows = []
     if language == "hi" or regional:
         birth_rows = [
-            [L("name", "नाम"), meta["name"]],
+            [L("name", "नाम"), name],
             [L("date_time", "जन्म तिथि व समय"), meta["local_time"] if birth.time_known
              else f"{meta['local_time']} ({L('time_unknown', 'समय अज्ञात')})"],
             [L("place", "जन्म स्थान"), f"{meta['place']}  ({meta['latitude']:.4f}, {meta['longitude']:.4f})"],
@@ -1889,7 +1892,7 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
         ]
     else:
         birth_rows = [
-            ["Name", meta["name"]],
+            ["Name", name],
             ["Date & time", meta["local_time"] if birth.time_known else f"{meta['local_time']} (birth time unknown)"],
             ["Place", f"{meta['place']}  ({meta['latitude']:.4f}, {meta['longitude']:.4f})"],
             ["Time zone", f"{meta['timezone']} (UTC{meta['utc_offset'][:3]}:{meta['utc_offset'][3:]})"],
@@ -1898,6 +1901,7 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
             ["House system", meta["house_system"]],
             ["Sect", f"{meta['sect']} chart"],
         ]
+    birth_rows = [r for r in birth_rows if r[1] is not None]
 
     dasha = None
     antardasha_lord = None
@@ -2197,7 +2201,7 @@ def chart_pdf(session, *, brand: str, site: str, when: dt.datetime | None = None
     data = {
         "brand": brand,
         "title": texts["title"],
-        "subject": meta["name"],
+        "subject": cover_subject(meta, language),
         "lang": language,
         "texts": texts,
         "cover": [
@@ -2258,6 +2262,8 @@ def remedies_pdf(session, *, brand: str, site: str, language: str = "en") -> byt
         analysis["moon_sign"] = bundle["objects"]["Moon"]["sign"]
         
     guidance_text = generate_spiritual_guidance(analysis, language=language)
+    if display_name(meta) is None:
+        guidance_text = scrub_placeholder(guidance_text, language)
     
     # Format gemstones table
     gems_rows = []
@@ -2278,7 +2284,7 @@ def remedies_pdf(session, *, brand: str, site: str, language: str = "en") -> byt
     }
     
     birth_rows = [
-        ["Name", meta["name"]],
+        *([["Name", display_name(meta)]] if display_name(meta) else []),
         ["Date & time", meta["local_time"]],
         ["Place", meta["place"]],
         ["Lagna (Ascendant)", bundle["objects"]["ASC"]["sign"]],
@@ -2289,7 +2295,7 @@ def remedies_pdf(session, *, brand: str, site: str, language: str = "en") -> byt
     data = {
         "brand": brand,
         "title": "Remedies & Gemstones Report",
-        "subject": meta["name"],
+        "subject": cover_subject(meta, "en"),
         "lang": language,
         "cover": [
             ["Born", meta["local_time"]],
@@ -2500,7 +2506,7 @@ def single_question_pdf(
     asc_sign = _translate_val(bundle["objects"]["ASC"]["sign"], language)
     moon_sign = _translate_val(bundle["objects"].get("Moon", {}).get("sign", "—"), language)
     birth_rows = [
-        [T["name"], meta.get("name", "—")],
+        *([[T["name"], display_name(meta)]] if display_name(meta) else []),
         [T["when"], meta.get("local_time", "—")],
         [T["place"], meta.get("place", "—")],
         [T["lagna"], asc_sign],
@@ -2509,7 +2515,7 @@ def single_question_pdf(
     data = {
         "brand": brand,
         "title": title,
-        "subject": meta.get("name", "Kundali Consultation"),
+        "subject": cover_subject(meta, language),
         "lang": language,
         "cover": [
             [T["topic"], title],
@@ -2819,7 +2825,7 @@ def life_book_pdf(
     data = {
         "brand": brand,
         "title": "Vedic Life Horoscope Book" if not hi else "सम्पूर्ण वैदिक जीवन कुंडली महाग्रन्थ",
-        "subject": meta["name"],
+        "subject": cover_subject(meta, language),
         "lang": language,
         "cover": [
             [texts["born"], meta["local_time"]],
