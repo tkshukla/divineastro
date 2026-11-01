@@ -441,6 +441,8 @@
   "acct.emailNeedCode": "Enter the 6-digit code.",
   "acct.signInFailed": "Sign-in failed. Please try again.",
   "acct.account": "Account",
+  "acct.myAccount": "My account",
+  "acct.signedInAs": "Signed in as {who}",
   "acct.emailPlaceholder": "name@gmail.com",
   "acct.legalLine": "By continuing you accept our {terms} and {privacy}.",
   "acct.terms": "Terms",

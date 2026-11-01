@@ -191,6 +191,25 @@ async function resumePayuReturn() {
   }
 }
 
+/* DIVASTRO-168: the account button's face. One letter of the account's name or
+   address in a round badge; an account with no letter to show (a phone number)
+   gets a person icon. Never the full name, never the email. */
+function acctInitial(user) {
+  for (const src of [user.name, user.email, user.login_label]) {
+    const m = /\p{L}/u.exec(String(src || ""));
+    if (m) return m[0].toLocaleUpperCase();
+  }
+  return "";
+}
+function acctBadge(user) {
+  const ch = acctInitial(user);
+  return `<span class="acct-badge" aria-hidden="true">${ch ? escapeHtml(ch)
+    : '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z"/></svg>'}</span>`;
+}
+/* What the owner sees inside the menu: the address (or username / masked phone)
+   they signed in with, so they know which account they are in. */
+const acctWho = (user) => user.email || user.login_label || "";
+
 function renderAccountBar() {
   const bar = document.querySelector("#account-bar");
   if (!bar) return;
@@ -216,10 +235,13 @@ function renderAccountBar() {
     <div class="acct-menu">
       <!-- The caret matters: without it this reads as a label, and customers
            could not find Sign out or the admin panel hidden behind it. -->
-      <button class="ghost-btn has-menu" id="btn-acct" aria-haspopup="menu" aria-expanded="false">${escapeHtml(
-        acct.user.name || (acct.user.email || "").split("@")[0]
-        || acct.user.login_label || at("account"))}<span class="caret">&#9662;</span></button>
+      <!-- DIVASTRO-168: the header is seen by whoever is looking at the screen, so it
+           shows a round initial (or a person icon), never the full name or address.
+           Only the menu, opened by its owner, says which account this is. -->
+      <button class="ghost-btn has-menu" id="btn-acct" aria-haspopup="menu" aria-expanded="false"
+              aria-label="${escapeHtml(at("myAccount"))}" title="${escapeHtml(at("myAccount"))}">${acctBadge(acct.user)}<span class="caret">&#9662;</span></button>
       <div class="acct-drop" hidden>
+        ${acctWho(acct.user) ? `<div class="drop-who">${escapeHtml(at("signedInAs").replace("{who}", acctWho(acct.user)))}</div>` : ""}
         <button data-act="history">${escapeHtml(at("history"))}</button>
         <button data-act="orders">${escapeHtml(at("orders"))}</button>
         <a class="drop-link" href="/feedback">${escapeHtml(at("feedback"))}</a>

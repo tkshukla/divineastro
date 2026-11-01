@@ -441,6 +441,8 @@
   "acct.emailNeedCode": "6 అంకెల కోడ్ ఇవ్వండి.",
   "acct.signInFailed": "సైన్-ఇన్ విఫలమైంది. దయచేసి మళ్ళీ ప్రయత్నించండి.",
   "acct.account": "ఖాతా",
+  "acct.myAccount": "నా ఖాతా",
+  "acct.signedInAs": "{who}గా సైన్ ఇన్ అయ్యారు",
   "acct.emailPlaceholder": "మీ ఈమెయిల్ చిరునామా",
   "acct.legalLine": "కొనసాగడం ద్వారా మీరు మా {terms}, {privacy} అంగీకరిస్తున్నారు.",
   "acct.terms": "నిబంధనలు",

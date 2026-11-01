@@ -441,6 +441,8 @@
   "acct.emailNeedCode": "6 ಅಂಕಿಯ ಕೋಡ್ ನಮೂದಿಸಿ.",
   "acct.signInFailed": "ಸೈನ್-ಇನ್ ವಿಫಲವಾಯಿತು. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
   "acct.account": "ಖಾತೆ",
+  "acct.myAccount": "ನನ್ನ ಖಾತೆ",
+  "acct.signedInAs": "{who} ಆಗಿ ಸೈನ್ ಇನ್",
   "acct.emailPlaceholder": "ನಿಮ್ಮ ಇಮೇಲ್ ವಿಳಾಸ",
   "acct.legalLine": "ಮುಂದುವರಿಯುವ ಮೂಲಕ ನೀವು ನಮ್ಮ {terms} ಮತ್ತು {privacy} ಒಪ್ಪುತ್ತೀರಿ.",
   "acct.terms": "ನಿಯಮಗಳು",

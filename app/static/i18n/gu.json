@@ -441,6 +441,8 @@
   "acct.emailNeedCode": "6 અંકનો કોડ નાખો.",
   "acct.signInFailed": "સાઇન-ઇન નિષ્ફળ ગયું. કૃપા કરીને ફરી પ્રયત્ન કરો.",
   "acct.account": "ખાતું",
+  "acct.myAccount": "મારું ખાતું",
+  "acct.signedInAs": "{who} તરીકે સાઇન ઇન",
   "acct.emailPlaceholder": "તમારું ઇમેઇલ સરનામું",
   "acct.legalLine": "આગળ વધીને તમે અમારા {terms} અને {privacy} સ્વીકારો છો.",
   "acct.terms": "નિયમો",

@@ -34,6 +34,7 @@ import urllib.request
 from dataclasses import dataclass
 from zoneinfo import ZoneInfo
 
+from . import person_name
 from .astro.vargas import DEBILITATION, EXALTATION
 
 log = logging.getLogger("astro.llm")
@@ -1656,8 +1657,9 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
 
     prompt = (
         f"You are Pandit Shukla, an elite Vedic astrologer with decades of experience.\n"
-        f"Generate a personalized, premium month-by-month Varshphal analysis for a native named {meta.get('name', 'Native')} "
+        f"Generate a personalized, premium month-by-month Varshphal analysis for {person_name.prompt_person(meta)} "
         f"born on {meta.get('local_time', '')} at {meta.get('place', '')}.\n\n"
+        f"{person_name.prompt_name_rule(meta)}"
         f"{_chart_facts(analysis)}\n\n"
         f"Ground every month's forecast in the placements above — name the planet, "
         f"its house and the dasha or antardasha you are reading from.\n\n"
@@ -1731,13 +1733,13 @@ def generate_kundali_narratives(analysis: dict, language: str = "en") -> dict:
                     pred = item[1]
             formatted_varsh.append([lbl, pred])
 
-        return {
+        return person_name.scrub_fields({
             "varshphal": formatted_varsh,
             "key_periods": parsed.get("key_periods", default_res["key_periods"]),
             "house_summary": parsed.get("house_summary", default_res["house_summary"]),
             "written_in": language,
             "source": "model",
-        }
+        }, ("varshphal", "key_periods", "house_summary"), meta, language)
     except Exception as exc:
         # Never let a narration failure break the PDF, but never let it
         # pass unrecorded either: the fallback is indistinguishable from
@@ -1843,8 +1845,9 @@ def generate_kundali_interpretations(analysis: dict, language: str = "en") -> di
     # We will query Claude/Ollama to generate the three detailed sections
     prompt = (
         f"You are Pandit Shukla, a premium Vedic astrologer with decades of experience.\n"
-        f"Generate a detailed, comprehensive Kundali Vishleshan analysis for a native named {meta.get('name', 'Native')} "
+        f"Generate a detailed, comprehensive Kundali Vishleshan analysis for {person_name.prompt_person(meta)} "
         f"born on {meta.get('local_time', '')} at {meta.get('place', '')}.\n\n"
+        f"{person_name.prompt_name_rule(meta)}"
         f"{_chart_facts(analysis)}\n\n"
         f"This report is printed alongside the tables above, so a placement you "
         f"state incorrectly will sit next to the correct one. Read what is given; "
@@ -1906,13 +1909,13 @@ def generate_kundali_interpretations(analysis: dict, language: str = "en") -> di
             return default_res
 
         parsed = _parse_json_object(raw)
-        return {
+        return person_name.scrub_fields({
             "houses_detailed": parsed.get("houses_detailed", default_res["houses_detailed"]),
             "planets_detailed": parsed.get("planets_detailed", default_res["planets_detailed"]),
             "yogas_remedies_detailed": parsed.get("yogas_remedies_detailed", default_res["yogas_remedies_detailed"]),
             "written_in": language,
             "source": "model",
-        }
+        }, ("houses_detailed", "planets_detailed", "yogas_remedies_detailed"), meta, language)
     except Exception as exc:
         # Never let a narration failure break the PDF, but never let it
         # pass unrecorded either: the fallback is indistinguishable from

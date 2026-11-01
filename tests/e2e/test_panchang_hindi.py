@@ -270,8 +270,10 @@ def sign_in_hindi(browser, base: str) -> None:
     pg.set_lang("hi")
     pg.page.click("#btn-acct")
     pg.page.wait_for_selector(".acct-drop:not([hidden])", timeout=5000)
-    # "English" is the menu's switch *to* English, named in its own language.
-    words = latin_words(pg, "#account-bar", frozenset({"English"}))
+    # "English" is the menu's switch *to* English, named in its own language; the
+    # "Signed in as <email>" line (DIVASTRO-168) shows the address as it is.
+    email = pg.page.evaluate("acct.user.email || ''")
+    words = latin_words(pg, "#account-bar", frozenset({"English", *WORD.findall(email)}))
     check("account bar + menu after a live switch: no Latin-script words", not words, str(words))
     check("menu shows साइन आउट", "साइन आउट" in pg.page.inner_text(".acct-drop"))
     pg.page.click("#btn-acct")

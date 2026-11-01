@@ -53,6 +53,7 @@ from .push import router as push_router, start_sender as start_push_sender
 from .guest_checkout import router as guest_checkout_router
 from .astro.names_hi import KARANA_HI, NAKSHATRAS_HI, TITHI_HI, YOGA_HI
 from .chart_service import BirthData, build, solar_return, timing_snapshot, transits, wheel_svg
+from .person_name import display_name
 from .db import (
     EntryKind, QuestionLog, User, balance, email_balance, grant, init_db, session as db_session,
 )
@@ -1102,7 +1103,7 @@ def pdf_chart(sid: str, request: Request, date: str | None = None, lang: str = "
     except Exception as exc:
         raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
     return _pdf_response(
-        data, pdf_report.safe_filename(BRAND, "chart", session.birth.name or "chart"))
+        data, pdf_report.safe_filename(BRAND, "chart", display_name(session.birth.name) or "chart"))
 
 
 @app.get("/api/pdf/remedies/{sid}")
@@ -1117,7 +1118,7 @@ def pdf_remedies(sid: str, request: Request, lang: str = "en") -> Response:
     except Exception as exc:
         raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
     return _pdf_response(
-        data, pdf_report.safe_filename(BRAND, "remedies", session.birth.name or "remedies"))
+        data, pdf_report.safe_filename(BRAND, "remedies", display_name(session.birth.name) or "remedies"))
 
 
 @app.get("/api/pdf/single-question/{sid}")
@@ -1135,7 +1136,7 @@ def pdf_single_question(sid: str, request: Request, sku: str = "sq_career", lang
     except Exception as exc:
         raise HTTPException(500, f"Could not build the PDF: {exc}") from exc
     return _pdf_response(
-        data, pdf_report.safe_filename(BRAND, sku, session.birth.name or "report"))
+        data, pdf_report.safe_filename(BRAND, sku, display_name(session.birth.name) or "report"))
 
 
 @app.get("/api/pdf/life-book/{sid}")
@@ -1158,7 +1159,7 @@ def pdf_life_book(sid: str, request: Request, lang: str = "en") -> Response:
     except Exception as exc:
         raise HTTPException(500, f"Could not build the Life Book PDF: {exc}") from exc
     return _pdf_response(
-        data, pdf_report.safe_filename(BRAND, "life-book", session.birth.name or "horoscope"))
+        data, pdf_report.safe_filename(BRAND, "life-book", display_name(session.birth.name) or "horoscope"))
 
 
 

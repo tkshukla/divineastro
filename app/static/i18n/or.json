@@ -441,6 +441,8 @@
   "acct.emailNeedCode": "6 ଅଙ୍କର କୋଡ୍ ଦିଅନ୍ତୁ।",
   "acct.signInFailed": "ସାଇନ୍-ଇନ୍ ହେଲା ନାହିଁ। ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।",
   "acct.account": "ମୋ ଖାତା",
+  "acct.myAccount": "ମୋ ଖାତା",
+  "acct.signedInAs": "{who} ଭାବେ ସାଇନ୍ ଇନ୍",
   "acct.emailPlaceholder": "ଆପଣଙ୍କ ଇମେଲ୍ ଠିକଣା",
   "acct.legalLine": "ଆଗକୁ ବଢ଼ିଲେ ଆପଣ ଆମର {terms} ଓ {privacy} ସ୍ୱୀକାର କରୁଛନ୍ତି।",
   "acct.terms": "ସର୍ତ୍ତାବଳୀ",

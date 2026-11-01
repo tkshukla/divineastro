@@ -1478,7 +1478,7 @@ function renderReading(data) {
   renderStarters();
 
   $("#thread").innerHTML = "";
-  addBot(openingRead(c), null, false);
+  addBot(openingRead(c), null, false, false);   // no Share: it carries the birth details
   // preventScroll matters: the composer sits at the bottom of a full-height
   // shell, so a plain focus() scrolls the body to reveal it and drags the site
   // header up off the top of the screen.
@@ -1924,7 +1924,10 @@ function fallbackNoteHtml(result) {
   return note ? `<p class="incomplete-note lang-fallback-note">${escapeHtml(note)}</p>` : "";
 }
 
-function addBot(md, result, withReasoning = true) {
+/* `actions` false leaves out Copy / Share: the opening read starts with the name,
+   birth date, time and place (DIVASTRO-168), which must never be one tap away
+   from a WhatsApp group. */
+function addBot(md, result, withReasoning = true, actions = true) {
   const el = document.createElement("div");
   el.className = "msg bot";
   const bubble = document.createElement("div");
@@ -1932,7 +1935,7 @@ function addBot(md, result, withReasoning = true) {
   bubble.innerHTML = verdictHtml(result) + markdown(md) +
     (withReasoning ? reasoningHtml(result) : "");
   el.append(bubble);
-  el.append(answerActions(bubble));
+  if (actions) el.append(answerActions(bubble));
   $("#thread").append(el);
   scrollThread(true);
   return bubble;
