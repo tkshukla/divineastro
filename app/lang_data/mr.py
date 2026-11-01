@@ -19,11 +19,11 @@ fails `check` and CI. A module that is not READY renders the English body, noind
 from __future__ import annotations
 
 # Page modules that are complete for this language (the table groups below):
-#   "seo" "rashifal" "vrat" "nakshatra" "muhurat" "recurring" "hub" "app"
-READY = frozenset({"seo", "rashifal", "vrat", "nakshatra", "muhurat", "recurring", "hub", "app"})
+#   "seo" "rashifal" "vrat" "nakshatra" "muhurat" "recurring" "hub" "app" "pdf"
+READY = frozenset({"seo", "rashifal", "vrat", "nakshatra", "muhurat", "recurring", "hub", "app", "pdf"})
 
 # Latin-script words the mr text may keep besides the defaults (WhatsApp, UPI, PDF ...).
-ALLOW_LATIN = frozenset()
+ALLOW_LATIN = frozenset({"Sidereal", "Tropical", "Whole Sign", "Equal House", "orb", "UT"})  # the kundali PDF's (Sidereal), (orb), (UT) ...
 
 # static/i18n/mr.json keys whose value is deliberately the English word (brand names, "OK").
 KEEP_ENGLISH = frozenset()
@@ -3044,3 +3044,243 @@ ASTRO_TERMS = {
 # app/astro_terms.py MONTH_VARIANTS["mr"] — other spellings of a Gregorian month the AI may write (month number -> spellings)
 # (optional: may stay empty)
 ASTRO_MONTHS = {2: ("फेब्रूवारी",), 4: ("एप्रील",), 8: ("ऑगष्ट",), 10: ("ऑक्टोंबर",), 11: ("नोव्हेम्बर",)}   # {month number: (other spellings,)}
+
+# ----------------------------------------------------------------------------
+# pdf       the kundali (chart) PDF: headings, table headers, cell words (DIVASTRO-171)
+# ----------------------------------------------------------------------------
+
+# app/pdf_i18n.py LABELS["mr"] — every heading, row label and table header of the kundali PDF; a *_headers value is a list, one entry per column, in this order  [54]
+PDF_LABELS = {
+    # EN: Birth Chart & Kundali Report
+    "title": "जन्मकुंडली अहवाल",
+    # EN: Born
+    "born": "जन्मवेळ",
+    # EN: At
+    "at": "जन्मस्थान",
+    # EN: System
+    "system": "पद्धती",
+    # EN: Generated
+    "generated": "दिनांक",
+    # EN: Birth Details
+    "birth_details": "जन्मतपशील",
+    # EN: Rashi Chart (D1)
+    "d1_title": "लग्न कुंडली (D1)",
+    # EN: Navamsa Chart (D9)
+    "d9_title": "नवांश कुंडली (D9)",
+    # EN: North Indian Style
+    "north_indian": "उत्तर भारतीय पद्धत",
+    # EN: South Indian Style
+    "south_indian": "दक्षिण भारतीय पद्धत",
+    # EN: Planetary Positions
+    "planetary_positions": "ग्रहस्थिती",
+    # EN: House Placements
+    "houses": "भावस्थिती",
+    # EN: Major Aspects
+    "aspects": "प्रमुख दृष्टी",
+    # EN: Vimshottari Dasha
+    "dasha": "विंशोत्तरी महादशा",
+    # EN: Yearly Varshphal Forecast (month by month)
+    "varshphal_title": "मासिक वर्षफल",
+    # EN: Upcoming Key Periods
+    "upcoming_title": "आगामी महत्त्वाचे काळ",
+    # EN: House-wise Summary
+    "house_summary_title": "भावफल सारांश",
+    # EN: Divisional Placements Table
+    "vargas_title": "वर्ग कुंडली स्थिती",
+    # EN: Sarvashtakavarga Matrix (337 Bindus)
+    "ashtakavarga_title": "सर्वाष्टकवर्ग (337 बिंदू)",
+    # EN: Formed Yogas Analysis
+    "yogas_title": "कुंडलीतील प्रमुख योग",
+    # EN: Antardashas of Active Mahadasha
+    "antardasha_title": "चालू महादशेतील अंतर्दशा",
+    # EN: Detailed House Analysis
+    "houses_detailed_title": "द्वादश भावफल विवेचन",
+    # EN: Planetary Placement Interpretations
+    "planets_detailed_title": "ग्रहफल विवेचन",
+    # EN: Spiritual Guidelines & Remedies
+    "remedies_detailed_title": "ज्योतिषीय उपाय आणि मंत्र",
+    # EN: Name
+    "name": "नाव",
+    # EN: Date & time of birth
+    "date_time": "जन्मतारीख आणि वेळ",
+    # EN: birth time unknown
+    "time_unknown": "वेळ माहीत नाही",
+    # EN: Place of birth
+    "place": "जन्मस्थान",
+    # EN: Time zone
+    "time_zone": "वेळ क्षेत्र",
+    # EN: Universal time (UT)
+    "universal_time": "जागतिक वेळ (UT)",
+    # EN: Zodiac / ayanamsa
+    "zodiac": "राशिचक्र / अयनांश",
+    # EN: ayanamsa
+    "ayanamsa": "अयनांश",
+    # EN: House system
+    "house_system": "भाव पद्धती",
+    # EN: Sect (day or night birth)
+    "sect": "जन्मकाळ",
+    # EN: Day birth
+    "day_chart": "दिवसाचा जन्म",
+    # EN: Night birth
+    "night_chart": "रात्रीचा जन्म",
+    # EN: Moon
+    "moon": "चंद्र",
+    # EN: Nakshatra
+    "nakshatra": "नक्षत्र",
+    # EN: pada
+    "pada": "चरण",
+    # EN: Current mahadasha
+    "mahadasha_now": "चालू महादशा",
+    # EN: Current antardasha
+    "antardasha_now": "चालू अंतर्दशा",
+    # EN: Yogini Dasha
+    "yogini_dasha": "योगिनी दशा",
+    # EN: Yogini Antardasha
+    "yogini_antardasha": "योगिनी अंतर्दशा",
+    # EN: As of
+    "as_of": "या दिनांकानुसार",
+    # EN: Mahadasha | Years | From | To | Status
+    "dasha_headers": ["महादशा", "वर्षे", "आरंभ", "समाप्ती", "स्थिती"],
+    # EN: Antardasha | From | To | Status
+    "antardasha_headers": ["अंतर्दशा", "आरंभ", "समाप्ती", "स्थिती"],
+    # EN: Planet | Sign | Degree | House | Placement | Strength / Dignity
+    "positions_headers": ["ग्रह", "रास", "अंश", "भाव", "भाव स्थिती", "बल / प्रतिष्ठा"],
+    # EN: House | Sign | Cusp | House lord | Occupants
+    "houses_headers": ["भाव", "रास", "आरंभ अंश", "भावेश", "स्थित ग्रह"],
+    # EN: Planet | Aspect | Planet | Orb | Motion
+    "aspects_headers": ["ग्रह", "दृष्टी", "ग्रह", "अंतर (orb)", "गती"],
+    # EN: Planet / Lagna | D1 (Rashi) | D3 (Drekkana) | D7 (Saptamsa) | D9 (Navamsa) | D10 (Dasamsa) | D12 (Dvadasamsa)
+    "vargas_headers": ["ग्रह / लग्न", "D1 (रास)", "D3 (द्रेष्काण)", "D7 (सप्तांश)", "D9 (नवांश)", "D10 (दशांश)", "D12 (द्वादशांश)"],
+    # EN: Yoga | Category | Planets | Effect / Description
+    "yogas_headers": ["योग", "प्रकार", "ग्रह", "फल / वर्णन"],
+    # EN: No major yogas formed
+    "no_yogas": "कोणताही प्रमुख योग तयार होत नाही",
+    # EN: Daily prayer and mantra japa for planetary peace.
+    "no_yogas_note": "ग्रहशांतीसाठी रोज प्रार्थना आणि मंत्रजप करा.",
+    # EN: These interpretation sections are shown in English.
+    "english_sections": "हे विवेचन विभाग इंग्रजीत दाखवले आहेत.",
+}
+
+# app/pdf_i18n.py VOCAB["mr"] — the engine's English words inside the PDF tables (dignity, aspect, dasha status, zodiac, outer planets, yogini names); graha / rashi / nakshatra names come from names_<code>.py  [60]
+PDF_VOCAB = {
+    # EN: in its own sign, as the sign's ruler
+    "ruler": "स्वराशी (स्वामी)",
+    # EN: own sign (domicile)
+    "domicile": "स्वराशी",
+    # EN: exalted
+    "exalted": "उच्च",
+    # EN: exaltation
+    "exaltation": "उच्च",
+    # EN: exaltation degree
+    "exaltation_degree": "उच्च अंश",
+    # EN: exact exaltation (paramochcha)
+    "exaltation_exact": "परमोच्च",
+    # EN: detriment (enemy's sign)
+    "detriment": "शत्रुराशी",
+    # EN: fall (debilitated)
+    "fall": "नीच",
+    # EN: triplicity strength
+    "triplicity": "त्रिकोण बल",
+    # EN: term (bounds) strength
+    "term": "सीमा बल",
+    # EN: face (decan) strength
+    "face": "द्रेष्काण बल",
+    # EN: decan (drekkana)
+    "decan": "द्रेष्काण",
+    # EN: peregrine (no dignity)
+    "peregrine": "बलहीन",
+    # EN: participating ruler
+    "participating_ruler": "सह-स्वामी",
+    # EN: debilitated
+    "debilitated": "नीच",
+    # EN: own sign
+    "own": "स्वराशी",
+    # EN: friendly sign
+    "friendly": "मित्र",
+    # EN: neutral sign
+    "neutral": "सम",
+    # EN: enemy sign
+    "inimical": "शत्रू",
+    # EN: moolatrikona
+    "moolatrikona": "मूलत्रिकोण",
+    # EN: retrograde
+    "retrograde": "वक्री",
+    # EN: direct (moving forward)
+    "direct": "मार्गी",
+    # EN: combust
+    "combust": "अस्त",
+    # EN: yes
+    "yes": "होय",
+    # EN: no
+    "no": "नाही",
+    # EN: angular (kendra)
+    "angular": "केंद्र",
+    # EN: succedent (panaphara)
+    "succedent": "पणफर",
+    # EN: cadent (apoklima)
+    "cadent": "आपोक्लिम",
+    # EN: conjunction
+    "conjunction": "युती",
+    # EN: opposition (180°)
+    "opposition": "प्रतियुती (180°)",
+    # EN: square (90°)
+    "square": "केंद्र दृष्टी (90°)",
+    # EN: trine (120°)
+    "trine": "त्रिकोण दृष्टी (120°)",
+    # EN: sextile (60°)
+    "sextile": "षष्ठक दृष्टी (60°)",
+    # EN: past (period already over)
+    "past": "संपलेली",
+    # EN: current (running now)
+    "current": "चालू",
+    # EN: ahead (still to come)
+    "ahead": "आगामी",
+    # EN: applying (aspect getting closer)
+    "applying": "जवळ येत आहे",
+    # EN: separating (moving apart)
+    "separating": "दूर जात आहे",
+    # EN: Sidereal
+    "sidereal": "निरयन (Sidereal)",
+    # EN: Tropical
+    "tropical": "सायन (Tropical)",
+    # EN: Whole Sign houses
+    "whole sign": "राशी भाव पद्धती (Whole Sign)",
+    # EN: Equal House
+    "equal house": "सम भाव (Equal House)",
+    # EN: Lahiri (Chitrapaksha) ayanamsa
+    "lahiri": "लाहिरी (चित्रपक्ष)",
+    # EN: Uranus
+    "Uranus": "युरेनस",
+    # EN: Neptune
+    "Neptune": "नेपच्यून",
+    # EN: Pluto
+    "Pluto": "प्लूटो",
+    # EN: Chiron
+    "Chiron": "कायरन",
+    # EN: Lagna (ascendant)
+    "Lagna": "लग्न",
+    # EN: ascendant
+    "ASC": "लग्न",
+    # EN: MC (10th house cusp)
+    "MC": "दशम भाव",
+    # EN: descendant (7th house cusp)
+    "DSC": "सप्तम भाव",
+    # EN: IC (4th house cusp)
+    "IC": "चतुर्थ भाव",
+    # EN: Mangala (yogini)
+    "Mangala": "मंगला",
+    # EN: Pingala (yogini)
+    "Pingala": "पिंगला",
+    # EN: Dhanya (yogini)
+    "Dhanya": "धान्या",
+    # EN: Bhramari (yogini)
+    "Bhramari": "भ्रामरी",
+    # EN: Bhadrika (yogini)
+    "Bhadrika": "भद्रिका",
+    # EN: Ulka (yogini)
+    "Ulka": "उल्का",
+    # EN: Siddha (yogini)
+    "Siddha": "सिद्धा",
+    # EN: Sankata (yogini)
+    "Sankata": "संकटा",
+}

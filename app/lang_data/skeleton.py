@@ -46,6 +46,7 @@ _GROUP_TITLE = {
     "recurring": "recurring /purnima-<year> /amavasya-<year> /pradosh-vrat-<year> ... (DIVASTRO-141)",
     "hub": "hub       /sitemap",
     "app": "app       AI-narration vocabulary here; names_<code>.py and static/i18n/<code>.json beside it",
+    "pdf": "pdf       the kundali (chart) PDF: headings, table headers, cell words (DIVASTRO-171)",
 }
 
 
@@ -143,7 +144,7 @@ fails `check` and CI. A module that is not READY renders the English body, noind
 from __future__ import annotations
 
 # Page modules that are complete for this language (the table groups below):
-#   "seo" "rashifal" "vrat" "nakshatra" "muhurat" "recurring" "hub" "app"
+#   "seo" "rashifal" "vrat" "nakshatra" "muhurat" "recurring" "hub" "app" "pdf"
 READY = frozenset()
 
 # Latin-script words the {code} text may keep besides the defaults (WhatsApp, UPI, PDF ...).

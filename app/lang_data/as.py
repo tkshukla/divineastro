@@ -19,13 +19,13 @@ fails `check` and CI. A module that is not READY renders the English body, noind
 from __future__ import annotations
 
 # Page modules that are complete for this language (the table groups below):
-#   "seo" "rashifal" "vrat" "nakshatra" "muhurat" "recurring" "hub" "app"
-READY = frozenset({"seo", "rashifal", "vrat", "nakshatra", "muhurat", "recurring", "hub", "app"})
+#   "seo" "rashifal" "vrat" "nakshatra" "muhurat" "recurring" "hub" "app" "pdf"
+READY = frozenset({"seo", "rashifal", "vrat", "nakshatra", "muhurat", "recurring", "hub", "app", "pdf"})
 
 # Latin-script words the as text may keep besides the defaults (WhatsApp, UPI, PDF ...).
 # "Priya", "Kshitij": Latin-spelled example names in the naam-milan explainer (users type names in English);
 # "name", "gmail.com": the e-mail input placeholder.
-ALLOW_LATIN = frozenset({"Priya", "Kshitij", "name", "gmail.com"})
+ALLOW_LATIN = frozenset({"Priya", "Kshitij", "name", "gmail.com", "Sidereal", "Tropical", "Whole Sign", "Equal House", "orb", "UT"})
 
 # static/i18n/as.json keys whose value is deliberately the English word (brand names, "OK").
 # the e-mail placeholder is an address, not prose
@@ -3047,3 +3047,243 @@ ASTRO_TERMS = {
 # app/astro_terms.py MONTH_VARIANTS["as"] — other spellings of a Gregorian month the AI may write (month number -> spellings)
 # (optional: may stay empty)
 ASTRO_MONTHS = {}   # {month number: (other spellings,)}, e.g. {2: ("...",)}
+
+# ----------------------------------------------------------------------------
+# pdf       the kundali (chart) PDF: headings, table headers, cell words (DIVASTRO-171)
+# ----------------------------------------------------------------------------
+
+# app/pdf_i18n.py LABELS["as"] — every heading, row label and table header of the kundali PDF; a *_headers value is a list, one entry per column, in this order  [54]
+PDF_LABELS = {
+    # EN: Birth Chart & Kundali Report
+    "title": "জন্ম কুণ্ডলী প্ৰতিবেদন",
+    # EN: Born
+    "born": "জন্মৰ সময়",
+    # EN: At
+    "at": "জন্মস্থান",
+    # EN: System
+    "system": "পদ্ধতি",
+    # EN: Generated
+    "generated": "তাৰিখ",
+    # EN: Birth Details
+    "birth_details": "জন্মৰ বিৱৰণ",
+    # EN: Rashi Chart (D1)
+    "d1_title": "লগ্ন কুণ্ডলী (D1)",
+    # EN: Navamsa Chart (D9)
+    "d9_title": "নৱাংশ কুণ্ডলী (D9)",
+    # EN: North Indian Style
+    "north_indian": "উত্তৰ ভাৰতীয় শৈলী",
+    # EN: South Indian Style
+    "south_indian": "দক্ষিণ ভাৰতীয় শৈলী",
+    # EN: Planetary Positions
+    "planetary_positions": "গ্ৰহৰ স্থিতি",
+    # EN: House Placements
+    "houses": "ভাৱৰ স্থিতি",
+    # EN: Major Aspects
+    "aspects": "প্ৰধান দৃষ্টি",
+    # EN: Vimshottari Dasha
+    "dasha": "বিংশোত্তৰী মহাদশা",
+    # EN: Yearly Varshphal Forecast (month by month)
+    "varshphal_title": "মাহেকীয়া বৰ্ষফল",
+    # EN: Upcoming Key Periods
+    "upcoming_title": "আগন্তুক গুৰুত্বপূৰ্ণ সময়",
+    # EN: House-wise Summary
+    "house_summary_title": "ভাৱফলৰ সাৰাংশ",
+    # EN: Divisional Placements Table
+    "vargas_title": "বৰ্গ কুণ্ডলীৰ স্থিতি",
+    # EN: Sarvashtakavarga Matrix (337 Bindus)
+    "ashtakavarga_title": "সৰ্বাষ্টকবৰ্গ (337 বিন্দু)",
+    # EN: Formed Yogas Analysis
+    "yogas_title": "কুণ্ডলীৰ প্ৰধান যোগ",
+    # EN: Antardashas of Active Mahadasha
+    "antardasha_title": "চলিত মহাদশাৰ অন্তৰ্দশাসমূহ",
+    # EN: Detailed House Analysis
+    "houses_detailed_title": "দ্বাদশ ভাৱফলৰ বিৱৰণ",
+    # EN: Planetary Placement Interpretations
+    "planets_detailed_title": "গ্ৰহফলৰ বিৱৰণ",
+    # EN: Spiritual Guidelines & Remedies
+    "remedies_detailed_title": "জ্যোতিষীয় প্ৰতিকাৰ আৰু মন্ত্ৰ",
+    # EN: Name
+    "name": "নাম",
+    # EN: Date & time of birth
+    "date_time": "জন্ম তাৰিখ আৰু সময়",
+    # EN: birth time unknown
+    "time_unknown": "সময় অজ্ঞাত",
+    # EN: Place of birth
+    "place": "জন্মস্থান",
+    # EN: Time zone
+    "time_zone": "সময় অঞ্চল",
+    # EN: Universal time (UT)
+    "universal_time": "বিশ্ব সময় (UT)",
+    # EN: Zodiac / ayanamsa
+    "zodiac": "ৰাশিচক্ৰ / অয়নাংশ",
+    # EN: ayanamsa
+    "ayanamsa": "অয়নাংশ",
+    # EN: House system
+    "house_system": "ভাৱ পদ্ধতি",
+    # EN: Sect (day or night birth)
+    "sect": "জন্মকাল",
+    # EN: Day birth
+    "day_chart": "দিনৰ জন্ম",
+    # EN: Night birth
+    "night_chart": "ৰাতিৰ জন্ম",
+    # EN: Moon
+    "moon": "চন্দ্ৰ",
+    # EN: Nakshatra
+    "nakshatra": "নক্ষত্ৰ",
+    # EN: pada
+    "pada": "পাদ",
+    # EN: Current mahadasha
+    "mahadasha_now": "বৰ্তমানৰ মহাদশা",
+    # EN: Current antardasha
+    "antardasha_now": "বৰ্তমানৰ অন্তৰ্দশা",
+    # EN: Yogini Dasha
+    "yogini_dasha": "যোগিনী দশা",
+    # EN: Yogini Antardasha
+    "yogini_antardasha": "যোগিনী অন্তৰ্দশা",
+    # EN: As of
+    "as_of": "এই তাৰিখ অনুসৰি",
+    # EN: Mahadasha | Years | From | To | Status
+    "dasha_headers": ["মহাদশা", "বছৰ", "আৰম্ভ", "শেষ", "স্থিতি"],
+    # EN: Antardasha | From | To | Status
+    "antardasha_headers": ["অন্তৰ্দশা", "আৰম্ভ", "শেষ", "স্থিতি"],
+    # EN: Planet | Sign | Degree | House | Placement | Strength / Dignity
+    "positions_headers": ["গ্ৰহ", "ৰাশি", "অংশ", "ভাৱ", "ভাৱ স্থিতি", "বল / মৰ্যাদা"],
+    # EN: House | Sign | Cusp | House lord | Occupants
+    "houses_headers": ["ভাৱ", "ৰাশি", "আৰম্ভ অংশ", "ভাৱৰ অধিপতি", "স্থিত গ্ৰহ"],
+    # EN: Planet | Aspect | Planet | Orb | Motion
+    "aspects_headers": ["গ্ৰহ", "দৃষ্টি", "গ্ৰহ", "ব্যৱধান (orb)", "গতি"],
+    # EN: Planet / Lagna | D1 (Rashi) | D3 (Drekkana) | D7 (Saptamsa) | D9 (Navamsa) | D10 (Dasamsa) | D12 (Dvadasamsa)
+    "vargas_headers": ["গ্ৰহ / লগ্ন", "D1 (ৰাশি)", "D3 (দ্ৰেক্কাণ)", "D7 (সপ্তাংশ)", "D9 (নৱাংশ)", "D10 (দশাংশ)", "D12 (দ্বাদশাংশ)"],
+    # EN: Yoga | Category | Planets | Effect / Description
+    "yogas_headers": ["যোগ", "শ্ৰেণী", "গ্ৰহ", "ফল / বিৱৰণ"],
+    # EN: No major yogas formed
+    "no_yogas": "কোনো প্ৰধান যোগ গঠন হোৱা নাই",
+    # EN: Daily prayer and mantra japa for planetary peace.
+    "no_yogas_note": "গ্ৰহ শান্তিৰ বাবে দৈনিক প্ৰাৰ্থনা আৰু মন্ত্ৰ জপ কৰক।",
+    # EN: These interpretation sections are shown in English.
+    "english_sections": "এই বিশ্লেষণৰ অংশসমূহ ইংৰাজীত দেখুওৱা হৈছে।",
+}
+
+# app/pdf_i18n.py VOCAB["as"] — the engine's English words inside the PDF tables (dignity, aspect, dasha status, zodiac, outer planets, yogini names); graha / rashi / nakshatra names come from names_<code>.py  [60]
+PDF_VOCAB = {
+    # EN: in its own sign, as the sign's ruler
+    "ruler": "স্বক্ষেত্ৰ (অধিপতি)",
+    # EN: own sign (domicile)
+    "domicile": "স্বক্ষেত্ৰ",
+    # EN: exalted
+    "exalted": "উচ্চ",
+    # EN: exaltation
+    "exaltation": "উচ্চ",
+    # EN: exaltation degree
+    "exaltation_degree": "উচ্চাংশ",
+    # EN: exact exaltation (paramochcha)
+    "exaltation_exact": "পৰমোচ্চ",
+    # EN: detriment (enemy's sign)
+    "detriment": "শত্ৰুক্ষেত্ৰ",
+    # EN: fall (debilitated)
+    "fall": "নীচ",
+    # EN: triplicity strength
+    "triplicity": "ত্ৰিকোণ বল",
+    # EN: term (bounds) strength
+    "term": "সীমা বল",
+    # EN: face (decan) strength
+    "face": "দ্ৰেক্কাণ বল",
+    # EN: decan (drekkana)
+    "decan": "দ্ৰেক্কাণ",
+    # EN: peregrine (no dignity)
+    "peregrine": "বলহীন",
+    # EN: participating ruler
+    "participating_ruler": "সহ-অধিপতি",
+    # EN: debilitated
+    "debilitated": "নীচ",
+    # EN: own sign
+    "own": "স্বক্ষেত্ৰ",
+    # EN: friendly sign
+    "friendly": "মিত্ৰ",
+    # EN: neutral sign
+    "neutral": "সম",
+    # EN: enemy sign
+    "inimical": "শত্ৰু",
+    # EN: moolatrikona
+    "moolatrikona": "মূলত্ৰিকোণ",
+    # EN: retrograde
+    "retrograde": "বক্ৰী",
+    # EN: direct (moving forward)
+    "direct": "মাৰ্গী",
+    # EN: combust
+    "combust": "অস্ত",
+    # EN: yes
+    "yes": "হয়",
+    # EN: no
+    "no": "নহয়",
+    # EN: angular (kendra)
+    "angular": "কেন্দ্ৰ",
+    # EN: succedent (panaphara)
+    "succedent": "পণফৰ",
+    # EN: cadent (apoklima)
+    "cadent": "আপোক্লিম",
+    # EN: conjunction
+    "conjunction": "যুতি",
+    # EN: opposition (180°)
+    "opposition": "প্ৰতিযুতি (180°)",
+    # EN: square (90°)
+    "square": "কেন্দ্ৰ দৃষ্টি (90°)",
+    # EN: trine (120°)
+    "trine": "ত্ৰিকোণ দৃষ্টি (120°)",
+    # EN: sextile (60°)
+    "sextile": "ষষ্ঠক দৃষ্টি (60°)",
+    # EN: past (period already over)
+    "past": "অতীত",
+    # EN: current (running now)
+    "current": "চলিত",
+    # EN: ahead (still to come)
+    "ahead": "আগন্তুক",
+    # EN: applying (aspect getting closer)
+    "applying": "ওচৰ চাপিছে",
+    # EN: separating (moving apart)
+    "separating": "আঁতৰি গৈছে",
+    # EN: Sidereal
+    "sidereal": "নিৰয়ন (Sidereal)",
+    # EN: Tropical
+    "tropical": "সায়ন (Tropical)",
+    # EN: Whole Sign houses
+    "whole sign": "ৰাশি ভাৱ পদ্ধতি (Whole Sign)",
+    # EN: Equal House
+    "equal house": "সম ভাৱ (Equal House)",
+    # EN: Lahiri (Chitrapaksha) ayanamsa
+    "lahiri": "লাহিড়ী (চিত্ৰপক্ষ)",
+    # EN: Uranus
+    "Uranus": "ইউৰেনাছ",
+    # EN: Neptune
+    "Neptune": "নেপচুন",
+    # EN: Pluto
+    "Pluto": "প্লুটো",
+    # EN: Chiron
+    "Chiron": "কাইৰন",
+    # EN: Lagna (ascendant)
+    "Lagna": "লগ্ন",
+    # EN: ascendant
+    "ASC": "লগ্ন",
+    # EN: MC (10th house cusp)
+    "MC": "দশম ভাৱ",
+    # EN: descendant (7th house cusp)
+    "DSC": "সপ্তম ভাৱ",
+    # EN: IC (4th house cusp)
+    "IC": "চতুৰ্থ ভাৱ",
+    # EN: Mangala (yogini)
+    "Mangala": "মঙ্গলা",
+    # EN: Pingala (yogini)
+    "Pingala": "পিঙ্গলা",
+    # EN: Dhanya (yogini)
+    "Dhanya": "ধান্যা",
+    # EN: Bhramari (yogini)
+    "Bhramari": "ভ্ৰামৰী",
+    # EN: Bhadrika (yogini)
+    "Bhadrika": "ভদ্ৰিকা",
+    # EN: Ulka (yogini)
+    "Ulka": "উল্কা",
+    # EN: Siddha (yogini)
+    "Siddha": "সিদ্ধা",
+    # EN: Sankata (yogini)
+    "Sankata": "সংকটা",
+}

@@ -132,7 +132,17 @@ SPECS: dict[str, Spec] = {s.id: s for s in (
          note="house / dasha / sign vocabulary for the AI narration and the chart labels"),
     Spec("ASTRO_MONTHS", "app", "app.astro_terms", "MONTH_VARIANTS", "variants", "variants",
          optional=True, note="other spellings of a Gregorian month the AI may write (month number -> spellings)"),
+    # ---- pdf: the kundali (chart) PDF (DIVASTRO-171)
+    Spec("PDF_LABELS", "pdf", "app.pdf_i18n", "LABELS", "text", ref="kn",
+         note="every heading, row label and table header of the kundali PDF; a *_headers value is a "
+              "list, one entry per column, in this order"),
+    Spec("PDF_VOCAB", "pdf", "app.pdf_i18n", "VOCAB", "text", ref="kn",
+         note="the engine's English words inside the PDF tables (dignity, aspect, dasha status, zodiac, "
+              "outer planets, yogini names); graha / rashi / nakshatra names come from names_<code>.py"),
 )}
+
+#: Tables whose values may be a list of strings (one per table column).
+LIST_VALUES = frozenset({"PDF_LABELS"})
 
 #: The constants a language file may set that are not text tables.
 CONFIG = ("READY", "AKSHAR", "ALLOW_LATIN", "KEEP_ENGLISH")
@@ -190,6 +200,15 @@ def flatten(table_id: str, data) -> dict:
         return {"": data} if data else {}
     if spec.shape == "variants":
         return {k: " / ".join(v) for k, v in data.items()}
+    if table_id in LIST_VALUES:
+        # a list value (table headers) is one key per cell: "dasha_headers.0" ...
+        out = {}
+        for k, v in data.items():
+            if isinstance(v, (list, tuple)):
+                out.update({f"{k}.{i}": part for i, part in enumerate(v)})
+            else:
+                out[k] = v
+        return out
     return dict(data)
 
 
@@ -215,6 +234,12 @@ def english(spec: Spec) -> dict:
         return {i: calendar.month_name[i + 1] for i in range(12)}
     if sid == "ASTRO_TERMS":
         return {k: k for k in table["kn"]}
+    if sid == "PDF_LABELS":
+        en = importlib.import_module("app.pdf_i18n").ENGLISH
+        return flatten(sid, {k: en.get(k, "") for k in table["kn"]})
+    if sid == "PDF_VOCAB":
+        en = importlib.import_module("app.pdf_i18n").VOCAB_ENGLISH
+        return {k: en.get(k, k) for k in table["kn"]}
     if sid == "ASTRO_MONTHS":
         return {}
     if sid == "RASHIFAL_CLOCK_LANG":
