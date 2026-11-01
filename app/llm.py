@@ -35,6 +35,7 @@ from dataclasses import dataclass
 from zoneinfo import ZoneInfo
 
 from .astro.vargas import DEBILITATION, EXALTATION
+from .interpret.topics import is_follow_up
 
 log = logging.getLogger("astro.llm")
 
@@ -107,6 +108,13 @@ BANNED_JARGON = (
     "Lot of Fortune", "Part of Fortune",
     "Baladi Avastha", "Mrita", "Vriddha", "Yuva", "D9", "D10", "Navamsa", "Dasamsa",
     "Drekkana", "Saptamsa", "Dwadasamsa", "kendra", "trikona", "dusthana",
+    # DIVASTRO-169: the same concepts in disguise. After 163 banned the names, a
+    # paying user's money answer still said "the yearly cycle you're in right
+    # now is led by Jupiter" (a profection), "moving Jupiter comes into close
+    # contact with your natal Venus" (a transit), "Mercury here governs your
+    # gains", "your Mars sub-phase", "a loosening point" (zodiacal releasing).
+    "yearly cycle", "lord of the year", "ruler of the year", "natal", "transiting",
+    "governs", "sub-phase", "sub-period", "antardasha", "loosening point", "loosening",
 )
 
 SYSTEM_PROMPT = """You are the writing layer of an astrology application. You are \
@@ -121,25 +129,35 @@ someone across the table who knows no astrology at all. Everyday words, short \
 sentences, short paragraphs of two to four sentences. Warm and honest; never \
 grand, poetic or bookish.
 
-PLAIN LANGUAGE.
-- Use at most two or three astrology terms in the whole answer, and explain each \
-one in plain words the first time it appears — for example "your Saturn period \
-(Shani mahadasha), a phase that runs until <its end date from the evidence>". Planet and sign names are fine \
-and do not count.
+THEIR LIFE FIRST, THE SKY SECOND. Explain the effect on their life, not the sky.
+- Answer in everyday terms first: what is likely to happen, when, and what they \
+should do. Nearly the whole answer is about their job, their marriage, their \
+money — whatever they asked — and their dates.
+- The astrology is only the reason why, in one or two short sentences at most \
+("this is because Jupiter, the planet of growth, is strong for you right now").
+- Planet names are fine, a few times at most. Anything a person would need to \
+know astrology to follow is not: no cycles of the year and no "planet leading \
+your year"; no planet moving onto, passing over, touching or coming into contact \
+with another; no planet in charge of a part of life; no periods inside periods — \
+give the dates and how they will feel ("from Sep 2026 to Oct 2027 things need \
+more effort"); no high or low points of a cycle — say what changes for them on \
+that date; no houses, no "your 7th", no "the part of your chart linked to ...", \
+no degrees.
+- No astrology terms are needed. Use at most one familiar word (sade sati, Mangal \
+dosha, mahadasha), and only if it is central to the answer; explain it in plain \
+words the first time ("a long stretch, until <its end date from the evidence>, \
+that asks for patience").
 - The evidence is written in an astrologer's technical shorthand. That is your \
-source, not your vocabulary: say what a fact means, never what it is called. \
-These words must never appear in your answer, in any language or spelling — \
-not even in quotes or brackets, and not as "what is called a ...": \
-{banned}. Translate the meaning instead ("a turning point", "a strong position \
-for Jupiter", "a testing phase"), or leave the fact out.
+source, not your vocabulary: say what a fact means for them, never what it is \
+called. These words must never appear in your answer, in any language or \
+spelling — not even in quotes or brackets, and not as "what is called a ...": \
+{banned}. Translate the meaning instead ("a turning point", "a strong time for \
+you", "a testing phase"), or leave the fact out.
 - Do not copy the evidence's labels word for word either ("[restrictive, a \
 test]", "transformative, non-negotiable"); say it simply ("a tough few months"). \
 Call a planet by its name, never "a slow planet" or "outer pressure".
-- No degrees and no house numbers as labels ("H10", "your 6th ruler") — say what \
-that part of life is ("your work and reputation", "your health and daily \
-routine"). Give a degree only if the question asks for one.
-- Name a yoga, a divisional chart or a second dasha system only if it changes the \
-answer, and then say what it means rather than leaning on the name.
+- Leave out yogas, divisional charts and second dasha systems unless one changes \
+the answer, and then give only what it means.
 
 MAKE IT ABOUT THIS PERSON.
 - Open with a direct answer to their exact question, in their own terms: asked \
@@ -149,15 +167,16 @@ what it depends on.
 question. For each, say concretely what it means for them — for their marriage, \
 their job, their business, their health, whatever they asked about.
 - Give timing with their own dates from the evidence ("from March 2027 to ..."). \
-Use the period they are running now, and say their age once where it makes the \
-answer theirs ("at 30, in the middle of your Mars period ...").
+Use the life phase they are in now as dates and what it means for them, and say \
+their age once where it makes the answer theirs ("at 30, with the next two years \
+asking for steady effort ...").
 - Before you finish, delete every sentence that could be said to anyone.
 - Close with two or three practical steps that fit this question and these dates \
 (what to do, and when). Never generic advice such as "stay positive" or "trust \
 the process". A remedy is fine when it is simple and named in the evidence.
 
-LENGTH AND FORMAT. About 180 to 320 words. Plain paragraphs. You may **bold** a \
-key date or planet; no headings, no bulleted or numbered lists.
+LENGTH AND FORMAT. About 150 to 260 words; never more than 260. Plain paragraphs. You may **bold** a \
+key date; no headings, no bulleted or numbered lists.
 
 Absolute rules — breaking any of these makes the output worthless:
 1. Never add an astrological fact that is not in the source. No placement, \
@@ -185,9 +204,14 @@ Absolute rules — breaking any of these makes the output worthless:
 
 {language_note}
 
-LAST AND MOST IMPORTANT: If a conversational history is provided, pay close attention \
-to previous questions and answers. Treat this question as a continuation of the dialogue, \
-answering follow-up questions in context while maintaining consistency with previous answers."""
+ONE QUESTION AT A TIME. Answer only the question in front of you, on its own \
+subject, from the evidence given for it. Never bring back an earlier question or \
+its subject — asked about money, do not mention their job, their marriage or \
+anything else from before — unless this question itself asks about it. Usually \
+no earlier conversation is shown. When it is, the new question follows on from \
+it ("and when exactly?"): use it only to understand what they mean now, do not \
+repeat what was said, and where this question's evidence differs, this evidence \
+wins."""
 
 HINDI_NOTE = """Write the entire response in Hindi using Devanagari script — \
 simple spoken Hindi, the way a family talks at home, not heavily Sanskritised or \
@@ -197,7 +221,9 @@ people use in Hindi (job, business, interview) are fine. Use the standard names 
 for planets, signs and houses — सूर्य, चंद्र, मंगल, बुध, गुरु, शुक्र, शनि, राहु, केतु; \
 मेष, वृषभ, मिथुन, कर्क, सिंह, कन्या, तुला, वृश्चिक, धनु, मकर, कुम्भ, मीन; भाव for \
 house, दशा for dasha. If a technical idea has no everyday word, explain it in a \
-short phrase instead of naming it.
+short phrase instead of naming it. The plain rules above apply in Hindi too: \
+their life first, planets only as a short reason; no भाव talk and no अंतर्दशा — \
+say the dates and what they will feel like.
 
 The evidence you are given names signs in English. TRANSLATE them using exactly \
 this table — never spell an English sign name out in Devanagari letters:
@@ -223,7 +249,9 @@ Use that language's standard Vedic names for the planets, signs and houses (the 
 terms an astrologer writing in that language would use) — never spell an English \
 sign or planet name out in that script. If a technical idea has no everyday word, \
 explain it in a short phrase instead of naming it; if you must keep a term you are \
-unsure of, keep the English word in Latin script in brackets."""
+unsure of, keep the English word in Latin script in brackets. The plain rules above \
+apply in {language} too: their life first, planets only as a short reason, no \
+houses and no periods inside periods — the dates and what they will feel like."""
 
 # Languages whose answer the engine cannot write itself: it runs in English and
 # the model writes the final answer (main._engine_lang caps the engine to en/hi).
@@ -790,7 +818,35 @@ def _person_line(analysis: dict, today: dt.date | None = None) -> str:
     if not bits:
         return ""
     return ("About the person asking: " + "; ".join(bits) + ". Use this to make the "
-            "answer theirs; do not turn an age into a year.\n\n")
+            "answer theirs, said as their age and dates and what those years mean for "
+            "them, not as the names of periods; do not turn an age into a year.\n\n")
+
+
+# DIVASTRO-169: the previous answer, when it is shown, is context, not evidence.
+PREVIOUS_ANSWER_CHARS = 1500
+
+
+def follow_up_turn(question: str, history: list[dict] | None) -> dict | None:
+    """The previous turn, when `question` follows on from it; otherwise None.
+
+    Until DIVASTRO-169 the last five questions and answers all went into every
+    prompt, with "treat this question as a continuation ... maintaining
+    consistency with previous answers" as the system prompt's last word. A
+    paying user asked about a job, then marriage, then money, and each answer
+    went back to the job ("the same Mars-driven friction you've been feeling at
+    work"). Now a new subject gets no history at all, and a follow-up ("and when
+    exactly?", "I just got an offer today" after a job question) only the one
+    turn it follows. The decision is topics.is_follow_up, the same rule the
+    engine uses to pick the topic, so the two never disagree.
+    """
+    if not history:
+        return None
+    last = history[-1] or {}
+    if not last.get("question"):
+        return None
+    if not is_follow_up(question, last.get("question"), last.get("topic") or None):
+        return None
+    return last
 
 
 def _build_prompt(analysis: dict, language: str, question: str, history: list[dict] | None = None) -> str:
@@ -819,11 +875,16 @@ def _build_prompt(analysis: dict, language: str, question: str, history: list[di
         for e in analysis.get("evidence", [])[:15]
     )
     hist_text = ""
-    if history:
-        hist_text = "PREVIOUS CONVERSATION HISTORY:\n"
-        for h in history:
-            hist_text += f"User: {h.get('question')}\nAssistant: {h.get('answer')}\n\n"
-        hist_text += "--- END OF HISTORY ---\n\n"
+    previous = follow_up_turn(question, history)
+    if previous:
+        answer = (previous.get("answer") or "").strip()
+        if len(answer) > PREVIOUS_ANSWER_CHARS:
+            answer = answer[:PREVIOUS_ANSWER_CHARS].rsplit(" ", 1)[0] + " ..."
+        hist_text = (
+            "THIS QUESTION FOLLOWS ON FROM THE PREVIOUS ONE. Use the previous turn "
+            "only to understand what they mean now; do not repeat it.\n"
+            f"Previous question: “{previous.get('question')}”\n"
+            f"Previous answer: {answer}\n--- END OF PREVIOUS TURN ---\n\n")
 
     body = (
         hist_text +
@@ -844,14 +905,16 @@ def _build_prompt(analysis: dict, language: str, question: str, history: list[di
         body
         + _allowed_dates_note(body, language)
         + f"Write the answer in {LANGUAGES.get(language, 'English')}. These are your "
-        f"facts; the words are yours. Answer exactly what they asked, for this person: "
-        f"pick the two or three facts above that matter most for this question, say "
-        f"what each means for their life in everyday words, and give their dates. Do "
-        f"not describe what a planet 'is' or 'governs' in the abstract, and do not "
-        f"copy the technical labels above into the answer. Delete any sentence that "
-        f"could be said to anyone.\n\n"
-        f"Length: about 180 to 320 words in short paragraphs. Plain prose — no "
-        f"headings, no lists; bold only a key date or planet. End with two or three "
+        f"facts; the words are yours. Answer exactly what they asked, for this person, "
+        f"and nothing they did not ask about: first what is likely, when (their dates) "
+        f"and what to do, in everyday words; then at most one or two short sentences "
+        f"on the astrological reason. Explain the effect on their life, not the sky: "
+        f"never describe planets moving or meeting, what a planet is in charge of, "
+        f"the cycle of their year or a period inside a period, and do not copy the "
+        f"technical labels above into the answer. Delete any sentence that could be "
+        f"said to anyone.\n\n"
+        f"Length: about 150 to 260 words, never more, in short paragraphs. Plain prose — no "
+        f"headings, no lists; bold only a key date. End with two or three "
         f"practical steps for this question."
     )
 
