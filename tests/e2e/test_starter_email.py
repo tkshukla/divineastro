@@ -192,12 +192,18 @@ def flow(browser, base: str, lang: str) -> None:
     pg.page.wait_for_selector(".hist-row.emailed", timeout=10000)
     row = pg.page.locator('.hist-row.emailed:has(.hist-mail[data-mail="done"])').first
     check(f"[{lang}] My questions: the emailed answer is marked delivered", row.count() == 1)
-    row.locator("details.hist-answer > summary").click()
-    pg.page.wait_for_timeout(300)
-    body = row.locator(".hist-answer-body").inner_text()
-    check(f"[{lang}] ...and its text opens in place", w["answer_bit"] in body, body[:160])
     check(f"[{lang}] 390px: My questions has no sideways scroll", no_overflow(pg))
     shot(pg, f"{lang}_5_my_questions")
+    # DIVASTRO-170: tapping it opens its conversation with the answer (this chart was
+    # cast without being saved, so read-only), tagged as sent by email.
+    row.click()
+    pg.page.wait_for_selector(".modal .thread-view .mail-tag", timeout=10000)
+    pg.page.wait_for_timeout(300)
+    body = pg.page.locator(".modal .thread-view .msg.bot").last.inner_text()
+    check(f"[{lang}] ...tapped, its conversation shows the answer, tagged sent by email",
+          w["answer_bit"] in body, body[:160])
+    check(f"[{lang}] 390px: the conversation has no sideways scroll", no_overflow(pg))
+    shot(pg, f"{lang}_5b_thread")
     # The 402 of the 4th question is the paywall doing its job (the browser logs it).
     errors = [e for e in pg.console_errors if "402" not in e]
     check(f"[{lang}] no console errors (besides the expected 402)", not errors, "; ".join(errors[:3]))

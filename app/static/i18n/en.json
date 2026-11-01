@@ -637,5 +637,18 @@
   "askQHealth": "How will my health be this year?",
   "askChipMuhurat": "Good time / Muhurat",
   "askQMuhurat": "When is a good time for me to start something new?",
-  "askPendingNote": "To answer, we need your birth details"
+  "askPendingNote": "To answer, we need your birth details",
+  "threadMailSent": "Sent to your email",
+  "threadMailPending": "Writing your detailed answer — it'll also arrive by email within {minutes} minutes",
+  "threadMailFailed": "Couldn't write this one; your credit was refunded",
+  "threadMailNotSent": "Couldn't email this one; your credit was refunded. The answer is here.",
+  "threadEarlier": "Show earlier questions",
+  "threadReadOnly": "This chart wasn't saved, so this conversation can be read here but not continued. Open a chart to ask a new question.",
+  "threadAskNew": "Ask a new question",
+  "threadLoadFailed": "Couldn't open this conversation. Please try again.",
+  "acct.histCount": "{n} questions",
+  "acct.histCountOne": "1 question",
+  "acct.histUnsaved": "Chart not saved",
+  "acct.histReadOnly": "read only",
+  "acct.histTap": "Tap a conversation or a question to see the full answers."
 }
