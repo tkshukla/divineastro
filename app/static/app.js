@@ -1504,7 +1504,7 @@ function renderReading(data) {
   renderStarters();
 
   $("#thread").innerHTML = "";
-  addBot(openingRead(c), null, false);
+  addBot(openingRead(c), null, false, false);   // no Share: it carries the birth details
   // DIVASTRO-170: this chart's earlier questions and answers go here, under the
   // opening reading and above anything asked now (they load in the background).
   const past = document.createElement("div");
@@ -1956,7 +1956,10 @@ function fallbackNoteHtml(result) {
   return note ? `<p class="incomplete-note lang-fallback-note">${escapeHtml(note)}</p>` : "";
 }
 
-function addBot(md, result, withReasoning = true) {
+/* `actions` false leaves out Copy / Share: the opening read starts with the name,
+   birth date, time and place (DIVASTRO-168), which must never be one tap away
+   from a WhatsApp group. */
+function addBot(md, result, withReasoning = true, actions = true) {
   const el = document.createElement("div");
   el.className = "msg bot";
   const bubble = document.createElement("div");
@@ -1964,7 +1967,7 @@ function addBot(md, result, withReasoning = true) {
   bubble.innerHTML = verdictHtml(result) + markdown(md) +
     (withReasoning ? reasoningHtml(result) : "");
   el.append(bubble);
-  el.append(answerActions(bubble));
+  if (actions) el.append(answerActions(bubble));
   $("#thread").append(el);
   scrollThread(true);
   return bubble;
