@@ -18,6 +18,14 @@ come from `app/astro_terms.py`, shared with the chat glossary.
 `translate(value, code)` is pdf_report._translate_val's regional twin: whole
 cells, comma lists, "Mars R" (retrograde) and "23°07' Aries" are all handled the
 same way the Hindi edition handles them.
+
+DIVASTRO-171 — Punjabi, Nepali, Assamese, Marathi and Gujarati keep their tables
+where a translator edits everything else of theirs: `app/lang_data/<code>.py`,
+constants PDF_LABELS and PDF_VOCAB, merged into LABELS / VOCAB below at import
+time (`lang_data.merge`). Such a language joins REGIONAL — and so the PDF picker,
+font permitting (pdf_report.pdf_languages) — only when its file has "pdf" in
+READY and both tables carry every key (`python -m app.lang_data check <code>
+--only pdf`).
 """
 
 from __future__ import annotations
@@ -25,13 +33,24 @@ from __future__ import annotations
 import functools
 import re
 
+from . import lang_data
 from .astro_terms import TERMS
 
-REGIONAL = ("kn", "te", "ta", "ml", "bn", "or")
+#: The six languages whose tables are written inline below (DIVASTRO-124).
+LEGACY = ("kn", "te", "ta", "ml", "bn", "or")
+#: Every regional language with complete PDF tables: LEGACY, then the READY "pdf"
+#: languages of app/lang_data (recomputed after the merge, further down).
+REGIONAL: tuple[str, ...] = LEGACY
+
+#: Written in Devanagari, which the PDF already carries for Hindi
+#: (pdf_report._DEVANAGARI): their font is whichever one Hindi uses.
+DEVANAGARI = ("ne", "mr")
 
 # The Noto families that carry each script, serif first (the report body is a
 # serif). fonts-noto-core in the Docker image ships all of them except Noto
-# Serif Oriya, hence the Sans fallback in every list.
+# Serif Oriya, hence the Sans fallback in every list. Assamese is written in the
+# Bengali script (ৰ and ৱ are in Noto Bengali); Marathi and Nepali in Devanagari,
+# Sans first like the Hindi stack they share.
 SCRIPT_FONTS: dict[str, tuple[str, ...]] = {
     "kn": ("Noto Serif Kannada", "Noto Sans Kannada"),
     "te": ("Noto Serif Telugu", "Noto Sans Telugu"),
@@ -39,6 +58,77 @@ SCRIPT_FONTS: dict[str, tuple[str, ...]] = {
     "ml": ("Noto Serif Malayalam", "Noto Sans Malayalam"),
     "bn": ("Noto Serif Bengali", "Noto Sans Bengali"),
     "or": ("Noto Serif Oriya", "Noto Sans Oriya"),
+    "pa": ("Noto Serif Gurmukhi", "Noto Sans Gurmukhi"),
+    "gu": ("Noto Serif Gujarati", "Noto Sans Gujarati"),
+    "as": ("Noto Serif Bengali", "Noto Sans Bengali"),
+    "ne": ("Noto Sans Devanagari", "Noto Serif Devanagari"),
+    "mr": ("Noto Sans Devanagari", "Noto Serif Devanagari"),
+}
+
+# The English edition's wording of every LABELS key: the translator's reference
+# (the lang_data skeleton prints it above each key) and the "untranslated
+# heading" list the tests look for. pdf_report._LOCALIZED_TEXTS["en"] is what the
+# English PDF actually prints for the section headings.
+ENGLISH: dict = {
+    "title": "Birth Chart & Kundali Report", "born": "Born", "at": "At", "system": "System",
+    "generated": "Generated", "birth_details": "Birth Details", "d1_title": "Rashi Chart (D1)",
+    "d9_title": "Navamsa Chart (D9)", "north_indian": "North Indian Style",
+    "south_indian": "South Indian Style", "planetary_positions": "Planetary Positions",
+    "houses": "House Placements", "aspects": "Major Aspects", "dasha": "Vimshottari Dasha",
+    "varshphal_title": "Yearly Varshphal Forecast (month by month)",
+    "upcoming_title": "Upcoming Key Periods", "house_summary_title": "House-wise Summary",
+    "vargas_title": "Divisional Placements Table",
+    "ashtakavarga_title": "Sarvashtakavarga Matrix (337 Bindus)",
+    "yogas_title": "Formed Yogas Analysis", "antardasha_title": "Antardashas of Active Mahadasha",
+    "houses_detailed_title": "Detailed House Analysis",
+    "planets_detailed_title": "Planetary Placement Interpretations",
+    "remedies_detailed_title": "Spiritual Guidelines & Remedies",
+    "name": "Name", "date_time": "Date & time of birth", "time_unknown": "birth time unknown",
+    "place": "Place of birth", "time_zone": "Time zone", "universal_time": "Universal time (UT)",
+    "zodiac": "Zodiac / ayanamsa", "ayanamsa": "ayanamsa", "house_system": "House system",
+    "sect": "Sect (day or night birth)", "day_chart": "Day birth", "night_chart": "Night birth",
+    "moon": "Moon", "nakshatra": "Nakshatra", "pada": "pada",
+    "mahadasha_now": "Current mahadasha", "antardasha_now": "Current antardasha",
+    "yogini_dasha": "Yogini Dasha", "yogini_antardasha": "Yogini Antardasha", "as_of": "As of",
+    "dasha_headers": ["Mahadasha", "Years", "From", "To", "Status"],
+    "antardasha_headers": ["Antardasha", "From", "To", "Status"],
+    "positions_headers": ["Planet", "Sign", "Degree", "House", "Placement", "Strength / Dignity"],
+    "houses_headers": ["House", "Sign", "Cusp", "House lord", "Occupants"],
+    "aspects_headers": ["Planet", "Aspect", "Planet", "Orb", "Motion"],
+    "vargas_headers": ["Planet / Lagna", "D1 (Rashi)", "D3 (Drekkana)", "D7 (Saptamsa)",
+                       "D9 (Navamsa)", "D10 (Dasamsa)", "D12 (Dvadasamsa)"],
+    "yogas_headers": ["Yoga", "Category", "Planets", "Effect / Description"],
+    "no_yogas": "No major yogas formed",
+    "no_yogas_note": "Daily prayer and mantra japa for planetary peace.",
+    "english_sections": "These interpretation sections are shown in English.",
+}
+
+# The engine's English cell values (the VOCAB keys) as a translator should read them.
+VOCAB_ENGLISH: dict[str, str] = {
+    "ruler": "in its own sign, as the sign's ruler", "domicile": "own sign (domicile)",
+    "exalted": "exalted", "exaltation": "exaltation", "exaltation_degree": "exaltation degree",
+    "exaltation_exact": "exact exaltation (paramochcha)", "detriment": "detriment (enemy's sign)",
+    "fall": "fall (debilitated)", "triplicity": "triplicity strength",
+    "term": "term (bounds) strength", "face": "face (decan) strength",
+    "decan": "decan (drekkana)", "peregrine": "peregrine (no dignity)",
+    "participating_ruler": "participating ruler", "debilitated": "debilitated",
+    "own": "own sign", "friendly": "friendly sign", "neutral": "neutral sign",
+    "inimical": "enemy sign", "moolatrikona": "moolatrikona", "retrograde": "retrograde",
+    "direct": "direct (moving forward)", "combust": "combust", "yes": "yes", "no": "no",
+    "angular": "angular (kendra)", "succedent": "succedent (panaphara)",
+    "cadent": "cadent (apoklima)", "conjunction": "conjunction",
+    "opposition": "opposition (180°)", "square": "square (90°)", "trine": "trine (120°)",
+    "sextile": "sextile (60°)", "past": "past (period already over)",
+    "current": "current (running now)", "ahead": "ahead (still to come)",
+    "applying": "applying (aspect getting closer)", "separating": "separating (moving apart)",
+    "sidereal": "Sidereal", "tropical": "Tropical", "whole sign": "Whole Sign houses",
+    "equal house": "Equal House", "lahiri": "Lahiri (Chitrapaksha) ayanamsa",
+    "Uranus": "Uranus", "Neptune": "Neptune", "Pluto": "Pluto", "Chiron": "Chiron",
+    "Lagna": "Lagna (ascendant)", "ASC": "ascendant", "MC": "MC (10th house cusp)",
+    "DSC": "descendant (7th house cusp)", "IC": "IC (4th house cusp)",
+    "Mangala": "Mangala (yogini)", "Pingala": "Pingala (yogini)", "Dhanya": "Dhanya (yogini)",
+    "Bhramari": "Bhramari (yogini)", "Bhadrika": "Bhadrika (yogini)", "Ulka": "Ulka (yogini)",
+    "Siddha": "Siddha (yogini)", "Sankata": "Sankata (yogini)",
 }
 
 # --------------------------------------------------------------------------
@@ -413,6 +503,43 @@ VOCAB: dict[str, dict[str, str]] = {
     },
 }
 
+# DIVASTRO-171: pa ne as mr gu, from app/lang_data/<code>.py.
+lang_data.merge("PDF_LABELS", LABELS)
+lang_data.merge("PDF_VOCAB", VOCAB)
+
+
+def _nest_lists(table: dict) -> None:
+    """A skeleton writes a header list as "dasha_headers.0", "dasha_headers.1" ...
+    (one key per cell, so the checker can read each); fold those back into the
+    list the template reads. A real list already there wins."""
+    parts: dict[str, dict[int, str]] = {}
+    for key in [k for k in table if re.fullmatch(r"\w+\.\d+", k)]:
+        name, i = key.rsplit(".", 1)
+        value = table.pop(key)
+        if not isinstance(table.get(name), list):
+            parts.setdefault(name, {})[int(i)] = value
+    for name, cells in parts.items():
+        table[name] = [cells[i] for i in sorted(cells)]
+
+
+def _complete(code: str) -> bool:
+    """Every LABELS key (lists of the English length) and every VOCAB key filled."""
+    labels, vocab = LABELS.get(code, {}), VOCAB.get(code, {})
+    for key, en in ENGLISH.items():
+        value = labels.get(key)
+        if not value or (isinstance(en, list) and (not isinstance(value, list) or len(value) != len(en)
+                                                   or not all(value))):
+            return False
+    return all(vocab.get(k) for k in VOCAB_ENGLISH)
+
+
+for _code in lang_data.NEW_CODES:
+    if _code in LABELS:
+        _nest_lists(LABELS[_code])
+REGIONAL = LEGACY + tuple(c for c in lang_data.NEW_CODES
+                          if c in lang_data.ready("pdf") and _complete(c))
+
+
 def texts(code: str) -> dict[str, str]:
     """The template's d.texts for `code` (only the section-heading keys)."""
     table = LABELS[code]
@@ -447,6 +574,11 @@ def _words(code: str) -> dict[str, str]:
     return {k.lower(): v for k, v in VOCAB[code].items() if not k[:1].isupper()}
 
 
+# Engine words with no row of their own: stellium's dignities() also reports a
+# planet that rules its sign's triplicity as "triplicity_ruler" — the same
+# triplicity strength (it printed raw, underscore and all, before DIVASTRO-171).
+_ALIASES = {"triplicity_ruler": "triplicity"}
+
 _DATE_DMY = re.compile(r"(\d+)\s+([A-Za-z]+)\s+(\d{4})(?:,\s+(\d+:\d+))?$")
 _MONTH_NUM = {m: i for i, m in enumerate(
     ("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), 1)}
@@ -479,8 +611,9 @@ def translate(val, code: str):
     if v in proper:
         return proper[v]
     words = _words(code)
-    if v.lower() in words:
-        return words[v.lower()]
+    key = _ALIASES.get(v.lower(), v.lower())
+    if key in words:
+        return words[key]
     if v.endswith(" R") and v[:-2] in proper:
         return f"{proper[v[:-2]]} ({TERMS[code]['retrograde']})"
     if "," in v:

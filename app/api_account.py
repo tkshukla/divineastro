@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from . import analytics, auth, billing, coupons, email_auth, guest, i18n, mail, phone_auth
+from . import analytics, auth, billing, coupons, email_auth, guest, i18n, mail, phone_auth, threads
 from .db import (
     BirthProfile, Coupon, CouponKind, CouponRedemption, CreditEntry, EntryKind,
     Feedback, FulfilStatus, Order, OrderStatus, QuestionLog, User, aware, balance,
@@ -1296,12 +1296,38 @@ def history(limit: int = 100, user: User = Depends(me),
                 "delivered": _iso(j.finished_at) if j.status == "done" else None,
                 "sent": j.emailed, "refunded": j.refunded}
 
+    # DIVASTRO-170: every row says which conversation it is in (app/threads.py), so
+    # tapping it in My questions opens that whole thread in the chat.
+    convs = threads.build(db, user.id)
+    where = threads.key_of(convs)
+    for w in waiting:
+        w["item"] = f"j{w['job_id']}"
+        w["thread"] = where.get(w["item"])
     return {"questions": waiting + [{
         "id": q.id, "question": q.question, "answer": q.answer,
         "topic": q.topic, "verdict": q.verdict, "language": q.language,
         "asked_at": q.created_at.strftime("%d %b %Y, %H:%M"),
         "emailed": emailed(q),
-    } for q in rows]}
+        "item": f"q{q.id}", "thread": where.get(f"q{q.id}"),
+    } for q in rows], "threads": [threads.summary(th) for th in convs]}
+
+
+@router.get("/history/thread/{key}")
+def history_thread(key: str, before: str | None = None, limit: int = threads.PAGE,
+                   user: User = Depends(me), db: Session = Depends(get_db)) -> dict:
+    """DIVASTRO-170: one conversation, its questions and answers in order (instant
+    and Starter emailed answers alike), the newest `limit` (50) first page; `before`
+    (an item's `at`) pages back. Only the caller's own rows are ever read, so another
+    account's key is simply not found."""
+    for th in threads.build(db, user.id):
+        if th["key"] == key:
+            return threads.page(th, before, limit)
+    # A saved chart of the caller's with nothing asked on it yet: an empty thread.
+    if re.fullmatch(r"c\d+", key):
+        profile = db.get(BirthProfile, int(key[1:]))
+        if profile is not None and profile.user_id == user.id:
+            return threads.empty(profile)
+    raise HTTPException(404, "Not found.")
 
 
 @router.get("/ledger")

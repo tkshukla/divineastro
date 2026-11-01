@@ -813,6 +813,8 @@ function applyLanguage() {
   set("#modal-remedies-gems-title", t("modalRemediesGemsTitle"));
   set("#modal-remedies-dasha-title", t("modalRemediesDashaTitle"));
   set("#modal-remedies-pdf-btn", t("modalRemediesPdfBtn"));
+  if (typeof paintRemediesPdf === "function") paintRemediesPdf();
+  if (typeof markPdfLang === "function") markPdfLang();
 
   $$(".tab").forEach((tab) => { tab.textContent = t(tab.dataset.tab); });
   $("#back").title = state.sessionId ? "Back to Dashboard" : t("newChart");
@@ -1122,7 +1124,10 @@ async function castChart(payload) {
   state.sessionId = data.session_id;
   state.chart = data.chart;
   state.currentBirthData = payload;
-  state.currentBirthId = state.selectedBirthId;
+  // DIVASTRO-170: the saved chart this is (picked from the list, or the same moment
+  // and place as one), so its questions are kept together as one conversation.
+  state.currentBirthId = state.selectedBirthId || savedBirthIdFor(payload);
+  state.selectedBirthId = null;          // used once: a later cast of another chart never inherits it
   // DIVASTRO-167: this tab's chart, so a question asked later in the same browser
   // session (home box, or a ?ask= link from a content page) needs no form again.
   try { sessionStorage.setItem(SESSION_BIRTH, JSON.stringify(payload)); } catch { /* private mode */ }
@@ -1146,6 +1151,17 @@ const PENDING_BIRTH = "astro.pendingBirth";
 // DIVASTRO-167: the chart cast in this tab (sessionStorage), for the question-first flow.
 const SESSION_BIRTH = "astro.sessionBirth";
 
+/* DIVASTRO-170: the saved chart a cast payload is, by the server's own test
+   (api_account._same_birth: same date, time, place and coordinates), or null. */
+function sameBirth(b, p) {
+  return !!(b && p) && b.date === p.date && b.time === p.time && b.place === p.place
+    && Math.abs(b.latitude - p.latitude) < 1e-4 && Math.abs(b.longitude - p.longitude) < 1e-4;
+}
+function savedBirthIdFor(payload) {
+  const b = (state.births || []).find((x) => sameBirth(x, payload));
+  return b ? b.id : null;
+}
+
 /* The reading is already on screen by the time this runs: saving is a
    convenience for the next visit and must never hold up or break a cast. */
 async function saveBirth(payload) {
@@ -1163,7 +1179,16 @@ async function saveBirth(payload) {
       toast(`${t("savedFullOne")} ${numeral(state.birthMax)} ${t("savedFullTwo")}`);
       return;
     }
-    if (res.ok) loadSavedCharts();
+    if (res.ok) {
+      // DIVASTRO-170: the chart on screen is now a saved one: its questions join its
+      // conversation (and a chart saved before shows the questions already asked).
+      const saved = (await res.json().catch(() => ({}))).birth;
+      if (saved && !state.currentBirthId && sameBirth(saved, state.currentBirthData)) {
+        state.currentBirthId = saved.id;
+        state.pastThread = loadPastThread();
+      }
+      loadSavedCharts();
+    }
   } catch { /* nothing worth interrupting the reading for */ }
 }
 
@@ -1267,6 +1292,7 @@ function showStage(id) {
   // question", so never inherit the chart side from an earlier visit: it has no
   // question box at all.
   if (id === "stage-chat") setWorkspaceView("chat");
+  if (id === "stage-chat" && typeof watchThread === "function") watchThread();
   window.scrollTo({ top: 0, behavior: "instant" });
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
@@ -1479,6 +1505,12 @@ function renderReading(data) {
 
   $("#thread").innerHTML = "";
   addBot(openingRead(c), null, false, false);   // no Share: it carries the birth details
+  // DIVASTRO-170: this chart's earlier questions and answers go here, under the
+  // opening reading and above anything asked now (they load in the background).
+  const past = document.createElement("div");
+  past.className = "past-thread";
+  $("#thread").append(past);
+  state.pastThread = loadPastThread();
   // preventScroll matters: the composer sits at the bottom of a full-height
   // shell, so a plain focus() scrolls the body to reveal it and drags the site
   // header up off the top of the screen.
@@ -2118,6 +2150,219 @@ function answerActions(bubble) {
   return row;
 }
 
+/* ------------------------------------------------------------
+   DIVASTRO-170: past conversations. A signed-in customer's questions on a saved
+   chart are one conversation (app/threads.py); opening the chart (or tapping it in
+   My questions) shows them all, question and full answer, in order, in the chat,
+   where the next question simply continues it. Starter emailed answers are in the
+   same thread: "Sent to your email" once written, a "being written" note until
+   then (polled, lightly, while it is on screen).
+   ------------------------------------------------------------ */
+const threadPollMs = () => Number(window.DA_THREAD_POLL_MS) || 20000;
+let threadTimer = null;
+
+function threadDay(iso) {
+  const d = new Date(iso);
+  if (!iso || Number.isNaN(d.getTime())) return "";
+  const opts = { day: "numeric", month: "short", numberingSystem: "latn" };
+  if (d.getFullYear() !== new Date().getFullYear()) opts.year = "numeric";
+  for (const l of state.lang === "en" ? ["en-IN"] : [`${state.lang}-IN`, "en-IN"]) {
+    try {
+      if (l !== "en-IN" && !Intl.DateTimeFormat.supportedLocalesOf([l]).length) continue;
+      return new Intl.DateTimeFormat(l, opts).format(d);
+    } catch { /* next */ }
+  }
+  return d.toISOString().slice(0, 10);
+}
+
+const mailMinutes = () => (typeof acct !== "undefined" && acct.emailMinutes) || 30;
+const itemPending = (it) => !!(it.emailed && ["pending", "running"].includes(it.emailed.status));
+
+/* The answer half of one past item: the same bubble as a live answer (markdown,
+   Copy / Share), with the emailed tag or note where it applies. */
+function pastBot(it) {
+  const el = document.createElement("div");
+  el.className = "msg bot past";
+  el.dataset.item = it.key;
+  if (it.job_id) el.dataset.job = it.job_id;
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  el.append(bubble);
+  const e = it.emailed;
+  if (itemPending(it)) {
+    el.dataset.pending = "1";
+    bubble.classList.add("mail-wait");
+    bubble.innerHTML = `<p class="mail-note mail-pending" role="status"><span aria-hidden="true">&#9993;</span>
+      ${escapeHtml(t("threadMailPending").replace("{minutes}", mailMinutes()))}</p>`;
+    return el;
+  }
+  if (!it.answer) {
+    bubble.innerHTML = `<p class="mail-note mail-failed">${escapeHtml(t("threadMailFailed"))}</p>`;
+    return el;
+  }
+  let head = "";
+  if (e && e.status === "done") {
+    head = `<span class="mail-tag"><span aria-hidden="true">&#9993;</span> ${escapeHtml(t("threadMailSent"))}</span>`;
+  } else if (e && e.status === "failed") {
+    head = `<p class="mail-note mail-failed">${escapeHtml(t("threadMailNotSent"))}</p>`;
+  }
+  bubble.innerHTML = head + markdown(it.answer);
+  el.append(answerActions(bubble));
+  return el;
+}
+
+function pastUser(it) {
+  const el = document.createElement("div");
+  el.className = "msg user past";
+  el.dataset.item = it.key;
+  el.innerHTML = `<div class="bubble">${escapeHtml(it.question)}</div>`;
+  return el;
+}
+
+/* Renders a thread page into `box` (the chat's .past-thread, or the read-only view).
+   `older`: a page of earlier items, put above what is there. */
+function renderThreadItems(box, data, older = false) {
+  const frag = document.createDocumentFragment();
+  if (data.more && data.items.length) {
+    const more = document.createElement("button");
+    more.type = "button";
+    more.className = "ghost-btn thread-earlier";
+    more.textContent = t("threadEarlier");
+    more.onclick = async () => {
+      more.disabled = true;
+      const page = await fetchThread(data.key, data.items[0].at);
+      more.remove();
+      if (page) renderThreadItems(box, page, true);
+    };
+    frag.append(more);
+  }
+  let day = "";
+  for (const it of data.items) {
+    const d = threadDay(it.at);
+    if (d && d !== day) {
+      const sep = document.createElement("div");
+      sep.className = "thread-day";
+      sep.textContent = d;
+      frag.append(sep);
+      day = d;
+    }
+    frag.append(pastUser(it), pastBot(it));
+  }
+  if (older) box.prepend(frag); else box.append(frag);
+}
+
+async function fetchThread(key, before = "") {
+  try {
+    const q = before ? `?before=${encodeURIComponent(before)}` : "";
+    const res = await fetch(`/api/history/thread/${encodeURIComponent(key)}${q}`, { cache: "no-store" });
+    return res.ok ? await res.json() : null;
+  } catch { return null; }
+}
+
+/* Scroll the thread so `key`'s question is at the top, or to the latest. */
+function scrollToItem(scroller, key) {
+  const el = key && scroller.querySelector(`.msg.user[data-item="${CSS.escape(key)}"]`);
+  // Instant: the thread scrolls smoothly (styles.css), which across a long
+  // conversation is seconds of the reader watching it fly past.
+  const top = el ? scroller.scrollTop + el.getBoundingClientRect().top - scroller.getBoundingClientRect().top - 8
+    : scroller.scrollHeight;
+  scroller.scrollTo({ top, behavior: "instant" });
+}
+
+/* The open chart's conversation, into the chat (renderReading made the box). */
+async function loadPastThread() {
+  const box = $("#thread .past-thread");
+  const birthId = state.currentBirthId;
+  if (!box || !birthId || typeof acct === "undefined" || !acct.user) return;
+  const data = await fetchThread(`c${birthId}`);
+  if (!data || state.currentBirthId !== birthId || !box.isConnected) return;
+  box.innerHTML = "";
+  renderThreadItems(box, data);
+  if (data.items.length) {
+    $("#starters").hidden = true;          // a conversation under way, as after a question
+    const focus = state.threadFocus;
+    state.threadFocus = null;
+    scrollToItem($("#thread"), focus);
+    $("#jump-latest").hidden = !focus;
+  }
+  watchThread();
+}
+
+/* Answers still being written, on screen: poll their thread every 20 s and put each
+   one in place as it arrives; stop once none is left or nothing is on screen. */
+function watchThread() {
+  clearTimeout(threadTimer);
+  window.__daThreadPolling = false;
+  const sheet = document.querySelector(".modal .thread-view");
+  const root = sheet || $("#thread");
+  const key = sheet ? sheet.dataset.thread : (state.currentBirthId ? `c${state.currentBirthId}` : "");
+  const waiting = () => root.querySelectorAll('[data-pending="1"], .queued-card[data-job]').length;
+  if (!key || !waiting()) return;
+  window.__daThreadPolling = true;
+  threadTimer = setTimeout(async () => {
+    window.__daThreadPolling = false;
+    if (sheet && !sheet.isConnected) { watchThread(); return; }     // the sheet closed: the chat's turn
+    const onScreen = root.isConnected && (sheet || $("#stage-chat").classList.contains("active"));
+    if (!onScreen || document.hidden) {
+      // Back on screen (showStage, a visible tab) starts it again.
+      if (root.isConnected && !sheet) document.addEventListener("visibilitychange", watchThread, { once: true });
+      return;
+    }
+    const data = await fetchThread(key);
+    if (data && root.isConnected) {
+      for (const it of data.items) {
+        if (!it.job_id || itemPending(it)) continue;
+        const el = root.querySelector(`[data-job="${Number(it.job_id)}"]`);
+        const msg = el && (el.classList.contains("msg") ? el : el.closest(".msg"));
+        if (msg) msg.replaceWith(pastBot(it));
+      }
+    }
+    watchThread();
+  }, threadPollMs());
+}
+
+/* My questions -> a conversation (and the question tapped in it, if any). A saved
+   chart opens in the chat with the whole thread, ready for the next question; a chart
+   that is gone (never saved, or deleted) opens read-only. */
+async function openThread(key, focus = null) {
+  if (typeof closeModal === "function") closeModal();
+  const id = /^c\d+$/.test(key) ? Number(key.slice(1)) : null;
+  if (id) {
+    if (!(state.births || []).length) await loadSavedCharts();
+    const b = (state.births || []).find((x) => x.id === id);
+    if (b) {
+      state.threadFocus = focus;
+      if (state.sessionId && state.currentBirthId === id) {
+        showStage("stage-chat");
+        if (state.busy) return;              // an answer is arriving: leave the chat as it is
+        // Reload the thread so what was asked since it opened is in it, once.
+        const box = $("#thread .past-thread");
+        if (box) { while (box.nextSibling) box.nextSibling.remove(); }
+        state.pastThread = loadPastThread();
+        await state.pastThread;
+        return;
+      }
+      await openSavedChart(b);
+      if (state.sessionId) showStage("stage-chat");
+      await state.pastThread;
+      // Painted while the chart was still opening: place it again now it is on screen.
+      if ($("#thread .past-thread .msg")) scrollToItem($("#thread"), focus);
+      return;
+    }
+  }
+  const data = await fetchThread(key);
+  if (!data) { if (typeof toast === "function") toast(t("threadLoadFailed")); return; }
+  const back = modal(`<div class="thread-view" data-thread="${escapeHtml(data.key)}"></div>
+    <p class="thread-readonly-note">${escapeHtml(t("threadReadOnly"))}</p>
+    <button type="button" class="primary thread-ask-new">${escapeHtml(t("threadAskNew"))}</button>`);
+  back.querySelector(".modal").classList.add("thread-sheet");
+  const view = back.querySelector(".thread-view");
+  renderThreadItems(view, data);
+  back.querySelector(".thread-ask-new").onclick = () => { back.remove(); goToChat(); };
+  requestAnimationFrame(() => scrollToItem(view, focus));
+  watchThread();
+}
+
 /* Streams the reading: the engine's verdict lands immediately, then the
    narration model's rewrite arrives token by token over the top of it. */
 let askAbort = null;
@@ -2208,6 +2453,7 @@ $("#ask-form").addEventListener("submit", async (e) => {
           // server has queued it; the card says where and when it arrives (account.js).
           pending.remove?.();
           if (typeof renderQueuedAnswer === "function") renderQueuedAnswer(data);
+          watchThread();          // DIVASTRO-170: the answer appears here once written
         } else if (type === "analysis") {
           result = data;
           pending.remove?.();
@@ -2633,14 +2879,30 @@ $("#dash-nav-milan")?.addEventListener("click", () => {
 });
 
 // PDF Downloads and Modals
-$("#download-remedies-pdf")?.addEventListener("click", () => {
+// DIVASTRO-171: the remedies report is written in English or Hindi (its guidance
+// is AI-written in those two only). It used to be English for everyone, Hindi
+// readers included; now Hindi for hi, and for any other language English with a
+// one-line note in that language and a Hindi button beside it.
+function paintRemediesPdf() {
+  const other = !["en", "hi"].includes(state.lang);
+  const note = $("#remedies-pdf-note");
+  if (note) { note.textContent = other ? t("acct.rptOnlyEnHi") : ""; note.hidden = !other; }
+  const hi = $("#download-remedies-pdf-hi");
+  if (hi) hi.hidden = !other;
+}
+function downloadRemediesPdf(lang) {
   if (state.sessionId) {
-    window.location.href = `/api/pdf/remedies/${state.sessionId}`;
+    window.location.href = `/api/pdf/remedies/${state.sessionId}?lang=${lang}`;
   }
+}
+$("#download-remedies-pdf")?.addEventListener("click", () => {
+  downloadRemediesPdf(state.lang === "hi" ? "hi" : "en");
 });
+$("#download-remedies-pdf-hi")?.addEventListener("click", () => downloadRemediesPdf("hi"));
 
 $("#dash-download-pdf")?.addEventListener("click", () => {
   const modal = $("#kundali-pdf-modal");
+  markPdfLang();
   if (modal) modal.style.display = "flex";
 });
 
@@ -2679,6 +2941,29 @@ function renderPdfLangButtons() {
   }
 }
 renderPdfLangButtons();
+
+// DIVASTRO-171: the reader's own language is the default — its button comes
+// first and is the highlighted one (English otherwise, when the server cannot
+// print theirs). The other languages stay one tap away. The modal's title and
+// lead line are in the site language too.
+function markPdfLang() {
+  const box = $("#generate-pdf-en")?.parentElement;
+  if (!box) return;
+  const codes = (window.DA_PDF_LANGS && window.DA_PDF_LANGS.length) ? window.DA_PDF_LANGS : ["en", "hi"];
+  const own = codes.includes(state.lang) ? state.lang : "en";
+  const first = $(`#generate-pdf-${own}`);
+  if (first && box.firstElementChild !== first) box.prepend(first);
+  box.querySelectorAll("button[id^='generate-pdf-']").forEach((b) => {
+    const on = b === first;
+    b.classList.toggle("pdf-lang-default", on);
+    b.setAttribute("aria-pressed", String(on));
+    b.style.background = on ? "linear-gradient(135deg, #d4af37 0%, #aa7c11 100%)" : "";
+    b.style.color = on ? "#fff" : "";
+  });
+  const set = (sel, text) => { const el = $(sel); if (el) el.textContent = text; };
+  set("#pdf-lang-title", t("pdfLangTitle"));
+  set("#pdf-lang-lead", t("pdfLangLead"));
+}
 
 /* ============================================================
    DIVASTRO-101 — home screen: show value before the first tap.

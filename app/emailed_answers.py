@@ -327,10 +327,10 @@ def _history(db: Session, job: EmailedAnswerJob) -> list[dict]:
     if job.birth_id:
         stmt = stmt.where(QuestionLog.birth_id == job.birth_id)
     rows = db.execute(stmt.order_by(QuestionLog.created_at.desc()).limit(5)).scalars().all()
-    return [{"question": r.question, "answer": r.answer} for r in reversed(rows)]
+    return [{"question": r.question, "answer": r.answer, "topic": r.topic} for r in reversed(rows)]
 
 
-def _analyse(job: EmailedAnswerJob) -> dict:
+def _analyse(job: EmailedAnswerJob, previous: dict | None = None) -> dict:
     """The chart rebuilt from the stored birth payload, and the same analysis an
     instant answer gets (main.ask_stream): analyse() + the Vedic context."""
     from .chart_service import BirthData, build
@@ -343,7 +343,8 @@ def _analyse(job: EmailedAnswerJob) -> dict:
         when = dt.datetime.fromisoformat(job.as_of) if job.as_of else dt.datetime.now()
     except ValueError:
         when = dt.datetime.now()
-    result = analyse(session, job.question, when, language=_engine_lang(job.language)).to_dict()
+    result = analyse(session, job.question, when, language=_engine_lang(job.language),
+                     previous=previous).to_dict()
     result["vedic"] = _vedic_context(session)
     result["answer_engine"] = result["answer"]
     result.update(_about_person(session, when))       # birth_date (also read below), as_of
@@ -380,8 +381,8 @@ def _process(db: Session, job: EmailedAnswerJob, reason: str) -> None:
     job.route_reason = reason
     db.commit()
 
-    result = _analyse(job)
     history = _history(db, job)
+    result = _analyse(job, history[-1] if history else None)
     lang = job.language
     notes: list[str] = []
     text = ""

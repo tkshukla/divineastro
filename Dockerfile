@@ -44,7 +44,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Serif) for all six scripts — verified with fc-list, so no extra package.
     # A missing one only drops that language from the PDF picker
     # (pdf_report.pdf_languages), but fail loudly rather than lose it silently.
-    && for l in kn te ta ml bn or; do test -n "$(fc-list :lang=$l family)" || exit 1; done
+    && for l in kn te ta ml bn or; do test -n "$(fc-list :lang=$l family)" || exit 1; done \
+    # DIVASTRO-171: and in Punjabi (Gurmukhi) and Gujarati — also in
+    # fonts-noto-core (Noto Sans + Serif Gurmukhi / Gujarati), no new package.
+    # Assamese prints with the Bengali faces, Marathi and Nepali with the
+    # Devanagari ones checked above.
+    && for l in pa gu as mr ne; do test -n "$(fc-list :lang=$l family)" || exit 1; done
 
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH" \

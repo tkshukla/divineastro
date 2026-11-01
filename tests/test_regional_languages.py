@@ -18,8 +18,9 @@ Malayalam, Bengali and Odia.
   6. DIVASTRO-143 — Punjabi, Nepali, Assamese, Marathi, Gujarati: the AI answers in
      them from day one (narration names, the "Answer shown in English" note in
      their script, digits of every script folded for the date auditor); the
-     kundali PDF, the sign-in email and push text have no table for them yet and
-     degrade to English without an error.
+     sign-in email and push text have no table for them yet and degrade to
+     English without an error. The kundali PDF is printed in them (DIVASTRO-171,
+     tests/test_pdf_languages.py) wherever their script font is installed.
 
     python tests/test_regional_languages.py
 """
@@ -349,7 +350,7 @@ def _in_own_script(text: str, code: str) -> bool:
 
 
 def new_language_checks(client: TestClient, sid: str) -> None:
-    print("\n6. pa ne as mr gu: AI narration in the language; PDF, email, push fall back to English")
+    print("\n6. pa ne as mr gu: AI narration and the kundali PDF in the language; email, push fall back to English")
     real_mod, real_ollama = sys.modules.get("anthropic"), llm._ollama_models
     llm._ollama_models = lambda: []
     try:
@@ -370,10 +371,12 @@ def new_language_checks(client: TestClient, sid: str) -> None:
             note = _fallback_note(code)
             check(f"{code}: 'Answer shown in English' note is the registry's, in its own script",
                   note == L.english_answer and _in_own_script(note, code), note)
-            check(f"{code}: engine runs in English (main._engine_lang), PDF falls back to English",
-                  _pdf_lang(code) == "en" and code not in pdf_report.pdf_languages())
+            printable = pdf_report.script_font(code) is not None
+            check(f"{code}: kundali PDF in {code} when its font is here (DIVASTRO-171), else English",
+                  _pdf_lang(code) == (code if printable else "en")
+                  and (code in pdf_report.pdf_languages()) == printable)
             r = client.get(f"/api/pdf/chart/{sid}?lang={code}")
-            check(f"{code}: /api/pdf/chart?lang={code} still returns a PDF (English)",
+            check(f"{code}: /api/pdf/chart?lang={code} returns a PDF",
                   r.status_code == 200 and r.content[:5] == b"%PDF-", str(r.status_code))
             text, html = email_auth.compose("482913", code)
             check(f"{code}: sign-in email is the English + Hindi one, subject unchanged",

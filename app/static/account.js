@@ -1701,24 +1701,51 @@ function emailedMeta(e) {
   return at("histEmailPending").replace("{time}", localTime(e.due));
 }
 
+/* My questions (DIVASTRO-170): the questions grouped into conversations, one per
+   chart (app/threads.py), the most recent first. Tapping a conversation, or any
+   question in it, opens the whole thread (app.js openThread): in the chat for a
+   saved chart, read-only for one that is gone. */
 async function openHistory() {
-  const { questions } = await (await fetch("/api/history")).json();
+  let data = { questions: [], threads: [] };
+  try { data = await (await fetch("/api/history", { cache: "no-store" })).json(); } catch { /* shown empty */ }
+  const questions = data.questions || [];
+  const convs = data.threads || [];
   const row = (q) => {
     const e = q.emailed;
-    const meta = e ? `<div class="hist-meta hist-mail" data-mail="${escapeHtml(e.status)}">&#9993; ${escapeHtml(emailedMeta(e))}</div>`
-      : `<div class="hist-meta">${escapeHtml(q.asked_at)} · ${escapeHtml(q.verdict || q.topic)}</div>`;
-    const read = e && e.status === "done" && q.answer
-      ? `<details class="hist-answer"><summary>${escapeHtml(at("histRead"))}</summary>
-          <div class="hist-answer-body">${typeof markdown === "function" ? markdown(q.answer) : escapeHtml(q.answer)}</div></details>`
-      : "";
+    const meta = e ? `<span class="hist-meta hist-mail" data-mail="${escapeHtml(e.status)}">&#9993; ${escapeHtml(emailedMeta(e))}</span>`
+      : `<span class="hist-meta">${escapeHtml(q.asked_at)} · ${escapeHtml(q.verdict || q.topic)}</span>`;
     return `
-      <div class="hist-row${e ? " emailed" : ""}">
-        <div class="hist-q">${escapeHtml(q.question)}</div>
-        ${meta}${read}
-      </div>`;
+      <button type="button" class="hist-row${e ? " emailed" : ""}" data-thread="${escapeHtml(q.thread || "")}"
+              data-item="${escapeHtml(q.item || "")}">
+        <span class="hist-q">${escapeHtml(q.question)}</span>
+        ${meta}
+      </button>`;
   };
-  modal(`<h2 class="modal-title">${escapeHtml(at("history"))}</h2>
-    <div class="hist">${questions.length ? questions.map(row).join("") : "<p class='modal-sub'>—</p>"}</div>`);
+  const conv = (c) => {
+    const rows = questions.filter((q) => q.thread === c.key);
+    if (!rows.length) return "";
+    const n = c.count === 1 ? at("histCountOne") : at("histCount").replace("{n}", c.count);
+    const label = c.label || at("histUnsaved");
+    return `
+      <section class="hist-conv">
+        <button type="button" class="hist-conv-head" data-thread="${escapeHtml(c.key)}">
+          <span class="hist-conv-name">${escapeHtml(label)}</span>
+          <span class="hist-conv-meta">${escapeHtml(n)} · ${escapeHtml(localTime(c.last_at))}${
+            c.available ? "" : ` · ${escapeHtml(at("histReadOnly"))}`}</span>
+          <span class="hist-conv-go" aria-hidden="true">&rsaquo;</span>
+        </button>
+        ${rows.map(row).join("")}
+      </section>`;
+  };
+  const body = convs.map(conv).join("");
+  const back = modal(`<h2 class="modal-title">${escapeHtml(at("history"))}</h2>
+    ${body ? `<p class="modal-sub hist-sub">${escapeHtml(at("histTap"))}</p>` : ""}
+    <div class="hist">${body || "<p class='modal-sub'>—</p>"}</div>`);
+  back.querySelector(".modal").classList.add("hist-sheet");
+  back.querySelectorAll("[data-thread]").forEach((b) => {
+    if (!b.dataset.thread) return;
+    b.onclick = () => openThread(b.dataset.thread, b.dataset.item || null);
+  });
 }
 
 async function openOrders() {

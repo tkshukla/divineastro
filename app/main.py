@@ -445,10 +445,12 @@ def ask(req: AskRequest, request: Request) -> dict:
         history_rows = db.execute(
             hist_stmt.order_by(QuestionLog.created_at.desc()).limit(5)
         ).scalars().all()
-        history = [{"question": r.question, "answer": r.answer} for r in reversed(history_rows)]
+        history = [{"question": r.question, "answer": r.answer, "topic": r.topic}
+                   for r in reversed(history_rows)]
 
         session = _session(req.session_id, request)
-        result = analyse(session, question, when, language=_engine_lang(req.language)).to_dict()
+        result = analyse(session, question, when, language=_engine_lang(req.language),
+                         previous=history[-1] if history else None).to_dict()
         result["vedic"] = _vedic_context(session)
         result.update(_about_person(session, when))
 
@@ -532,7 +534,8 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
             history_rows = db.execute(
                 hist_stmt.order_by(QuestionLog.created_at.desc()).limit(5)
             ).scalars().all()
-            history = [{"question": r.question, "answer": r.answer} for r in reversed(history_rows)]
+            history = [{"question": r.question, "answer": r.answer, "topic": r.topic}
+                   for r in reversed(history_rows)]
 
     # DIVASTRO-154: signed out. One real answer per guest (app/guest.py: signed cookie +
     # day-scoped visitor hash + per-address and global caps; never for bots or cloud
@@ -566,7 +569,8 @@ def ask_stream(req: AskRequest, request: Request) -> StreamingResponse:
         return StreamingResponse(queued_events(), media_type="text/event-stream",
                                  headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
     try:
-        result = analyse(session, question, when, language=_engine_lang(req.language)).to_dict()
+        result = analyse(session, question, when, language=_engine_lang(req.language),
+                         previous=history[-1] if history else None).to_dict()
         # Every real chat answer goes through this endpoint (the frontend only
         # ever calls /api/ask/stream, never /api/ask), so without this the
         # narration prompt's _vedic_block() is always empty — no yogas, dashas,

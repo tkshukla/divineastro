@@ -50,9 +50,10 @@ NEW_CODES: tuple[str, ...] = ("pa", "ne", "as", "mr", "gu")
 LEGACY_CODES: tuple[str, ...] = ("kn", "te", "ta", "ml", "bn", "or")
 
 #: The page modules a language can be READY for. "nakshatra" covers nakshatra_pages
-#: and naam_milan; "app" is the SPA json plus the astrology name tables.
+#: and naam_milan; "app" is the SPA json plus the astrology name tables; "pdf" the
+#: kundali PDF's labels and cell words (DIVASTRO-171, app/pdf_i18n.py).
 PAGE_KEYS: tuple[str, ...] = ("seo", "rashifal", "vrat", "nakshatra", "muhurat", "recurring", "hub")
-READY_KEYS: tuple[str, ...] = PAGE_KEYS + ("app",)
+READY_KEYS: tuple[str, ...] = PAGE_KEYS + ("app", "pdf")
 
 #: Unicode blocks each script may use (the checker's "wrong script" rule).
 #: Assamese is written in the Bengali block (ৰ U+09F0 and ৱ U+09F1 are in it);

@@ -37,9 +37,16 @@ for code in ("en", "hi", "kn"):
     check(f"{code}: family-astrologer, everyday-words style",
           "family astrologer" in system and "Everyday words" in system
           and "short sentences" in system)
-    check(f"{code}: at most two or three terms, each explained",
-          "at most two or three astrology terms" in system
-          and "explain each" in system)
+    # DIVASTRO-169: "still very much astro-specific rather than for the layman".
+    check(f"{code}: their life first, the astrology only as a short reason",
+          "Explain the effect on their life, not the sky" in system
+          and "one or two short sentences at most" in system
+          and "Answer in everyday terms first" in system)
+    check(f"{code}: at most one familiar term, explained",
+          "Use at most one familiar word" in system and "explain it in plain" in system)
+    check(f"{code}: no yearly cycles, planets meeting, periods inside periods or houses",
+          "no cycles of the year" in system and "touching" in system
+          and "no periods inside periods" in system and "no houses" in system)
     check(f"{code}: the banned list is spelled out",
           all(f'"{w}"' in system for w in llm.BANNED_JARGON))
     check(f"{code}: open with a direct answer to their exact question",
@@ -48,12 +55,16 @@ for code in ("en", "hi", "kn"):
           "delete every sentence that could be said to anyone" in system)
     check(f"{code}: their own dates, their age and running period",
           "their own dates" in system and "their age" in system
-          and "the period they are running now" in system)
+          and "the life phase they are in now as dates" in system)
     check(f"{code}: two or three practical, question-specific steps",
           "two or three practical steps" in system and "stay positive" in system)
-    check(f"{code}: 180 to 320 words, no headings or lists",
-          "About 180 to 320 words" in system and "no headings" in system)
-    check(f"{code}: no degrees unless asked", "No degrees" in system)
+    check(f"{code}: 150 to 260 words, no headings or lists",
+          "About 150 to 260 words" in system and "no headings" in system)
+    check(f"{code}: no degrees", "no degrees" in system)
+    check(f"{code}: one question at a time, never back to earlier topics",
+          "ONE QUESTION AT A TIME" in system and "Never bring back an earlier question" in system
+          and "LAST AND MOST IMPORTANT" not in system
+          and "maintaining consistency with previous answers" not in system)
     # The absolute rules stay.
     for rule in ("Never add an astrological fact", "Never change a fact",
                  "EVERY YEAR AND MONTH YOU WRITE MUST APPEAR VERBATIM",
@@ -108,8 +119,13 @@ check("the allowed dates are only the evidence's",
       allowed.startswith("The ONLY dates you may print are: May 2026, May 2027, Dec 2025, Dec 2032")
       or set(re.findall(r"[A-Z][a-z]{2} \d{4}", allowed.split(".")[0]))
       == {"Dec 2025", "Dec 2032", "May 2026", "May 2027"}, allowed[:200])
-check("the user turn asks for 180-320 words, not 300-500",
-      "180 to 320 words" in prompt and "300 to 500" not in prompt)
+check("the user turn asks for 150-260 words, not 300-500",
+      "150 to 260 words" in prompt and "300 to 500" not in prompt)
+check("the user turn says: effect on their life, not the sky",
+      "Explain the effect on their life, not the sky" in prompt)
+for w in ("yearly cycle", "natal", "transiting", "governs", "sub-phase", "sub-period",
+          "loosening point", "lord of the year"):
+    check(f"DIVASTRO-169: the disguised form '{w}' is banned", w in llm.BANNED_JARGON)
 
 # Birthday not yet reached this year; the as_of date wins over today.
 check("age before the birthday", llm._age_on("1996-11-01", dt.date(2026, 10, 23)) == 29)

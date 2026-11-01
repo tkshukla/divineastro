@@ -26,7 +26,7 @@ from ..chart_service import (
     dms, house_of, timing_snapshot, transit_chart, transits,
 )
 from . import knowledge as kb
-from .topics import Routing, Topic, classify
+from .topics import Routing, Topic, classify, follow_up_topic
 
 _log = logging.getLogger(__name__)
 
@@ -1403,7 +1403,13 @@ def _analyse_period(session: ChartSession, question: str, routing: Routing,
 
 
 def analyse(session: ChartSession, question: str,
-            now: dt.datetime | None = None, language: str = "en") -> Analysis:
+            now: dt.datetime | None = None, language: str = "en",
+            previous: dict | None = None) -> Analysis:
+    """`previous` is the last turn of this conversation ({"question", "topic"}),
+    if any: a follow-up with no subject of its own ("and when exactly?", "I just
+    got an offer today" after a job question) is read on that turn's topic
+    (DIVASTRO-169, topics.follow_up_topic). A question naming its own subject is
+    routed on its own words, exactly as without `previous`."""
     raw_now = now or dt.datetime.now()
     # The window is anchored on the asker's (IST) calendar day, which is what
     # "today" and "next week" mean to them. A naive `now` (main.py passes
@@ -1414,6 +1420,10 @@ def analyse(session: ChartSession, question: str,
         ZoneInfo("Asia/Kolkata")).date()
     now = _localise(session, raw_now)
     routing = classify(question, now=anchor)
+    inherited = follow_up_topic(question, previous, now=anchor)
+    if inherited is not None:
+        routing = Routing(topic=inherited, intent=routing.intent, score=routing.score,
+                          matched=routing.matched, period=routing.period)
     topic = routing.topic
     if routing.period is not None:
         return _analyse_period(session, question, routing, language)

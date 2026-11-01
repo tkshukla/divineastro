@@ -46,8 +46,10 @@ TOPICS: tuple[Topic, ...] = (
         # have nothing to do with a job ("work out" meaning succeed/resolve,
         # "workout" meaning exercise) - the same collision class as "art"
         # matching "article" in the children topic below.
+        # "offer" (DIVASTRO-169): "I just got an offer today", said straight after
+        # a job question, was read as a question about today's date.
         keywords=("office", "company", "role", "position", "salary hike", "interview",
-                  "government job", "corporate", "manager", "success", "ambition", "reputation"),
+                  "offer", "job offer", "offer letter", "government job", "corporate", "manager", "success", "ambition", "reputation"),
         blurb="the 10th house of standing and the 6th of daily work",
     ),
     Topic(
@@ -364,6 +366,37 @@ def _hits(text: str, terms: tuple[str, ...]) -> list[str]:
 _CALENDAR_WORDS = frozenset({"date"})
 
 
+# DIVASTRO-169. Is the person asking something, or telling us something?
+# A trailing "?" or a question word anywhere, or an auxiliary verb opening the
+# sentence ("will I", "is it", "should we").
+_ASKING = re.compile(
+    r"\?|？|\b(?:how|what|when|where|which|who|whom|why|kab|kya|kaisa|kaise|kaisi|kyun|kyon|"
+    r"kitna|kitni|kidhar|kaun)\b|^\s*(?:will|would|shall|should|can|could|is|are|am|do|"
+    r"does|did|was|were|has|have|may|might|must|tell|explain|describe|show)\b|"
+    r"क्या|कब|कैसा|कैसे|कैसी|क्यों|कितना|कितनी|कौन", re.I)
+_FIRST_PERSON = re.compile(r"\b(?:i|i'm|i've|we|my|our|me|mujhe|maine|mera|meri|humne)\b|"
+                           r"मैं|मैंने|मुझे|मेरा|मेरी|हमने", re.I)
+# Window words that, in a statement, only say when something happened.
+_NEWS_DAYS = ("today", "yesterday", "kal")
+
+
+def _reports_news(question: str, period) -> bool:
+    """"I just got an offer today" is news about a day, not a question about it.
+
+    A first-person statement (no question mark, no question word) whose only
+    window is today or yesterday is reporting what happened; answering it with a
+    day-by-day reading of that date (QuestionLog, 30 Oct: the job offer was
+    answered as "how is 30 Oct 2026") misses the point. Anything that asks
+    ("how is my day today?", "aaj kaisa rahega"), names a date or range, or
+    looks ahead ("I have an interview tomorrow") keeps its window.
+    """
+    matched = getattr(period, "matched", "")
+    return (getattr(period, "kind", "") == "day"
+            and (matched == "today" or (matched in _NEWS_DAYS and getattr(period, "past", False)))
+            and not _ASKING.search(question)
+            and bool(_FIRST_PERSON.search(question)))
+
+
 def classify(question: str, now=None) -> Routing:
     """Topic + intent for a question. `now` (datetime/date, default today in
     IST) anchors any date window the question names (DIVASTRO-119)."""
@@ -383,6 +416,8 @@ def classify(question: str, now=None) -> Routing:
         if score:
             scored.append((score, topic, strong + weak))
 
+    if period is not None and _reports_news(question, period):
+        period = None
     if period is not None:
         # A named window is always answered for that window: never the
         # personality reading, and never the generic long-range timing read.
@@ -408,3 +443,81 @@ def classify(question: str, now=None) -> Routing:
     best = scored[0]
     second = scored[1][1] if len(scored) > 1 and scored[1][0] >= best[0] * 0.6 else None
     return Routing(topic=best[1], intent=intent, score=best[0], matched=best[2], secondary=second)
+
+
+# --------------------------------------------------------------------------
+# Follow-up or new topic (DIVASTRO-169)
+# --------------------------------------------------------------------------
+# A paying user asked about a job, then marriage, then money, and every answer
+# kept going back to the job: the whole conversation went into the prompt with
+# an instruction to "treat this question as a continuation". Now the previous
+# turn is used only when the new question really continues it, decided here,
+# in code, from the words alone, so the engine (which topic to read) and the
+# narration (what history to show the model) always agree.
+
+# Opening words that carry on from the last answer: "and when?", "what about
+# after that?", "so should I take it?", "aur kab?", "तो फिर?".
+_CONTINUES = re.compile(
+    r"^\s*(?:and|but|so|also|then|ok|okay|alright|what about|how about|what if|"
+    r"in that case|after that|aur|toh|to|phir|lekin|par|और|तो|फिर|लेकिन|पर)\b", re.I)
+# Words pointing back at something already said: "will it happen?", "is that
+# good?", "before that", "the same".
+_POINTS_BACK = re.compile(
+    r"\b(?:it|that|those|then|there|same|exactly|instead|after that|before that|"
+    r"wo|woh|vo|voh|wahi|usse|uske|iske)\b|वो|वह|उसके|उससे|वही|इसके", re.I)
+SHORT_FOLLOW_UP_WORDS = 5
+
+
+def is_follow_up(question: str, previous_question: str | None,
+                 previous_topic: str | None = None, now=None) -> bool:
+    """True when `question` continues the previous turn rather than opening a
+    new subject.
+
+    * No previous turn: never.
+    * The question names its own subject (any topic keyword): a follow-up only
+      when that is the previous turn's topic ("What happens if I stay in the
+      same company" after a job question); a different subject ("When will I
+      get married?" after a job question) is a new topic, whatever words it
+      opens with.
+    * No subject of its own: a follow-up when it opens with a continuing word
+      ("and when exactly?"), points back ("will it happen?"), is a statement
+      rather than a question ("I just got an offer today"), or is very short
+      ("when?"). A question that names only a date window ("how is my day
+      today?") or a long subject-less question is new.
+
+    `previous_topic` is the topic key the previous turn was answered on
+    (QuestionLog.topic); when unknown it is re-derived from the previous
+    question.
+    """
+    if not previous_question or not question or not question.strip():
+        return False
+    if not previous_topic:
+        previous_topic = classify(previous_question, now).topic.key
+    r = classify(question, now)
+    if r.score > 0:
+        return r.topic.key == previous_topic
+    q = question.strip()
+    if _CONTINUES.search(q) or _POINTS_BACK.search(q):
+        return True
+    if r.period is not None:
+        return False
+    if not _ASKING.search(q):
+        return True
+    return len(q.split()) <= SHORT_FOLLOW_UP_WORDS
+
+
+def follow_up_topic(question: str, previous: dict | None, now=None) -> Topic | None:
+    """The topic a subject-less follow-up inherits ("and when exactly?" after a
+    job question is a career question), or None. A question with a subject of
+    its own keeps its own routing."""
+    if not previous:
+        return None
+    key = previous.get("topic") or classify(previous.get("question") or "", now).topic.key
+    topic = TOPIC_BY_KEY.get(key)
+    if topic is None or key in ("period", DEFAULT_TOPIC.key):
+        return None
+    if classify(question, now).score > 0:
+        return None
+    if not is_follow_up(question, previous.get("question"), key, now):
+        return None
+    return topic
