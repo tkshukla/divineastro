@@ -813,6 +813,8 @@ function applyLanguage() {
   set("#modal-remedies-gems-title", t("modalRemediesGemsTitle"));
   set("#modal-remedies-dasha-title", t("modalRemediesDashaTitle"));
   set("#modal-remedies-pdf-btn", t("modalRemediesPdfBtn"));
+  if (typeof paintRemediesPdf === "function") paintRemediesPdf();
+  if (typeof markPdfLang === "function") markPdfLang();
 
   $$(".tab").forEach((tab) => { tab.textContent = t(tab.dataset.tab); });
   $("#back").title = state.sessionId ? "Back to Dashboard" : t("newChart");
@@ -2630,14 +2632,30 @@ $("#dash-nav-milan")?.addEventListener("click", () => {
 });
 
 // PDF Downloads and Modals
-$("#download-remedies-pdf")?.addEventListener("click", () => {
+// DIVASTRO-171: the remedies report is written in English or Hindi (its guidance
+// is AI-written in those two only). It used to be English for everyone, Hindi
+// readers included; now Hindi for hi, and for any other language English with a
+// one-line note in that language and a Hindi button beside it.
+function paintRemediesPdf() {
+  const other = !["en", "hi"].includes(state.lang);
+  const note = $("#remedies-pdf-note");
+  if (note) { note.textContent = other ? t("acct.rptOnlyEnHi") : ""; note.hidden = !other; }
+  const hi = $("#download-remedies-pdf-hi");
+  if (hi) hi.hidden = !other;
+}
+function downloadRemediesPdf(lang) {
   if (state.sessionId) {
-    window.location.href = `/api/pdf/remedies/${state.sessionId}`;
+    window.location.href = `/api/pdf/remedies/${state.sessionId}?lang=${lang}`;
   }
+}
+$("#download-remedies-pdf")?.addEventListener("click", () => {
+  downloadRemediesPdf(state.lang === "hi" ? "hi" : "en");
 });
+$("#download-remedies-pdf-hi")?.addEventListener("click", () => downloadRemediesPdf("hi"));
 
 $("#dash-download-pdf")?.addEventListener("click", () => {
   const modal = $("#kundali-pdf-modal");
+  markPdfLang();
   if (modal) modal.style.display = "flex";
 });
 
@@ -2676,6 +2694,29 @@ function renderPdfLangButtons() {
   }
 }
 renderPdfLangButtons();
+
+// DIVASTRO-171: the reader's own language is the default — its button comes
+// first and is the highlighted one (English otherwise, when the server cannot
+// print theirs). The other languages stay one tap away. The modal's title and
+// lead line are in the site language too.
+function markPdfLang() {
+  const box = $("#generate-pdf-en")?.parentElement;
+  if (!box) return;
+  const codes = (window.DA_PDF_LANGS && window.DA_PDF_LANGS.length) ? window.DA_PDF_LANGS : ["en", "hi"];
+  const own = codes.includes(state.lang) ? state.lang : "en";
+  const first = $(`#generate-pdf-${own}`);
+  if (first && box.firstElementChild !== first) box.prepend(first);
+  box.querySelectorAll("button[id^='generate-pdf-']").forEach((b) => {
+    const on = b === first;
+    b.classList.toggle("pdf-lang-default", on);
+    b.setAttribute("aria-pressed", String(on));
+    b.style.background = on ? "linear-gradient(135deg, #d4af37 0%, #aa7c11 100%)" : "";
+    b.style.color = on ? "#fff" : "";
+  });
+  const set = (sel, text) => { const el = $(sel); if (el) el.textContent = text; };
+  set("#pdf-lang-title", t("pdfLangTitle"));
+  set("#pdf-lang-lead", t("pdfLangLead"));
+}
 
 /* ============================================================
    DIVASTRO-101 — home screen: show value before the first tap.
