@@ -149,7 +149,8 @@ class KundaliPdfLanguages(unittest.TestCase):
 
     def test_pdf_languages_lists_every_language_with_a_font(self):
         langs = pdf_report.pdf_languages()
-        self.assertEqual(langs, [c for c in ALL if c in AVAILABLE and (c in ("en", "hi") or c in pdf_i18n.REGIONAL)])
+        # English and Hindi are always offered (as before DIVASTRO-171); the rest need their font
+        self.assertEqual(langs, [c for c in ALL if c in ("en", "hi") or (c in AVAILABLE and c in pdf_i18n.REGIONAL)])
         if len(AVAILABLE) == len(ALL):
             self.assertEqual(langs, list(ALL), "all thirteen fonts are here, so all thirteen are offered")
         from app.main import _pdf_lang
