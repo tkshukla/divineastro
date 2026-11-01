@@ -71,7 +71,10 @@ _DEVANAGARI = ("Nirmala UI", "Noto Sans Devanagari", "Noto Serif Devanagari",
 # a glyph, per character, so a Kannada run lands on Noto Serif Kannada while
 # the Latin digits and punctuation around it stay EB Garamond. Shaping
 # (conjuncts, reordered vowel signs) is HarfBuzz's, via Typst's rustybuzz.
-_REGIONAL_FONTS = tuple(f for fams in pdf_i18n.SCRIPT_FONTS.values() for f in fams)
+# DIVASTRO-171 adds Gurmukhi and Gujarati; Assamese shares the Bengali faces and
+# Marathi / Nepali the Devanagari ones already above, so each family once.
+_REGIONAL_FONTS = tuple(dict.fromkeys(
+    f for fams in pdf_i18n.SCRIPT_FONTS.values() for f in fams if f not in _DEVANAGARI))
 
 BODY_FONTS = ("EB Garamond", "IBM Plex Serif", *_DEVANAGARI, *_REGIONAL_FONTS,
               "Noto Sans Symbols", "Noto Sans Symbols 2")
@@ -156,7 +159,10 @@ def devanagari_font() -> str | None:
 
 def script_font(code: str) -> str | None:
     """The first Noto family for a regional language's script that is present
-    on this machine (file-name match, as devanagari_font), or None."""
+    on this machine (file-name match, as devanagari_font), or None. Marathi and
+    Nepali print with the Hindi edition's Devanagari face, whichever that is."""
+    if code in pdf_i18n.DEVANAGARI:
+        return devanagari_font()
     keys = _font_file_keys()
     for family in pdf_i18n.SCRIPT_FONTS.get(code, ()):
         wanted = _squash(family)
@@ -167,7 +173,9 @@ def script_font(code: str) -> str | None:
 
 def pdf_languages() -> list[str]:
     """Languages a kundali (chart) PDF can be printed in on this machine:
-    English, Hindi, and each regional language whose script font is installed.
+    English, Hindi, and each regional language (pdf_i18n.REGIONAL: the six of
+    DIVASTRO-124 and the READY "pdf" languages of app/lang_data, DIVASTRO-171)
+    whose script font is installed.
     A language without its font would print as empty boxes, so it is simply
     not offered (main._pdf_lang sends it English; the app hides the button)."""
     global _PDF_LANGS
@@ -383,7 +391,10 @@ _PRELUDE = r"""
 #let MONO = @@MONO@@
 
 #set document(title: d.title, author: d.brand)
-#set text(font: BODY, size: if d.at("lang", default: "en") != "en" { 11.2pt } else { 10.2pt }, fill: INK, lang: d.at("lang", default: "en"))
+// dir: ltr — Typst infers the direction from `lang`, and counts "pa" as
+// right-to-left (Punjabi in Shahmukhi). Every script printed here is LTR, and
+// Gurmukhi laid out RTL mirrored the whole report (DIVASTRO-171).
+#set text(font: BODY, size: if d.at("lang", default: "en") != "en" { 11.2pt } else { 10.2pt }, fill: INK, lang: d.at("lang", default: "en"), dir: ltr)
 #set par(leading: if d.at("lang", default: "en") != "en" { 0.85em } else { 0.74em }, spacing: 1em)
 #set block(spacing: 1em)
 
@@ -965,7 +976,10 @@ def questions_pdf(rows, *, brand: str, site: str, user_name: str,
         "brand": brand,
         "title": "Questions & Answers",
         "subject": subtitle or "Your consultation record",
-        "lang": "hi" if languages == {"hi"} else "en",
+        # The answers' own language when they share one (shaping uses it for
+        # language-specific glyph forms, e.g. Marathi's); the labels stay English.
+        "lang": (next(iter(languages)) if len(languages) == 1
+                 and re.fullmatch(r"[a-z]{2,3}", next(iter(languages))) else "en"),
         "cover": cover,
         "footer": f"{brand} \u00b7 {site}",
         "items": items,
@@ -1605,7 +1619,7 @@ _DIGNITIES_HI = {
     "exalted": "उच्च", "exaltation": "उच्च",
     "exaltation_degree": "उच्चांश", "exaltation_exact": "परमोच्च",
     "detriment": "शत्रुक्षेत्र (नीच सम)", "fall": "नीच",
-    "triplicity": "त्रिकोण बल", "term": "सीमा बल", "face": "द्रेष्काण बल",
+    "triplicity": "त्रिकोण बल", "triplicity_ruler": "त्रिकोण बल", "term": "सीमा बल", "face": "द्रेष्काण बल",
     "decan": "द्रेष्काण", "peregrine": "बलहीन (अनाश्रित)",
     "participating_ruler": "सहभागी स्वामी",
     "debilitated": "नीच", "own": "स्वराशि", "friendly": "मित्र",

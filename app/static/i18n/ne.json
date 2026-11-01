@@ -182,6 +182,8 @@
   "modalRemediesGemsTitle": "सिफारिस गरिएका रत्न",
   "modalRemediesDashaTitle": "चलिरहेको दशाका उपाय",
   "modalRemediesPdfBtn": "एआई-आधारित उपाय PDF रिपोर्ट डाउनलोड गर्नुहोस्",
+  "pdfLangTitle": "PDF को भाषा छान्नुहोस्",
+  "pdfLangLead": "आफ्नो कुण्डली PDF प्रतिवेदनको भाषा छान्नुहोस्:",
   "noneToday": "आज छैन",
   "selectedPeriod": "छानिएको अवधि:",
   "mahadashaWord": "महादशा",
