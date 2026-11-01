@@ -8,7 +8,9 @@ localhost port, with no model behind them:
 
 `FakeOllama.mode` switches behaviour: "ok", "error" (HTTP 500 on /api/chat),
 "down" (every request 503, /api/tags included). Every /api/chat request body is
-kept in `.requests` so a test can check the prompt it was sent.
+kept in `.requests` so a test can check the prompt it was sent. `.gate` (a
+threading.Event, set) holds every /api/chat reply while cleared, so a test can
+watch a job sit "running" and then let it finish (DIVASTRO-170).
 
     python -m tests.fake_ollama 11500     # run one by hand (e2e tests start it themselves)
 """
@@ -35,6 +37,8 @@ class FakeOllama:
     def __init__(self, model: str = "qwen2.5:7b", reply: str = READING, port: int = 0):
         self.model, self.reply, self.mode = model, reply, "ok"
         self.requests: list[dict] = []
+        self.gate = threading.Event()
+        self.gate.set()
         outer = self
 
         class Handler(BaseHTTPRequestHandler):
@@ -64,6 +68,7 @@ class FakeOllama:
                 if not self.path.startswith("/api/chat"):
                     return self._send(404, b"{}")
                 outer.requests.append(data)
+                outer.gate.wait(timeout=300)
                 if outer.mode == "error":
                     return self._send(500, b'{"error":"model crashed"}')
                 words = outer.reply.split(" ")
