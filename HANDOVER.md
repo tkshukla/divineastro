@@ -1,5 +1,10 @@
 # Handover — Divine Astro
 
+> **Superseded (2 Nov 2026): start with [`docs/HANDBOOK.md`](docs/HANDBOOK.md).** The app
+> now runs on an Oracle Cloud VM, deployed with `git pull` + `docker compose`, so the GCP and
+> `provision.ps1` deploy steps below are out of date. The rest is kept as history and
+> lessons learned.
+
 Written 20 Aug 2026, at the end of a long session. Point the next session at
 this file.
 
