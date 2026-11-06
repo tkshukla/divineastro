@@ -39,6 +39,7 @@ from .seo_pages import router as seo_router
 from .rashifal_pages import router as rashifal_router
 from .nakshatra_pages import router as nakshatra_router
 from .katha import router as katha_router
+from .bhakti import router as bhakti_router
 from .naam_milan import router as naam_milan_router
 from .site_hub import router as site_hub_router
 from . import indexnow
@@ -131,6 +132,7 @@ app.include_router(legal_router)
 app.include_router(seo_router)     # /panchang, /rahu-kaal, /choghadiya, /kundali-milan, sitemap, robots
 app.include_router(rashifal_router)  # /rashifal, /hi/rashifal (DIVASTRO-105)
 app.include_router(nakshatra_router)  # /nakshatra, /rashi + /hi/ copies (DIVASTRO-115)
+app.include_router(bhakti_router)     # /bhakti, /bhakti/<slug> (aarti, chalisa, stotra, vidhi)
 app.include_router(katha_router)      # /katha, /katha/<slug> (evening channel story)
 app.include_router(site_hub_router)    # /sitemap: crawlable HTML site map (DIVASTRO-133)
 app.include_router(indexnow.make_router())   # /<ASTRO_INDEXNOW_KEY>.txt, only when the key is set (DIVASTRO-133)

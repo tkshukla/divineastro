@@ -97,6 +97,7 @@ def _body(lang: str) -> str:
     out += learn_pages.hub_blocks(lang)    # [] unless ASTRO_LEARN_PAGES=1 (DIVASTRO-142)
 
     out.append(_section(label("katha", lang), [(label("katha", lang), _katha(lang))]))
+    out.append(_section(label("bhakti", lang), [(label("bhakti", lang), "/bhakti")]))
 
     out.append(_section(label("tools", lang), [
         (label("kundali", lang), i18n.prefix(lang) + "/free-kundali"),
