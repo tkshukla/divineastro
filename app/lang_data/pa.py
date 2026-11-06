@@ -2973,6 +2973,7 @@ HUB_LABELS = {
     "rashi": "ਰਾਸ਼ੀ (ਰਾਸ਼ੀ ਚਿੰਨ੍ਹ)",
     # EN: Kathas
     "katha": "ਕਥਾਵਾਂ",
+    "bhakti": "ਆਰਤੀ, ਚਾਲੀਸਾ, ਸਤੋਤਰ",
     # EN: Free tools
     "tools": "ਮੁਫ਼ਤ ਟੂਲ",
     # EN: Kundali Milan

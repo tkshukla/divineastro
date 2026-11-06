@@ -2,7 +2,7 @@
 (DIVASTRO-133), in every registry language. No imports: seo_pages (the footer)
 and site_hub (the page) both read it.
 
-Keys: sitemap, panchang, rashifal, vrat, muhurat, nakshatra, rashi, katha,
+Keys: sitemap, panchang, rashifal, vrat, muhurat, nakshatra, rashi, katha, bhakti,
 tools, milan, kundali, rahu, choghadiya, naam, cities, signs, years, intro.
 """
 
@@ -10,7 +10,7 @@ LABELS: dict[str, dict[str, str]] = {
     "en": {
         "sitemap": "Site map", "panchang": "Panchang", "rashifal": "Rashifal (daily horoscope)",
         "vrat": "Vrat &amp; festivals", "muhurat": "Shubh muhurat", "nakshatra": "Nakshatra",
-        "rashi": "Rashi (zodiac signs)", "katha": "Kathas", "tools": "Free tools",
+        "rashi": "Rashi (zodiac signs)", "katha": "Kathas", "bhakti": "Aarti, chalisa &amp; stotra", "tools": "Free tools",
         "milan": "Kundali Milan", "kundali": "Free Kundali", "rahu": "Rahu Kaal",
         "choghadiya": "Choghadiya", "naam": "Naam se Kundali Milan",
         "cities": "Today's Panchang by city", "signs": "Rashifal by sign",
@@ -23,7 +23,7 @@ LABELS: dict[str, dict[str, str]] = {
     "hi": {
         "sitemap": "साइट मैप", "panchang": "पंचांग", "rashifal": "राशिफल",
         "vrat": "व्रत-त्योहार", "muhurat": "शुभ मुहूर्त", "nakshatra": "नक्षत्र",
-        "rashi": "राशि", "katha": "कथाएँ", "tools": "मुफ़्त टूल",
+        "rashi": "राशि", "katha": "कथाएँ", "bhakti": "आरती, चालीसा, स्तोत्र", "tools": "मुफ़्त टूल",
         "milan": "कुंडली मिलान", "kundali": "मुफ़्त कुंडली", "rahu": "राहु काल",
         "choghadiya": "चौघड़िया", "naam": "नाम से कुंडली मिलान",
         "cities": "शहर के अनुसार आज का पंचांग", "signs": "राशि के अनुसार राशिफल",
@@ -35,7 +35,7 @@ LABELS: dict[str, dict[str, str]] = {
     "kn": {
         "sitemap": "ಸೈಟ್ ಮ್ಯಾಪ್", "panchang": "ಪಂಚಾಂಗ", "rashifal": "ರಾಶಿ ಭವಿಷ್ಯ",
         "vrat": "ವ್ರತ-ಹಬ್ಬಗಳು", "muhurat": "ಶುಭ ಮುಹೂರ್ತ", "nakshatra": "ನಕ್ಷತ್ರ",
-        "rashi": "ರಾಶಿ", "katha": "ಕಥೆಗಳು", "tools": "ಉಚಿತ ಸಾಧನಗಳು",
+        "rashi": "ರಾಶಿ", "katha": "ಕಥೆಗಳು", "bhakti": "ಆರತಿ, ಚಾಲೀಸಾ, ಸ್ತೋತ್ರ", "tools": "ಉಚಿತ ಸಾಧನಗಳು",
         "milan": "ಕುಂಡಲಿ ಮಿಲನ", "kundali": "ಉಚಿತ ಕುಂಡಲಿ", "rahu": "ರಾಹು ಕಾಲ",
         "choghadiya": "ಚೌಘಡಿಯ", "naam": "ಹೆಸರಿನಿಂದ ಕುಂಡಲಿ ಮಿಲನ",
         "cities": "ನಗರವಾರು ಇಂದಿನ ಪಂಚಾಂಗ", "signs": "ರಾಶಿವಾರು ಭವಿಷ್ಯ",
@@ -47,7 +47,7 @@ LABELS: dict[str, dict[str, str]] = {
     "te": {
         "sitemap": "సైట్ మ్యాప్", "panchang": "పంచాంగం", "rashifal": "రాశి ఫలాలు",
         "vrat": "వ్రతాలు-పండుగలు", "muhurat": "శుభ ముహూర్తం", "nakshatra": "నక్షత్రం",
-        "rashi": "రాశి", "katha": "కథలు", "tools": "ఉచిత సాధనాలు",
+        "rashi": "రాశి", "katha": "కథలు", "bhakti": "ఆరతి, చాలీసా, స్తోత్రాలు", "tools": "ఉచిత సాధనాలు",
         "milan": "కుండలి మిలనం", "kundali": "ఉచిత కుండలి", "rahu": "రాహు కాలం",
         "choghadiya": "చౌఘడియా", "naam": "పేరుతో కుండలి మిలనం",
         "cities": "నగరాల వారీగా నేటి పంచాంగం", "signs": "రాశుల వారీగా ఫలాలు",
@@ -59,7 +59,7 @@ LABELS: dict[str, dict[str, str]] = {
     "ta": {
         "sitemap": "தள வரைபடம்", "panchang": "பஞ்சாங்கம்", "rashifal": "ராசி பலன்",
         "vrat": "விரதம்-பண்டிகைகள்", "muhurat": "சுப முகூர்த்தம்", "nakshatra": "நட்சத்திரம்",
-        "rashi": "ராசி", "katha": "கதைகள்", "tools": "இலவச கருவிகள்",
+        "rashi": "ராசி", "katha": "கதைகள்", "bhakti": "ஆரத்தி, சாலீசா, ஸ்தோத்திரம்", "tools": "இலவச கருவிகள்",
         "milan": "குண்டலி பொருத்தம்", "kundali": "இலவச ஜாதகம்", "rahu": "ராகு காலம்",
         "choghadiya": "சோகடியா", "naam": "பெயர் மூலம் குண்டலி பொருத்தம்",
         "cities": "நகரவாரியாக இன்றைய பஞ்சாங்கம்", "signs": "ராசிவாரியாக பலன்",
@@ -71,7 +71,7 @@ LABELS: dict[str, dict[str, str]] = {
     "ml": {
         "sitemap": "സൈറ്റ് മാപ്പ്", "panchang": "പഞ്ചാംഗം", "rashifal": "രാശിഫലം",
         "vrat": "വ്രതം-ഉത്സവങ്ങൾ", "muhurat": "ശുഭ മുഹൂർത്തം", "nakshatra": "നക്ഷത്രം",
-        "rashi": "രാശി", "katha": "കഥകൾ", "tools": "സൗജന്യ ടൂളുകൾ",
+        "rashi": "രാശി", "katha": "കഥകൾ", "bhakti": "ആരതി, ചാലീസ, സ്തോത്രം", "tools": "സൗജന്യ ടൂളുകൾ",
         "milan": "ജാതക പൊരുത്തം", "kundali": "സൗജന്യ ജാതകം", "rahu": "രാഹുകാലം",
         "choghadiya": "ചോഘടിയ", "naam": "പേരിൽ നിന്ന് ജാതക പൊരുത്തം",
         "cities": "നഗരം തിരിച്ചുള്ള ഇന്നത്തെ പഞ്ചാംഗം", "signs": "രാശി തിരിച്ചുള്ള ഫലം",
@@ -83,7 +83,7 @@ LABELS: dict[str, dict[str, str]] = {
     "bn": {
         "sitemap": "সাইট ম্যাপ", "panchang": "পঞ্জিকা", "rashifal": "রাশিফল",
         "vrat": "ব্রত-উৎসব", "muhurat": "শুভ মুহূর্ত", "nakshatra": "নক্ষত্র",
-        "rashi": "রাশি", "katha": "কথা-কাহিনি", "tools": "বিনামূল্যের টুল",
+        "rashi": "রাশি", "katha": "কথা-কাহিনি", "bhakti": "আরতি, চালিসা, স্তোত্র", "tools": "বিনামূল্যের টুল",
         "milan": "কুণ্ডলী মিলন", "kundali": "বিনামূল্যে কুণ্ডলী", "rahu": "রাহুকাল",
         "choghadiya": "চৌঘড়িয়া", "naam": "নাম থেকে কুণ্ডলী মিলন",
         "cities": "শহর অনুযায়ী আজকের পঞ্জিকা", "signs": "রাশি অনুযায়ী রাশিফল",
@@ -95,7 +95,7 @@ LABELS: dict[str, dict[str, str]] = {
     "or": {
         "sitemap": "ସାଇଟ୍ ମ୍ୟାପ୍", "panchang": "ପଞ୍ଚାଙ୍ଗ", "rashifal": "ରାଶିଫଳ",
         "vrat": "ବ୍ରତ-ପର୍ବ", "muhurat": "ଶୁଭ ମୁହୂର୍ତ୍ତ", "nakshatra": "ନକ୍ଷତ୍ର",
-        "rashi": "ରାଶି", "katha": "ପୁରାଣ କଥା", "tools": "ମାଗଣା ଟୁଲ୍",
+        "rashi": "ରାଶି", "katha": "ପୁରାଣ କଥା", "bhakti": "ଆରତି, ଚାଳିଶା, ସ୍ତୋତ୍ର", "tools": "ମାଗଣା ଟୁଲ୍",
         "milan": "କୁଣ୍ଡଳୀ ମିଳନ", "kundali": "ମାଗଣା କୁଣ୍ଡଳୀ", "rahu": "ରାହୁ କାଳ",
         "choghadiya": "ଚୌଘଡ଼ିଆ", "naam": "ନାମରୁ କୁଣ୍ଡଳୀ ମିଳନ",
         "cities": "ସହର ଅନୁଯାୟୀ ଆଜିର ପଞ୍ଚାଙ୍ଗ", "signs": "ରାଶି ଅନୁଯାୟୀ ରାଶିଫଳ",
