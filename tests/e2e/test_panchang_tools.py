@@ -44,11 +44,12 @@ def panchang(p, browser, base: str) -> None:
 
     # DIVASTRO-111: a festival date shows its vrat/festivals with their timings.
     pg.page.fill("#pa-date", "2026-11-08")
+    # On 8 Nov 2026 itself (IST) the app rightly says "today" instead of the date.
     pg.page.wait_for_function(
-        "(document.querySelector('#pa-vrat')||{}).innerText?.includes('8 November 2026')", timeout=15000)
+        "(document.querySelector('#pa-vrat')||{}).innerText?.includes('Diwali')", timeout=15000)
     vrat = pg.page.locator("#pa-vrat").inner_text()
-    check("8 Nov 2026: 'Vrat & Festivals on 8 November 2026' section",
-          "Vrat & Festivals on 8 November 2026" in vrat, vrat[:300])
+    check("8 Nov 2026: 'Vrat & Festivals on 8 November 2026' (or 'today' on that day) section",
+          "Vrat & Festivals on 8 November 2026" in vrat or "Vrat & Festivals today" in vrat, vrat[:300])
     check("... Diwali with its Lakshmi puja muhurat window",
           "Diwali (Lakshmi Puja)" in vrat
           and re.search(r"Lakshmi puja muhurat\s+\d\d:\d\d – \d\d:\d\d", vrat) is not None, vrat[:300])
