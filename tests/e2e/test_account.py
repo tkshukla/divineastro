@@ -265,6 +265,45 @@ def email_code_sign_in(p, browser, base: str) -> None:
     ctx.close()
 
 
+INSTAGRAM_UA = ("Mozilla/5.0 (Linux; Android 14; SM-A146B Build/UP1A.231005.007; wv) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Version/4.0 Chrome/129.0.6668.100 Mobile Safari/537.36 "
+                "Instagram 352.0.0.39.89 Android")
+
+
+def in_app_browser_sign_in(p, browser, base: str) -> None:
+    """Google refuses OAuth inside Instagram / Facebook's own browsers, so there the
+    sheet hides Google, puts the email code first and says why; a normal phone
+    browser still gets Google."""
+    print("\n[in-app browser (Instagram): no Google button, email first, a line saying why]")
+    ctx = browser.new_context(**{**PHONES["android_360x640"], "user_agent": INSTAGRAM_UA})
+    pg = Page(ctx.new_page(), base)
+    pg.open_home()
+    pg.page.wait_for_selector("#btn-signin", timeout=10000)
+    pg.page.click("#btn-signin")
+    pg.page.wait_for_selector("#email-open", timeout=10000)
+    check("no Google button inside Instagram",
+          pg.page.locator('.oauth-btn[data-provider="google"]').count() == 0)
+    first = pg.page.locator("#oauth-list .oauth-btn").first
+    check("the email code is the first, primary choice",
+          first.get_attribute("id") == "email-open"
+          and "primary-choice" in (first.get_attribute("class") or ""))
+    check("a line explains why", pg.page.locator("#inapp-note").is_visible()
+          and "Instagram" in pg.page.inner_text("#inapp-note"))
+    check("no console errors", not pg.console_errors, "; ".join(pg.console_errors[:3]))
+    ctx.close()
+
+    ctx = browser.new_context(**PHONES["android_360x640"])
+    pg = Page(ctx.new_page(), base)
+    pg.open_home()
+    pg.page.wait_for_selector("#btn-signin", timeout=10000)
+    pg.page.click("#btn-signin")
+    pg.page.wait_for_selector("#email-open", timeout=10000)
+    check("a normal phone browser still offers Google, and no in-app line",
+          pg.page.locator('.oauth-btn[data-provider="google"]').count() == 1
+          and pg.page.locator("#inapp-note").count() == 0)
+    ctx.close()
+
+
 def main() -> int:
     # Mail on (dev console transport), so the sheet offers email sign-in too.
     with server({"ASTRO_SMTP_HOST": "console"}) as base, sync_playwright() as p:
@@ -274,7 +313,13 @@ def main() -> int:
         username_password_signup_and_login(p, browser, base)
         email_code_sign_in(p, browser, base)
         browser.close()
-    return check.finish("account (sign in/out, blocked user, username/password, email code)")
+    # Google configured (never contacted: the test stops at the sheet).
+    with server({"ASTRO_SMTP_HOST": "console", "GOOGLE_CLIENT_ID": "e2e-id",
+                 "GOOGLE_CLIENT_SECRET": "e2e-secret"}) as base, sync_playwright() as p:
+        browser = p.chromium.launch()
+        in_app_browser_sign_in(p, browser, base)
+        browser.close()
+    return check.finish("account (sign in/out, blocked user, username/password, email code, in-app browser)")
 
 
 if __name__ == "__main__":

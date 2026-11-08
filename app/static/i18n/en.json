@@ -405,6 +405,7 @@
   "acct.orUsername": "Create an account with a username & password",
   "acct.haveOneLogIn": "I already have a username — log in",
   "acct.orDivider": "or",
+  "acct.inAppNote": "Google sign-in does not work inside the Instagram or Facebook app. Get a code by email instead, or open this page in Chrome (⋮ menu → Open in browser).",
   "acct.usernameLabel": "Username",
   "acct.passwordLabel": "Password",
   "acct.createAccount": "Create account",

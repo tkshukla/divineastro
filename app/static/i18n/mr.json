@@ -405,6 +405,7 @@
   "acct.orUsername": "वापरकर्तानाव आणि पासवर्डसह खाते तयार करा",
   "acct.haveOneLogIn": "माझे वापरकर्तानाव आधीच आहे — लॉग इन करा",
   "acct.orDivider": "किंवा",
+  "acct.inAppNote": "Instagram किंवा Facebook ॲपमध्ये Google ने साइन-इन होत नाही. ईमेलवर कोड मिळवा, किंवा हे पान Chrome मध्ये उघडा (⋮ मेनू → ब्राउझरमध्ये उघडा).",
   "acct.usernameLabel": "वापरकर्तानाव",
   "acct.passwordLabel": "पासवर्ड",
   "acct.createAccount": "खाते तयार करा",
