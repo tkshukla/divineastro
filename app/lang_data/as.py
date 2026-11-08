@@ -2976,6 +2976,7 @@ HUB_LABELS = {
     "rashi": "ৰাশি (ৰাশিচক্ৰ)",
     # EN: Kathas
     "katha": "কথা",
+    "bhakti": "আৰতি, চালীছা, স্তোত্ৰ",
     # EN: Free tools
     "tools": "বিনামূলীয়া সঁজুলি",
     # EN: Kundali Milan

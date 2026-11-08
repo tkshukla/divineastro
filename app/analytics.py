@@ -305,6 +305,9 @@ def _is_public_page(path: str) -> bool:
     from .learn_pages import is_public_path as learn_public   # lazy; False unless ASTRO_LEARN_PAGES=1 (DIVASTRO-142)
     if learn_public(path):
         return True
+    if path.startswith("/bhakti"):
+        from .bhakti import is_public_path as bhakti_public   # lazy, like the others
+        return bhakti_public(path)
     if path.startswith(("/katha", "/en/katha")):
         from .katha import is_public_path as katha_public   # lazy, like the others
         return katha_public(path)
