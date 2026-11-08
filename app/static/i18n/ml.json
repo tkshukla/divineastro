@@ -405,6 +405,7 @@
   "acct.orUsername": "യൂസർനെയിം ഉപയോഗിച്ച് അക്കൗണ്ട് തുടങ്ങുക",
   "acct.haveOneLogIn": "എനിക്ക് യൂസർനെയിം ഉണ്ട് — ലോഗിൻ",
   "acct.orDivider": "അല്ലെങ്കിൽ",
+  "acct.inAppNote": "Instagram അല്ലെങ്കിൽ Facebook ആപ്പിനുള്ളിൽ Google സൈൻ-ഇൻ പ്രവർത്തിക്കില്ല. ഇമെയിലിൽ കോഡ് നേടുക, അല്ലെങ്കിൽ ഈ പേജ് Chrome-ൽ തുറക്കുക (⋮ മെനു → ബ്രൗസറിൽ തുറക്കുക).",
   "acct.usernameLabel": "യൂസർനെയിം",
   "acct.passwordLabel": "പാസ്‌വേഡ്",
   "acct.createAccount": "അക്കൗണ്ട് തുടങ്ങുക",

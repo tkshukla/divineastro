@@ -322,10 +322,16 @@ const PROVIDER_MARK = {
 /* ctx "ask": opened because a signed-out visitor just sent a question (DIVASTRO-129).
    They are mid-task, so say the question is kept, and put the email-code route first:
    it needs no redirect and no password, and the parked question is asked on return. */
+/* Instagram / Facebook (and other apps') built-in browsers. Google refuses OAuth inside
+   them ("disallowed_useragent"), so there the Google button is hidden and the email
+   code comes first, with a line saying why (8 Nov 2026: the boost's visitors were all
+   in these browsers; the one who tapped Google got Google's error page). */
+const IN_APP_BROWSER = /FBAN|FBAV|FB_IAB|Instagram|; wv\)/i.test(navigator.userAgent || "");
+
 function openSignIn(onDone, ctx) {
   window.daTrack?.("signin_open", ctx || "");
   acct.afterLogin = onDone || null;
-  const provs = acct.authProviders || [];
+  const provs = (acct.authProviders || []).filter((p) => !(IN_APP_BROWSER && p.key === "google"));
   // Inline providers complete inside this sheet; only the rest are redirects.
   const buttons = provs.filter((p) => !p.inline).map((p) => `
     <button class="oauth-btn" data-provider="${escapeHtml(p.key)}">
@@ -335,6 +341,9 @@ function openSignIn(onDone, ctx) {
   const phoneOn = provs.some((p) => p.key === "phone");
   const emailOn = provs.some((p) => p.key === "email");
   const asking = ctx === "ask";
+  // Email first (and as the primary choice) when asking, and inside an in-app browser:
+  // there it is the route that works without leaving the app.
+  const emailFirst = asking || IN_APP_BROWSER;
   // DIVASTRO-154: the question after a guest's free answer. The title then says what
   // signing in gets them ("Sign in to keep asking — N more questions free").
   const keepAsking = asking && guestAnswerUsed() && acct.freeKnown && acct.freeQuestions > 0;
@@ -353,17 +362,18 @@ function openSignIn(onDone, ctx) {
       <button type="button" class="primary" id="guest-pay-open">${escapeHtml(at("guestPayBtn")).replace("{price}", money(gp.rupees))}</button>
     </div>
     <p class="signin-or"><span>${escapeHtml(at("orDivider"))}</span></p>` : "";
-  const emailBtn = emailOn ? `<button type="button" class="oauth-btn${asking ? " primary-choice" : ""}" id="email-open">
+  const emailBtn = emailOn ? `<button type="button" class="oauth-btn${emailFirst ? " primary-choice" : ""}" id="email-open">
             ${PROVIDER_MARK.email}<span>${escapeHtml(at("emailContinue"))}</span></button>` : "";
   const back = modal(`
     <h2 class="modal-title">${escapeHtml(title)}</h2>
     <p class="modal-sub">${escapeHtml(at(asking ? "signInAskSub" : "signInSub"))}${freeLine}</p>
     <div id="signin-choices">
       ${guestPay}
+      ${IN_APP_BROWSER ? `<p class="field-note" id="inapp-note">${escapeHtml(at("inAppNote"))}</p>` : ""}
       <div class="oauth-list" id="oauth-list">
-        ${asking ? emailBtn : ""}
+        ${emailFirst ? emailBtn : ""}
         ${buttons}
-        ${asking ? "" : emailBtn}
+        ${emailFirst ? "" : emailBtn}
         ${phoneOn ? `<button type="button" class="oauth-btn" id="phone-open">
             ${PROVIDER_MARK.phone}<span>${escapeHtml(at("phoneContinue"))}</span></button>` : ""}
         ${acct.devLogin ? `<button class="oauth-btn dev" data-provider="dev">

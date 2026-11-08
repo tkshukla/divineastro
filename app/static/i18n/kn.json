@@ -405,6 +405,7 @@
   "acct.orUsername": "ಯೂಸರ್‌ನೇಮ್‌ನೊಂದಿಗೆ ಖಾತೆ ತೆರೆಯಿರಿ",
   "acct.haveOneLogIn": "ನನಗೆ ಈಗಾಗಲೇ ಯೂಸರ್‌ನೇಮ್ ಇದೆ — ಲಾಗ್ ಇನ್",
   "acct.orDivider": "ಅಥವಾ",
+  "acct.inAppNote": "Instagram ಅಥವಾ Facebook ಆ್ಯಪ್‌ನೊಳಗೆ Google ಸೈನ್-ಇನ್ ಕೆಲಸ ಮಾಡುವುದಿಲ್ಲ. ಇಮೇಲ್ ಮೂಲಕ ಕೋಡ್ ಪಡೆಯಿರಿ, ಅಥವಾ ಈ ಪುಟವನ್ನು Chrome ನಲ್ಲಿ ತೆರೆಯಿರಿ (⋮ ಮೆನು → ಬ್ರೌಸರ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ).",
   "acct.usernameLabel": "ಯೂಸರ್‌ನೇಮ್",
   "acct.passwordLabel": "ಪಾಸ್‌ವರ್ಡ್",
   "acct.createAccount": "ಖಾತೆ ತೆರೆಯಿರಿ",

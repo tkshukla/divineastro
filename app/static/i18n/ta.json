@@ -405,6 +405,7 @@
   "acct.orUsername": "பயனர்பெயருடன் கணக்கு உருவாக்கு",
   "acct.haveOneLogIn": "ஏற்கனவே பயனர்பெயர் உள்ளது — உள்நுழை",
   "acct.orDivider": "அல்லது",
+  "acct.inAppNote": "Instagram அல்லது Facebook செயலிக்குள் Google உள்நுழைவு வேலை செய்யாது. மின்னஞ்சலில் குறியீடு பெறுங்கள், அல்லது இந்தப் பக்கத்தை Chrome-இல் திறக்கவும் (⋮ மெனு → உலாவியில் திற).",
   "acct.usernameLabel": "பயனர்பெயர்",
   "acct.passwordLabel": "கடவுச்சொல்",
   "acct.createAccount": "கணக்கு உருவாக்கு",
