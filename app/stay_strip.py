@@ -283,10 +283,61 @@ def ask_strip(*, lang: str, kind: str) -> str:
     chips = "".join(
         f'<a class="ask-strip-chip" href="{e(ask_href(_tx(k, lang), lang, kind))}">{e(_tx(k, lang))}</a>'
         for k in ASK_QUESTIONS[kind])
+    if kind == "tyohar":
+        return _hook_box(lang, kind, free)
     return (
         f'<nav class="ask-strip" aria-label="{e(_tx("ask_head", lang))}">'
         f'<p class="ask-strip-head"><b>{e(_tx("ask_head", lang))}</b> <span>{e(free)}</span></p>'
         f'<div class="ask-strip-chips">{chips}</div>'
+        '</nav>')
+
+
+# The offer line in the festival hook box: only the languages that have it written
+# (a missing language shows no offer line rather than English on a regional page).
+# {now} / {was} are the single-topic report's offer and regular price in rupees,
+# {date} the offer's last day; all read from billing, never typed here.
+HOOK_OFFER = {
+    "en": "🎁 Diwali offer: career, marriage and wealth reports ₹{now} (regular ₹{was}), until {date}",
+    "hi": "🎁 दिवाली ऑफ़र: करियर, विवाह और धन रिपोर्ट सिर्फ़ ₹{now} (सामान्य ₹{was}), {date} तक",
+}
+_HI_MONTHS = ("जनवरी", "फ़रवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त",
+              "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर")
+
+
+def _offer_line(lang: str) -> str:
+    """'' unless the offer is live (billing.offer_active) and the line exists in `lang`."""
+    from . import billing        # lazy: billing pulls in the DB layer
+    if lang not in HOOK_OFFER or not billing.offer_active():
+        return ""
+    p = billing.PRODUCTS.get("sq_career")
+    ends = billing.offer_ends_at()
+    if p is None or ends is None or p.list_paise <= p.amount_paise:
+        return ""
+    ends = ends.astimezone(billing.IST)
+    date = f"{ends.day} {_HI_MONTHS[ends.month - 1]}" if lang == "hi" else f"{ends.day} {ends:%b}"
+    text = HOOK_OFFER[lang].format(now=p.amount_paise // 100, was=p.list_paise // 100, date=date)
+    href = ("/hi/pricing" if lang == "hi" else "/pricing") + "?utm_medium=ask&utm_campaign=tyohar-offer"
+    return f'<p class="ask-hook-offer"><a href="{html.escape(href)}">{html.escape(text)}</a></p>'
+
+
+def _hook_box(lang: str, kind: str, free: str) -> str:
+    """The festival pages' version of the strip: most readers there take the muhurat and
+    leave, so the coming-year question is a headline with one big button, the other two
+    stay as chips, and the live offer is one line under them. Every visible string is
+    one ask_strip already uses (translated in every language) except the offer line."""
+    e = html.escape
+    first, *rest = ASK_QUESTIONS[kind]
+    q = _tx(first, lang)
+    chips = "".join(
+        f'<a class="ask-strip-chip" href="{e(ask_href(_tx(k, lang), lang, kind))}">{e(_tx(k, lang))}</a>'
+        for k in rest)
+    return (
+        f'<nav class="ask-strip ask-hook" aria-label="{e(_tx("ask_head", lang))}">'
+        f'<p class="ask-hook-title">{e(q)}</p>'
+        f'<p class="ask-strip-head"><span>{e(free)}</span></p>'
+        f'<a class="ask-hook-btn" href="{e(ask_href(q, lang, kind))}">{e(_tx("ask_go", lang))} →</a>'
+        f'<div class="ask-strip-chips">{chips}</div>'
+        f'{_offer_line(lang)}'
         '</nav>')
 
 

@@ -35,13 +35,15 @@ if "ASTRO_DATABASE_URL" not in os.environ:
 
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app import analytics, guest, i18n, stay_strip  # noqa: E402
+from app import billing, analytics, guest, i18n, stay_strip  # noqa: E402
 from app.main import app  # noqa: E402
 
 client = TestClient(app, raise_server_exceptions=False)
 failures: list[str] = []
 STATIC = ROOT / "app" / "static"
-STRIP = '<nav class="ask-strip"'
+STRIP = '<nav class="ask-strip'                # the plain strip and the festival hook box
+HOOK = '<nav class="ask-strip ask-hook"'
+BTN = re.compile(r'<a class="ask-hook-btn" href="([^"]+)">([^<]+)</a>')
 BAR = '<div class="wa-top">'
 HREF = re.compile(r'<a class="ask-strip-chip" href="([^"]+)">([^<]+)</a>')
 
@@ -86,8 +88,20 @@ def page_checks() -> None:
                   body[max(0, at - 80):at])
             strip = body[at:body.index("</nav>", at)]
             links = HREF.findall(strip)
-            check(f"{tag}: 2-3 question links", 2 <= len(links) <= 3, str(len(links)))
             want = [stay_strip._tx(k, lang) for k in stay_strip.ASK_QUESTIONS[kind]]
+            if kind == "tyohar":
+                # The festival hook box: the first question is the headline with one big
+                # button that asks it; the other questions stay as chips.
+                check(f"{tag}: the festival hook box", strip.startswith(HOOK))
+                check(f"{tag}: headline is the first question",
+                      f'<p class="ask-hook-title">{html.escape(want[0])}</p>' in strip, want[0])
+                btn = BTN.findall(strip)
+                bq = parse_qs(urlsplit(html.unescape(btn[0][0])).query) if btn else {}
+                check(f"{tag}: one button that asks the first question",
+                      len(btn) == 1 and bq.get("ask") == [want[0]] and bq.get("lang") == [lang]
+                      and bq.get("utm_medium") == ["ask"] and bq.get("utm_campaign") == [kind], str(btn))
+                want = want[1:]
+            check(f"{tag}: 2-3 question links", 2 <= len(links) + (kind == "tyohar") <= 3, str(len(links)))
             for href, text in links:
                 u = urlsplit(html.unescape(href))
                 qs = parse_qs(u.query)
@@ -99,6 +113,10 @@ def page_checks() -> None:
             check(f"{tag}: no script in it (CSP)", "<script" not in strip and "onclick" not in strip)
             head = stay_strip._tx("ask_head", lang)
             check(f"{tag}: heading in the page's language", html.escape(head) in strip, head)
+            if kind == "tyohar":
+                offer = '<p class="ask-hook-offer">' in strip
+                check(f"{tag}: offer line only in a language that has it",
+                      offer == (lang in stay_strip.HOOK_OFFER and billing.offer_active()))
         if lang == "en":
             milan = HREF.findall(client.get("/kundali-milan").text)
             check("the matching page asks about marriage",
@@ -123,6 +141,19 @@ def page_checks() -> None:
     check("guest answer on: 'Ask free, no sign-in'", ("Ask free, no sign-in" in on) == (old > 0))
     check("guest answer off: no sign-in promise, just 'Ask the AI astrologer'",
           "no sign-in" not in off and "Ask the AI astrologer" in off)
+
+    # The offer line follows billing: prices read from the catalogue, gone once the offer ends.
+    live = stay_strip.ask_strip(lang="hi", kind="tyohar")
+    p = billing.PRODUCTS["sq_career"]
+    if billing.offer_active():
+        check("offer line shows the catalogue prices",
+              f"₹{p.amount_paise // 100}" in live and f"₹{p.list_paise // 100}" in live, live[-300:])
+    os.environ["ASTRO_OFFER_OFF"] = "1"
+    try:
+        ended = stay_strip.ask_strip(lang="hi", kind="tyohar")
+    finally:
+        os.environ.pop("ASTRO_OFFER_OFF", None)
+    check("offer over: no offer line", "ask-hook-offer" not in ended)
 
 
 def text_checks() -> None:

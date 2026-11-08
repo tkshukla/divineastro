@@ -2497,6 +2497,16 @@ button.free-badge:focus-visible { outline: 3px solid var(--gold); outline-offset
                        color: var(--gold-soft); border: 1px solid rgba(var(--gold-rgb), 0.55);
                        background: var(--card-bg, transparent); }
 .seo .ask-strip-chip:hover, .seo .ask-strip-chip:focus-visible { background: rgba(var(--gold-rgb), 0.18); }
+/* The festival pages' bolder version (stay_strip._hook_box): headline, one big button. */
+.seo .ask-hook { margin: 4px 0 22px; padding: 16px 16px 14px; border-width: 2px;
+                 background: linear-gradient(135deg, rgba(var(--gold-rgb), 0.16), rgba(var(--gold-rgb), 0.05)); }
+.seo .ask-hook-title { margin: 0 0 2px; font-family: var(--serif); font-size: 21px; line-height: 1.3;
+                       color: var(--gold-soft); }
+.seo .ask-hook-btn { display: block; margin: 10px 0 12px; padding: 14px 16px; border-radius: 12px;
+                     text-align: center; font-size: 17px; font-weight: 600; text-decoration: none; color: #fff;
+                     background: linear-gradient(120deg, var(--primary-a), var(--primary-b)); }
+.seo .ask-hook-offer { margin: 12px 0 0; font-size: 14px; line-height: 1.45; }
+.seo .ask-hook-offer a { color: var(--gold); text-decoration: none; border-bottom: 1px dashed rgba(var(--gold-rgb), 0.6); }
 /* DIVASTRO-123: SEO page tables on a phone. The fact tables (th scope=row:
    nakshatra, rashi, panchang, koota) must fit the screen: a label column that
    never wraps pushed them sideways. Labels wrap, cells break long words, and
