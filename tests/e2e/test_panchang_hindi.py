@@ -180,12 +180,13 @@ def vrat_section(browser, base: str) -> None:
     pg.page.click("#open-panchang")
     pg.page.wait_for_selector("#panchang-result .pa-limbs", timeout=15000)
     pg.page.fill("#pa-date", "2026-11-08")
-    # (Today may well have its own section already: wait for the chosen date's.)
+    # (Today may well have its own section already: wait for the chosen date's. On
+    # 8 Nov 2026 itself the app rightly says "आज के व्रत-त्योहार" instead of the date.)
     pg.page.wait_for_function(
-        "(document.querySelector('#pa-vrat')||{}).innerText?.includes('8 नवंबर 2026')", timeout=15000)
+        "(document.querySelector('#pa-vrat')||{}).innerText?.includes('दीपावली')", timeout=15000)
     vrat = pg.page.locator("#pa-vrat").inner_text()
-    check("heading names the chosen date: '8 नवंबर 2026 के व्रत-त्योहार'",
-          "8 नवंबर 2026 के व्रत-त्योहार" in vrat, vrat[:200])
+    check("heading names the chosen date: '8 नवंबर 2026 के व्रत-त्योहार' (or 'आज' on that day)",
+          "8 नवंबर 2026 के व्रत-त्योहार" in vrat or "आज के व्रत-त्योहार" in vrat, vrat[:200])
     check("दीपावली (लक्ष्मी पूजा) with लक्ष्मी पूजा मुहूर्त 17:54 – 19:50 (New Delhi)",
           "दीपावली (लक्ष्मी पूजा)" in vrat
           and re.search(r"लक्ष्मी पूजा मुहूर्त\s+17:54 – 19:50", vrat) is not None, vrat[:400])
@@ -194,14 +195,18 @@ def vrat_section(browser, base: str) -> None:
           pg.page.locator("#pa-vrat a[href='/hi/tyohar/diwali-2026']").count() == 1)
     words = latin_words(pg, "#stage-panchang")
     check("Panchang with the vrat section: no Latin-script words", not words, str(words))
-    pg.page.locator("#pa-vrat").scroll_into_view_if_needed()
+    try:    # the section can re-render under us (on the day itself the date is "today")
+        pg.page.locator("#pa-vrat").scroll_into_view_if_needed(timeout=5000)
+    except Exception as exc:  # noqa: BLE001 — only the screenshot's framing depends on it
+        print(f"  (scroll for the screenshot skipped: {type(exc).__name__})")
     screenshot(pg, "panchang-vrat-hi.png")
 
     pg.set_lang("en")
     pg.page.wait_for_function(
         "document.querySelector('#pa-vrat').innerText.includes('Lakshmi puja muhurat')", timeout=5000)
     check("EN switch: the section re-renders in English",
-          "Vrat & Festivals on 8 November 2026" in pg.page.locator("#pa-vrat").inner_text()
+          any(h in pg.page.locator("#pa-vrat").inner_text()
+              for h in ("Vrat & Festivals on 8 November 2026", "Vrat & Festivals today"))
           and pg.page.locator("#pa-vrat a[href='/tyohar/diwali-2026']").count() == 1)
     pg.set_lang("hi")
     pg.page.wait_for_function(
