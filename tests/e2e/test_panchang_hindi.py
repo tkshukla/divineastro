@@ -195,7 +195,10 @@ def vrat_section(browser, base: str) -> None:
           pg.page.locator("#pa-vrat a[href='/hi/tyohar/diwali-2026']").count() == 1)
     words = latin_words(pg, "#stage-panchang")
     check("Panchang with the vrat section: no Latin-script words", not words, str(words))
-    pg.page.locator("#pa-vrat").scroll_into_view_if_needed()
+    try:    # the section can re-render under us (on the day itself the date is "today")
+        pg.page.locator("#pa-vrat").scroll_into_view_if_needed(timeout=5000)
+    except Exception as exc:  # noqa: BLE001 — only the screenshot's framing depends on it
+        print(f"  (scroll for the screenshot skipped: {type(exc).__name__})")
     screenshot(pg, "panchang-vrat-hi.png")
 
     pg.set_lang("en")
