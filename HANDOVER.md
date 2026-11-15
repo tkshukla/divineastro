@@ -138,7 +138,7 @@ checked against Postgres directly.
 
 ---
 
-## Diwali offer pricing (DIVASTRO-152)
+## New Year offer pricing (DIVASTRO-152)
 
 Every product has two prices in `app/billing.py`: the **offer price**
 (`Product.offer_paise`, the first money argument of each `Product(...)`) and the
@@ -148,7 +148,7 @@ over). The price in force is *computed from the clock*, never stored:
 -> `{active, name, ends_at_iso, ends_at_label}`. `Product.amount_paise` is now a
 property returning the effective price, so every old reader keeps working.
 
-* **End date**: 15 Nov 2026 23:59:59 IST (`OFFER_END_DEFAULT`). The offer is live
+* **End date**: 15 Jan 2027 23:59:59 IST (`OFFER_END_DEFAULT`). The offer is live
   strictly *before* that instant; at it and after, list prices apply by
   themselves (no deploy, no manual step, strike and offer label vanish).
   Move it without a deploy with `ASTRO_OFFER_ENDS` (ISO 8601 with offset, e.g.
@@ -175,13 +175,13 @@ property returning the effective price, so every old reader keeps working.
   stock-style urgency, the only urgency is the real end date; never show a list
   price the site does not charge. Tests: `tests/test_offer_pricing.py`. CI sets
   `ASTRO_OFFER_ENDS=2099-...` so the other suites (which assert offer prices) do
-  not go red after the offer; locally they will after 15 Nov unless you set it.
+  not go red after the offer; locally they will after 15 Jan 2027 unless you set it.
 
 * **UI half**: while `offer.active` is true the app shows the real regular price
   (`list_amount_paise`) struck through beside the current one (`<s class="was">` with
   sr-only "Regular price ..., now ..."), a "Save N%" badge (arithmetic on the two API
   numbers), a banner at the top of the home Plans section, the store and `/pricing`
-  ("Diwali offer prices are valid until {date}, 11:59 PM IST. Regular prices apply after
+  ("New Year offer prices are valid until {date}, 11:59 PM IST. Regular prices apply after
   that."), and on `/pricing` an explanation section (en + hi, `pricing_text.py`). Nothing
   is hard-coded: `account.js` (`offerOn`, `offerBanner`, `priceHtml`, `saveBadge`) and
   `pricing_pages.py` (`_offer_of`, `_table`) render it only from the catalogue, so after the
@@ -226,7 +226,7 @@ property returning the effective price, so every old reader keeps working.
 
 ## Kundali Milan report (DIVASTRO-156)
 
-**What it is.** A ₹51 PDF (Diwali offer; ₹91 list, `billing.MILAN_SKU = milan_report`,
+**What it is.** A ₹51 PDF (New Year offer; ₹91 list, `billing.MILAN_SKU = milan_report`,
 kind `milan_report`) for TWO people: the 8 kootas one by one with what each measures,
 the total and its band, Manglik dosh for both and the pair verdict (cancelled when both
 are Manglik), both D1 charts and the key placements / lord friendships, and the vivah
@@ -274,7 +274,7 @@ person writes them.
   accounts have no address; `billing.deliverable_email`): the honest option rather
   than selling an emailed answer we cannot email. `/api/me` → `user.starter =
   {available, reason}` (`disabled | no_email | bought | pending`). No coupons on it.
-* **Not on the Diwali offer**: `Product.on_offer=False`, list = offer = 2100 paise, so
+* **Not on the New Year offer**: `Product.on_offer=False`, list = offer = 2100 paise, so
   no strike, no Save badge, no offer end and no `priceValidUntil` in the JSON-LD.
 * **Separate balance**: `credit_entries.credit_type` is `question` (every existing
   row, all packs, the sign-up gift, admin adjustments) or `email` (the Starter).

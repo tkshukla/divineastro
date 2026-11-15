@@ -55,7 +55,7 @@ def live() -> bool:
 # --------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------
-# The Diwali offer: a real, time-boxed price
+# The New Year offer: a real, time-boxed price
 #
 # Every product has two prices. `list_paise` is the regular price the site
 # charges once the offer is over. `offer_paise` is the limited-offer price.
@@ -67,14 +67,14 @@ def live() -> bool:
 # so the price flips by itself at the end instant, with no manual step. The
 # struck-through "was" price shown to customers is list_paise and only while
 # the offer is active, which is exactly what is charged afterwards.
-# See HANDOVER.md "Diwali offer" for the honesty rules.
+# See HANDOVER.md "New Year offer" for the honesty rules.
 # --------------------------------------------------------------------------
 
-OFFER_NAME = "Diwali offer"
+OFFER_NAME = "New Year offer"
 IST = timezone(timedelta(hours=5, minutes=30), "IST")
-# 15 November 2026, 23:59:59 IST: the offer is live strictly before this instant;
+# 15 January 2027, 23:59:59 IST: the offer is live strictly before this instant;
 # at it and after, list prices apply.
-OFFER_END_DEFAULT = datetime(2026, 11, 15, 23, 59, 59, tzinfo=IST)
+OFFER_END_DEFAULT = datetime(2027, 1, 15, 23, 59, 59, tzinfo=IST)
 
 
 def _now() -> datetime:
@@ -146,7 +146,7 @@ class Product:
     pages: int = 0
     highlight: bool = False
     list_paise: int = 0       # the regular price, charged once the offer ends
-    # False for a product that is NOT part of the Diwali offer (the Starter,
+    # False for a product that is NOT part of the New Year offer (the Starter,
     # DIVASTRO-155): one fixed price, list == offer, so nothing is ever struck
     # through and no "Save N%" or offer end date is shown for it.
     on_offer: bool = True
@@ -198,7 +198,7 @@ MILAN_KIND = "milan_report"
 
 
 # Regular prices, in paise: what the site charges after the offer. The
-# offer_paise given in each Product() below is the Diwali offer price.
+# offer_paise given in each Product() below is the New Year offer price.
 LIST_PRICES_PAISE = {
     "q10": 19900, "q50": 59900, "q100": 119900,
     "sq_career": 19900, "sq_marriage_timing": 19900, "sq_wealth_business": 19900,
@@ -268,7 +268,7 @@ PRODUCTS: dict[str, Product] = {p.sku: p for p in [
     # DIVASTRO-155: the one-time Starter. 3 questions whose detailed written answers
     # are emailed (and saved in My questions) within EMAIL_ANSWER_DEADLINE_MIN. Its
     # credits are a separate balance (CREDIT_EMAIL) from the instant questions, it is
-    # sold once per account (starter_refusal) and it is not on the Diwali offer.
+    # sold once per account (starter_refusal) and it is not on the New Year offer.
     Product("starter_email3", "Starter: 3 detailed answers by email",
             "स्टार्टर: ईमेल पर 3 विस्तृत उत्तर",
             2100, 3, "email_answers",

@@ -473,7 +473,7 @@ def _birth_dict(b: BirthProfile) -> dict:
 def products(response: Response, kind: str | None = None) -> dict:
     from . import gateways
 
-    # DIVASTRO-152: the prices depend on the clock (the Diwali offer ends at an instant), so a
+    # DIVASTRO-152: the prices depend on the clock (the New Year offer ends at an instant), so a
     # browser must never reuse an earlier answer. Caddy does no response caching.
     response.headers["Cache-Control"] = "no-store"
 

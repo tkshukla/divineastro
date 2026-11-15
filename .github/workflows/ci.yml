@@ -31,7 +31,7 @@ concurrency:
 
 env:
   PYTHON_VERSION: "3.12"
-  # Suites assert the Diwali-offer prices; keep the offer "live" for them no
+  # Suites assert the New Year offer prices; keep the offer "live" for them no
   # matter the calendar. tests.test_offer_pricing sets its own dates.
   ASTRO_OFFER_ENDS: "2099-01-01T00:00:00+05:30"
 

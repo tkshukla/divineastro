@@ -1,4 +1,4 @@
-"""The Diwali offer on screen (DIVASTRO-152, UI half).
+"""The New Year offer on screen (DIVASTRO-152, UI half).
 
 While /api/products says the offer is live, every price in the app shows the REAL regular
 price (list_amount_paise from the API) struck through beside the current price, a "Save N%"
@@ -40,7 +40,7 @@ DESKTOP = {"viewport": {"width": 1440, "height": 900}}
 
 ENDS_ENV = "2099-01-01T00:00:00+05:30"
 PICKS = ["sq_career", "q10", "q50", "life_book"]            # the Plans cards
-INK = ("Diwali", "Regular price", "Save ", "दिवाली", "सामान्य कीमत")
+INK = ("New Year", "Regular price", "Save ", "नव वर्ष", "सामान्य कीमत")
 
 
 def money(paise: int) -> str:
@@ -48,7 +48,7 @@ def money(paise: int) -> str:
 
 
 def products(pg: Page) -> dict:
-    """The products ON the Diwali offer. The Starter (DIVASTRO-155, kind email_answers) has
+    """The products ON the New Year offer. The Starter (DIVASTRO-155, kind email_answers) has
     one fixed price and is not on it: tests/test_emailed_answers.py and
     tests/e2e/test_starter_email.py check that it is never struck through."""
     data = pg.page.context.request.get(f"{pg.base}/api/products").json()
@@ -85,10 +85,10 @@ def offer_on(browser, base: str) -> None:
     check("Plans: one banner at the top, above the cards", banner.count() == 1
           and pg.page.evaluate("document.querySelector('#plans .offer-banner').compareDocumentPosition("
                                "document.querySelector('#plans .plans-grid')) & 4") > 0)
-    check("Plans: the pill is 'Diwali offer · ends <real date>'",
-          f"Diwali offer · ends {short}" in banner.inner_text(), banner.inner_text())
+    check("Plans: the pill is 'New Year offer · ends <real date>'",
+          f"New Year offer · ends {short}" in banner.inner_text(), banner.inner_text())
     check("Plans: the sentence carries the real date and the time",
-          f"Diwali offer prices are valid until {long}, 11:59 PM IST. Regular prices apply after that." in " ".join(banner.inner_text().split()),
+          f"New Year offer prices are valid until {long}, 11:59 PM IST. Regular prices apply after that." in " ".join(banner.inner_text().split()),
           banner.inner_text())
     bad = []
     for sku in PICKS:
@@ -119,7 +119,7 @@ def offer_on(browser, base: str) -> None:
     pg.page.wait_for_timeout(400)
     hb = " ".join(pg.page.locator("#plans .offer-banner").inner_text().split())
     check("Plans in Hindi: label and sentence in Hindi with the real date, ASCII digits",
-          "दिवाली ऑफ़र" in hb and f"{ends.day} जनवरी" in hb and f"{ends.day} जनवरी {ends.year}" in hb
+          "नव वर्ष ऑफ़र" in hb and f"{ends.day} जनवरी" in hb and f"{ends.day} जनवरी {ends.year}" in hb
           and "(IST)" in hb and "सामान्य कीमतें लागू होंगी" in hb, hb)
     check("Plans in Hindi: the strike is still the API's regular price",
           money(api["q10"]["list_amount_paise"]) in card_text(pg.page.locator('#plans .plan[data-plans="q10"]'))
@@ -264,7 +264,7 @@ def store_refetches(browser, base: str) -> None:
                 p["per_question"] = round(p["rupees"] / p["credits"], 2) if p["credits"] else None
                 p["list_amount_paise"] = None
                 p["list_per_question"] = None
-                p["offer"] = {"active": False, "name": "Diwali offer", "ends_at": None}
+                p["offer"] = {"active": False, "name": "New Year offer", "ends_at": None}
         route.fulfill(response=resp, body=json.dumps(data),
                       headers={**resp.headers, "content-length": str(len(json.dumps(data).encode()))})
 
@@ -334,7 +334,7 @@ def offer_off(browser, base: str) -> None:
     check("Nudge: '2 left — 50 Questions for ₹599', no strike",
           f"2 left — 50 Questions for {money(billing.LIST_PRICES_PAISE['q50'])}" == nudge, nudge)
     pg.page.goto(base + "/pricing")
-    check("/pricing: no banner, no strike", pg.page.locator(".pr-offer, .pr-table s, #diwali-offer").count() == 0)
+    check("/pricing: no banner, no strike", pg.page.locator(".pr-offer, .pr-table s, #new-year-offer").count() == 0)
     check("/pricing: regular prices", f"<b>{money(billing.LIST_PRICES_PAISE['q10'])}</b>" in pg.page.content())
     ctx.close()
 
@@ -347,7 +347,7 @@ def main() -> int:
             store_refetches(browser, base)
         with server({"ASTRO_OFFER_OFF": "1", "ASTRO_OFFER_ENDS": ENDS_ENV}) as base:
             offer_off(browser, base)
-    return check.finish("the Diwali offer on screen (ON, store re-read, OFF)")
+    return check.finish("the New Year offer on screen (ON, store re-read, OFF)")
 
 
 if __name__ == "__main__":

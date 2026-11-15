@@ -3,7 +3,7 @@
 In process (TestClient, a throwaway SQLite database, the test gateway, the console
 mail transport):
 
-  1. The product: sku milan_report, ₹51 on the Diwali offer, ₹91 list price (~80%
+  1. The product: sku milan_report, ₹51 on the New Year offer, ₹91 list price (~80%
      above, like the other reports), its own kind, English and Hindi words; in the
      catalogue; ₹91 once the offer is off.
   2. The order carries BOTH people: /api/orders refuses the report without them (or

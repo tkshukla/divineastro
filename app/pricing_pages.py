@@ -136,7 +136,7 @@ def _payment_text(lang: str) -> str:
 
 
 def _offer_live(p: dict) -> bool:
-    """The Diwali offer applies to this product right now, as the catalogue says. The struck
+    """The New Year offer applies to this product right now, as the catalogue says. The struck
     price is the catalogue's own list_amount_paise (never typed or computed here)."""
     return bool(p["offer"]["active"] and p.get("list_amount_paise")
                 and p["list_amount_paise"] > p["amount_paise"])
@@ -168,7 +168,7 @@ def _explanation(offer: dict | None, lang: str, starter: bool = False) -> str:
     date = _offer_date(offer, lang, short=False)
     # DIVASTRO-155: the Starter has one fixed price; the sentence must not claim it is on offer.
     p1 = "offer.p1.starter" if starter else "offer.p1"
-    return (f'<h2 id="diwali-offer">{_e(_tx("offer.h2", lang))}</h2>'
+    return (f'<h2 id="new-year-offer">{_e(_tx("offer.h2", lang))}</h2>'
             f'<div class="box" data-offer-about><p>{_e(_tx(p1, lang, date=date))}</p>'
             f'<p>{_e(_tx("offer.p2", lang))}</p></div>')
 
