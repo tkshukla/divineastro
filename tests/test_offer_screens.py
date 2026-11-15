@@ -1,4 +1,4 @@
-"""The Diwali offer on the server-rendered screens (DIVASTRO-152, UI half): /pricing and
+"""The New Year offer on the server-rendered screens (DIVASTRO-152, UI half): /pricing and
 /hi/pricing, and the /api/products cache header the app relies on.
 
 What it pins down:
@@ -42,7 +42,7 @@ from app import billing  # noqa: E402
 from app.main import app  # noqa: E402
 
 IST = billing.IST
-ENDS = dt.datetime(2026, 11, 15, 23, 59, 59, tzinfo=IST)
+ENDS = dt.datetime(2027, 1, 15, 23, 59, 59, tzinfo=IST)
 BEFORE = dt.datetime(2026, 10, 9, 12, 0, tzinfo=IST)
 AFTER = ENDS + dt.timedelta(days=3)
 
@@ -89,17 +89,17 @@ def max_age(resp) -> int:
 
 # What the pages must say, from the owner's wording.
 EN = {
-    "pill": "Diwali offer · ends 15 Nov",
-    "banner": "Diwali offer prices are valid until 15 November 2026, 11:59 PM IST. Regular prices apply after that.",
-    "h2": "About the Diwali offer", "was": "Regular price", "path": "/pricing",
+    "pill": "New Year offer · ends 15 Jan",
+    "banner": "New Year offer prices are valid until 15 January 2027, 11:59 PM IST. Regular prices apply after that.",
+    "h2": "About the New Year offer", "was": "Regular price", "path": "/pricing",
 }
 HI = {
-    "pill": "दिवाली ऑफ़र · अंतिम तिथि 15 नवंबर",
-    "banner": "दिवाली ऑफ़र की कीमतें 15 नवंबर 2026, रात 11:59 बजे (IST) तक मान्य हैं। उसके बाद सामान्य कीमतें लागू होंगी।",
-    "h2": "दिवाली ऑफ़र के बारे में", "was": "सामान्य कीमत", "path": "/hi/pricing",
+    "pill": "नव वर्ष ऑफ़र · अंतिम तिथि 15 जनवरी",
+    "banner": "नव वर्ष ऑफ़र की कीमतें 15 जनवरी 2027, रात 11:59 बजे (IST) तक मान्य हैं। उसके बाद सामान्य कीमतें लागू होंगी।",
+    "h2": "नव वर्ष ऑफ़र के बारे में", "was": "सामान्य कीमत", "path": "/hi/pricing",
 }
-OFFER_MARKERS = ('class="was"', 'class="pr-offer"', 'class="pr-pill"', "diwali-offer", "data-offer-banner", 'class="pr-save"',
-                 "priceValidUntil", "Diwali", "दिवाली")
+OFFER_MARKERS = ('class="was"', 'class="pr-offer"', 'class="pr-pill"', "new-year-offer", "data-offer-banner", 'class="pr-save"',
+                 "priceValidUntil", "New Year", "नव वर्ष")
 
 
 def main() -> int:
@@ -134,10 +134,10 @@ def main() -> int:
         check(f"[{label}] the banner sentence with the real long date", tx["banner"] in t, tx["banner"])
         check(f"[{label}] the banner is the first thing under the h1",
               re.search(r"</h1>\s*(<style>.*?</style>)?\s*<p class=\"pr-offer\"", h, re.S) is not None)
-        check(f"[{label}] the explanation section", f'<h2 id="diwali-offer">{tx["h2"]}</h2>' in h)
-        check(f"[{label}] the date is the one in /api/products offer.ends_at (15 Nov 2026 IST)",
+        check(f"[{label}] the explanation section", f'<h2 id="new-year-offer">{tx["h2"]}</h2>' in h)
+        check(f"[{label}] the date is the one in /api/products offer.ends_at (15 Jan 2027 IST)",
               client.get("/api/products").json()["products"][0]["offer"]["ends_at"] == ends_iso
-              and "15" in tx["banner"] and "2026" in tx["banner"])
+              and "15" in tx["banner"] and "2027" in tx["banner"])
         check(f"[{label}] no countdown, no scarcity wording",
               not re.search(r"countdown|only \d+ left|hurry|last chance|never be this low|कभी नहीं", t, re.I))
     for label, tx in (("en", EN), ("hi", HI)):
@@ -146,7 +146,7 @@ def main() -> int:
               "<b>₹21</b>" in st and "<s " not in st and "pr-save" not in st, st[:200])
     en_text = text(client.get("/pricing").text)
     check("the explanation: every product but the Starter, regular prices afterwards, order keeps its quoted price",
-          "Every product on this page except the Starter is on our Diwali offer" in en_text
+          "Every product on this page except the Starter is on our New Year offer" in en_text
           and "After that the regular prices apply automatically" in en_text
           and "An order you start during the offer keeps the price it was quoted at" in en_text
           and "11:59 PM IST" in en_text)

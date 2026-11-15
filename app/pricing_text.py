@@ -103,16 +103,16 @@ TEXT: dict[str, dict[str, str]] = {
         "related.milan": "Kundali Milan",
         "related.panchang": "Today's Panchang",
         "related.sitemap": "Site map",
-        "offer.pill": "Diwali offer · ends {date}",
-        "offer.banner": "Diwali offer prices are valid until {date}, 11:59 PM IST. Regular prices apply after that.",
-        "offer.h2": "About the Diwali offer",
-        "offer.p1": ("Every product on this page is on our Diwali offer: the question packs, the "
+        "offer.pill": "New Year offer · ends {date}",
+        "offer.banner": "New Year offer prices are valid until {date}, 11:59 PM IST. Regular prices apply after that.",
+        "offer.h2": "About the New Year offer",
+        "offer.p1": ("Every product on this page is on our New Year offer: the question packs, the "
                      "single-topic reports, the Life Book and the hand-written kundali. The offer "
                      "ends on {date}, 11:59 PM IST."),
         "offer.p2": ("After that the regular prices apply automatically. While the offer lasts, each "
                      "regular price is shown struck through beside the offer price. An order you "
                      "start during the offer keeps the price it was quoted at."),
-        "offer.p1.starter": ("Every product on this page except the Starter is on our Diwali offer: the "
+        "offer.p1.starter": ("Every product on this page except the Starter is on our New Year offer: the "
                              "question packs, the single-topic reports, the Life Book and the hand-written "
                              "kundali. The offer ends on {date}, 11:59 PM IST."),
         # DIVASTRO-155: the one-time Starter (3 answers by email).
@@ -204,15 +204,15 @@ TEXT: dict[str, dict[str, str]] = {
         "related.milan": "कुंडली मिलान",
         "related.panchang": "आज का पंचांग",
         "related.sitemap": "साइट मैप",
-        "offer.pill": "दिवाली ऑफ़र · अंतिम तिथि {date}",
-        "offer.banner": "दिवाली ऑफ़र की कीमतें {date}, रात 11:59 बजे (IST) तक मान्य हैं। उसके बाद सामान्य कीमतें लागू होंगी।",
-        "offer.h2": "दिवाली ऑफ़र के बारे में",
-        "offer.p1": ("इस पेज पर दिया हर उत्पाद हमारे दिवाली ऑफ़र में है: प्रश्न पैक, एक विषय की रिपोर्ट, "
+        "offer.pill": "नव वर्ष ऑफ़र · अंतिम तिथि {date}",
+        "offer.banner": "नव वर्ष ऑफ़र की कीमतें {date}, रात 11:59 बजे (IST) तक मान्य हैं। उसके बाद सामान्य कीमतें लागू होंगी।",
+        "offer.h2": "नव वर्ष ऑफ़र के बारे में",
+        "offer.p1": ("इस पेज पर दिया हर उत्पाद हमारे नव वर्ष ऑफ़र में है: प्रश्न पैक, एक विषय की रिपोर्ट, "
                      "लाइफ बुक और हस्तलिखित कुंडली। ऑफ़र {date}, रात 11:59 बजे (IST) समाप्त होता है।"),
         "offer.p2": ("उसके बाद सामान्य कीमतें अपने आप लागू हो जाती हैं। ऑफ़र के दौरान हर ऑफ़र कीमत के "
                      "पास उसकी सामान्य कीमत कटी हुई दिखाई जाती है। ऑफ़र के दौरान शुरू किया गया ऑर्डर उसी "
                      "कीमत पर रहता है जो उसे बताई गई थी।"),
-        "offer.p1.starter": ("स्टार्टर को छोड़कर इस पेज पर दिया हर उत्पाद हमारे दिवाली ऑफ़र में है: प्रश्न "
+        "offer.p1.starter": ("स्टार्टर को छोड़कर इस पेज पर दिया हर उत्पाद हमारे नव वर्ष ऑफ़र में है: प्रश्न "
                              "पैक, एक विषय की रिपोर्ट, लाइफ बुक और हस्तलिखित कुंडली। ऑफ़र {date}, रात 11:59 "
                              "बजे (IST) समाप्त होता है।"),
         "starter.h2": "स्टार्टर: ईमेल पर 3 विस्तृत उत्तर",

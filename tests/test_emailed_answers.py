@@ -4,7 +4,7 @@ In process (TestClient, a throwaway SQLite database, the console mail transport)
 with a FAKE Ollama (tests/fake_ollama.py, a real HTTP server on localhost) and a
 FAKE `anthropic` module, so nothing leaves the machine:
 
-  1. The product: Rs 21 = list = offer (the Diwali offer engine ignores it), sold once
+  1. The product: Rs 21 = list = offer (the New Year offer engine ignores it), sold once
      per account (second order 409), no coupon, off with ASTRO_STARTER_ENABLED=0,
      refused to an account with no email; JSON-LD at 21 with no priceValidUntil.
   2. Separate balances: buying it adds 3 emailed answers and no instant question;
@@ -247,7 +247,7 @@ def part1_product() -> None:
     before = dt.datetime(2026, 10, 20, tzinfo=dt.timezone.utc)
     after = dt.datetime(2026, 12, 1, tzinfo=dt.timezone.utc)
     with mock.patch.dict(os.environ, {"ASTRO_OFFER_ENDS": "2026-11-15T23:59:59+05:30"}):
-        check("the offer engine ignores it: 21 during and after the Diwali offer",
+        check("the offer engine ignores it: 21 during and after the New Year offer",
               billing.effective_price_paise(billing.STARTER_SKU, before) == 2100
               and billing.effective_price_paise(billing.STARTER_SKU, after) == 2100)
         d = p.to_dict(before)

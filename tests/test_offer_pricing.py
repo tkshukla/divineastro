@@ -1,4 +1,4 @@
-"""The Diwali offer price engine (DIVASTRO-152, backend).
+"""The New Year offer price engine (DIVASTRO-152, backend).
 
 The honesty rules this pins down:
   1. the amount charged equals the amount shown, always;
@@ -46,7 +46,7 @@ from app import billing, coupons, db as database  # noqa: E402
 from app.main import app  # noqa: E402
 
 IST = billing.IST
-ENDS = dt.datetime(2026, 11, 15, 23, 59, 59, tzinfo=IST)
+ENDS = dt.datetime(2027, 1, 15, 23, 59, 59, tzinfo=IST)
 BEFORE = dt.datetime(2026, 10, 9, 12, 0, tzinfo=IST)
 AFTER = ENDS + dt.timedelta(days=3)
 
@@ -108,10 +108,10 @@ def main() -> int:
     check("regular (list) prices are the owner's",
           all(billing.PRODUCTS[s].list_paise == LIST[s] for s in LIST))
     st = billing.offer_status()
-    check("offer_status: active, named, ends 15 Nov 2026 23:59:59 IST",
-          st["active"] and st["name"] == "Diwali offer"
-          and st["ends_at_iso"] == "2026-11-15T23:59:59+05:30", str(st))
-    check("offer_status carries a human label", "15 November 2026" in st["ends_at_label"], st["ends_at_label"])
+    check("offer_status: active, named, ends 15 Jan 2027 23:59:59 IST",
+          st["active"] and st["name"] == "New Year offer"
+          and st["ends_at_iso"] == "2027-01-15T23:59:59+05:30", str(st))
+    check("offer_status carries a human label", "15 January 2027" in st["ends_at_label"], st["ends_at_label"])
     check("the offer is never dearer than the list price",
           all(OFFER[s] < LIST[s] for s in OFFER))
 
@@ -123,7 +123,7 @@ def main() -> int:
           and not billing.offer_status(ENDS)["active"])
     check("after: list price, status inactive with no end advertised",
           billing.effective_price_paise("q50", AFTER) == 59900
-          and billing.offer_status(AFTER) == {"active": False, "name": "Diwali offer",
+          and billing.offer_status(AFTER) == {"active": False, "name": "New Year offer",
                                               "ends_at_iso": None, "ends_at_label": None})
     check("the same instant in UTC behaves the same (tz-safe)",
           billing.effective_price_paise("q10", ENDS.astimezone(dt.timezone.utc)) == 19900)
@@ -138,8 +138,8 @@ def main() -> int:
         check(f"old key still present: {key}", key in q50)
     check("amount_paise = the effective (offer) price", q50["amount_paise"] == 35100 and q50["rupees"] == 351)
     check("list_amount_paise = the regular price while active", q50["list_amount_paise"] == 59900)
-    check("offer block", q50["offer"] == {"active": True, "name": "Diwali offer",
-                                           "ends_at": "2026-11-15T23:59:59+05:30"}, str(q50["offer"]))
+    check("offer block", q50["offer"] == {"active": True, "name": "New Year offer",
+                                           "ends_at": "2027-01-15T23:59:59+05:30"}, str(q50["offer"]))
     check("price per question uses the effective price", q50["per_question"] == 7.02, str(q50["per_question"]))
     check("list price per question is the regular one", q50["list_per_question"] == 11.98, str(q50["list_per_question"]))
     check("a report has no per-question", next(p for p in r["products"] if p["sku"] == "sq_career")["per_question"] is None)
@@ -299,7 +299,7 @@ def main() -> int:
     q10 = next(n for n in ld if n["sku"] == "q10")
     check("during: Offer price is the offer price", q10["offers"]["price"] == "111", str(q10["offers"]))
     check("during: priceValidUntil is the real end", q10["offers"].get("priceValidUntil")
-          == "2026-11-15T23:59:59+05:30", str(q10["offers"]))
+          == "2027-01-15T23:59:59+05:30", str(q10["offers"]))
     # DIVASTRO-152 UI half: the regular price now appears too, but only struck through (<s class="was">).
     plain = re.sub(r'<s class="was">.*?</s>', "", h, flags=re.S)
     check("during: page shows the offer price (the regular price only struck through)",
@@ -312,7 +312,7 @@ def main() -> int:
     check("after: no priceValidUntil", "priceValidUntil" not in q10["offers"])
     check("after: the page shows list prices", "₹199" in h and "₹599" in h and "₹1,199" in h and "₹111" not in h)
     check("after: price-per-question on the page follows (11.98)", "11.98" in h)
-    check("the whole page claims no offer once it is over", "Diwali" not in h)
+    check("the whole page claims no offer once it is over", "New Year" not in h)
     at(BEFORE)
 
     print("\n10. Other readers of the price")

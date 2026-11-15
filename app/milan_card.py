@@ -7,7 +7,7 @@ The report is written from both people's BIRTH details, which only the app's
 matching tool collects, so the card's button opens that tool (/?open=milan); the
 card shown under the in-app result is the one that starts checkout. Everything a
 customer is charged or shown comes from the catalogue (billing.catalogue): the
-price in force and, only while the Diwali offer is live, the struck-through regular
+price in force and, only while the New Year offer is live, the struck-through regular
 price, exactly as /pricing prints them. The words are seo_text.TEXT "km.rpt.*" (all
 13 languages). /static/milanreport.js reports milan_report_shown / _click.
 """

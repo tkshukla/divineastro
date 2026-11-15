@@ -38,7 +38,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-# DIVASTRO-152: /pricing shows the real end date of the Diwali offer; pin it so the recording does not depend on the calendar (CI sets the same value).
+# DIVASTRO-152: /pricing shows the real end date of the New Year offer; pin it so the recording does not depend on the calendar (CI sets the same value).
 os.environ.setdefault("ASTRO_OFFER_ENDS", "2099-01-01T00:00:00+05:30")
 if "ASTRO_DATABASE_URL" not in os.environ:
     _tmp = tempfile.mkdtemp(prefix="astro_snap_")
@@ -60,7 +60,7 @@ def pin(day: dt.date = DAY) -> None:
     for name, mod in list(sys.modules.items()):
         if name.startswith("app.") and callable(getattr(mod, "_today", None)):
             setattr(mod, "_today", lambda d=day: d)
-    # The Diwali offer follows the real clock; pin it to the same day so the
+    # The New Year offer follows the real clock; pin it to the same day so the
     # recorded /pricing does not change when the offer ends (DIVASTRO-152).
     from app import billing
     noon = dt.datetime.combine(day, dt.time(12), tzinfo=billing.IST)

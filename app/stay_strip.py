@@ -297,8 +297,8 @@ def ask_strip(*, lang: str, kind: str) -> str:
 # {now} / {was} are the single-topic report's offer and regular price in rupees,
 # {date} the offer's last day; all read from billing, never typed here.
 HOOK_OFFER = {
-    "en": "🎁 Diwali offer: career, marriage and wealth reports ₹{now} (regular ₹{was}), until {date}",
-    "hi": "🎁 दिवाली ऑफ़र: करियर, विवाह और धन रिपोर्ट सिर्फ़ ₹{now} (सामान्य ₹{was}), {date} तक",
+    "en": "🎁 New Year offer: career, marriage and wealth reports ₹{now} (regular ₹{was}), until {date}",
+    "hi": "🎁 नव वर्ष ऑफ़र: करियर, विवाह और धन रिपोर्ट सिर्फ़ ₹{now} (सामान्य ₹{was}), {date} तक",
 }
 _HI_MONTHS = ("जनवरी", "फ़रवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त",
               "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर")

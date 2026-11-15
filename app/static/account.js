@@ -676,7 +676,7 @@ const money = (r) => `₹${Number(r).toLocaleString("en-IN")}`;
 /* Per-question price with two decimals: ₹11.10, ₹7.02, ₹6.51. */
 const perQuestion = (p) => `₹${Number(p.per_question).toFixed(2)}`;
 
-/* ---------- DIVASTRO-152: the Diwali offer, shown only while the API says it is live ----------
+/* ---------- DIVASTRO-152: the New Year offer, shown only while the API says it is live ----------
    Every figure below is read from /api/products, never typed or computed here, except the
    "Save N%" badge, which is arithmetic on the two real prices. When offer.active is false the
    API sends list_amount_paise = null and every helper returns the plain price: no strike, no
@@ -708,7 +708,7 @@ function offerDate(iso, long = false) {
   return String(iso).slice(0, 10);
 }
 
-/* "Diwali offer · ends 15 Nov" */
+/* "New Year offer · ends 15 Jan" */
 function offerPill() {
   const o = liveOffer();
   return o ? `<span class="offer-pill" data-offer-pill>${escapeHtml(at("offerPill").replace("{date}", offerDate(o.ends_at)))}</span>` : "";
