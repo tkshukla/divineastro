@@ -110,6 +110,17 @@ async function loadAccount() {
   await resumeHostedCheckout();
   await resumePayuReturn();
   resumeGuestLink();
+
+  // The pricing page links each product as /?buy=<sku>: open the store at that product.
+  const buyParams = new URLSearchParams(location.search);
+  const buySku = buyParams.get("buy") || "";
+  if (buySku) {
+    buyParams.delete("buy");
+    history.replaceState({}, "", location.pathname + (buyParams.toString() ? `?${buyParams}` : ""));
+    if (/^[a-z0-9_]{1,40}$/.test(buySku) && acct.products.some((p) => p.sku === buySku)) {
+      openStore(false, buySku, "pricing");
+    }
+  }
   return acct.user;
 }
 
