@@ -211,9 +211,10 @@ def _table(items: list[dict], lang: str) -> str:
                    f'{_e(_money(p["list_amount_paise"] / 100))}</s>'
                    f'<span class="sr-only">, {_e(_tx("offer.now", lang))} </span>')
             extra += f'<span class="pr-save">{_e(_tx("offer.save", lang, n=pct))}</span>'
+        buy = i18n.app_link(lang, "buy=" + p["sku"])
         rows.append(
             f'<tr id="{_e(p["sku"])}" data-sku="{_e(p["sku"])}">'
-            f'<td class="pr-name">{_e(_title(p, lang))}{flag}'
+            f'<td class="pr-name"><a href="{_e(buy)}">{_e(_title(p, lang))}</a>{flag}'
             f'<span class="pr-what">{_e(_blurb(p, lang))}</span>{sample}</td>'
             f'<td class="pr-price">{was}<b>{_e(_money(p["rupees"]))}</b>{extra}</td></tr>')
     head = f"<tr><th>{_e(_tx('th.product', lang))}</th><th>{_e(_tx('th.price', lang))}</th></tr>"
